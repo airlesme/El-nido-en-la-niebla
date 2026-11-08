@@ -22,9 +22,9 @@ Se excluyen a propósito combate, IA de enemigos, economía, progresión, red y 
 
 | # | System Name | Category | Priority | Status | Design Doc | Depends On |
 |---|-------------|----------|----------|--------|------------|------------|
-| 1 | Entrada y controles | Core | MVP | Designed | design/gdd/entrada-y-controles.md | — |
+| 1 | Entrada y controles | Core | MVP | In Review | design/gdd/entrada-y-controles.md | — |
 | 2 | Jugador en primera persona (movimiento, cámara, manos) | Core | MVP | Not Started | — | 1, 4 |
-| 3 | Estado del juego y bus de eventos | Core | MVP | Designed | design/gdd/estado-y-bus-de-eventos.md | — |
+| 3 | Estado del juego y bus de eventos | Core | MVP | In Review | design/gdd/estado-y-bus-de-eventos.md | — |
 | 4 | Escena de planta y carga de Recepción | Core | MVP | Not Started | — | 3 |
 | 5 | Guardado y carga | Persistence | MVP | Not Started | — | 3, 4, 6 |
 | 6 | Ajustes persistentes (inferred) | Persistence | MVP | Not Started | — | 1 |
@@ -39,7 +39,7 @@ Se excluyen a propósito combate, IA de enemigos, economía, progresión, red y 
 | 15 | Puzle 5 · Espejo de la diferencia | Gameplay | MVP | Not Started | — | 9, 10, 13 |
 | 16 | Puzle 6 · Decisión | Gameplay | MVP | Not Started | — | 9, 10, 18 |
 | 17 | Sistema de pistas (3 niveles) | Gameplay | Vertical Slice | Not Started | — | 3, 9, 18 |
-| 18 | Base de contenido narrativo (líneas, documentos, claves de traducción) | Narrative | MVP | Designed | design/gdd/base-de-contenido-narrativo.md | — |
+| 18 | Base de contenido narrativo (líneas, documentos, claves de traducción) | Narrative | MVP | In Review | design/gdd/base-de-contenido-narrativo.md | — |
 | 19 | Ordenador, correo e impresora | Narrative | MVP | Not Started | — | 1, 3, 7, 18, 20 |
 | 20 | Documentos y bolsillo visual | Narrative | MVP | Not Started | — | 3, 7, 18 |
 | 21 | Director de escenas (escenas 1–8, disparadores, eventos temporizados) | Narrative | MVP | Not Started | — | 1, 3, 4, 18 |

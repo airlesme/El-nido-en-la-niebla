@@ -28,7 +28,7 @@ El sistema solo **registra y anuncia**; nunca decide qué ocurre cuando un hecho
 
 1. **Catálogo cerrado.** Solo existen los hechos declarados en un fichero de datos (`assets/data/state/flags.json`). Cada hecho tiene: nombre, tipo (`bool`, `int` con rango, o `enum` con valores permitidos), valor inicial, sistema dueño (`owner`) y, si procede, una regla de derivación (regla 7). El catálogo inicial son los 19 hechos del Anexo D.2 del slice.
 2. **Un único dueño por hecho.** Cada hecho lo escribe un solo sistema (columna «Escribe» de la tabla de interacciones). Cualquier sistema puede leerlo. Un segundo escritor es un error de diseño, no una carrera que resolver: en las builds de desarrollo, una escritura hecha por un sistema distinto del `owner` declarado se trata como inválida (regla 6); en la build final no se comprueba.
-3. **Valor actual siempre disponible.** Cualquier sistema puede preguntar el valor de un hecho en cualquier momento, incluido el valor inicial si aún no se ha tocado. El estado es la verdad; los avisos (regla 9) son solo señales de que algo cambió.
+3. **Valor actual siempre disponible.** Cualquier sistema puede preguntar el valor de un hecho en cualquier momento, incluido el valor inicial si aún no se ha tocado. El estado es la verdad; los avisos (regla 9) son solo señales de que algo cambió. **Una escritura válida se aplica en el instante en que se hace** (y los derivados se recalculan en el acto, regla 7), incluso si se produce durante una entrega de avisos: lo único que puede esperar es el aviso (regla 11), nunca el valor. Una lectura inmediatamente posterior a una escritura devuelve siempre el valor nuevo.
 4. **Hechos de un solo sentido.** Todos los hechos `bool` y `enum` del catálogo, salvo `pendiente_revelacion`, solo pasan de su valor inicial a un valor final: una vez activados, escribirlos de nuevo con el mismo valor no hace nada, y con otro valor se rechaza y se registra. Los `enum` se fijan una única vez (decisión D-14 para `carta_variante`; mismo criterio para `respuesta_llamada`) y no se puede escribir «sin fijar» una vez fijados. Esta regla no se aplica a la partida nueva (regla 12), a la restauración (regla 13) ni a la consola de desarrollo (regla 15). El rechazo se trata como dice la regla 6. Es lo que hace seguras las reanudaciones y el pilar *Tensión sin castigo*: nada de lo hecho se deshace por accidente.
 5. **Hechos reversibles.** Solo cuatro hechos pueden cambiar en ambos sentidos: los `int` `pos_L`, `pos_C` y `pos_R` (rango 1 a 4, inicial 2, los escribe el puzle 2) y el `bool` `pendiente_revelacion` (verdadero mientras la revelación del puzle 5 está interrumpida, falso al completarse).
 6. **Escritura inválida.** Escribir un hecho no declarado, un valor fuera de rango o de tipo (sin conversiones: un `float` en un `int` o un `int` en un `bool` son de tipo incorrecto), escribir un hecho derivado, o cambiar un hecho de un solo sentido ya fijado: en desarrollo produce un error visible que detiene la ejecución; en la build final se ignora la escritura, se conserva el valor anterior y se registra una línea en el log.
@@ -38,8 +38,8 @@ El sistema solo **registra y anuncia**; nunca decide qué ocurre cuando un hecho
 
 8. **Qué es un aviso.** Un mensaje puntual, con nombre y datos opcionales, que un sistema emite cuando ocurre algo y que otros reciben. No se guarda: si nadie escuchaba, se pierde. Por eso los sistemas nunca deducen su estado de un aviso que hayan podido perder; lo deducen de los hechos (regla 3).
 9. **Aviso automático de cambio.** Cada vez que el valor de un hecho cambia realmente, el sistema emite un aviso con el nombre del hecho, el valor anterior y el nuevo. Escribir el mismo valor que ya había no emite nada. Los sistemas pueden darse de baja en cualquier momento; una baja pedida durante una entrega surte efecto cuando esa entrega termina.
-10. **Avisos con nombre del slice.** Los avisos de la lista siguiente se emiten tal como los nombra el slice. El formato técnico (señales, cadenas…) lo fija un ADR; aquí solo se fija el contrato: `EV_PUZZLE_SOLVED_<ID>` (uno por puzle, Anexo B; identificadores propuestos `P1` a `P6`, pendientes de confirmar: ver Open Questions), «puerta abierta» (con el identificador de la puerta), «compartimento completado» (1 a 4), «llamada iniciada» y «llamada completada». Cada sistema emisor documenta en su GDD cuándo emite los suyos.
-11. **Orden de entrega.** Los avisos se entregan en el orden en que ocurrieron los cambios; a los suscriptores, en el orden en que se suscribieron. Si un suscriptor, al recibir un aviso, provoca otro cambio, ese cambio se encola y se entrega cuando termine la entrega en curso (sin reentrada).
+10. **Avisos con nombre del slice.** Los avisos de la lista siguiente se emiten tal como los nombra el slice. El formato técnico (señales, cadenas…) lo fija un ADR; aquí solo se fija el contrato: `EV_PUZZLE_SOLVED_<ID>` (uno por puzle, Anexo B; identificadores propuestos `P1` a `P6`, pendientes de confirmar: ver Open Questions), «puerta abierta» (con el identificador de la puerta), «compartimento completado» (1 a 4), «llamada iniciada» y «llamada completada»; los dos avisos del sistema de entrada (1), «dispositivo de entrada cambiado» (teclado/ratón o mando) y «contexto de entrada cambiado», que ese sistema documenta y emite; y los dos avisos de ciclo de vida de este sistema, «estado restablecido» (regla 12) y «estado restaurado» (regla 13), ambos sin datos. Cada sistema emisor documenta en su GDD cuándo emite los suyos.
+11. **Orden de entrega.** Los avisos se entregan en el orden en que ocurrieron los cambios; a los suscriptores, en el orden en que se suscribieron. Si un suscriptor, al recibir un aviso, provoca otro cambio, el valor se aplica en el acto (regla 3) y solo el **aviso** de ese cambio se encola, para entregarse cuando termine la entrega en curso (sin reentrada). Una partida nueva o una restauración pedida desde dentro de una entrega se aplica al terminar esta; la cola pendiente se descarta entonces como dicen las reglas 12 y 13.
 
 **Ciclo de vida**
 
@@ -56,7 +56,7 @@ El sistema tiene tres estados de ciclo de vida; cada hecho tiene además su prop
 |---|---|---|
 | **Sin cargar** | Antes de arrancar el juego. Cualquier lectura o escritura es un error. | Listo (al leer el catálogo) |
 | **Listo** | Operativo: lecturas, escrituras y avisos permitidos. | Restaurando (al restaurar) · Listo (partida nueva) |
-| **Restaurando** | Se aplican valores de una instantánea. No se entregan avisos ni se aceptan escrituras de otros sistemas; las lecturas devuelven el valor que tenía cada hecho antes de empezar. Una nueva restauración o partida nueva pedida en este estado se rechaza y se registra. | Listo, tras emitir «estado restaurado» |
+| **Restaurando** | **Síncrono:** la restauración se aplica entera dentro de una sola llamada, sin ceder el control ni esperar fotogramas. El estado existe como garantía de atomicidad: mientras dura, ningún código externo (un suscriptor, una lectura) puede ejecutarse, así que ninguna lectura ve valores a medias. Si, aun así, algo intentara escribir, leer, pedir una restauración o una partida nueva desde dentro de ella (un fallo de programación), se rechaza y se registra; en desarrollo detiene la ejecución. | Listo; el aviso «estado restaurado» se emite ya en «Listo», como último paso de la llamada |
 
 | Tipo de hecho | Recorrido permitido |
 |---|---|
@@ -102,8 +102,9 @@ Otras interacciones:
 ## Edge Cases
 
 **Escrituras y orden**
-- **If un sistema escribe un hecho mientras el sistema está en «Restaurando»**: la escritura se rechaza (no se encola) y se registra; la restauración continúa sin interferencias.
-- **If un suscriptor, al recibir un aviso, escribe otro hecho**: el cambio se encola y se entrega al terminar la entrega en curso (regla 11). Un tope de seguridad de avisos encadenados por fotograma (valor a fijar en el ADR) corta cualquier bucle entre hechos reversibles: al alcanzarlo se descarta el resto de la cola, se registra y, en desarrollo, se detiene la ejecución.
+- **If un sistema escribe un hecho mientras el sistema está en «Restaurando»**: como la restauración es síncrona (ver States and Transitions) solo puede ocurrir por un fallo de programación; la escritura se rechaza (no se encola) y se registra, y la restauración continúa sin interferencias.
+- **If un suscriptor pide partida nueva o restauración durante una entrega**: se aplica al terminar la entrega en curso (regla 11); la cola se descarta entonces (reglas 12 y 13).
+- **If un suscriptor, al recibir un aviso, escribe otro hecho**: el valor se aplica en el acto y su aviso se encola; se entrega al terminar la entrega en curso (reglas 3 y 11). Un tope de seguridad de avisos encadenados por fotograma (valor a fijar en el ADR) corta cualquier bucle entre hechos reversibles: al alcanzarlo se descarta el resto de la cola, se registra y, en desarrollo, se detiene la ejecución.
 - **If un hecho cambia y con él cambia un hecho derivado** (p. ej. `caja_c4` y `caja_completa`): el aviso del hecho de entrada se entrega antes que el del derivado.
 - **If dos sistemas escriben hechos distintos en el mismo fotograma**: se procesan en el orden en que llegaron; los derivados se recalculan tras cada escritura.
 - **If se emite dos veces el mismo aviso con nombre** (p. ej. un puzle reintenta): no se deduplica. Los receptores basan su lógica en los hechos, no en contar avisos; los cambios de hecho sí son idempotentes (regla 9).
@@ -121,7 +122,6 @@ Otras interacciones:
 - **If se lee o escribe un hecho antes de que el catálogo esté cargado** («Sin cargar»): en desarrollo, error visible; en la build final, la lectura devuelve el valor neutro del tipo (falso, 0 o sin fijar), la escritura se descarta y se registra.
 - **If el fichero de catálogo falta o está corrupto al arrancar**: el juego no entra en la partida; muestra un mensaje de error claro y se cierra. No se arranca con un catálogo parcial.
 - **If un sistema se descarga con la escena (p. ej. al pasar a Recepción) mientras está suscrito**: deja de recibir avisos sin que haga falta darse de baja y sin errores.
-
 - **If se lee un hecho no declarado en estado «Listo»**: en desarrollo, error visible; en la build final devuelve el valor neutro del tipo (falso, 0 o sin fijar) y se registra.
 
 **Guardado y pruebas**
@@ -137,6 +137,7 @@ Otras interacciones:
 
 | Sistema | Tipo | Interfaz |
 |---|---|---|
+| 1 Entrada y controles | Blanda | Emite «dispositivo de entrada cambiado» y «contexto de entrada cambiado» por el bus; no lee ni escribe hechos. Funciona sin el bus salvo por esos dos avisos |
 | 4 Escena de planta | Dura | Lee hechos al cargar la escena para dejarla en su estado |
 | 5 Guardado y carga | Dura | Pide instantánea, restaura, escucha «estado restaurado» |
 | 8 Control de acceso | Dura | Lee `archivo_abierto`, `tarjeta_B`, `tarjeta_D`, `llamada_completada` |
@@ -152,9 +153,17 @@ Otras interacciones:
 | 11 a 16 Puzles | Indirecta (vía 9) | Escriben y leen sus hechos a través del marco de puzles |
 | 17 Sistema de pistas | Dura (**no está en el índice**) | Lee `formulario_leido` y `memo_leido` |
 
-**Corrección pendiente en el índice de sistemas:** el sistema 17 (Pistas) lee hechos pero su fila de dependencias en `design/gdd/systems-index.md` no incluye el sistema 3. Se añade al cerrar este GDD (Fase 5).
+**Índice de sistemas:** la fila del sistema 17 (Pistas) ya lista el sistema 3 como dependencia (`3, 9, 18`). La fila del sistema 1 (Entrada y controles) queda sin dependencias porque la suya con este sistema es blanda.
 
-**Bidireccionalidad.** Ninguno de los sistemas dependientes tiene GDD aún. Cada uno debe, al redactarse, listar este sistema como dependencia y registrar los hechos que escribe o lee con el mismo nombre que figura en la tabla de «Interacciones con otros sistemas».
+**Bidireccionalidad.** El GDD de Entrada y controles (1) ya remite a este documento (su regla 3 y su tabla de interacciones) y este lo lista arriba, así que ese par está cerrado. Del resto de sistemas dependientes ninguno tiene GDD aún: cada uno debe, al redactarse, listar este sistema como dependencia y registrar los hechos que escribe o lee con el mismo nombre que figura en la tabla de «Interacciones con otros sistemas».
+
+## Tuning Knobs
+
+El sistema no tiene valores de equilibrio de juego; su único parámetro configurable es un umbral de seguridad técnico.
+
+| Knob | Valor inicial | Rango seguro | Qué afecta |
+|---|---|---|---|
+| `max_chained_notices` | A fijar en el ADR (propuesta: 64) | 8 a 256 | Cuántos avisos encadenados por fotograma se entregan antes de cortar la cola (Edge Cases). Muy bajo: corta cascadas legítimas (p. ej. `caja_c4` → `caja_completa` → apagón); muy alto: un bucle entre hechos reversibles congela el fotograma antes de cortarse. Vive en datos, junto al catálogo. |
 
 ## Visual/Audio Requirements
 
@@ -179,7 +188,8 @@ Ningún otro GDD existe todavía; las referencias son a documentos de diseño ya
 | `design/slice/slice-v0.3.md` · §13.2 y D.3 | Puntos de autoguardado y reanudaciones | Condiciona la instantánea (reglas 13 y 14) |
 | `design/slice/slice-v0.3.md` · D-14, D-15, D-16 | Carta permanente; silencio en la llamada; orden de la caja | Justifican hechos de un solo sentido y `caja_completa` derivado |
 | `design/gdd/game-pillars.md` | *Tensión sin castigo*, *Información incompleta* | Pilares que este sistema sirve |
-| `design/gdd/systems-index.md` | Fila 3 y dependencias de los sistemas 4, 5, 8, 9, 10, 17, 19–23, 27, 28 | Debe reflejar la tabla de Dependencies (ver Open Questions) |
+| `design/gdd/systems-index.md` | Fila 3 y dependencias de los sistemas 4, 5, 8, 9, 10, 17, 19–23, 27, 28 | Debe reflejar la tabla de Dependencies |
+| `design/gdd/entrada-y-controles.md` · regla 3 | «dispositivo de entrada cambiado» y «contexto de entrada cambiado» | Avisos emitidos por Entrada y controles (1) y listados en la regla 10 de este GDD |
 
 ## Acceptance Criteria
 
@@ -191,18 +201,20 @@ Revisados por `qa-lead`. **Evidencia:** **L** = test unitario automático (gdUni
 - **CA-03 (L)**: **GIVEN** `tarjeta_B` verdadero, **WHEN** se escribe verdadero, **THEN** no se emite aviso; **WHEN** se escribe falso, **THEN** se rechaza, el valor sigue verdadero y se añade una línea al log.
 - **CA-04 (L)**: **GIVEN** `carta_variante` = B, **WHEN** se escribe C o «sin fijar», **THEN** se rechaza y sigue en B. Idéntico para `respuesta_llamada`.
 - **CA-05 (L)**: **GIVEN** `pos_L` = 2, **WHEN** se escribe 4 y luego 1, **THEN** ambas se aceptan; **GIVEN** `pendiente_revelacion` verdadero, **WHEN** se escribe falso, **THEN** se acepta.
-- **CA-06 (L)**: **GIVEN** la build final, **WHEN** se escribe un hecho no declarado, `Tarjeta_B` (otra capitalización), `pos_L` = 5, un `bool` con una cadena o un `float` en un `int`, **THEN** el valor anterior se conserva y se añade exactamente una línea al log. **GIVEN** una build de desarrollo, **THEN** se detiene la ejecución (I).
+- **CA-06 (L)**: **GIVEN** la build final, **WHEN** se escribe un hecho no declarado, `Tarjeta_B` (otra capitalización), `pos_L` = 5, un `bool` con una cadena o un `float` en un `int`, **THEN** el valor anterior se conserva y se añade exactamente una línea al log.
+- **CA-06b (I)**: **GIVEN** una build de desarrollo, **WHEN** se escribe cualquiera de los valores inválidos de CA-06, **THEN** se detiene la ejecución con un error visible.
 - **CA-07 (L)**: **GIVEN** `caja_c1` a `caja_c3` verdaderos y `caja_c4` falso, **WHEN** se escribe `caja_c4` verdadero, **THEN** `caja_completa` pasa a verdadero; **WHEN** un sistema intenta escribir `caja_completa` directamente, **THEN** se rechaza (regla 6).
 - **CA-08 (L)**: **GIVEN** un hecho cuyo `owner` es el sistema X, **WHEN** en una build de desarrollo escribe el sistema Y, **THEN** se trata como escritura inválida; **WHEN** lo hace la build final, **THEN** no se comprueba el dueño.
 
 **Avisos (reglas 8 a 11)**
 - **CA-09 (L)**: **GIVEN** un aviso emitido sin suscriptores, **WHEN** alguien se suscribe después, **THEN** no lo recibe y los hechos no cambian.
 - **CA-10 (L)**: **GIVEN** un suscriptor, **WHEN** un hecho cambia, **THEN** lo recibe exactamente una vez con (nombre, valor anterior, valor nuevo); **WHEN** se escribe el mismo valor, **THEN** no recibe nada.
-- **CA-11 (I)**: **GIVEN** un suscriptor, **WHEN** se emite `EV_PUZZLE_SOLVED_P1`…`P6`, «puerta abierta» (con identificador), «compartimento completado» (1 a 4), «llamada iniciada» o «llamada completada», **THEN** lo recibe con su nombre y datos.
+- **CA-11 (I)**: **GIVEN** un suscriptor, **WHEN** se emite `EV_PUZZLE_SOLVED_P1`…`P6`, «puerta abierta» (con identificador), «compartimento completado» (1 a 4), «llamada iniciada», «llamada completada», «dispositivo de entrada cambiado» o «contexto de entrada cambiado», **THEN** lo recibe con su nombre y datos. *(Se cierra cuando existan los sistemas emisores; hasta entonces se prueba con un emisor de prueba.)*
 - **CA-12 (L)**: **GIVEN** los suscriptores A y B (en ese orden), **WHEN** cambia un hecho, **THEN** reciben en el orden A, B; dos cambios sucesivos se entregan en el orden en que ocurrieron.
-- **CA-13 (L)**: **GIVEN** un suscriptor que, al recibir el aviso de X, escribe Y, **WHEN** cambia X, **THEN** el aviso de Y se entrega después de que X llegue a todos los suscriptores (sin reentrada).
+- **CA-13 (L)**: **GIVEN** un suscriptor que, al recibir el aviso de X, escribe Y, **WHEN** cambia X, **THEN** el aviso de Y se entrega después de que X llegue a todos los suscriptores (sin reentrada), **y** una lectura de Y hecha por ese suscriptor inmediatamente después de escribirla devuelve ya el valor nuevo (regla 3).
+- **CA-13b (L)**: **GIVEN** un suscriptor que, al recibir un aviso, pide partida nueva, **WHEN** termina esa entrega, **THEN** se aplica la partida nueva, la cola queda vacía y se emite un único «estado restablecido».
 - **CA-14 (L)**: **GIVEN** `caja_c1` a `caja_c3` verdaderos, **WHEN** `caja_c4` pasa a verdadero, **THEN** el aviso de `caja_c4` llega antes que el de `caja_completa`.
-- **CA-15 (L)**: **GIVEN** un bucle de escrituras entre hechos reversibles que supera el tope de avisos encadenados, **WHEN** se alcanza el tope, **THEN** se descarta el resto de la cola y se registra (valor del tope fijado por el ADR; en desarrollo se detiene la ejecución).
+- **CA-15 (L)**: **GIVEN** un bucle de escrituras entre hechos reversibles que supera el tope de avisos encadenados, **WHEN** se alcanza el tope, **THEN** se descarta el resto de la cola y se registra (en desarrollo se detiene la ejecución). El test fija el tope en un valor de prueba leído de datos (`max_chained_notices`, ver Tuning Knobs) y comprueba que se respeta exactamente; el valor definitivo lo fija el ADR.
 - **CA-16 (L)**: **GIVEN** un suscriptor que se da de baja durante una entrega, **WHEN** termina esa entrega, **THEN** no recibe ningún aviso posterior.
 - **CA-17 (I)**: **GIVEN** un nodo suscrito, **WHEN** se libera junto con su escena, **THEN** el siguiente cambio de hecho no produce errores.
 
@@ -212,7 +224,7 @@ Revisados por `qa-lead`. **Evidencia:** **L** = test unitario automático (gdUni
 - **CA-20 (L)**: **GIVEN** una instantánea sin `tarjeta_D` y con un hecho que ya no está declarado, **WHEN** se restaura, **THEN** `tarjeta_D` toma su inicial y el hecho sobrante se ignora con una línea en el log.
 - **CA-21 (L)**: **GIVEN** una instantánea con `caja_completa` incoherente, un `enum` inválido y `pos_C` = 9, **WHEN** se restaura, **THEN** `caja_completa` se recalcula, el `enum` queda sin fijar (con log) y `pos_C` vale 2 (con log).
 - **CA-22 (L)**: **GIVEN** `llamada_iniciada` verdadero y `llamada_completada` falso, **WHEN** se restaura, **THEN** se conservan tal cual sin advertencia; **GIVEN** `llamada_completada` verdadero y `llamada_iniciada` falso, **THEN** se conservan con una advertencia en el log.
-- **CA-23 (L)**: **GIVEN** el estado «Restaurando», **WHEN** otro sistema escribe, **THEN** la escritura se rechaza (no se encola) y se registra; **WHEN** lee, **THEN** obtiene el valor previo a la restauración; **WHEN** pide una partida nueva o una restauración, **THEN** se rechaza y se registra.
+- **CA-23 (L)**: **GIVEN** una restauración (síncrona), **WHEN** termina la llamada, **THEN** el sistema está en «Listo», los 19 valores son los de la instantánea y el aviso «estado restaurado» se ha emitido ya en «Listo». **GIVEN** un doble de prueba que, desde dentro de la restauración, intenta escribir, leer, restaurar o pedir partida nueva, **THEN** cada intento se rechaza con una línea en el log (en desarrollo, detiene la ejecución) y los valores finales siguen siendo los de la instantánea.
 - **CA-24 (L)**: **GIVEN** una instantánea, **THEN** sus claves son exactamente las 19 del catálogo, sin ajustes de volumen, subtítulos ni controles.
 - **CA-25 (I)**: **GIVEN** avisos pendientes, **WHEN** el sistema de guardado (5) pide una instantánea, **THEN** se entrega con la cola vacía y nunca contiene `caja_c4` sin `caja_completa`.
 - **CA-26 (I)**: **GIVEN** un fichero de catálogo ausente o corrupto, **WHEN** arranca el juego, **THEN** no entra en la partida, muestra un mensaje de error claro y se cierra.
@@ -220,10 +232,11 @@ Revisados por `qa-lead`. **Evidencia:** **L** = test unitario automático (gdUni
 
 **Modo de pruebas (regla 15)**
 - **CA-28 (I)**: **GIVEN** una build de desarrollo, **WHEN** la consola fuerza `tarjeta_B` a falso, **THEN** se permite, se registra, se emite el aviso de cambio y se recalculan los derivados.
-- **CA-29 (I)**: **GIVEN** el export de la demo, **THEN** la verificación de la build falla si encuentra la consola de desarrollo.
+- **CA-29 (I)**: **GIVEN** el export de la demo, **THEN** un script de verificación de builds de entrega (en `tools/ci/`, a crear junto con el ADR de la consola) busca el recurso de la consola y falla si lo encuentra. Se prueba con un export que lo incluya a propósito (debe fallar) y con uno que no (debe pasar).
 
 **Interacciones entre sistemas**
-- **CA-30 (I)**: **GIVEN** una partida nueva, **WHEN** el jugador completa el slice por el camino previsto, **THEN** cada hecho de la tabla de «Interacciones con otros sistemas» cambia únicamente a manos de su sistema escritor y los avisos de puerta, compartimento y llamada que consume el guardado (5) se emiten una vez cada uno.
+- **CA-30 (L)**: **GIVEN** `flags.json`, **THEN** el `owner` de cada uno de los 19 hechos coincide con la columna «Escribe» de la tabla de «Interacciones con otros sistemas» (el derivado `caja_completa` tiene como dueño este sistema).
+- **CA-31 (I)**: **GIVEN** una partida nueva, **WHEN** el jugador completa el slice por el camino previsto en una build de desarrollo, **THEN** no se registra ninguna escritura inválida por dueño (regla 2) y los avisos de puerta, compartimento y llamada se emiten una vez cada uno. *(Se cierra cuando existan los sistemas escritores.)*
 
 ## Open Questions
 
@@ -233,6 +246,6 @@ Revisados por `qa-lead`. **Evidencia:** **L** = test unitario automático (gdUni
 | 2 | **Tope de avisos encadenados** por fotograma y **formato de la instantánea** (mapa nombre → valor + versión). | `/architecture-decision` | Fase de arquitectura |
 | 3 | **Mecanismo del `owner`**: cómo se identifica al sistema escritor en desarrollo sin acoplar los sistemas. | `/architecture-decision` | Fase de arquitectura |
 | 4 | **Escritores y lectores de la tabla de interacciones**: son propuestas (‡); cada GDD dependiente debe confirmarlas o corregirlas. | GDD de cada sistema dependiente | Al redactar cada uno |
-| 5 | **Índice de sistemas**: añadir el sistema 3 como dependencia del sistema 17 (Pistas), que lee `formulario_leido` y `memo_leido`. | Este GDD (cierre) | Ahora |
+| 5 | ~~Índice de sistemas: añadir el sistema 3 a las dependencias del 17.~~ **Resuelta:** la fila 17 ya lista `3, 9, 18`. | — | Cerrada (2026-11-08) |
 | 6 | ¿`memo_leido` debe leerlo el director de escenas (21)? El slice solo dice «pistas, recompensa de B». | `/design-system` del sistema 21 | GDD del sistema 21 |
 | 7 | **Destino de log inyectable** para las pruebas («se registra» verificable). | `/architecture-decision` | Fase de arquitectura |
