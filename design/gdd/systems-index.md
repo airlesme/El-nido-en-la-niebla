@@ -25,7 +25,7 @@ Se excluyen a propósito combate, IA de enemigos, economía, progresión, red y 
 | 1 | Entrada y controles | Core | MVP | In Review | design/gdd/entrada-y-controles.md | — |
 | 2 | Jugador en primera persona (movimiento, cámara, manos) | Core | MVP | Not Started | — | 1, 4 |
 | 3 | Estado del juego y bus de eventos | Core | MVP | In Review | design/gdd/estado-y-bus-de-eventos.md | — |
-| 4 | Escena de planta y carga de Recepción | Core | MVP | Not Started | — | 3 |
+| 4 | Escena de planta y carga de Recepción | Core | MVP | Designed | design/gdd/escena-de-planta.md | 3 |
 | 5 | Guardado y carga | Persistence | MVP | Not Started | — | 3, 4, 6 |
 | 6 | Ajustes persistentes (inferred) | Persistence | MVP | In Review | design/gdd/ajustes-persistentes.md | 1 |
 | 7 | Interacción e inspección | Gameplay | MVP | Not Started | — | 1, 2, 18 |
@@ -202,10 +202,10 @@ Esfuerzo: S = 1 sesión, M = 2–3, L = 4+. El puzle 2 va después de la caja po
 | Metric | Count |
 |--------|-------|
 | Total systems identified | 30 |
-| Design docs started | 4 |
+| Design docs started | 5 |
 | Design docs reviewed | 0 |
 | Design docs approved | 0 |
-| MVP systems designed | 4/23 |
+| MVP systems designed | 5/23 |
 | Vertical Slice systems designed | 0/7 |
 
 ---

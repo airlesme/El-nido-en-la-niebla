@@ -123,7 +123,23 @@ items: []
 #   output_range[min, max], added
 # Optional: expression (the actual formula), notes
 
-formulas: []
+formulas:
+  - name: scene_load_max_duration
+    status: active
+    source: design/gdd/escena-de-planta.md
+    referenced_by:
+      - design/gdd/escena-de-planta.md
+      - design/gdd/entrada-y-controles.md   # F8: el tope de sin control de una carga es esta duración más un margen (cambio pendiente en ese GDD)
+    variables:
+      - d_out
+      - scene_load_timeout
+      - N_gap
+      - d_in
+    output_range: [3, 40.4]
+    expression: "D_carga = d_out + T_cap + N_gap * dt_ref + d_in"
+    notes: "Duración máxima declarada a Entrada para el sin control de una carga de escena. Con los valores propuestos (recepcion) ≈ 11,67 s."
+    added: 2026-11-08
+    revised: ""
 
 # Example:
 #
@@ -173,6 +189,24 @@ constants:
       - design/gdd/entrada-y-controles.md
     value: 0.25
     unit: deg_per_px
+    added: 2026-11-08
+    revised: ""
+  - name: scene_fade_duration
+    status: active
+    source: design/gdd/escena-de-planta.md
+    referenced_by:
+      - design/gdd/escena-de-planta.md
+    value: 0.8
+    unit: s
+    added: 2026-11-08
+    revised: ""
+  - name: scene_load_timeout
+    status: active
+    source: design/gdd/escena-de-planta.md
+    referenced_by:
+      - design/gdd/escena-de-planta.md
+    value: 10
+    unit: s
     added: 2026-11-08
     revised: ""
 
