@@ -13,6 +13,9 @@ Aventura/puzles en **primera persona 3D** (Godot). Alcance actual: vertical slic
 - **Idioma:** documentación y diseño en español; código, identificadores y ADRs en inglés
   (los IDs del documento —`VO_G_12A`, `caja_c1`, `EV_PUZZLE_SOLVED_*`— se conservan tal cual).
 - **Rama:** trabajo en `main` por el momento.
+- **Fin de fase:** siempre que se termine una fase de trabajo (un GDD, una revisión, un
+  ADR, un hito) se mergea directamente en `main` y se hace push, sin abrir PR. Decisión
+  del usuario (2026-11-08): no hace falta volver a pedirlo en cada fase.
 
 ## Technology Stack
 
