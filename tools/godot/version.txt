@@ -1,0 +1,6 @@
+# Pinned Godot build used by this project (standard edition, GDScript).
+# Update both values together; the hash comes from the official SHA512-SUMS.txt:
+# https://github.com/godotengine/godot-builds/releases/download/<VERSION>/SHA512-SUMS.txt
+VERSION=4.7.2-stable
+ARCHIVE=Godot_v4.7.2-stable_win64.exe.zip
+SHA512=83decd58fdf67b9d657958a1ae6bf1929c20785315a81effe245874cdc57acb709bf868e00778a96984338c1b29dafdb453c6847747694621c6ecf5da2259993
