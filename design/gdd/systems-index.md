@@ -28,25 +28,25 @@ Se excluyen a propósito combate, IA de enemigos, economía, progresión, red y 
 | 4 | Escena de planta y carga de Recepción | Core | MVP | Not Started | — | 3 |
 | 5 | Guardado y carga | Persistence | MVP | Not Started | — | 3, 4, 6 |
 | 6 | Ajustes persistentes (inferred) | Persistence | MVP | Not Started | — | 1 |
-| 7 | Interacción e inspección | Gameplay | MVP | Not Started | — | 1, 2 |
-| 8 | Control de acceso (puertas, tarjetas, lectores) | Gameplay | MVP | Not Started | — | 3, 7 |
+| 7 | Interacción e inspección | Gameplay | MVP | Not Started | — | 1, 2, 18 |
+| 8 | Control de acceso (puertas, tarjetas, lectores) | Gameplay | MVP | Not Started | — | 3, 7, 18 |
 | 9 | Marco de puzles (inferred) | Gameplay | MVP | Not Started | — | 3, 7 |
 | 10 | Caja y compartimentos | Gameplay | MVP | Not Started | — | 3, 7, 9 |
-| 11 | Puzle 1 · Cronología | Gameplay | MVP | Not Started | — | 9, 19, 20 |
+| 11 | Puzle 1 · Cronología | Gameplay | MVP | Not Started | — | 9, 18, 19, 20 |
 | 12 | Puzle 2 · Memorando en el cristal | Gameplay | MVP | Not Started | — | 7, 9, 18 |
 | 13 | Puzle 3 · Encaje de la foto | Gameplay | MVP | Not Started | — | 9, 10 |
 | 14 | Puzle 4 · Tablero de tareas | Gameplay | MVP | Not Started | — | 9, 10, 18 |
 | 15 | Puzle 5 · Espejo de la diferencia | Gameplay | MVP | Not Started | — | 9, 10, 13 |
 | 16 | Puzle 6 · Decisión | Gameplay | MVP | Not Started | — | 9, 10, 18 |
 | 17 | Sistema de pistas (3 niveles) | Gameplay | Vertical Slice | Not Started | — | 3, 9, 18 |
-| 18 | Base de contenido narrativo (líneas, documentos, claves de traducción) | Narrative | MVP | Not Started | — | — |
+| 18 | Base de contenido narrativo (líneas, documentos, claves de traducción) | Narrative | MVP | Designed | design/gdd/base-de-contenido-narrativo.md | — |
 | 19 | Ordenador, correo e impresora | Narrative | MVP | Not Started | — | 1, 3, 7, 18, 20 |
 | 20 | Documentos y bolsillo visual | Narrative | MVP | Not Started | — | 3, 7, 18 |
 | 21 | Director de escenas (escenas 1–8, disparadores, eventos temporizados) | Narrative | MVP | Not Started | — | 1, 3, 4, 18 |
 | 22 | Llamada telefónica | Narrative | MVP | Not Started | — | 1, 3, 7, 18 |
 | 23 | Director de audio | Audio | Vertical Slice | Not Started | — | 3, 6, 18 |
-| 24 | Prompt de interacción y feedback | UI | MVP | Not Started | — | 1, 7 |
-| 25 | Menú de pausa | UI | MVP | Not Started | — | 1, 6 |
+| 24 | Prompt de interacción y feedback | UI | MVP | Not Started | — | 1, 7, 18 |
+| 25 | Menú de pausa | UI | MVP | Not Started | — | 1, 6, 18 |
 | 26 | Subtítulos | UI | Vertical Slice | Not Started | — | 6, 18, 23 |
 | 27 | Pantalla de título, advertencias y cierre | UI | Vertical Slice | Not Started | — | 1, 3, 5, 6, 18 |
 | 28 | Atmósfera reactiva (luces, apagón, reflejo retardado, lluvia) | Presentation | Vertical Slice | Not Started | — | 2, 3, 21 |
@@ -109,21 +109,21 @@ Reparto: **23 MVP · 7 Vertical Slice · 0 Alpha · 0 Full Vision** (30 en total
 
 ### Feature Layer (depends on core)
 
-1. **Interacción e inspección (7)** — depends on: 1, 2.
+1. **Interacción e inspección (7)** — depends on: 1, 2, 18.
 2. **Marco de puzles (9)** — depends on: 3, 7.
-3. **Control de acceso (8)** — depends on: 3, 7.
+3. **Control de acceso (8)** — depends on: 3, 7, 18.
 4. **Documentos y bolsillo (20)** — depends on: 3, 7, 18.
 5. **Ordenador, correo e impresora (19)** — depends on: 1, 3, 7, 18, 20.
 6. **Caja y compartimentos (10)** — depends on: 3, 7, 9.
-7. **Puzles 1–6 (11–16)** — depend on: 9 (más 10 los de la caja, 19 y 20 el puzle 1, 13 el puzle 5).
+7. **Puzles 1–6 (11–16)** — depend on: 9 (más 10 los de la caja, 18 los de texto, 19 y 20 el puzle 1, 13 el puzle 5).
 8. **Director de escenas (21)** — depends on: 1, 3, 4, 18.
 9. **Llamada telefónica (22)** — depends on: 1, 3, 7, 18.
 10. **Sistema de pistas (17)** — depends on: 3, 9, 18.
 
 ### Presentation Layer (depends on features)
 
-1. **Prompt de interacción (24)** — depends on: 1, 7.
-2. **Menú de pausa (25)** — depends on: 1, 6.
+1. **Prompt de interacción (24)** — depends on: 1, 7, 18.
+2. **Menú de pausa (25)** — depends on: 1, 6, 18.
 3. **Subtítulos (26)** — depends on: 6, 18, 23.
 4. **Pantalla de título y cierre (27)** — depends on: 1, 3, 5, 6, 18.
 5. **Atmósfera reactiva (28)** — depends on: 2, 3, 21.
@@ -202,10 +202,10 @@ Esfuerzo: S = 1 sesión, M = 2–3, L = 4+. El puzle 2 va después de la caja po
 | Metric | Count |
 |--------|-------|
 | Total systems identified | 30 |
-| Design docs started | 2 |
+| Design docs started | 3 |
 | Design docs reviewed | 0 |
 | Design docs approved | 0 |
-| MVP systems designed | 2/23 |
+| MVP systems designed | 3/23 |
 | Vertical Slice systems designed | 0/7 |
 
 ---
