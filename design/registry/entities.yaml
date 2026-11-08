@@ -54,7 +54,7 @@
 #   in any other shape is reported as unsupported layout, with its number.
 
 version: 1
-last_updated: ""
+last_updated: "2026-11-08"
 
 # ─── ENTITIES ────────────────────────────────────────────────────────────────
 # Named game-world objects: enemies, NPCs, characters, factions, bosses.
@@ -156,7 +156,25 @@ formulas: []
 #
 # Required fields: name, status, source, referenced_by, value, unit, added
 
-constants: []
+constants:
+  - name: long_press_threshold
+    status: active
+    source: design/gdd/entrada-y-controles.md
+    referenced_by:
+      - design/gdd/entrada-y-controles.md
+    value: 0.5
+    unit: s
+    added: 2026-11-08
+    revised: ""
+  - name: rotate_mouse_gain
+    status: active
+    source: design/gdd/entrada-y-controles.md
+    referenced_by:
+      - design/gdd/entrada-y-controles.md
+    value: 0.25
+    unit: deg_per_px
+    added: 2026-11-08
+    revised: ""
 
 # Example:
 #

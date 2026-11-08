@@ -22,12 +22,12 @@ Se excluyen a propósito combate, IA de enemigos, economía, progresión, red y 
 
 | # | System Name | Category | Priority | Status | Design Doc | Depends On |
 |---|-------------|----------|----------|--------|------------|------------|
-| 1 | Entrada y controles | Core | MVP | Not Started | — | — |
+| 1 | Entrada y controles | Core | MVP | Designed | design/gdd/entrada-y-controles.md | — |
 | 2 | Jugador en primera persona (movimiento, cámara, manos) | Core | MVP | Not Started | — | 1, 4 |
 | 3 | Estado del juego y bus de eventos | Core | MVP | Designed | design/gdd/estado-y-bus-de-eventos.md | — |
 | 4 | Escena de planta y carga de Recepción | Core | MVP | Not Started | — | 3 |
 | 5 | Guardado y carga | Persistence | MVP | Not Started | — | 3, 4, 6 |
-| 6 | Ajustes persistentes (inferred) | Persistence | MVP | Not Started | — | — |
+| 6 | Ajustes persistentes (inferred) | Persistence | MVP | Not Started | — | 1 |
 | 7 | Interacción e inspección | Gameplay | MVP | Not Started | — | 1, 2 |
 | 8 | Control de acceso (puertas, tarjetas, lectores) | Gameplay | MVP | Not Started | — | 3, 7 |
 | 9 | Marco de puzles (inferred) | Gameplay | MVP | Not Started | — | 3, 7 |
@@ -40,15 +40,15 @@ Se excluyen a propósito combate, IA de enemigos, economía, progresión, red y 
 | 16 | Puzle 6 · Decisión | Gameplay | MVP | Not Started | — | 9, 10, 18 |
 | 17 | Sistema de pistas (3 niveles) | Gameplay | Vertical Slice | Not Started | — | 3, 9, 18 |
 | 18 | Base de contenido narrativo (líneas, documentos, claves de traducción) | Narrative | MVP | Not Started | — | — |
-| 19 | Ordenador, correo e impresora | Narrative | MVP | Not Started | — | 3, 7, 18, 20 |
+| 19 | Ordenador, correo e impresora | Narrative | MVP | Not Started | — | 1, 3, 7, 18, 20 |
 | 20 | Documentos y bolsillo visual | Narrative | MVP | Not Started | — | 3, 7, 18 |
-| 21 | Director de escenas (escenas 1–8, disparadores, eventos temporizados) | Narrative | MVP | Not Started | — | 3, 4, 18 |
-| 22 | Llamada telefónica | Narrative | MVP | Not Started | — | 3, 7, 18 |
+| 21 | Director de escenas (escenas 1–8, disparadores, eventos temporizados) | Narrative | MVP | Not Started | — | 1, 3, 4, 18 |
+| 22 | Llamada telefónica | Narrative | MVP | Not Started | — | 1, 3, 7, 18 |
 | 23 | Director de audio | Audio | Vertical Slice | Not Started | — | 3, 6, 18 |
-| 24 | Prompt de interacción y feedback | UI | MVP | Not Started | — | 7 |
+| 24 | Prompt de interacción y feedback | UI | MVP | Not Started | — | 1, 7 |
 | 25 | Menú de pausa | UI | MVP | Not Started | — | 1, 6 |
 | 26 | Subtítulos | UI | Vertical Slice | Not Started | — | 6, 18, 23 |
-| 27 | Pantalla de título, advertencias y cierre | UI | Vertical Slice | Not Started | — | 3, 5, 6, 18 |
+| 27 | Pantalla de título, advertencias y cierre | UI | Vertical Slice | Not Started | — | 1, 3, 5, 6, 18 |
 | 28 | Atmósfera reactiva (luces, apagón, reflejo retardado, lluvia) | Presentation | Vertical Slice | Not Started | — | 2, 3, 21 |
 | 29 | Shaders y efectos de superficie | Presentation | Vertical Slice | Not Started | — | 12, 15 |
 | 30 | Opciones de accesibilidad | Meta | Vertical Slice | Not Started | — | 1, 6, 13, 15, 23, 26 |
@@ -97,15 +97,15 @@ Reparto: **23 MVP · 7 Vertical Slice · 0 Alpha · 0 Full Vision** (30 en total
 
 1. **Entrada y controles (1)** — todo lo que el jugador hace pasa por aquí; remapeo y mando desde el principio.
 2. **Estado y bus de eventos (3)** — única fuente de verdad de las banderas (Anexo D.2) y canal de comunicación entre sistemas.
-3. **Ajustes persistentes (6)** — volúmenes, subtítulos y remapeo que otros sistemas leen.
-4. **Base de contenido narrativo (18)** — líneas con ID, documentos y claves de traducción; el contenido vive en datos, no en código.
+3. **Base de contenido narrativo (18)** — líneas con ID, documentos y claves de traducción; el contenido vive en datos, no en código.
 
 ### Core Layer (depends on foundation)
 
-1. **Escena de planta (4)** — depends on: 3.
-2. **Jugador en primera persona (2)** — depends on: 1, 4.
-3. **Guardado y carga (5)** — depends on: 3, 4, 6.
-4. **Director de audio (23)** — depends on: 3, 6, 18. *(Capa Core, prioridad Vertical Slice.)*
+1. **Ajustes persistentes (6)** — depends on: 1 (guarda el bloque de asignaciones y ajustes de manejo; volúmenes y subtítulos que otros sistemas leen).
+2. **Escena de planta (4)** — depends on: 3.
+3. **Jugador en primera persona (2)** — depends on: 1, 4.
+4. **Guardado y carga (5)** — depends on: 3, 4, 6.
+5. **Director de audio (23)** — depends on: 3, 6, 18. *(Capa Core, prioridad Vertical Slice.)*
 
 ### Feature Layer (depends on core)
 
@@ -113,19 +113,19 @@ Reparto: **23 MVP · 7 Vertical Slice · 0 Alpha · 0 Full Vision** (30 en total
 2. **Marco de puzles (9)** — depends on: 3, 7.
 3. **Control de acceso (8)** — depends on: 3, 7.
 4. **Documentos y bolsillo (20)** — depends on: 3, 7, 18.
-5. **Ordenador, correo e impresora (19)** — depends on: 3, 7, 18, 20.
+5. **Ordenador, correo e impresora (19)** — depends on: 1, 3, 7, 18, 20.
 6. **Caja y compartimentos (10)** — depends on: 3, 7, 9.
 7. **Puzles 1–6 (11–16)** — depend on: 9 (más 10 los de la caja, 19 y 20 el puzle 1, 13 el puzle 5).
-8. **Director de escenas (21)** — depends on: 3, 4, 18.
-9. **Llamada telefónica (22)** — depends on: 3, 7, 18.
+8. **Director de escenas (21)** — depends on: 1, 3, 4, 18.
+9. **Llamada telefónica (22)** — depends on: 1, 3, 7, 18.
 10. **Sistema de pistas (17)** — depends on: 3, 9, 18.
 
 ### Presentation Layer (depends on features)
 
-1. **Prompt de interacción (24)** — depends on: 7.
+1. **Prompt de interacción (24)** — depends on: 1, 7.
 2. **Menú de pausa (25)** — depends on: 1, 6.
 3. **Subtítulos (26)** — depends on: 6, 18, 23.
-4. **Pantalla de título y cierre (27)** — depends on: 3, 5, 6, 18.
+4. **Pantalla de título y cierre (27)** — depends on: 1, 3, 5, 6, 18.
 5. **Atmósfera reactiva (28)** — depends on: 2, 3, 21.
 6. **Shaders y efectos (29)** — depends on: 12, 15.
 
@@ -145,7 +145,7 @@ Reparto: **23 MVP · 7 Vertical Slice · 0 Alpha · 0 Full Vision** (30 en total
 | 1 | Estado y bus de eventos (3) | MVP | Foundation | systems-designer | M |
 | 2 | Entrada y controles (1) | MVP | Foundation | ux-designer | S |
 | 3 | Base de contenido narrativo (18) | MVP | Foundation | narrative-director, writer | M |
-| 4 | Ajustes persistentes (6) | MVP | Foundation | systems-designer | S |
+| 4 | Ajustes persistentes (6) | MVP | Core | systems-designer | S |
 | 5 | Escena de planta (4) | MVP | Core | level-designer | M |
 | 6 | Jugador en primera persona (2) | MVP | Core | game-designer | M |
 | 7 | Guardado y carga (5) | MVP | Core | systems-designer | M |
@@ -202,10 +202,10 @@ Esfuerzo: S = 1 sesión, M = 2–3, L = 4+. El puzle 2 va después de la caja po
 | Metric | Count |
 |--------|-------|
 | Total systems identified | 30 |
-| Design docs started | 1 |
+| Design docs started | 2 |
 | Design docs reviewed | 0 |
 | Design docs approved | 0 |
-| MVP systems designed | 1/23 |
+| MVP systems designed | 2/23 |
 | Vertical Slice systems designed | 0/7 |
 
 ---

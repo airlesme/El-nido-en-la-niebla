@@ -8,7 +8,7 @@
 
 ## Summary
 
-[To be designed]
+Traduce teclado, ratón y mando en acciones del juego (moverse, mirar, interactuar con un solo botón, leer, volver, pausar y los gestos de los puzles) y decide qué acciones valen en cada momento. Permite jugar el slice completo con cualquiera de los dos dispositivos, con un cursor virtual para los puzles en el mando, y se puede reasignar y ajustar por completo por accesibilidad. Existe porque el slice mezcla tres modos de manejo muy distintos y exige accesibilidad desde el principio.
 
 > **Quick reference** — Layer: `Foundation` · Priority: `MVP` · Key deps: `None`
 
@@ -34,19 +34,19 @@ Existe porque el slice combina tres modos de manejo muy distintos (caminar en pr
    No existen `correr`, `agacharse` ni `saltar` (slice §5 y A.0).
 2. **Dos dispositivos a la vez.** Teclado y ratón, y mando, están siempre activos: una acción llega al juego venga de donde venga. No hay modo «elige tu dispositivo».
 3. **Dispositivo activo = el último usado.** Cuenta como uso la pulsación de cualquier tecla, botón o clic, el movimiento del ratón por encima de un mínimo y un stick fuera de su zona muerta. El dispositivo activo solo determina qué iconos muestra el juego; al cambiar se emite el aviso «dispositivo de entrada cambiado» (teclado/ratón o mando). Una pequeña histéresis (ver Formulas) evita parpadeos por temblor del ratón o deriva del stick.
-4. **Un gesto, un botón.** Ninguna acción exige pulsar dos botones a la vez, doble pulsación ni precisión temporal. El único gesto compuesto es mantener un botón mientras se mueve el cursor o un stick (`agarrar`, `rotar`), y los únicos gestos con tiempo son la pulsación prolongada (`leer`, `mantener`) y el arrastre; todos tienen la alternativa de la regla 14.
+4. **Un gesto, un botón.** Ninguna acción exige pulsar dos botones a la vez, doble pulsación ni reaccionar dentro de una ventana de tiempo (solo se exige mantener un botón hasta un umbral). El único gesto compuesto es mantener un botón mientras se mueve el cursor o un stick (`agarrar`, `rotar`), y los únicos gestos con tiempo son la pulsación prolongada (`leer`, `mantener`) y el arrastre; todos tienen la alternativa de la regla 14.
 
 **Contextos de entrada**
 
 5. **Un contexto activo.** Hay una pila de contextos y solo el de arriba recibe acciones: `exploración`, `inspección`, `lectura`, `vista cercana`, `ordenador`, `llamada`, `menú` y `sin control`. Las acciones de un contexto no existen en los demás (por ejemplo, `mover` solo en `exploración`).
 6. **Quién abre y cierra contextos.** Este sistema posee la pila y expone «entrar en» y «salir de» un contexto. Los piden: Interacción (7) para `inspección`, `lectura`, `vista cercana` y `ordenador`; el menú de pausa (25) para `menú`; la llamada (22) para `llamada`; y el director de escenas (21) para `sin control`. Salir restaura el contexto anterior tal como estaba (posición del cursor incluida).
-7. **Pausa.** `pausa` abre el menú sobre cualquier contexto salvo durante una carga de escena, detiene el tiempo de juego y, al cerrarlo, restablece el contexto inferior. Con el menú abierto, `atrás` y `pausa` lo cierran.
+7. **Pausa.** `pausa` abre el menú sobre cualquier contexto salvo durante una carga de escena, detiene el tiempo de juego y, al cerrarlo, restablece el contexto inferior. Con el menú abierto, `atrás` y `pausa` lo cierran; si ambas comparten tecla (`Esc`), una sola pulsación produce un solo cierre, porque el menú consume el evento. Al abrir el menú el ratón se libera; al cerrarlo se recaptura si el contexto restaurado lo requiere.
 8. **Transiciones.** Mientras una transición de cámara o de animación bloquea el contexto (p. ej. la cámara acercándose al marco del puzle 3, o la animación de descolgar), solo se acepta `pausa`; el resto de acciones se descarta y **no se guarda para después**.
 
 **Exploración, inspección y lectura**
 
 9. **Mirar.** `mirar` entrega un cambio de orientación por fotograma, calculado con la sensibilidad del dispositivo (ver Formulas). La orientación y sus límites son del sistema de jugador (2); este sistema no limita ángulos.
-10. **Interactuar.** `interactuar` es el único botón del mundo: pulsación corta = activar, coger o inspeccionar lo que el icono contextual indica; pulsación prolongada (umbral de Formulas) sobre un documento o texto = `leer`. Para que activar no tenga retraso, la acción corta se dispara **al pulsar**, salvo sobre objetos que ofrecen `leer`: en esos, la pulsación corta se decide **al soltar** (más corta que el umbral) y mientras se mantiene se muestra una barra de progreso. Qué hace cada objeto lo decide Interacción (7).
+10. **Interactuar.** `interactuar` es el único botón del mundo: pulsación corta = activar, coger o inspeccionar lo que el icono contextual indica; pulsación prolongada (umbral de Formulas) sobre un documento o texto = `leer`. Para que activar no tenga retraso, la acción corta se dispara **al pulsar**, salvo sobre objetos que ofrecen `leer`: en esos, la pulsación corta se decide **al soltar** (más corta que el umbral) y mientras se mantiene se muestra un indicador de progreso. Qué hace cada objeto lo decide Interacción (7).
 11. **Inspección.** Con un objeto en la mano, `mirar` pasa a girar el objeto en lugar de la cámara (`rotar_objeto`); `atrás` lo suelta.
 
 **Puzles y vista cercana**
@@ -54,7 +54,7 @@ Existe porque el slice combina tres modos de manejo muy distintos (caminar en pr
 12. **Cursor.** En `vista cercana`, `ordenador` y `llamada` hay un cursor en pantalla. Con ratón es el cursor real, libre dentro de la ventana. Con mando es un **cursor virtual** movido con cualquiera de los dos sticks en `vista cercana` y `ordenador`, y solo con el derecho en `llamada` y `menú` (donde el izquierdo y la cruceta mueven el foco, `ui_*`); lleva velocidad y atracción asistida hacia el elemento interactivo más cercano (ver Formulas), y la atracción se puede desactivar. En `exploración` e `inspección` el cursor no existe y el ratón queda capturado.
 13. **Gestos de puntero.** Se mapean a una sola secuencia en ambos dispositivos:
     - `seleccionar` = clic o `A`/`✕` (equivale a `CLICK` y a `PULSAR` corto del Anexo B).
-    - `agarrar` = mantener `seleccionar` y mover el cursor más allá de un umbral de inicio de arrastre (ver Formulas), para distinguirlo de `mantener` (`ARRASTRAR`).
+    - `agarrar` = mantener `seleccionar` y mover el cursor más allá de un umbral de inicio de arrastre (ver Formulas), para distinguirlo de `mantener`; equivale a `ARRASTRAR` del Anexo B.
     - `rotar` = mantener `seleccionar` sobre un control giratorio y mover en horizontal; con ratón, 1 píxel = 0,25° (slice, Anexo B); con mando, velocidad angular proporcional al stick (ver Formulas). Mientras se rota, el cursor queda quieto.
     - `mantener` = mantener `seleccionar` el tiempo del umbral (`PULSAR` largo del puzle 3).
     - «Pasar el cursor» (resaltado de la ficha, puzle 4) = cursor sobre el elemento; con mando, la atracción asistida o el cursor virtual producen el mismo resaltado.
@@ -62,8 +62,8 @@ Existe porque el slice combina tres modos de manejo muy distintos (caminar en pr
 
 **Accesibilidad y personalización**
 
-14. **Alternar en lugar de mantener.** Existe un ajuste para que `leer`, `mantener` y `agarrar` se activen con una pulsación y se terminen con otra. Por defecto está desactivado.
-15. **Reasignación.** Todas las acciones de exploración, inspección, lectura y vista cercana se pueden reasignar, por separado para teclado/ratón y para mando, con hasta dos asignaciones por acción y dispositivo. Los ejes `mover` y `mirar` se reasignan como conjunto. No se pueden reasignar los movimientos del ratón ni las acciones `ui_*` (navegación fija con flechas/`Enter` y cruceta/`A`), pero sí los botones del ratón.
+14. **Alternar en lugar de mantener.** Existe un ajuste para que `leer`, `mantener` y `agarrar` se activen con una pulsación y se terminen con otra. Por defecto está desactivado. Con él activo, el gesto en curso también se cancela con `atrás` o al cambiar de contexto.
+15. **Reasignación.** Todas las acciones de exploración, inspección, lectura y vista cercana se pueden reasignar, por separado para teclado/ratón y para mando, con hasta dos asignaciones por acción y dispositivo. Los ejes `mover` y `mirar` se reasignan como conjunto (cada conjunto cuenta como una acción con sus dos asignaciones). No se pueden reasignar los movimientos del ratón ni las acciones `ui_*` (navegación fija con flechas/`Enter` y cruceta/`A`), pero sí los botones del ratón.
 16. **Conflictos.** Dos acciones del mismo contexto no pueden compartir entrada: el intento muestra el conflicto y ofrece intercambiar o cancelar. Acciones de contextos distintos sí pueden compartirla (p. ej. `interactuar` y `seleccionar`).
 17. **Mínimos garantizados.** `interactuar`, `atrás` y `pausa` conservan siempre al menos una asignación por dispositivo; quitar la última se rechaza. «Restablecer» existe por acción y para todo el dispositivo.
 18. **Ajustes de manejo.** Son propiedad de este sistema y los guarda Ajustes (6): sensibilidad de mirada (ratón y stick por separado), invertir eje vertical (por dispositivo), zonas muertas de sticks, velocidad del cursor virtual, atracción asistida activada/desactivada y alternar-en-lugar-de-mantener.
@@ -84,7 +84,7 @@ Existe porque el slice combina tres modos de manejo muy distintos (caminar en pr
 | `interactuar` · `leer` (mantener) | `E` · clic izquierdo | Botón sur (`A` / `✕`) |
 | `atrás` | Clic derecho · `Retroceso` | Botón este (`B` / `○`) |
 | `pausa` | `Esc` | `Start` / `Options` |
-| `mover_cursor` | Ratón | Cualquiera de los dos sticks |
+| `mover_cursor` | Ratón | Ambos sticks (solo el derecho en `llamada` y `menú`) |
 | `seleccionar` · `agarrar` · `rotar` · `mantener` | Clic izquierdo (pulsar / mantener) | Botón sur (pulsar / mantener) |
 | `ui_arriba/abajo/izquierda/derecha` | Flechas | Cruceta · stick izquierdo |
 | `ui_aceptar` · `ui_atrás` | `Enter` · `Esc` | Botón sur · botón este |
@@ -138,7 +138,7 @@ The zona muerta radial formula is defined as:
 | dz_out | float | 0–0,2 | data file, 0,05† | Margen exterior: el máximo se alcanza con \|v\| = 0,95 |
 | r | float | 0–1 | calculated | Magnitud normalizada |
 
-**Output Range:** 0 si \|v\| ≤ 0,15; 1 si \|v\| ≥ 0,95. Continua, sin salto al salir de la zona muerta; se evalúa en radial, no por eje.
+**Output Range:** 0 si \|v\| ≤ 0,15; 1 si \|v\| ≥ 0,95 (los rangos permitidos garantizan dz_in + dz_out < 1). Continua, sin salto al salir de la zona muerta; se evalúa en radial, no por eje.
 **Example:** v = (0,5; 0,4), \|v\| = 0,640 → r = (0,640 − 0,15) / 0,80 = **0,613**.
 
 ### F2 · Mirada con ratón
@@ -245,8 +245,8 @@ The pulsación prolongada formula is defined as:
 | d_arrastre | float (px) | 4–16 | data file, 8† | Distancia mínima para que mantener `seleccionar` sea `agarrar` y no `mantener` |
 | p, p_pulsado | Vector2 (px) | — | calculated | Posición actual del cursor y al pulsar |
 
-**Output Range:** el tiempo es real, no escalado. Por debajo de 0,3 s, los toques y el temblor activan `leer` sin querer; por encima de 1,0 s el juego parece no responder; hace falta una barra de progreso.
-**Example:** con 0,5 s, una pulsación de 0,18 s es corta y una de 0,62 s es larga. Mantener 0,3 s moviendo 3 px es `mantener` (aún no es arrastre); moviendo 12 px es `agarrar`.
+**Output Range:** el tiempo es real, no escalado. Por debajo de 0,3 s, los toques y el temblor activan `leer` sin querer; por encima de 1,0 s el juego parece no responder; hace falta un indicador de progreso (el art bible excluye las barras).
+**Example:** con 0,5 s, una pulsación de 0,18 s es corta y una de 0,62 s es larga. Mantener 0,6 s moviendo 3 px es `mantener`; mantener y moverse 12 px es `agarrar`.
 
 ### F7 · Histéresis del dispositivo activo
 
@@ -319,6 +319,8 @@ No hay fórmula: la duración la fijan la cámara o el director de escenas. Sí 
 **Ventana y foco**
 - **If la ventana pierde el foco con una acción mantenida**: la acción se cancela sin completarse (no se dispara `leer`) y se abre la pausa (regla 21).
 - **If el sistema recupera el foco con el menú de pausa abierto**: se mantiene abierto; el jugador reanuda cuando quiere.
+- **If se pausa durante `inspección` o `lectura`**: al reanudar, el objeto o la página siguen como estaban (se restaura el contexto, regla 6).
+- **If se pausa durante `sin control`**: el tope de seguridad de la transición (F8) también se detiene mientras el menú está abierto.
 
 **Texto**
 - **If se usa el mando en un campo de texto sin teclado en pantalla disponible** (hasta que se defina en el sistema 19): el campo no es operable con mando; es una laguna registrada en Open Questions, no un comportamiento definido.
@@ -349,24 +351,103 @@ No hay fórmula: la duración la fijan la cámara o el director de escenas. Sí 
 
 ## Visual/Audio Requirements
 
-[To be designed]
+*(Sección opcional para la categoría Core; en modo `lean` no se consulta a `art-director`: revisar antes de producción.)*
+
+- **Icono de interacción:** el art bible (§3.3 y §7.3) define un anillo con punto central, blanco frío, que solo aparece sobre objetos interactuables y cambia el glifo de botón según el último dispositivo usado (regla 3). Este sistema solo aporta el dispositivo activo y la asignación vigente.
+- **Cursor de los puzles y de las opciones de la llamada:** no está definido en el art bible. Debe ser visible con el mando y con el ratón, con una forma que **no sea un círculo** (el círculo pertenece a la luz del mundo y al icono de interacción, art bible §7.3).
+- **Indicador de progreso de `leer` / `mantener`:** el art bible excluye las barras. Se propone completar el anillo del icono de interacción; el cursor de los puzles necesita su propio indicador equivalente.
+- **Audio:** sin sonido propio salvo `SFX_CLICK_SUBTLE` para interacciones sin efecto (slice, B.7); el resto de sonidos de interacción los define cada sistema.
 
 ## Game Feel
 
-[To be designed]
+- **Latencia percibida:** la acción corta se dispara al pulsar, sin esperar (regla 10), salvo sobre objetos con `leer`.
+- **Mirada:** lenta y pesada a propósito (juego de caminar, FOV 70°, sin sprint). La mirada con ratón es independiente de los fps (F2); la del stick usa curva de potencia para dar precisión cerca del centro (F3).
+- **Cursor virtual:** debe poder colocarse sobre elementos pequeños sin esfuerzo (36 px/s a stick suave) y cruzar la pantalla en ~2 s a máxima velocidad (F5a); la atracción ayuda cerca del elemento pero nunca retiene al jugador (F5b).
+- **Rotar con mando:** el control debe poder clavar 40° ± 3° en menos de ~4 s con un stick (F4, puzle 5).
+- **Referencia de comparación:** los valores marcados † se afinan en el primer playtest (slice §23.4) comparando con la sensación de otros juegos de caminar en primera persona; los juegos de referencia siguen pendientes de elegir por el autor.
 
 ## UI Requirements
 
-[To be designed]
+- **Pantalla de reasignación** (en el menú de pausa 25 y en accesibilidad 30): lista de acciones por dispositivo, captura de la nueva entrada, aviso de conflicto con opciones intercambiar o cancelar (regla 16), restablecer por acción y por dispositivo, y mensaje cuando se rechaza quitar la última asignación (regla 17).
+- **Ajustes de manejo:** sensibilidad de mirada (ratón y stick por separado), invertir eje vertical por dispositivo, zonas muertas, velocidad del cursor, atracción asistida y «alternar en lugar de mantener», con valores seguros indicados en Formulas.
+- **Mensaje «Mando desconectado»** con opción de continuar (regla 22).
+- **Teclado en pantalla** para el mando en el ordenador (regla 20): pendiente de definir.
+- Toda la interfaz respeta los márgenes seguros del art bible (5 % por lado a 1920 × 1080).
+
+📌 **UX Flag — Entrada y controles**: este sistema tiene requisitos de interfaz. En la fase de preproducción, ejecuta `/ux-design` para la pantalla de reasignación, los ajustes de manejo y el mensaje de mando desconectado antes de escribir las épicas.
 
 ## Cross-References
 
-[To be designed]
+| Documento | Elemento | Naturaleza |
+|---|---|---|
+| `design/slice/slice-v0.3.md` · §5 | Perspectiva y controles (un solo botón, sin sprint, pulsación prolongada para leer, remapeo) | Define el alcance de este sistema |
+| `design/slice/slice-v0.3.md` · Anexo B | Entradas `CLICK`, `ARRASTRAR`, `ROTAR` (1 px ≈ 0,25°), `PULSAR`; 40° ± 3° (± 6°); encaje a 0,04 m (0,10 m asistido); 0,5 s de `PULSAR` largo | Constantes que condicionan F4, F5b y F6 |
+| `design/slice/slice-v0.3.md` · §21 | Plataforma PC, mando compatible, 1920 × 1080 | Base de las fórmulas en píxeles |
+| `design/art/art-bible.md` · §3.3, §7.3, §4.5 | Icono de interacción, glifos de prompts, márgenes seguros, icono grande de accesibilidad | Condiciona la sección Visual/Audio |
+| `design/gdd/estado-y-bus-de-eventos.md` · regla 10 | Los avisos «dispositivo de entrada cambiado» y «contexto de entrada cambiado» se documentan aquí | Este sistema los emite por el bus |
+| `design/gdd/systems-index.md` | Fila 1 y dependientes 2, 6, 7, 19, 21, 22, 24, 25, 27, 30 | Debe reflejar la tabla de Dependencies |
+| `docs/engine-reference/godot/modules/input.md` | SDL3 (4.5), foco dual (4.6), identificación por tipo de evento (4.7) | Restricciones de motor para la implementación |
 
 ## Acceptance Criteria
 
-[To be designed]
+Revisados por `qa-lead`. **Evidencia:** **L** = test unitario automático (gdUnit4, `tests/unit/input/`), bloqueante; **I** = test de integración o playtest documentado, bloqueante; **V** = captura retenida en `production/qa/evidence/`, bloqueante. Tolerancia numérica ±0,001 salvo indicación. Los valores marcados † en Formulas pueden cambiar tras el playtest; los criterios numéricos se actualizan con ellos. El GDD no define presupuesto de latencia ni de CPU y no se inventa uno.
+
+**Reglas (acciones, dispositivos y contextos)**
+- **AC-01 (R1, L)**: **GIVEN** el mapa de acciones cargado, **WHEN** se listan, **THEN** existen solo las acciones de la regla 1 y no existen `correr`, `agacharse` ni `saltar`.
+- **AC-02 (R2, L)**: **GIVEN** teclado y mando conectados, **WHEN** se emite `interactuar` desde cada uno, **THEN** ambas llegan al juego sin elegir dispositivo.
+- **AC-03 (R3, L + V)**: **GIVEN** la partida recién arrancada, **THEN** el dispositivo activo es teclado/ratón; **WHEN** llega una tecla o botón, **THEN** el dispositivo activo cambia de inmediato y se emite una sola vez «dispositivo de entrada cambiado». *(V: los iconos del prompt cambian; se cierra cuando exista el sistema 24.)*
+- **AC-04 (R4, I)**: **GIVEN** el recorrido completo del slice, **WHEN** se juega con cada dispositivo, **THEN** ninguna acción exige dos botones a la vez, doble pulsación ni reaccionar dentro de una ventana de tiempo.
+- **AC-05 (R5, L)**: **GIVEN** el contexto `inspección`, **WHEN** llega `mover`, **THEN** se descarta.
+- **AC-06 (R6, L)**: **GIVEN** `vista cercana` con el cursor en (X, Y) y luego `menú` encima, **WHEN** se sale del menú, **THEN** el contexto y el cursor vuelven a (X, Y).
+- **AC-07 (R7, L)**: **GIVEN** cualquier contexto salvo una carga de escena, **WHEN** llega `pausa`, **THEN** se abre el menú y el tiempo de juego se detiene; **WHEN** llega `pausa` o `atrás` con el menú abierto, **THEN** se cierra y se restaura el contexto inferior con un solo cierre por pulsación; **WHEN** llega `pausa` durante una carga de escena, **THEN** no se abre.
+- **AC-08 (R8, L)**: **GIVEN** el contexto `sin control`, **WHEN** se pulsa `interactuar` y termina la transición, **THEN** no se dispara; **WHEN** se pulsa `pausa`, **THEN** abre el menú.
+- **AC-09 (R9, L)**: **GIVEN** F2 y F3, **WHEN** se mira, **THEN** este sistema solo aplica los topes por fotograma de F2 y F3 y no recorta ángulos de cámara.
+- **AC-10 (R10, L + V)**: **GIVEN** un objeto sin `leer`, **WHEN** se pulsa `interactuar`, **THEN** la acción se dispara al pulsar; **GIVEN** un documento, **WHEN** la pulsación dura 0,18 s, **THEN** activa al soltar; **WHEN** dura 0,62 s, **THEN** se lanza `leer` y un indicador de progreso es visible (V).
+- **AC-11 (R11, L)**: **GIVEN** el contexto `inspección`, **WHEN** llega `mirar`, **THEN** gira el objeto y no la cámara; **WHEN** llega `atrás`, **THEN** se suelta.
+- **AC-12 (R12, I + V)**: **GIVEN** el mando en `vista cercana` u `ordenador`, **THEN** cualquiera de los dos sticks mueve el cursor; en `llamada` y `menú`, solo el derecho; en `exploración` no hay cursor y el ratón queda capturado (V).
+- **AC-13 (R13, L)**: **GIVEN** `seleccionar` mantenida, **WHEN** el cursor se mueve 8 px o más, **THEN** se emite `agarrar`; **WHEN** se mantiene 0,5 s moviéndose menos de 8 px, **THEN** se emite `mantener`; **WHEN** se rota con el ratón, **THEN** 160 px horizontales dan 40° y el cursor queda quieto.
+- **AC-14 (R14, L)**: **GIVEN** el ajuste «alternar» activo, **WHEN** se pulsa una vez, **THEN** `leer`, `mantener` y `agarrar` empiezan y otra pulsación los termina; **WHEN** llega `atrás` o cambia el contexto, **THEN** el gesto se cancela. Por defecto el ajuste está desactivado.
+- **AC-15 (R15, L)**: **WHEN** se reasigna `interactuar` a `F`, **THEN** `F` funciona y `E` ya no; se permiten dos asignaciones por acción y dispositivo y la tercera se rechaza; `mover` y `mirar` se reasignan como conjunto; las acciones `ui_*` no se pueden reasignar.
+- **AC-16 (R16, L)**: **WHEN** se asigna a una acción una entrada ya usada por otra del mismo contexto, **THEN** se ofrece intercambiar o cancelar; entre contextos distintos se permite.
+- **AC-17 (R17, L)**: **WHEN** se quita la última asignación de `pausa`, `atrás` o `interactuar` en un dispositivo, **THEN** se rechaza; «restablecer» funciona por acción y por dispositivo.
+- **AC-18 (R18, L)**: **GIVEN** los ajustes de manejo cambiados, **WHEN** se exportan y se importan, **THEN** se conservan todos, incluidos sensibilidad e inversión vertical por dispositivo.
+- **AC-19 (R19, L)**: **GIVEN** `assets/data/input/default_bindings.json` modificado, **WHEN** arranca el juego, **THEN** el cambio se refleja sin tocar código; importar un bloque válido restaura las asignaciones.
+- **AC-20 (R20, I)**: **GIVEN** el contexto `ordenador` con teclado físico, **THEN** se escriben caracteres. *(Con mando no hay criterio hasta definir el teclado en pantalla; ver Open Questions.)*
+- **AC-21 (R21, I)**: **GIVEN** `interactuar` mantenida, **WHEN** la ventana pierde el foco, **THEN** la acción se cancela sin disparar `leer` y se abre la pausa.
+- **AC-22 (R22, I)**: **GIVEN** el mando como dispositivo activo, **WHEN** se desconecta, **THEN** se abre la pausa con «Mando desconectado», teclado y ratón pueden reanudar y al reconectar se ofrece continuar; si el mando no era el activo, no ocurre nada visible.
+
+**Fórmulas (valores del ejemplo, tolerancia ±0,001 salvo indicación)**
+- **AC-F1 (L)**: **GIVEN** v = (0,5; 0,4), **THEN** r = 0,613; \|v\| = 0,15 → 0; \|v\| = 0,14 → 0; \|v\| = 0,95 → 1; \|v\| = 1 → 1.
+- **AC-F2 (L)**: **GIVEN** relative = (18, −6), s_m = 1, inv = +1, **THEN** yaw = 1,8° y pitch = −0,6°; 3.600 px dan 360°; el resultado es idéntico simulando 30 y 144 fps; un pico enorme se limita a ±45° por fotograma.
+- **AC-F3 (L)**: **GIVEN** r = 0,613, **THEN** ω = 57,6 °/s (±0,1) y 0,96 °/fotograma a 60 fps y 1,92 °/fotograma a 30 fps; con delta = 0,5 s se usa 0,1 s; con s_s = 2 el máximo es 240 °/s.
+- **AC-F4 (L)**: **GIVEN** el ratón, **THEN** 160 px = 40°; **GIVEN** el mando, **THEN** r = 0,71 → 30 °/s (±0,5), r = 0,35 → 7,4 °/s, r = 0,2 con freno → 1,2 °/s; soltar el stick deja la velocidad en 0 y conserva el ángulo.
+- **AC-F5 (L)**: **GIVEN** r = 0,613, **THEN** v_c = 338 px/s (±1); r = 0,2 → 36 px/s; r = 1 con s_c = 1,5 → 1.350 px/s; la posición queda dentro de la ventana. **GIVEN** d = 40, v_c = 100 y 60 fps, **THEN** w = 0,375, factor = 0,080 y Δp = 1,2 px/fotograma (±0,05); no hay atracción con d < 3 px, con v_c ≥ 450 px/s ni con el ajuste desactivado; el objetivo cambia solo si otro candidato está más cerca por más de 8 px.
+- **AC-F6 (L)**: **GIVEN** t_hold = 0,5 s, **THEN** 0,18 s es corta y 0,62 s es larga; mantener 0,6 s moviéndose 3 px es `mantener` y moviéndose 12 px es `agarrar`.
+- **AC-F7 (L)**: **GIVEN** el ratón, **THEN** 4 px en 0,2 s no cambian el dispositivo y 20 px sí; **GIVEN** el stick, **THEN** 0,2 no cambia y 0,35 durante 0,1 s sí; tras un cambio, el movimiento solo no cambia de nuevo durante 0,4 s.
+- **AC-F8 (L)**: **GIVEN** una transición que no termina, **WHEN** pasan 3 s, **THEN** se registra el error y se libera el contexto; una tecla mantenida durante la transición se ignora hasta soltarla.
+
+**Casos límite**
+- **AC-E1 (L)**: entrar en un contexto que ya está arriba se ignora; salir de uno que no es el de arriba se rechaza, se registra y la pila no cambia.
+- **AC-E2 (I)**: **GIVEN** una escena descargada con la pila fuera de `exploración`, **THEN** la pila queda en `sin control`.
+- **AC-E3 (L)**: **GIVEN** `seleccionar` mantenida al entrar en `vista cercana`, **THEN** no cuenta hasta soltarla y volver a pulsar.
+- **AC-E4 (L)**: **GIVEN** el mando desconectado durante `ANIM_PHONE_PICKUP`, **THEN** la pausa se abre al terminar la animación.
+- **AC-E5 (L)**: importar un archivo con una acción inexistente descarta esa entrada con una línea en el log; si hay conflicto en el mismo contexto, gana la primera de la tabla y la otra vuelve a su valor por defecto; `Esc` cancela la captura de una asignación sin cambios.
+- **AC-E6 (L)**: `mantener` sobre un elemento sin acción de mantener se trata como `seleccionar` al soltar.
+- **AC-E7 (I)**: con el menú abierto, recuperar el foco de la ventana no lo cierra.
+- **AC-E8 (I)**: **GIVEN** una pausa durante `inspección`, `lectura` o `sin control`, **WHEN** se reanuda, **THEN** el objeto o la página siguen como estaban y el tope de la transición no avanzó durante la pausa.
 
 ## Open Questions
 
-[To be designed]
+| # | Pregunta | Propietario | Resolver antes de |
+|---|---|---|---|
+| 1 | **Teclado en pantalla para el mando** en el campo de búsqueda del ordenador («transición»): ¿teclado virtual, sugerencia autocompletada u otra solución? Hoy no hay criterio de aceptación para mando en `ordenador` (AC-20). | `/design-system` del sistema 19 y `/ux-design` | GDD del sistema 19 |
+| 2 | **Equivalencia píxeles ↔ metros** del encuadre del puzle 3 (supuesto de partida: 1.200 px/m, 0,04 m = 48 px, 0,10 m = 120 px); cada puzle debe entregar su tolerancia en píxeles para F5b. | GDD del sistema 13 (y 9) | GDD del sistema 13 |
+| 3 | **Tamaño y separación mínima** de los elementos pequeños de los puzles 1 y 4: si hay centros a menos de 2·R, la atracción es ambigua. | GDD de los sistemas 11 y 14 | Esos GDD |
+| 4 | **Cursor visual** de los puzles (forma no circular, art bible §7.3) e **indicador de progreso** sin barras. | `/art-bible` (ampliar) o `/ux-design` | Fase de UX |
+| 5 | **Auto-repetición de `ui_*`** (velocidad de navegación al mantener una dirección). | `/ux-design` | Fase de UX |
+| 6 | **Foco y cursor simultáneos en `llamada` y `menú`:** qué resalta el último dispositivo usado (foco dual de Godot 4.6). | `/ux-design` | Fase de UX |
+| 7 | **Teclado sin ratón:** el gesto `rotar` y el cursor no tienen alternativa solo con teclado. ¿Se exige por accesibilidad? | Sistema 30 (Accesibilidad) | GDD del sistema 30 |
+| 8 | **Gesto de cámara** de las pistas (slice §10): ¿es una acción de entrada o solo una cámara que apunta? Si es entrada, falta definirla aquí. | GDD del sistema 17 (Pistas) | GDD del sistema 17 |
+| 9 | **Acción de leer con duración** (A04 «Leer (2 s)»): ¿el umbral de 0,5 s es el tiempo de mantener y los 2 s el de lectura? | GDD del sistema 20 (Documentos) | GDD del sistema 20 |
+| 10 | **Valores †** de F1 a F7 y el tope de 3 s de F8: validar en el primer playtest. | Playtest (slice §23.4) | Primer playtest |
+| 11 | **Índice de sistemas:** añadir el sistema 1 como dependencia de 6, 19, 21, 22, 24 y 27. | Este GDD (cierre) | Ahora |
