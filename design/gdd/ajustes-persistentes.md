@@ -8,7 +8,7 @@
 
 ## Summary
 
-[To be designed]
+Es la memoria de las preferencias del jugador: los volúmenes de voces, efectos y música, los subtítulos, reducir sobresaltos, las ayudas de los puzles, el modo de ventana y los controles que haya reasignado. Las guarda en un fichero propio, separado de la partida, y las reaplica al arrancar; un fichero dañado nunca impide jugar. Existe para que la accesibilidad y la comodidad que el jugador elige —clave para el pilar *Tensión sin castigo*— sobrevivan entre sesiones, con un único dueño que los demás sistemas puedan leer y escuchar.
 
 > **Quick reference** — Layer: `Core` · Priority: `MVP` · Key deps: `1 Entrada y controles`
 
@@ -50,12 +50,12 @@ Existe por dos razones. La primera es el pilar *Tensión sin castigo*: reducir s
 5. **Escritura.** Escribe un ajuste el sistema cuya pantalla lo ofrece al jugador: menú de pausa (25), accesibilidad (30) o título (27); y Entrada escribe el bloque `controles`. Una escritura válida se aplica en el instante en que se hace: una lectura inmediatamente posterior devuelve el valor nuevo.
 6. **Escritura inválida.** Un `float` fuera de rango se **ajusta al límite más cercano** (el deslizador nunca rompe nada) y se registra; los volúmenes se cuantizan además en pasos (F1). Un `float` NaN, una clave no declarada, un valor de tipo incorrecto o un `enum` fuera de su lista se rechazan: en las builds de desarrollo producen un error visible que detiene la ejecución, en la build final se conserva el valor anterior y se registra una línea en el log.
 7. **Aviso de cambio.** Cada vez que el valor de un ajuste cambia realmente, este sistema emite un aviso propio con tres datos (clave, valor anterior, valor nuevo); escribir el mismo valor no emite nada. La entrega sigue las mismas reglas que el bus de eventos (3), sin depender de él: orden de suscripción, valor aplicado al instante y aviso encolado si el cambio se provoca desde dentro de una entrega, sin reentrada, y baja de suscriptores efectiva al terminar la entrega en curso. El formato técnico lo fija un ADR.
-8. **Restablecer.** Existe «restablecer un ajuste» y «restablecer todos» (para los ajustes de accesibilidad y de audio; el bloque de controles tiene su propio restablecer en Entrada, regla 17). Cada uno aplica el valor inicial y emite el aviso de cambio de los que cambian.
+8. **Restablecer.** Existe «restablecer un ajuste» y «restablecer todos» («todos» abarca los tres volúmenes, `subtitulos_activos`, `reducir_sobresaltos` y las dos asistencias; no toca `modo_ventana` ni el bloque `controles`, que tiene su propio restablecer en Entrada, regla 17). Cada uno aplica el valor inicial y emite el aviso de cambio de los que cambian.
 
 **Fichero, carga y guardado**
 
 9. **Fichero propio.** Los valores del jugador viven en un fichero propio en la carpeta de datos del usuario del sistema, con un número de versión de formato. Ruta y formato los fija un ADR (Open Questions).
-10. **Carga al arrancar.** Al arrancar se lee el fichero, se valida cada ajuste por separado y se pasa a «Listo». Una clave ausente toma su valor inicial; una inválida (rango, tipo o `enum`) también, y solo ese ajuste; una clave desconocida se ignora y no se vuelve a escribir. Al terminar se emite un único aviso «ajustes aplicados» (sin datos, no uno por ajuste) y cada sistema relee lo que necesita. Un fichero ausente en el primer arranque no es un error ni se avisa al jugador.
+10. **Carga al arrancar.** Al arrancar se lee el fichero, se valida cada ajuste por separado y se pasa a «Listo». Una clave ausente toma su valor inicial; una inválida (rango, tipo o `enum`) también, y solo ese ajuste; un volumen dentro de rango pero fuera de la rejilla de pasos se cuantiza como en F1; una clave desconocida se ignora y no se vuelve a escribir. Al terminar se emite un único aviso «ajustes aplicados» (sin datos, no uno por ajuste) y cada sistema relee lo que necesita. Un fichero ausente en el primer arranque no es un error ni se avisa al jugador.
 11. **Fichero ilegible o dañado.** Si el fichero existe pero no se puede leer o no tiene estructura válida, el juego **arranca siempre** con todos los valores iniciales, conserva el fichero dañado renombrándolo a una copia (no lo borra ni lo sobrescribe) y registra una línea en el log. No hay mensaje bloqueante al jugador: el juego no se detiene por unos ajustes (pilar *Tensión sin castigo*).
 12. **Ajuste de ventana.** `modo_ventana` es el único ajuste que aplica este sistema al motor, al cargar y en cada cambio, sin reiniciar. El resto los aplican quienes los consumen.
 13. **Guardado diferido.** Cada cambio marca los ajustes como pendientes y se escribe el fichero cuando pasa `t_guardado` sin nuevos cambios o `t_guardado_max` desde el primero (F3), para que un deslizador no escriba en cada fotograma. Además se escribe lo pendiente al cerrar el juego con normalidad y al abrir el menú de pausa. La escritura es **atómica**: se escribe a un fichero temporal y se sustituye al terminar, de modo que un corte a medias nunca deja el fichero principal dañado.
@@ -68,7 +68,7 @@ El sistema tiene tres estados; no existe un estado de error porque un fichero da
 | Estado | Qué ocurre | Sale hacia |
 |---|---|---|
 | **Sin cargar** | Antes de arrancar. Cualquier lectura o escritura es un error. | Cargando |
-| **Cargando** | Lee y valida el fichero (reglas 10 y 11) y aplica el modo de ventana. No se entregan avisos de cambio. | Listo, tras emitir «ajustes aplicados» |
+| **Cargando** | Lee y valida el fichero (reglas 10 y 11) y aplica el modo de ventana. No se entregan avisos de cambio. Las lecturas devuelven el valor inicial del catálogo; las escrituras se rechazan y se registran (en desarrollo, error visible). | Listo, tras emitir «ajustes aplicados» |
 | **Listo** | Lecturas, escrituras, avisos de cambio y guardado diferido permitidos. Pendiente de escritura = hay cambios sin volcar a disco. | — (hasta cerrar el juego) |
 
 ### Interactions with Other Systems
@@ -132,7 +132,7 @@ La fórmula de curva de volumen se define como:
 | 0,75 | −10 | 0,3162 |
 | 1 | 0 | 1,0 |
 
-**Casos límite:** un valor fuera de rango se ajusta antes de cuantizar (1,7 → 1; −0,3 → 0; ±infinito → 1 o 0) y se registra. **NaN:** un ajuste no lo arregla, así que se comprueba antes y se trata como escritura inválida (regla 6): en ejecución se conserva el valor anterior y se registra; al cargar el fichero se usa el valor inicial. NaN nunca llega a la curva. Si `N_pasos` < 1 o `db_min` ≥ 0 al cargar los datos, se usan los valores por defecto y se registra (no hay división por cero).
+**Casos límite:** un valor fuera de rango se ajusta antes de cuantizar (1,7 → 1; −0,3 → 0; ±infinito → 1 o 0) y se registra. **NaN:** un ajuste no lo arregla, así que se comprueba antes y se trata como escritura inválida (regla 6): en ejecución se conserva el valor anterior y se registra; al cargar el fichero se usa el valor inicial. NaN nunca llega a la curva. Si `N_pasos` o `db_min` están fuera de su rango al cargar `defaults.json`, los datos son inválidos y se aplica el caso de catálogo corrupto (ver Edge Cases): el juego no entra en partida, así que no hay división por cero. En silencio no existe `vol_db`: el director de audio recibe la marca de silencio y ganancia 0.
 
 ### F3 · Guardado diferido
 
@@ -151,7 +151,7 @@ La fórmula de guardado diferido se define como:
 | t_guardado_max | float (s) | 2,0–30,0 | data file, 5,0† | Espera máxima desde el primer cambio pendiente |
 | cierre, pausa | bool | {sí, no} | calculated | Cierre normal del juego; apertura del menú de pausa (regla 13) |
 
-**Output Range:** booleano. Con cambios continuos hay como máximo una escritura cada `t_guardado_max` (0,2 escrituras/s con los valores propuestos); sin cambios continuos, una por ráfaga. La pérdida máxima ante un cierre forzado es `t_guardado_max` (5 s de cambios). Restricción de datos: `t_guardado_max ≥ 2 × t_guardado`; si no se cumple al cargar, se usan los valores por defecto y se registra.
+**Output Range:** booleano. Con cambios continuos hay como máximo una escritura cada `t_guardado_max` (0,2 escrituras/s con los valores propuestos); sin cambios continuos, una por ráfaga. La pérdida máxima ante un cierre forzado es `t_guardado_max` (5 s de cambios). Restricción de datos: `t_guardado_max ≥ 2 × t_guardado`; si no se cumple, o si algún parámetro de F1 a F3 está fuera de su rango, los datos son inválidos (catálogo corrupto, ver Edge Cases).
 **Reglas de la escritura:** al marcar pendiente con `pendiente` falso, `t_prim = t`; cada cambio real hace `t_ult = t`. La escritura toma una instantánea: un cambio que llegue durante la escritura vuelve a marcar pendiente y no se pierde; al terminar con éxito, `pendiente` pasa a falso solo si no hubo cambios posteriores a la instantánea. Un fallo de escritura mantiene `pendiente`, registra una línea y reintenta tras `t_guardado_max`; nunca bloquea ni avisa al jugador.
 **Example:** un arrastre de 12 s con un cambio real cada 0,05 s escribe en t = 5 y t = 10 (tope) y, al soltar en t = 12, en t = 12,5 (silencio de 0,5 s): 3 escrituras en vez de unas 240. Un cambio suelto en t = 3 se escribe en t = 3,5. Justificación de 0,5 s: más largo que la pausa típica entre pulsaciones de mando (~0,15–0,3 s) y más corto que lo que tarda un jugador en cerrar el juego tras ajustar; 5 s limita las escrituras a disco y la pérdida ante un cierre forzado.
 
@@ -165,8 +165,8 @@ La fórmula de guardado diferido se define como:
 - **If una clave del fichero es inválida** (rango, tipo, `enum` o NaN): solo ese ajuste vuelve a su valor inicial y se registra; el resto se conserva (regla 10).
 - **If el bloque `controles` del fichero es ilegible**: Entrada usa sus asignaciones por defecto (sus casos límite); el resto de los ajustes no se ve afectado.
 - **If queda un fichero temporal huérfano de una escritura interrumpida**: se ignora al leer y se elimina; el fichero principal sigue siendo el válido (regla 13, escritura atómica).
-- **If se lee o escribe un ajuste antes de «Listo»**: en desarrollo, error visible que detiene la ejecución; en la build final, la escritura se descarta y se registra, y la lectura devuelve el valor inicial del catálogo si se pudo leer, o si no uno seguro (volumen 1,0, subtítulos verdadero, resto falso) y se registra. El orden de arranque garantiza en la práctica que no ocurre; lo fija el ADR.
-- **If `defaults.json` falta o está corrupto**: el juego no entra en partida y muestra un mensaje de error claro, igual que los otros sistemas de datos (3 y 18); sin catálogo no hay valores iniciales fiables.
+- **If se lee o escribe un ajuste antes de «Listo»**: en desarrollo, error visible que detiene la ejecución; en la build final, la escritura se descarta y se registra, y la lectura devuelve el valor inicial del catálogo si se pudo leer, o si no uno seguro (volumen 1,0, subtítulos verdadero, `modo_ventana` = `ventana`, `controles` ausente, resto falso) y se registra. El orden de arranque garantiza en la práctica que no ocurre; lo fija el ADR.
+- **If `defaults.json` falta, está corrupto o tiene un parámetro fuera de su rango** (`N_pasos`, `db_min`, `t_guardado`, `t_guardado_max` o la restricción de F3): el juego no entra en partida y muestra un mensaje de error claro, igual que los otros sistemas de datos (3 y 18); sin catálogo no hay valores iniciales fiables.
 
 **Escritura y guardado**
 - **If la carpeta de datos del usuario no existe**: se crea; si no se puede, se trata como un fallo de escritura.
@@ -206,30 +206,120 @@ La fórmula de guardado diferido se define como:
 | 1 Entrada y controles | Dura (su lado) | Entrega y recupera el bloque `controles` |
 | 5 Guardado y carga | **A confirmar** | El índice lo lista como dependiente; no hay ningún ajuste que lo gobierne (autoguardado fijo, slice D.3). Ver Open Questions |
 
-**Correcciones pendientes en el índice de sistemas:** (a) los puzles 13 y 15 y la atmósfera 28 leen ajustes y no listan al sistema 6 como dependencia; (b) la dependencia del sistema 5 respecto de este se confirma o se retira. Se aplican al cerrar este GDD.
+**Índice de sistemas:** (a) hecho: los puzles 13 y 15 y la atmósfera 28 ya listan al sistema 6 como dependencia; (b) pendiente: la dependencia del sistema 5 respecto de este se confirma o se retira en el GDD de Guardado y carga (Open Questions 6).
 
 **Bidireccionalidad.** El par con el sistema 1 está cerrado: Entrada ya lista a Ajustes como dependiente (su tabla de Dependencies y su regla 19). El GDD del 3 ya declara que los ajustes quedan fuera del estado (regla 14), y su tabla de interacciones dice «Nada». Ninguno de los demás sistemas tiene GDD: cada uno debe, al redactarse, listar a Ajustes como dependencia y usar las claves del catálogo de la regla 1.
 
 ## Visual/Audio Requirements
 
-[To be designed]
+*(Sección opcional para la categoría Persistence; en modo `lean` no se consulta a `art-director` ni a `audio-director`: revisar antes de producción.)*
+
+El sistema no tiene presentación propia. Solo condiciona a quienes la ponen:
+- **Audio:** los deslizadores de volumen deben dar al jugador una referencia al moverlos (propuesta: una muestra corta del bus que se está regulando al soltar el deslizador o al cambiar de paso), porque sin ella el jugador ajusta a ciegas en un juego cuyo susto es sonoro. La muestra y su mezcla las define el director de audio (23).
+- **Visual:** `reducir_sobresaltos` debe atenuar el parpadeo del pasillo y el apagón, con un límite de destellos por segundo (art bible, sección de fotosensibilidad); el valor lo define la atmósfera reactiva (28).
 
 ## Game Feel
 
-[To be designed]
+No aplica: el jugador no opera este sistema directamente. Lo único exigible es que un cambio de ajuste llegue a sus consumidores en el mismo fotograma en que se escribe, salvo cuando su aviso se encola por una entrega en curso (regla 7), y que cada paso de un deslizador de volumen sea de 2 dB con los valores propuestos, uniforme en todo el recorrido (F1 y F2).
 
 ## UI Requirements
 
-[To be designed]
+El sistema no tiene pantalla propia; las ponen el menú de pausa (25), las opciones de accesibilidad (30) y la pantalla de título (27). Requisitos que este GDD fija a esas pantallas:
+- **Deslizadores de volumen:** `N_pasos` pasos (20†) con el valor visible, operables con ratón y con mando (`ui_izquierda` y `ui_derecha` mueven un paso, Entrada regla 15), y con el silencio claramente distinguible del paso más bajo.
+- **Conmutadores:** `subtitulos_activos`, `reducir_sobresaltos`, `asistencia_encaje`, `asistencia_rotacion` y `modo_ventana`, con su valor actual siempre visible.
+- **Restablecer:** «restablecer» por ajuste y «restablecer todos» (regla 8), con confirmación en este último porque cambia varios valores a la vez.
+- **Sin mensajes por ficheros dañados:** el jugador no ve ningún aviso cuando el fichero de ajustes falta o se recupera (regla 11).
+- **Textos:** todos los rótulos de las pantallas son entradas `UI_…` de la base de contenido (18).
+
+📌 **UX Flag — Ajustes persistentes**: este sistema tiene requisitos de interfaz repartidos entre varias pantallas. En la fase de preproducción, ejecuta `/ux-design` para las opciones de audio, subtítulos, accesibilidad y pantalla antes de escribir las épicas.
 
 ## Cross-References
 
-[To be designed]
+| Documento | Elemento | Naturaleza |
+|---|---|---|
+| `design/slice/slice-v0.3.md` · §5, §14, §16 | Accesibilidad: subtítulos, remapeo, regulación independiente de voces, efectos y música, reducir sobresaltos; el menú de pausa incluye subtítulos, controles y accesibilidad | Define el catálogo de la regla 1 |
+| `design/slice/slice-v0.3.md` · Anexo B.3 y B.5 | «Asistencia de encaje» (0,10 m) y tolerancia asistida (±6°) | Origen de `asistencia_encaje` y `asistencia_rotacion` |
+| `design/slice/slice-v0.3.md` · §21 | PC (Windows y Linux), 1920 × 1080 con escalado, solo español | Base de `modo_ventana` y de que no haya ajuste de idioma |
+| `design/slice/slice-v0.3.md` · D.3 | Autoguardado de la partida con reglas fijas | Justifica que no haya ajuste de autoguardado y que los ajustes queden fuera de la partida |
+| `design/art/art-bible.md` · fotosensibilidad | Límite de destellos y atenuación con «reducir sobresaltos» | Condiciona `reducir_sobresaltos` (28) |
+| `design/gdd/game-pillars.md` | *Tensión sin castigo*, *Autonomía como progresión* | Pilares que este sistema sirve |
+| `design/gdd/estado-y-bus-de-eventos.md` · regla 14, CA-24 y regla 11 | Los ajustes quedan fuera del estado y de la instantánea; reglas de entrega de avisos | Origen de la regla 3 y patrón de la regla 7 |
+| `design/gdd/entrada-y-controles.md` · reglas 15 a 19 y AC-18 | Reasignación, ajustes de manejo y bloque exportable de asignaciones | Origen de `controles` (regla 2) |
+| `design/gdd/base-de-contenido-narrativo.md` | Textos de interfaz `UI_…` | Rótulos de las pantallas de ajustes |
+| `design/gdd/systems-index.md` | Fila 6 y dependientes 5, 23, 25, 26, 27, 28, 30, 13 y 15 | Debe reflejar la tabla de Dependencies (ver Open Questions) |
 
 ## Acceptance Criteria
 
-[To be designed]
+Revisados por `qa-lead`. **Evidencia:** **L** = test unitario automático (gdUnit4, `tests/unit/settings/`), bloqueante; **I** = test de integración o playtest documentado, bloqueante. Los tests L **no hacen E/S real**: usan un almacenamiento falso, un reloj inyectado (ticks enteros, sin acumular error de coma flotante), un manejador de errores y un destino de log sustituibles, y una fixture de `defaults.json` por caso. Solo los criterios I tocan el disco. Tolerancia numérica ±0,0001 salvo indicación. «Se cierra cuando exista X» marca un criterio que depende de un sistema sin GDD. El sistema no define presupuesto de rendimiento y no se inventa uno.
+
+**Catálogo y lectura (reglas 1 a 5)**
+- **AC-01 (R1, L)**: **GIVEN** el `defaults.json` del slice, **WHEN** se leen las ocho claves, **THEN** cada una coincide en tipo, rango e inicial con la tabla de la regla 1; **WHEN** se lee `controles` sin bloque guardado, **THEN** devuelve «ausente»; **WHEN** se escribe una clave que no está en el catálogo, **THEN** se rechaza (regla 6).
+- **AC-02 (R4-5, L)**: **GIVEN** `vol_musica` = 1,0, **WHEN** se escribe 0,5, **THEN** la lectura inmediata devuelve 0,5. Igual con un `bool` (`subtitulos_activos` a falso) y con un `enum` (`modo_ventana` a `ventana`).
+- **AC-03a (R3, L)**: **GIVEN** `vol_voces` = 0,5, **WHEN** se serializa la instantánea del estado (3), **THEN** no contiene ninguna clave de ajustes.
+- **AC-03b (R3, I)**: **GIVEN** una partida guardada y un ajuste cambiado, **THEN** el fichero de partida no cambia (mismo hash), y empezar partida nueva o cargar otra no altera ningún ajuste. *(Se cierra cuando existan 3 y 5.)*
+- **AC-04a (R2, L)**: **GIVEN** un bloque `controles` cualquiera, **WHEN** se guarda y se recarga, **THEN** es estructuralmente idéntico (igualdad profunda, no de bytes); **GIVEN** que no hay bloque, **THEN** se arranca sin error.
+- **AC-04b (R2, L)**: **GIVEN** un fichero con el bloque `controles` ilegible y el resto válido, **WHEN** se carga, **THEN** se llega a «Listo», los demás ajustes conservan su valor y `controles` queda «ausente». *(La reacción de Entrada se cierra cuando exista el sistema 1.)*
+
+**Escritura inválida y avisos (reglas 6 a 8)**
+- **AC-05a (R6, L)**: **WHEN** se escribe 1,7 en un volumen, **THEN** se guarda 1,0 y se añade una línea al log; con −0,3, 0,0 y una línea; con +∞, 1,0; con −∞, 0,0.
+- **AC-05b (R6, L)**: **GIVEN** `vol_voces` = 0,5, **WHEN** se escribe NaN, **THEN** el valor sigue en 0,5 y se añade una línea al log.
+- **AC-05c (R6, L)**: **GIVEN** la build final, **WHEN** se escribe una clave desconocida, la cadena `"0,5"` en un `float` o `"ventana2"` en `modo_ventana`, **THEN** cada escritura se rechaza, el valor anterior se conserva y se añade una línea al log por escritura.
+- **AC-05d (R6, I)**: **GIVEN** una build de desarrollo, **WHEN** se hace cualquiera de las escrituras inválidas de AC-05b o AC-05c, **THEN** la ejecución se detiene con un error visible.
+- **AC-06a (R7, L)**: **GIVEN** un suscriptor, **WHEN** `vol_musica` pasa de 1,0 a 0,5, **THEN** recibe exactamente una vez (`vol_musica`, 1,0, 0,5).
+- **AC-06b (R7, L)**: **WHEN** se escribe el mismo valor, o un valor que cae en el mismo paso `n` (F1), **THEN** no se emite aviso.
+- **AC-06c (R7, L)**: **GIVEN** los suscriptores A y B (en ese orden), **WHEN** cambia un ajuste, **THEN** reciben en el orden A, B.
+- **AC-06d (R7, L)**: **GIVEN** un suscriptor que, al recibir el aviso de X, escribe Y, **THEN** la lectura de Y dentro del manejador ya devuelve el valor nuevo, el aviso de Y se entrega después de que X llegue a todos y no hay invocaciones anidadas.
+- **AC-06e (R7, L)**: **GIVEN** que A se da de baja durante una entrega, **THEN** A aún recibe el aviso en curso y no recibe ningún aviso posterior.
+- **AC-07 (R8, L)**: **GIVEN** `vol_voces` = 0,5 y `vol_efectos` = 1,0 (ya inicial), **WHEN** se restablecen todos, **THEN** se emite un solo aviso (`vol_voces`, 0,5, 1,0) y ninguno para `vol_efectos`, `modo_ventana` y `controles` no cambian y el sistema queda con cambios pendientes de guardar.
+
+**Fichero, carga y guardado (reglas 9 a 14)**
+- **AC-08a (R10, L)**: **GIVEN** que no hay fichero, **WHEN** se carga, **THEN** los ajustes valen su inicial, el log no contiene ninguna línea de error o aviso y no se abre ningún diálogo.
+- **AC-08b (R13, L)**: **GIVEN** que no hay fichero y un cambio en t = 3 s, **THEN** el fichero existe en t = 3,5 s; **GIVEN** que la carpeta de datos no existe, **THEN** se crea, y si no se puede cuenta como fallo de escritura (AC-14e).
+- **AC-09 (R10, L)**: **GIVEN** un fichero con una clave inválida y otras válidas, **WHEN** se carga, **THEN** solo esa clave toma su inicial y se añade una línea al log por clave inválida; **GIVEN** una clave desconocida, **WHEN** se hace un guardado posterior, **THEN** el fichero no la contiene.
+- **AC-10a (R11, L)**: **GIVEN** un fichero ilegible, **WHEN** se carga, **THEN** se llega a «Listo» con todos los iniciales, el contenido original está byte a byte en la copia, existe una línea en el log y no hay diálogo. Igual con un fichero legible pero con estructura inválida.
+- **AC-10b (R11, L)**: **GIVEN** que ya existe una copia de un fallo anterior, **WHEN** se corrompe de nuevo, **THEN** queda una sola copia, con el contenido de la segunda.
+- **AC-11a (R9-10, L)**: **GIVEN** una versión de formato mayor que la conocida, **THEN** se trata como AC-10a; **GIVEN** una menor, **THEN** se leen las claves reconocidas y las ausentes toman su inicial.
+- **AC-11b (R9-10, L)**: **GIVEN** un fichero sin versión o con versión no numérica, **THEN** se trata como ilegible (AC-10a).
+- **AC-12 (R10, L)**: **GIVEN** un fichero válido con valores distintos de los iniciales, **WHEN** termina la carga, **THEN** un suscriptor recibe un único «ajustes aplicados», ningún aviso de cambio por ajuste, y una lectura dentro del manejador ya devuelve los valores cargados; lo mismo con un fichero corrupto (valores iniciales).
+- **AC-13 (R12, I)**: **GIVEN** el juego en marcha, **WHEN** se cambia `modo_ventana`, **THEN** se aplica sin reiniciar; **WHEN** el sistema operativo lo rechaza, **THEN** el ajuste vuelve al valor realmente aplicado, se emite el aviso de cambio y se añade una línea al log; **WHEN** el modo se cambia fuera del juego, **THEN** el ajuste se sincroniza y se guarda. Se aplica también al cargar. *(El caso del monitor ausente es manual y consultivo. «Fuera del juego» depende de la plataforma objetivo.)*
+- **AC-14a (F3, L)**: **GIVEN** `t_guardado` = 0,5 s y `t_guardado_max` = 5,0 s, **WHEN** hay un único cambio real en t = 3,0, **THEN** se escribe en t = 3,5.
+- **AC-14b (F3, L)**: **GIVEN** un arrastre de 12 s con un cambio real cada 0,05 s que oscila entre pasos distintos, **THEN** hay exactamente 3 escrituras y cada una ocurre como mucho `t_guardado_max` después del primer cambio que contiene.
+- **AC-14c (F3, L)**: **GIVEN** cambios pendientes, **WHEN** se cierra el juego con normalidad o se abre el menú de pausa, **THEN** se escribe en el acto; **GIVEN** que no hay cambios pendientes, **THEN** ninguno de los dos escribe.
+- **AC-14d (F3, L)**: **GIVEN** un cambio llegado durante una escritura, **WHEN** esta termina con éxito, **THEN** sigue habiendo cambios pendientes y se escribirá de nuevo; **GIVEN** la pausa del juego con tiempo de juego detenido, **THEN** el temporizador del guardado sigue avanzando (reloj de tiempo real).
+- **AC-14e (F3, L)**: **GIVEN** un almacenamiento que falla al escribir, **THEN** los cambios siguen pendientes, se añade una línea al log, se reintenta a los `t_guardado_max` leídos de los datos y no se muestra nada al jugador; **GIVEN** que falla la escritura de cierre, **THEN** el cierre no se bloquea.
+- **AC-15a (R13, L)**: **GIVEN** un almacenamiento falso que falla entre escribir el temporal y renombrarlo, **THEN** el fichero principal queda intacto.
+- **AC-15b (R13, L)**: **GIVEN** un temporal huérfano al arrancar, **THEN** se ignora, se elimina y el principal sigue siendo el válido.
+- **AC-15c (R13, I)**: **GIVEN** un corte real del proceso durante una escritura (opcional, sobre disco real), **THEN** el siguiente arranque llega a «Listo» con un fichero principal válido.
+- **AC-16a (R14, L)**: **GIVEN** una fixture de `defaults.json` con `vol_voces` inicial = 0,5, **WHEN** arranca, **THEN** la lectura devuelve 0,5 sin recompilar.
+- **AC-16b (R14, L)**: **GIVEN** una fixture con `t_guardado_max` < 2 × `t_guardado`, otra con `N_pasos` = 5, otra con `db_min` = 0, y una sin el fichero o corrupta, **WHEN** arranca, **THEN** en cada caso no se entra en partida y se muestra un mensaje de error claro (catálogo corrupto).
+
+**Estados (States and Transitions)**
+- **AC-17a (L)**: **GIVEN** «Sin cargar» o «Cargando» y una build de desarrollo, **WHEN** se lee o se escribe, **THEN** hay un error visible (manejador de errores inyectado).
+- **AC-17b (L)**: **GIVEN** la build final en esos estados, **WHEN** se escribe, **THEN** la escritura se descarta y se añade una línea al log; **WHEN** se lee, **THEN** devuelve el inicial del catálogo si se pudo leer, o si no el valor seguro (volumen 1,0, subtítulos verdadero, `modo_ventana` = `ventana`, `controles` ausente, resto falso), con una línea al log.
+
+**Fórmulas (valores del ejemplo, tolerancia ±0,0001)**
+- **AC-F1 (L)**: **GIVEN** N_pasos = 20, **THEN** v_ui = 0,512 → n = 10 y v = 0,5; 0,026 → n = 1; 0,024 → n = 0; 1,0 → n = 20; con N_pasos = 10, cada paso son 4 dB, y con 40, 1 dB. **GIVEN** un volumen del fichero dentro de rango pero fuera de la rejilla (p. ej. 0,512), **WHEN** se carga, **THEN** se cuantiza a 0,5 (regla 10).
+- **AC-F2a (L)**: **GIVEN** db_min = −40, **THEN** v = 0 → silencio con ganancia exactamente 0 y sin llamar a `log(0)` (nunca −∞); 0,25 → −30 dB / 0,0316; 0,5 → −20 / 0,1000; 0,75 → −10 / 0,3162; 1 → 0 / 1,0; n = 1 → −38 dB / 0,0126 (la comparación en dB usa tolerancia por el error de coma flotante de 1/20).
+- **AC-F2b (L)**: **GIVEN** db_min = −50 y n = 1, **THEN** −47,5 dB / 0,0042; con db_min = −60 y −30, n = 1 da −57 y −28,5 dB. *(La entrega de la ganancia al bus se cierra cuando exista el sistema 23.)*
+
+**Interacciones entre sistemas (se cierran cuando existan)**
+- **AC-18 (I)**: **GIVEN** el director de audio (23), subtítulos (26) y atmósfera (28), **WHEN** el jugador cambia `vol_*`, `subtitulos_activos` o `reducir_sobresaltos`, **THEN** cada consumidor reacciona en el mismo fotograma en que se recibe el aviso. *(Se cierra cuando existan 23, 26, 28 y las pantallas de 25, 27 y 30.)*
+
+Sin criterio hasta que exista el ADR: el tope del bucle de avisos encadenados, la ruta y el formato de la copia del fichero dañado, y la representación de NaN en el fichero (JSON estándar no la admite).
 
 ## Open Questions
 
-[To be designed]
+| # | Pregunta | Propietario | Resolver antes de |
+|---|---|---|---|
+| 1 | **Ruta, formato y versionado del fichero** de ajustes; nombre y ruta de la copia del dañado; cómo se hace el reemplazo atómico; qué representa un NaN en el fichero (JSON estándar no lo admite); **no hay referencia de motor para el dominio Core** (`docs/engine-reference/godot/modules/` no tiene `core.md`), así que hay que verificarlo contra la documentación del motor. | `/architecture-decision` | Fase de arquitectura |
+| 2 | **Mecanismo del aviso de cambio:** propio (regla 7) frente a unificarlo con el bus de eventos (3); y el tope de avisos encadenados. | `/architecture-decision` | Fase de arquitectura |
+| 3 | **Orden de arranque:** garantizar que Ajustes está «Listo» antes de que lo lean audio, subtítulos, Entrada y las pantallas (edge case de lectura antes de «Listo»). | `/architecture-decision` | Fase de arquitectura |
+| 4 | **Detección de un cambio externo del modo de ventana** (sondeo o señal del motor) para sincronizar `modo_ventana`. | `/architecture-decision` | Fase de arquitectura |
+| 5 | **`asistencia_rotacion`:** el slice (B.5) nombra una tolerancia «asistido» de ±6° en el puzle 5 pero no una opción; el nombre y que sea un ajuste separado de `asistencia_encaje` son provisionales. | GDD de los sistemas 15 y 30 | GDD del sistema 15 |
+| 6 | **Índice de sistemas:** (a) ~~añadir el sistema 6 como dependencia de 13, 15 y 28~~ **hecho (2026-11-08)**; (b) el sistema 5 figura como dependiente de 6 y no hay ningún ajuste que lo gobierne: confirmar o retirar. | GDD del sistema 5 | GDD del sistema 5 |
+| 7 | **Asignación de sonidos a los tres buses:** voces (`VO_*`, `MEGA_*`) está clara; falta decidir si la lluvia y el drone del edificio van a `vol_efectos` o a `vol_musica`. | GDD del sistema 23 | GDD del sistema 23 |
+| 8 | **Rampa anti-chasquido** al cambiar un volumen (p. ej. 0,05 s) y muestra de referencia al mover el deslizador. | GDD del sistema 23 | GDD del sistema 23 |
+| 9 | **Más ajustes** que puedan pedir los subtítulos (tamaño, fondo) y la accesibilidad: se añaden al catálogo cuando se diseñen. | GDD de los sistemas 26 y 30 | Esos GDD |
+| 10 | **Valores † de F1 a F3 y los iniciales del catálogo** (`db_min` = −40 dB: probar que la voz de Vera sigue audible en el paso 1 en una sala silenciosa; si no, bajar a −50). | Playtest (slice §23.4) | Primer playtest |
+| 11 | **Rótulos `UI_…`** de las pantallas de ajustes: dar de alta en la base de contenido y contarlos. | GDD del sistema 18 y de los sistemas 25, 27 y 30 | Esos GDD |
+| 12 | **Reducir sobresaltos:** qué atenúa exactamente en audio (23) y en luz (28), y con qué límite de destellos. | GDD de los sistemas 23 y 28 | Esos GDD |
