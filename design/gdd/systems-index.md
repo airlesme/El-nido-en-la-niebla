@@ -27,7 +27,7 @@ Se excluyen a propósito combate, IA de enemigos, economía, progresión, red y 
 | 3 | Estado del juego y bus de eventos | Core | MVP | In Review | design/gdd/estado-y-bus-de-eventos.md | — |
 | 4 | Escena de planta y carga de Recepción | Core | MVP | Not Started | — | 3 |
 | 5 | Guardado y carga | Persistence | MVP | Not Started | — | 3, 4, 6 |
-| 6 | Ajustes persistentes (inferred) | Persistence | MVP | Designed | design/gdd/ajustes-persistentes.md | 1 |
+| 6 | Ajustes persistentes (inferred) | Persistence | MVP | In Review | design/gdd/ajustes-persistentes.md | 1 |
 | 7 | Interacción e inspección | Gameplay | MVP | Not Started | — | 1, 2, 18 |
 | 8 | Control de acceso (puertas, tarjetas, lectores) | Gameplay | MVP | Not Started | — | 3, 7, 18 |
 | 9 | Marco de puzles (inferred) | Gameplay | MVP | Not Started | — | 3, 7 |
