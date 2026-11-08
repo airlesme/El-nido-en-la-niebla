@@ -24,7 +24,7 @@ Se excluyen a propósito combate, IA de enemigos, economía, progresión, red y 
 |---|-------------|----------|----------|--------|------------|------------|
 | 1 | Entrada y controles | Core | MVP | Not Started | — | — |
 | 2 | Jugador en primera persona (movimiento, cámara, manos) | Core | MVP | Not Started | — | 1, 4 |
-| 3 | Estado del juego y bus de eventos | Core | MVP | Not Started | — | — |
+| 3 | Estado del juego y bus de eventos | Core | MVP | Designed | design/gdd/estado-y-bus-de-eventos.md | — |
 | 4 | Escena de planta y carga de Recepción | Core | MVP | Not Started | — | 3 |
 | 5 | Guardado y carga | Persistence | MVP | Not Started | — | 3, 4, 6 |
 | 6 | Ajustes persistentes (inferred) | Persistence | MVP | Not Started | — | — |
@@ -38,7 +38,7 @@ Se excluyen a propósito combate, IA de enemigos, economía, progresión, red y 
 | 14 | Puzle 4 · Tablero de tareas | Gameplay | MVP | Not Started | — | 9, 10, 18 |
 | 15 | Puzle 5 · Espejo de la diferencia | Gameplay | MVP | Not Started | — | 9, 10, 13 |
 | 16 | Puzle 6 · Decisión | Gameplay | MVP | Not Started | — | 9, 10, 18 |
-| 17 | Sistema de pistas (3 niveles) | Gameplay | Vertical Slice | Not Started | — | 9, 18 |
+| 17 | Sistema de pistas (3 niveles) | Gameplay | Vertical Slice | Not Started | — | 3, 9, 18 |
 | 18 | Base de contenido narrativo (líneas, documentos, claves de traducción) | Narrative | MVP | Not Started | — | — |
 | 19 | Ordenador, correo e impresora | Narrative | MVP | Not Started | — | 3, 7, 18, 20 |
 | 20 | Documentos y bolsillo visual | Narrative | MVP | Not Started | — | 3, 7, 18 |
@@ -118,7 +118,7 @@ Reparto: **23 MVP · 7 Vertical Slice · 0 Alpha · 0 Full Vision** (30 en total
 7. **Puzles 1–6 (11–16)** — depend on: 9 (más 10 los de la caja, 19 y 20 el puzle 1, 13 el puzle 5).
 8. **Director de escenas (21)** — depends on: 3, 4, 18.
 9. **Llamada telefónica (22)** — depends on: 3, 7, 18.
-10. **Sistema de pistas (17)** — depends on: 9, 18.
+10. **Sistema de pistas (17)** — depends on: 3, 9, 18.
 
 ### Presentation Layer (depends on features)
 
@@ -133,7 +133,7 @@ Reparto: **23 MVP · 7 Vertical Slice · 0 Alpha · 0 Full Vision** (30 en total
 
 1. **Opciones de accesibilidad (30)** — depends on: 1, 6, 13, 15, 23, 26.
 
-**Bottlenecks (riesgo alto si cambian):** 3 Estado y eventos · 9 Marco de puzles · 7 Interacción · 18 Contenido narrativo.
+**Bottlenecks (riesgo alto si cambian; el 3 ya tiene GDD):** 3 Estado y eventos · 9 Marco de puzles · 7 Interacción · 18 Contenido narrativo.
 **Hojas (se pueden diseñar tarde):** 24, 26, 27, 29, 30.
 
 ---
@@ -202,10 +202,10 @@ Esfuerzo: S = 1 sesión, M = 2–3, L = 4+. El puzle 2 va después de la caja po
 | Metric | Count |
 |--------|-------|
 | Total systems identified | 30 |
-| Design docs started | 0 |
+| Design docs started | 1 |
 | Design docs reviewed | 0 |
 | Design docs approved | 0 |
-| MVP systems designed | 0/23 |
+| MVP systems designed | 1/23 |
 | Vertical Slice systems designed | 0/7 |
 
 ---
