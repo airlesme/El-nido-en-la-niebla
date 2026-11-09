@@ -1,6 +1,6 @@
 # Jugador en primera persona (movimiento, cámara, manos)
 
-> **Status**: Revisado (ronda 2) — pendiente de re-review (aplicados H-01 a H-15 y, de la re-review del 2026-11-09, B-01, B-02, I-01 a I-05 y M-01 a M-04; este GDD es la fuente de verdad del contrato 2↔7)
+> **Status**: Revisado (ronda 3) — pendiente de re-review (ronda 3 aplica C-B1 y C-W1 de `gdd-cross-review-2026-11-09.md`: el Jugador mueve el objeto inspeccionado, D-35; ronda 2: H-01 a H-15, B-01, B-02, I-01 a I-05 y M-01 a M-04; este GDD es la fuente de verdad del contrato 2↔7)
 > **Author**: Álvaro + agentes
 > **Last Updated**: 2026-11-09
 > **Last Verified**: 2026-11-09
@@ -67,9 +67,9 @@ Lo que **no** debe sentir: mareo, deslizamiento sobre hielo, sacudidas de cámar
 **Manos**
 
 23. **Siempre visibles.** Las manos de Vera están en pantalla en todo momento de juego, incluidos el reposo y el caminar (art bible §5.1: 0,3 a 0,6 m, siempre en pantalla). No llevan nada puesto (sin reloj, anillo ni pulsera): lo único que aparece en ellas son los objetos del juego, cuando se usan (art bible §5.1; los ítems de slice D.1 vuelven al «bolsillo visual», sin menú).
-24. **Gestos por petición.** Las manos no deciden nada: otros sistemas piden gestos y reciben `gesto_terminado(id, motivo)` (`motivo`: `completo`, `cancelado` o `tope`). Operaciones: `reproducir_gesto(id, parámetros)`, `sostener(obj_id, mano = izquierda)` / `soltar()`, `apuntar(punto_3d)` (la mano derecha se orienta hacia un punto del mundo, para los puzles; cómo se resuelve lo fija el ADR) y `reposo()`. **Cada gesto tiene una duración fija en datos** (tabla de Visual/Audio; las cifras son del Jugador, no de 7): 7 espera el aviso y no cuenta tiempo; los bloqueantes duran ≤ `t_transicion_max` (3 s). `reposo()` cancela de inmediato cualquier gesto en curso (aviso con `cancelado`), suelta el objeto y deja de apuntar: es lo que 7 usa **en lugar de «ocultar manos»**, que no existe (las manos no se ocultan, regla 23), y ante una `cancelación`.
+24. **Gestos por petición.** Las manos no deciden nada: otros sistemas piden gestos y reciben `gesto_terminado(id, motivo)` (`motivo`: `completo`, `cancelado` o `tope`). Operaciones: `reproducir_gesto(id, parámetros)`, `sostener(obj_id, mano = izquierda, pose_inspeccion = nulo)` / `soltar()` / `girar_objeto(Δyaw, Δpitch)`, `apuntar(punto_3d)` (la mano derecha se orienta hacia un punto del mundo, para los puzles; cómo se resuelve lo fija el ADR) y `reposo()`. **Cada gesto tiene una duración fija en datos** (tabla de Visual/Audio; las cifras son del Jugador, no de 7): 7 espera el aviso y no cuenta tiempo; los bloqueantes duran ≤ `t_transicion_max` (3 s). `reposo()` cancela de inmediato cualquier gesto en curso (aviso con `cancelado`), suelta el objeto (un objeto de escena vuelve a su sitio en ese mismo paso) y deja de apuntar: es lo que 7 usa **en lugar de «ocultar manos»**, que no existe (las manos no se ocultan, regla 23), y ante una `cancelación`.
     **Ranuras y sustitución (D-33).** Hay dos ranuras, derecha e izquierda, y cada gesto de la tabla declara la(s) que usa (columna «Mano»). Los gestos son **de fondo** (bucle, no bloqueantes: `HAND_IDLE`, `HAND_READ`, `HAND_HOLD_ITEM`, `HAND_TYPE`, `HAND_PHONE_HOLD`, `HAND_POINT`) o **bloqueantes** (duración fija). `sostener` y `apuntar` no son gestos: son estados de fondo de su mano (objeto sujeto; punto seguido). Reglas: (a) un gesto **de fondo** se rechaza si su ranura ya tiene otro gesto de fondo (primero `reposo()`/`soltar()`); (b) un gesto **bloqueante** se rechaza solo si hay **otro bloqueante** en curso; (c) un bloqueante **suspende** los gestos de fondo y el `apuntar` de **su propia mano** mientras dura y los **reanuda** al terminar (sin `gesto_terminado` para lo suspendido); el objeto sostenido **sigue en la mano** durante el bloqueante; (d) los gestos de fondo de la **otra** mano siguen sin cambio; (e) un bloqueante de «ambas» manos suspende los de fondo de las dos. Así `HAND_READ` (izq.) + `HAND_POINT` (der.) coexisten (apilar `lectura` sobre una vista cercana), `ANIM_PAGE_TURN` (solo derecha) corre sobre `HAND_READ` sin suspenderla, y `HAND_PLACE` (derecha) suspende `HAND_POINT` y deja la pieza sostenida hasta que 7 llama a `soltar()`. `sostener` en la derecha es compatible con `apuntar` (arrastre de una pieza). Toda petición rechazada se registra; no se encola.
-    **Quién sostiene qué (D-34).** `sostener` lo llama siempre el sistema que quiere el objeto en la mano: **20** para los ítems del bolsillo y **7** para los objetos de escena declarados sostenibles en datos (`V05`, `A03`, tarjetas; 7 declara cuáles). Para un objeto de escena 7 pide `reproducir_gesto(HAND_REACH)`, y al `gesto_terminado` llama `sostener(obj_id, izquierda)` y luego `reproducir_gesto(HAND_HOLD_ITEM)`; 7 **no mueve el objeto por su cuenta** (el Jugador es el único que lo lleva a la mano y lo devuelve). `HAND_HOLD_ITEM` **exige un objeto sujeto en esa mano**: sin él se rechaza. El modelo lo aporta su propietario (20 o el objeto de escena) y el Jugador solo lo sujeta. Entra y sale con un fundido de `t_item_dentro` / `t_item_fuera` que no bloquea. **Encajar una pieza (puzle 3):** `sostener(pieza, derecha)` + `apuntar` durante el arrastre → `HAND_PLACE` al soltarla en su hueco → `soltar()`.
+    **Quién sostiene qué y quién mueve el objeto (D-34, D-35).** `sostener` lo llama siempre el sistema que quiere el objeto en la mano: **20** para los ítems del bolsillo (incluidas las tarjetas; `A03` es una caja que se abre, no se sostiene) y **7** para los objetos de escena declarados sostenibles en datos (en el slice, **solo `V05`**; la lista cerrada es la del catálogo de 7). **El Jugador es el único que mueve el objeto sostenido y el dueño de su transformada**, también durante la inspección: 7 solo *pide* y espera. Para un objeto de escena 7 pide `reproducir_gesto(HAND_REACH)` (derecha, bloqueante) y, **al `gesto_terminado` de ese gesto**, `sostener(obj_id, izquierda, pose_inspeccion = {distancia_m, orientación})`; después de aceptado pide `reproducir_gesto(HAND_HOLD_ITEM)`. **`sostener` se rechaza (y se registra) si hay cualquier gesto bloqueante en curso, de cualquier mano**: no se encola ni se reintenta; el que pide espera al `gesto_terminado` (lo mismo vale para 20). Con `pose_inspeccion`, el Jugador lleva el objeto desde su sitio hasta `distancia_m` delante de los ojos, con la orientación indicada, en **`t_mano_s`** (F10), lo mantiene en esa pose relativa a la cámara y emite `objeto_sujeto(obj_id)` al llegar; `girar_objeto(Δyaw, Δpitch)` compone el giro sobre su centro (7 calcula los deltas con su F3 y es quien decide cuándo llamarlo; el Jugador no limita ni suaviza el giro). `soltar()` de un objeto de escena lo devuelve a su sitio en `t_mano_s` y emite `objeto_soltado(obj_id)`; sin `pose_inspeccion` (ítems del bolsillo) no hay traslado: solo el fundido `t_item_dentro` / `t_item_fuera`, que no bloquea. `HAND_HOLD_ITEM` **exige un objeto sujeto en esa mano** (basta con que `sostener` haya sido aceptado, aunque el objeto aún viaje): sin él se rechaza. El modelo lo aporta su propietario (20 o el objeto de escena) y el Jugador lo sujeta y lo mueve. **Encajar una pieza (puzle 3):** `sostener(pieza, derecha)` + `apuntar` durante el arrastre → `HAND_PLACE` al soltarla en su hueco → `soltar()`.
 25. **Plano propio.** Las manos se dibujan **encima del mundo** con su propio campo de visión (`fov_manos`, 60°†): no atraviesan muros aunque el jugador esté pegado a ellos, y su tamaño y forma no cambian con `campo_vision` ni con la relación de aspecto. Cómo se consigue (shader, sub-viewport, segunda cámara) lo fija el ADR junto al technical-artist (art bible, apartado de manos).
 26. **Mano principal.** La derecha actúa (alcanza, agarra, gira, pasa página); la izquierda acompaña (sostiene el papel, el teléfono, el objeto en inspección). No hay opción de zurdos en el slice.
 27. **Movimiento de las manos.** Con el balanceo en `completo` o `reducido`, las manos añaden al movimiento de la cámara un balanceo propio con retardo de fase, una pequeña inercia al girar la cabeza y una respiración en reposo (F3 y F7). Con `ninguno` las manos quedan quietas fuera de los gestos pedidos, y la respiración también se anula.
@@ -81,7 +81,7 @@ Lo que **no** debe sentir: mareo, deslizamiento sobre hielo, sacudidas de cámar
 30. **Giro acumulado.** El Jugador ofrece `giro_acumulado()`: grados de yaw recorridos en los últimos `T_giro` (0,5 s†) (F8). Atmósfera (28) lo usa para decidir cuándo «el jugador gira la cabeza» y el reflejo vuelve a la normalidad (slice, escena 4); el umbral lo fija 28, no el Jugador.
 31. **Pasos.** Cada vez que un pie «toca el suelo» según la distancia recorrida (F3), el Jugador emite una señal directa `paso(superficie, intensidad)` a Audio (23), con `intensidad = lerp(i_paso_min, 1, r)` (`i_paso_min` 0,4†; `r` de F3). No pasa por el bus de eventos (3): es de alta frecuencia y no tiene sentido guardarlo ni reproducirlo. La superficie la etiqueta el suelo de la escena (4); si no hay etiqueta se usa `default`. Los pasos suenan con cualquier valor de `balanceo_camara`.
 32. **Sin estado de juego.** El Jugador no escribe hechos, no los lee y no se incluye en el guardado. Todo lo suyo se reconstruye en `colocar`.
-33. **API pública: lista cerrada.** Operaciones: `colocar`, `ceder_camara`, `devolver_camara`, `rayo_vision`, `fov_actual`, `reproducir_gesto`, `sostener`, `soltar`, `apuntar`, `reposo`, `pose_actual`, `pose_con_retardo`, `giro_acumulado`. Señales de salida: `paso`, `gesto_terminado`, `camara_cedida`, `camara_devuelta`. No existe nada más (ni sprint, salto, agacharse, ocultar manos, escribir la memoria de poses o el estado de juego); los ACs comprueban esta lista por igualdad.
+33. **API pública: lista cerrada.** Operaciones: `colocar`, `ceder_camara`, `devolver_camara`, `rayo_vision`, `fov_actual`, `reproducir_gesto`, `sostener`, `soltar`, `girar_objeto`, `apuntar`, `reposo`, `pose_actual`, `pose_con_retardo`, `giro_acumulado`. Señales de salida: `paso`, `gesto_terminado`, `camara_cedida`, `camara_devuelta`, `objeto_sujeto`, `objeto_soltado`. No existe nada más (ni sprint, salto, agacharse, ocultar manos, escribir la memoria de poses o el estado de juego); los ACs comprueban esta lista por igualdad.
 
 ### States and Transitions
 
@@ -105,7 +105,7 @@ Reglas de transición:
 |---|---|---|
 | 1 Entrada y controles | Nada (solo lee el contexto activo y las acciones) | `mover` (Vector2), `mirar` (Δyaw, Δpitch), aviso de contexto cambiado |
 | 4 Escena de planta | Sensor de zona y cápsula para los volúmenes `T-…`; fin de `colocar` | `colocar(…)`, anclas `spawn_office` / `spawn_elevator`, etiquetas de superficie del suelo, geometría con colisión |
-| 7 Interacción e inspección | `rayo_vision()` (ojos sin balanceo), `fov_actual()`; `gesto_terminado`, `camara_cedida`, `camara_devuelta` | `ceder_camara`, `devolver_camara`, `reproducir_gesto`, `sostener`, `soltar`, `apuntar`, `reposo` (ver Dependencies: contrato) |
+| 7 Interacción e inspección | `rayo_vision()` (ojos sin balanceo), `fov_actual()`; `gesto_terminado`, `camara_cedida`, `camara_devuelta`, `objeto_sujeto`, `objeto_soltado` | `ceder_camara`, `devolver_camara`, `reproducir_gesto`, `sostener` (con `pose_inspeccion` para `V05`), `soltar`, `girar_objeto`, `apuntar`, `reposo` (ver Dependencies: contrato) |
 | 8 Control de acceso | — | Colisión de puertas (contrato en Dependencies) |
 | 19 Ordenador · 22 Llamada | Fin de gestos (teclear, descolgar) | Gestos de manos (`HAND_TYPE`, `HAND_PHONE_*`); la cesión de cámara del ordenador la pide 7 (`interaccion:ordenador`) |
 | 20 Documentos y bolsillo visual | — | `sostener(item_id)` / `soltar()` al usar y guardar un ítem |
@@ -209,6 +209,14 @@ Se interpola yaw y pitch por separado (Euler sin roll) y **no** con slerp, porqu
 **Variables:** `t` = tiempo de juego desde el inicio (se detiene en pausa); `duración` de la petición, 0 a `t_transicion_max` (3 s), o `t_devolver` (0,5 s) en la devolución; `pos_0, yaw_0, pitch_0, fov_0` = estado de la cámara **al empezar la transición** (en una devolución interrumpida por una nueva cesión del mismo propietario, el estado en ese instante); destino (cesión) = `pose_destino` con `pitch` limitado a ±`pitch_cesion_max` y `fov_1 = F5(fov_destino)`; destino (devolución) = ojos vivos (cada tick), yaw y pitch guardados y `F5(campo_vision)`. Con `duración` = 0, `u` = 1 en el mismo fotograma.
 **Ejemplos:** `pos_0` → `pos_1` a 1,0 m con `duración` 1,0 s: a 0,25 s `s` = 0,156 → 0,156 m; a 0,5 s `s` = 0,5 → 0,5 m. FOV 70° → 60°, a 0,5 s → 65°. Yaw 170° → −170°: delta = +20° (por el 180°), a `s` = 0,5 → 180° ≡ −180°. Devolución: FOV 60° → 70° en 0,5 s; a 0,25 s `s` = 0,5 → 65°.
 
+### F10 · Traslado del objeto sostenido (objetos de escena)
+
+`u = clamp(t / t_mano_s, 0, 1);  s = u² × (3 − 2u);  pos = lerp(pos_sitio, pos_mano, s);  q = slerp(q_sitio, q_pose, s)`  con `pos_mano` = ojos + dirección de la cámara × `distancia_m`  (la pose se mantiene relativa a la cámara al llegar)
+En `soltar()` se recorre el camino inverso desde la pose actual hasta `pos_sitio` / `q_sitio` en el mismo `t_mano_s`. `girar_objeto(Δyaw, Δpitch)`: `q' = R_arriba(Δyaw) · R_derecha(Δpitch) · q` (sin límites, sin inercia).
+
+**Variables:** `t` = tiempo de juego desde `sostener` o `soltar` (se detiene en pausa); `t_mano_s` = 0,4 s† (0,2–0,8); `pos_sitio`/`q_sitio` = transformada del objeto al pedirse; `distancia_m` y la orientación inicial llegan en `pose_inspeccion` (7: F3, 0,469 m para `V05`); el slerp es válido porque el objeto, a diferencia de la cámara, puede tener roll.
+**Ejemplo:** `V05` con `distancia_m` = 0,469: a 0,2 s (u = 0,5) `s` = 0,5, el objeto está a medio camino entre su sitio y 0,469 m delante de los ojos; a 0,4 s llega y se emite `objeto_sujeto("V05")`. `Δyaw` = 1,8° gira el objeto 1,8° sobre su centro.
+
 ### Valores por defecto y rangos seguros
 
 Ver Tuning Knobs.
@@ -249,6 +257,10 @@ Ver Tuning Knobs.
 - **If un gesto no termina en 3 s** (animación sin fin o evento perdido): el Jugador emite el aviso de fin y libera las manos al reposo, y registra el fallo (tope coherente con Entrada F8).
 - **If se pide `sostener` con un ítem u objeto desconocido** (no está en el bolsillo ni en los sostenibles de datos): se rechaza y se registra; las manos siguen como estaban. En desarrollo, error visible.
 - **If se pide `sostener` con un objeto ya en la mano indicada**: se rechaza (primero `soltar`).
+- **If se pide `sostener` con un gesto bloqueante en curso** (de cualquier mano, p. ej. `HAND_REACH` aún activo): se rechaza y se registra; no se encola. El que pide espera al `gesto_terminado` y vuelve a pedirlo (regla 24).
+- **If llega `reposo()` o la descarga de escena mientras un objeto de escena viaja o está en la mano**: vuelve a su sitio en ese mismo paso, se emite `objeto_soltado` (si el traslado estaba en curso no se emite `objeto_sujeto`) y no queda objeto en el aire.
+- **If se llama `girar_objeto` sin objeto de escena sostenido con `pose_inspeccion`** (o con el traslado aún en curso): se rechaza y se registra; los ítems del bolsillo no se giran.
+- **If se pausa durante el traslado de un objeto de escena**: se congela con el tiempo de juego y continúa al reanudar (F10).
 - **If llega `reposo()` con un gesto bloqueante en curso** (cancelación de 7, pérdida de foco): el gesto se corta, se emite `gesto_terminado(id, cancelado)` y se suelta el objeto; ninguna pieza queda en el aire.
 - **If se pausa durante un gesto**: se congela y continúa al reanudar; no se salta ni se repite.
 - **If el jugador gira muy rápido con las manos en reposo**: la inercia (F7) se limita a ±0,03 m; las manos nunca salen del encuadre.
@@ -282,7 +294,7 @@ Ver Tuning Knobs.
 |---|---|---|
 | 7 Interacción e inspección | Dura | **Contrato** (ver abajo): `rayo_vision`, `fov_actual`, `ceder_camara` / `devolver_camara`, gestos de manos |
 | 28 Atmósfera reactiva | Dura | `pose_con_retardo`, `giro_acumulado` |
-| 4 Escena de planta | Blanda | Cápsula, sensor de zona; `colocar` |
+| 4 Escena de planta | Dura (en ambos sentidos, como declara el 4; C-W3) | Cápsula, sensor de zona; `colocar` |
 | 23 Director de audio | Blanda | Señal `paso`; oyente |
 | 19 Ordenador · 22 Llamada · 20 Documentos | Blanda | Gestos de manos (`HAND_TYPE`, `HAND_PHONE_*`, `sostener`) |
 | 21 Director de escenas | Indirecta | Congelado vía contexto `sin control` |
@@ -296,27 +308,30 @@ Ver Tuning Knobs.
 | Manos | **No se ocultan** ni existe `ocultar_manos`; 7 pide gestos y usa `reposo()` (regla 24). |
 | Nombres de gesto | `HAND_*` (tabla de Visual/Audio); 7 abandona `ANIM_HAND_*` (equivalencias en esa tabla). `ANIM_PAGE_TURN` y `ANIM_PHONE_PICKUP` son ids del slice y se conservan. |
 | Duraciones de gesto | Las fija el Jugador (tabla); 7 espera `gesto_terminado` y su `bloquea_s`, si existe, es solo un tope de seguridad ≤ 3 s. |
-| Regreso de cámara | `devolver_camara(propietario)` sin duración, siempre `t_devolver` = **0,5 s**. 7 elimina `t_vista_salida_s` (o lo fija en 0,5 s como alias) y su curva propia (F4 de 7): la curva es F9. |
+| Regreso de cámara | `devolver_camara(propietario)` sin duración, siempre `t_devolver` = **0,5 s**. 7 no define `t_vista_salida_s` (clave retirada del registro, ronda 3: era solo un alias de `t_devolver`) ni curva propia (F4 de 7): la curva es F9. |
 | Contexto durante el regreso | 7 mantiene el contexto bloqueante hasta `camara_devuelta` (regla 18). |
 | Propietarios y FOV | `interaccion:vista`, `interaccion:ordenador`; `fov_destino` por vista lo da 7; `fov_actual()` (nombre único, D-31; 7 y el registro dicen `fov_vigente()` y se corrigen) para sus conversiones (F6 de 7). |
-| Objetos sostenibles | `sostener(obj_id, mano)` admite ítems (20) y objetos de escena declarados en datos (`V05`, `A03`, tarjetas). **7 llama a `sostener`** para los de escena (declara cuáles) tras `HAND_REACH`, y luego a `HAND_HOLD_ITEM`, que exige objeto sujeto; 7 no mueve el objeto por su cuenta ni define `t_mano_s` (D-34). |
+| Objetos sostenibles | `sostener(obj_id, mano, pose_inspeccion)` admite ítems (20: bolsillo y tarjetas) y objetos de escena declarados en datos: **solo `V05`** (`A03` no se sostiene; las tarjetas las sostiene 20). **7 llama a `sostener`** para `V05` tras el `gesto_terminado` de `HAND_REACH` (derecha) y luego a `HAND_HOLD_ITEM`, que exige objeto sujeto. `sostener` no se pide con un gesto bloqueante en curso (se rechaza; regla 24). |
+| Transformada del objeto sostenido | **El Jugador** la posee y la mueve (traslado en `t_mano_s`, giro con `girar_objeto`, vuelta en `soltar()`/`reposo()`): F10, regla 24 y D-35. 7 calcula la distancia y los deltas de giro (su F3) y espera `objeto_sujeto` / `objeto_soltado`. `t_mano_s` es del Jugador. |
 | Ranuras de manos | Cada gesto declara su mano; un bloqueante suspende los gestos de fondo de su mano y los reanuda (regla 24, D-33). 7 puede pedir `ANIM_PAGE_TURN` con `HAND_READ` activo y `HAND_PLACE` con `HAND_POINT` y pieza sostenida. |
 | Pistas y cámara | Ninguna pista mueve la cámara: la de P1 nivel 1 es un `HIGHLIGHT`. No existe `CAMERA_NUDGE` y no hay un tercer propietario de cámara (D-30). |
 | `lectura` sobre vista | Combinación definida en States and Transitions y regla 24; la pila de modos es de 7. |
 
-### Cambios requeridos en otros GDDs (estado a 2026-11-09, ronda 2)
+### Cambios requeridos en otros GDDs (estado a 2026-11-09, ronda 3)
 
-**Ya aplicados y verificados en disco por la re-review (2026-11-09):**
+**Ya aplicados y verificados en disco (2026-11-09):**
 - **Ajustes persistentes (6):** `balanceo_camara` y `campo_vision` en la regla 1 y en «restablecer todos».
 - **Entrada y controles (1):** F8 y regla 8 no descartan el eje continuo `mover`; el bloqueo lo asigna 7.
 - **Escena de planta (4):** regla 18 con puertas sin colisión al abrirse, sensor de zona, etiqueta de superficie y cabina de 1,2 × 1,2 m; corregida la contradicción «blanda»/«Dura».
+- **Marco de puzles (9):** `CAMERA_NUDGE` sustituido por `HIGHLIGHT` (D-30).
+- **Slice:** v0.3.1 reinterpreta el «gesto de cámara» de P1 nivel 1 como resaltado.
+- **Índice de sistemas y registro:** el 2 figura como dependencia de 7, 19, 20, 22, 23 y 28; `player_effective_fov` usa `fov_actual()` (D-31).
+- **Interacción (7), ronda 3:** `fov_actual()`, sin `CAMERA_NUDGE`, `sostener` con `pose_inspeccion` para `V05`, `girar_objeto`, espera de `objeto_sujeto` / `objeto_soltado`, `t_mano_s` movido a este GDD, `HAND_REACH` en la derecha y `HAND_HOLD_ITEM` tras `sostener` (D-34, D-35).
 
-**Siguen abiertos** (detalle en `design/gdd/reviews/jugador-en-primera-persona-re-review.md`, sección «Cambios requeridos en otros GDDs»; el autor de cada GDD los aplica antes de la siguiente revisión):
-- **Interacción (7):** llamar a `sostener` para objetos de escena y quitar `t_mano_s` y la solicitud ‡ (D-34); `fov_vigente()` → `fov_actual()` (D-31); sin `CAMERA_NUDGE` (D-30).
-- **Marco de puzles (9):** el efecto `CAMERA_NUDGE` pasa a `HIGHLIGHT` (D-30).
-- **Escena de planta (4):** regla 18(c) con el rango del sensor 8,923–8,95 (M-01).
-- **Índice de sistemas:** el 2 como dependencia blanda en las filas de 19, 20, 22 y 23 (M-02); registro `player_effective_fov` con `fov_actual()`.
-- **Slice (líneas ~136 y ~724):** reinterpretar el «gesto de cámara» de P1 nivel 1 como resaltado.
+**Siguen abiertos:**
+- **Escena de planta (4):** regla 18(c) con el rango del sensor 8,923–8,95 (M-01; hallazgo C-W10 de la revisión cruzada) y marcar AC-09 como PV.
+- **Registro (`entities.yaml`):** `t_mano_s` pasa a este GDD como propietario (hecho en la ronda 3); `t_vista_salida_s` retirado (alias de `t_devolver`).
+- **Documentos y bolsillo visual (20), cuando se diseñe:** `sostener` de ítems y tarjetas solo tras el `gesto_terminado` de un gesto bloqueante (regla 24).
 - **Atmósfera reactiva (28), cuando se diseñe:** consume la pose y el giro acumulado; fija el umbral de «gira la cabeza».
 - **Art bible, Open Questions:** confirmar el eje del FOV (D-06) y el campo de visión de las manos (regla 25).
 
@@ -360,7 +375,8 @@ Todos viven en `assets/data/player/player.json`, salvo los dos ajustes del jugad
 | `f_fisica` | 60 Hz | **valor del proyecto** | G | Fija `N` (F6) |
 | `t_atasco` / `t_pose_segura` / `y_min` | 0,5 s / 0,25 s / −2,0 m | 0,25–2 / 0,1–1 / −10…−1 | G | Red de seguridad contra atascos |
 | `eps_atasco_m` | 0,02 m | 0,005–0,05 | G | Penetración y desplazamiento que definen «atascado» (Edge Cases) |
-| `t_item_dentro` / `t_item_fuera` | 0,3 / 0,3 s | 0,15–0,6 | F | Fundido de `sostener` / `soltar` (regla 24) para **todo** objeto en mano: ítems del bolsillo (20) y objetos de escena (7); no bloquea. 7 ya no define `t_mano_s` (D-34); el alcance previo lo da `HAND_REACH` |
+| `t_item_dentro` / `t_item_fuera` | 0,3 / 0,3 s | 0,15–0,6 | F | Fundido de `sostener` / `soltar` (regla 24) de los **ítems del bolsillo** (20), sin traslado; no bloquea |
+| `t_mano_s` | 0,4 s | 0,2–0,8 | F | Traslado (F10) de un objeto de escena entre su sitio y la mano de inspección, en `sostener(…, pose_inspeccion)` y `soltar()`; **propietario: este GDD** (D-35; 7 no lo define). No bloquea por sí mismo, pero 7 mantiene el contexto bloqueado hasta `objeto_sujeto` / `objeto_soltado`. `HAND_REACH` (≤ 0,5 s) + `t_mano_s` ≤ 0,9 s por defecto, bajo el tope de 3 s |
 
 ## Visual/Audio Requirements
 
@@ -376,7 +392,7 @@ Todos viven en `assets/data/player/player.json`, salvo los dos ajustes del jugad
 | `HAND_DRAWER` | Abrir cajón (V03, A05, D05) | derecha | ≤ 1,2 s† | sí |
 | `HAND_CARD_SWIPE` | Pasar tarjeta por el lector (C06, C07, D06) | derecha | ≤ 1,0 s† | sí |
 | `HAND_TURN` | Girar una lámpara (B01–B03) o un control | derecha | ≤ 0,8 s† | sí |
-| `HAND_HOLD_ITEM` | Sostener y girar un objeto (V05, A03, tarjetas); **exige un objeto sujeto con `sostener`** | la del objeto (izquierda por defecto) | bucle | no |
+| `HAND_HOLD_ITEM` | Sostener y girar un objeto (`V05`; ítems y tarjetas que sostiene 20); **exige un objeto sujeto con `sostener`** | la del objeto (izquierda por defecto) | bucle | no |
 | `HAND_READ` | Sostener un papel o documento | izquierda | bucle | no |
 | `ANIM_PAGE_TURN` | Pasar página (R01); corre sobre `HAND_READ` sin suspenderla | derecha | ≤ 1,0 s† | sí |
 | `HAND_TYPE` | Teclear (V01) | derecha | bucle | no |
@@ -468,7 +484,9 @@ El Jugador no tiene pantalla. Requisitos a las pantallas de 25 (menú de pausa) 
 | D-31 | La lectura del FOV se llama `fov_actual()` (por defecto) | `fov_vigente()` en 7 y en el registro | Ya está en la lista cerrada de la regla 33; se corrigen 7 y el registro |
 | D-32 | El Jugador no lee `reducir_movimiento` (nuevo booleano de Ajustes para puzles y Escena de planta); el balanceo conserva su propio ajuste `balanceo_camara` | Que `reducir_movimiento` fuerce `balanceo_camara = ninguno` | Dos ajustes con funciones distintas; el Jugador no tiene temblor ni fundidos propios que reducir (decisión del usuario, ronda 2) |
 | D-33 | Ranuras de manos con gestos de fondo y bloqueantes: un bloqueante suspende y reanuda los de fondo de su propia mano; `sostener` y `apuntar` son estados, no gestos (I-02) | Bloqueante = ambas manos y rechazo por ranura ocupada; marcar `HAND_PLACE` y `ANIM_PAGE_TURN` como «compatibles» | Permite la secuencia de D-25 y pasar página leyendo sin excepciones por gesto |
-| D-34 | 7 llama a `sostener` para los objetos de escena (V05, A03, tarjetas) y a `HAND_HOLD_ITEM`, que exige objeto sujeto; `t_item_dentro/fuera` vale para todo objeto en mano y 7 suprime `t_mano_s` (I-01, I-04) | `HAND_HOLD_ITEM` sin objeto con el objeto movido por 7; dos duraciones | Un solo dueño de la mano y de la duración; V05 lo cumple con la lista cerrada de la regla 33 |
+| D-34 | 7 llama a `sostener` para los objetos de escena sostenibles (solo `V05`; ronda 3: `A03` y las tarjetas no, las sostiene 20) y a `HAND_HOLD_ITEM`, que exige objeto sujeto (I-01, I-04) | `HAND_HOLD_ITEM` sin objeto con el objeto movido por 7 | Un solo dueño de la mano; V05 lo cumple con la lista cerrada de la regla 33 |
+| D-35 | **(Ronda 3, C-B1, C-W1; usuario)** El Jugador sujeta y mueve el objeto inspeccionado y es dueño de su transformada y de `t_mano_s` (0,4 s): `sostener(…, pose_inspeccion)`, `girar_objeto`, `soltar()`, señales `objeto_sujeto` / `objeto_soltado` (F10). `HAND_REACH` es de la **derecha**; `sostener` se pide tras el `gesto_terminado` de `HAND_REACH` y se rechaza con cualquier gesto bloqueante en curso; 7 pide `HAND_HOLD_ITEM` tras `sostener`. Sostenibles de escena: solo `V05` | (b) 7 conserva la transformada y 2 reescribe D-34 y la regla 24; (c) reparto 2 sujeta / 7 anima entrada y salida; `HAND_REACH` en ambas manos; `A03` y tarjetas como sostenibles de escena | Un solo escritor de la transformada y de la duración, coherente con «las manos no deciden nada, 7 pide» (D-34, regla 24) y con la lista cerrada de la API; `A03` es una caja que se abre y las tarjetas son ítems del bolsillo (slice D.1). Coste: tres elementos nuevos en la API (`girar_objeto`, 2 señales) y que 7 espere avisos en vez de contar tiempo |
+| D-36 | **(Ronda 3, C-W13)** Se retira la clave `t_vista_salida_s` del registro: el regreso de cámara es solo `t_devolver` (0,5 s); la referencia a «F-cámara» de 7 es F9 de este GDD | Mantener el alias | Un nombre por número; el alias invitaba a un segundo valor |
 
 ## Acceptance Criteria
 
@@ -483,7 +501,7 @@ Revisados por `qa-lead`. **Evidencia:** **L** = test unitario automático (gdUni
 - **AC-06 (R10-11, I)**: **GIVEN** el pasillo (X 0 a 24, A.1) y teclado, **WHEN** el jugador avanza en línea recta con `W` sostenido, **THEN** tarda 15,1 ± 0,3 s, y el tiempo es el mismo con la ventana a 30, 60 y 144 fps.
 - **AC-07 (R1, R3, I)**: **GIVEN** la planta construida, **WHEN** el jugador cruza cada puerta de 1,00 m (A, B, D, umbral de Vera) y recorre el pasillo a su ancho completo, **THEN** nunca queda atascado ni roza el marco; **GIVEN** cualquier hueco de mobiliario < 0,50 m, **THEN** no se puede entrar.
 - **AC-08 (R1, L)**: **GIVEN** un objeto estático, **WHEN** el jugador empuja contra él, **THEN** el objeto no se mueve.
-- **AC-09 (R4, I)**: **GIVEN** `T-PAS-1` (X de 9,0 a 10,0) y `radio_sensor_zona` = 0,05, **WHEN** el jugador camina hacia el este a `v_paseo`, **THEN** la zona se activa con su centro entre X = 8,923 y X = 8,95 (9,0 − radio − [0, un paso de física]) y nunca en X > 8,95 ni con el borde de la cápsula (8,75).
+- **AC-09 (R4, I, PV)**: *(PV: depende del comportamiento de `Area3D`/Jolt, igual que AC-05a/b del GDD 4; se verifica en el motor.)* **GIVEN** `T-PAS-1` (X de 9,0 a 10,0) y `radio_sensor_zona` = 0,05, **WHEN** el jugador camina hacia el este a `v_paseo`, **THEN** la zona se activa con su centro entre X = 8,923 y X = 8,95 (9,0 − radio − [0, un paso de física]) y nunca en X > 8,95 ni con el borde de la cápsula (8,75).
 
 **Cámara (reglas 12–20)**
 - **AC-10 (R12, L)**: **GIVEN** cualquier estado y el balanceo en `ninguno`, **THEN** la altura de los ojos sobre el suelo es 1,62 m y el desplazamiento de la cámara respecto a los ojos es exactamente (0, 0, 0).
@@ -511,7 +529,8 @@ Revisados por `qa-lead`. **Evidencia:** **L** = test unitario automático (gdUni
 
 **Manos (reglas 23–28)**
 - **AC-28 (R24, L)**: **WHEN** se pide un gesto bloqueante con otro en curso, **THEN** se rechaza y se registra; **WHEN** un gesto no termina en 3 s, **THEN** se emite el fin y las manos vuelven a reposo con una línea de log.
-- **AC-29 (R24, L)**: **WHEN** se pide `sostener` con un ítem desconocido o con otro objeto ya en la mano, **THEN** se rechaza y las manos no cambian; **WHEN** se pide `HAND_HOLD_ITEM` sin objeto sujeto en esa mano, **THEN** se rechaza; **GIVEN** `V05` declarado sostenible, **WHEN** 7 pide `HAND_REACH`, al `gesto_terminado` `sostener(V05, izquierda)` y `HAND_HOLD_ITEM`, **THEN** `V05` queda sujeto en la izquierda con fundido `t_item_dentro` y `HAND_HOLD_ITEM` activo.
+- **AC-29 (R24, L)**: **WHEN** se pide `sostener` con un ítem desconocido o con otro objeto ya en la mano, **THEN** se rechaza y las manos no cambian; **WHEN** se pide `HAND_HOLD_ITEM` sin objeto sujeto en esa mano, **THEN** se rechaza; **GIVEN** `V05` declarado sostenible, **WHEN** 7 pide `HAND_REACH` (derecha) y, al `gesto_terminado`, `sostener(V05, izquierda, pose_inspeccion)` y `HAND_HOLD_ITEM`, **THEN** `V05` queda sujeto en la izquierda, viaja en `t_mano_s` y se emite `objeto_sujeto("V05")`; **WHEN** se pide `sostener` con `HAND_REACH` aún en curso, **THEN** se rechaza y se registra (también con el gesto en la otra mano).
+- **AC-48 (R24, F10, L)**: **GIVEN** `V05` sostenido con `distancia_m` 0,469 y `t_mano_s` 0,4, **THEN** a 0,2 s la posición es el punto medio entre el sitio y la pose y a 0,4 s coincide con la pose (±0,001 m) y se emite `objeto_sujeto` una sola vez; **WHEN** se llama `girar_objeto(1,8°, 0)`, **THEN** el objeto gira 1,8° sobre su centro y la cámara no; **WHEN** se llama `soltar()`, **THEN** vuelve a su sitio en `t_mano_s` y se emite `objeto_soltado`; **WHEN** llega `reposo()` durante el traslado, **THEN** vuelve a su sitio en ese tick, sin `objeto_sujeto`; **GIVEN** la pausa, **THEN** el traslado no avanza. **GIVEN** `A03` o una tarjeta, **THEN** `sostener` con `pose_inspeccion` se rechaza.
 - **AC-30 (R27, F7, L)**: **GIVEN** g = 1, **WHEN** ω_f es 60, 120 y 200 °/s, **THEN** `manos.x_giro` es −0,0120; −0,0240 y −0,0300 m; **GIVEN** `ninguno`, **THEN** es 0 y la respiración es 0 en todo instante.
 - **AC-31 (R23, R25, V)**: **GIVEN** la planta en la escena 1, **WHEN** se captura el reposo con `campo_vision` en 60°, 70° y 90°, **THEN** la máscara de las manos difiere entre capturas en ≤ 0,5 % de su área† (tamaño y forma idénticos), y no hay objeto, reloj ni anillo en ellas.
 - **AC-32 (R23, R24, V)**: **WHEN** se ejecuta cada gesto de la tabla de Visual/Audio —abrir cajón (V03, `HAND_DRAWER`), teclear (V01, `HAND_TYPE`), girar lámpara (B01, `HAND_TURN`), descolgar (V02), pasar página (R01), girar el peluche (V05, `HAND_HOLD_ITEM`), encajar una pieza (puzle 3: `sostener` + `apuntar` + `HAND_PLACE`; AC-47), pasar tarjeta (C06), pulsar el botón del ascensor (`HAND_REACH`)—, **THEN** hay una captura retenida en la que se ven las manos haciendo el gesto, sin atravesar geometría.
@@ -550,7 +569,7 @@ Ninguna contradice el slice ni cambia pilares o alcance; son verificaciones téc
 | 5 | **Cabina del ascensor** (interior sin definir en el slice): mínimo 1,2 × 1,2 m para la cápsula | GDD de 4 / level-designer | Fase de arquitectura |
 | 6 | **Etiqueta de superficie del suelo:** si el slice distingue moqueta, baldosa o suelo húmedo | audio-director | GDD del sistema 23 |
 | 7 | **Valores † de confort:** `balanceo_camara` inicial `reducido`, `v_paseo` 1,6 m/s, `A_v`/`A_h`; a validar en el primer playtest | game-designer + playtest | Playtest M5 |
-| 8 | **Cambios a otros GDDs:** los de Ajustes, Entrada y Escena de planta (reglas 1, 8 y 18) ya están aplicados; siguen abiertos 7, 9, slice, índice y registro (Dependencies y re-review). Godot sin cobertura en `docs/engine-reference/godot/` queda marcado como pendiente de verificación | autores de cada GDD del lote | Antes de la siguiente re-review |
+| 8 | **Cambios a otros GDDs:** los de Ajustes, Entrada y Escena de planta (reglas 1, 8 y 18) ya están aplicados; queda abierto el 4 (regla 18(c) del sensor, C-W10) y las cláusulas para 20 y 28 al diseñarse (Dependencies). 7 se alineó en la ronda 3. Godot sin cobertura en `docs/engine-reference/godot/` queda marcado como pendiente de verificación | autores de cada GDD del lote | Antes de la siguiente re-review |
 
 ## Propuesta de registro
 
