@@ -1,6 +1,6 @@
 # Ordenador, correo e impresora (sistema 19)
 
-> **Status**: Revisado (ronda de decisiones 1) — pendiente de re-review
+> **Status**: Revisado (ronda de corrección 2) — pendiente de re-review
 > **Author**: ux-designer (lote autónomo, sin aprobación por archivo)
 > **Last Updated**: 2026-11-09
 > **Implements Pillar**: Autonomía como progresión (el jugador decide qué buscar y qué leer) · Información incompleta (hechos de los correos fijos y comprobables) · Tensión sin castigo (nada falla; la impresión es repetible)
@@ -42,7 +42,7 @@ R5. **Pantalla inicial (bandeja).** Tras abrir sesión se muestra una vista con 
 
 R6. **Foco inicial.** Al abrir, el campo de búsqueda recibe el foco con el cursor visible sobre la pantalla. Con ratón y teclado se escribe directamente; con mando se aplica la regla 16 (teclado en pantalla). El foco puede perderse haciendo `seleccionar` fuera del campo y recuperarse haciéndolo sobre él.
 
-R7. **Cerrar.** El jugador cierra con `atrás` (clic derecho / botón este / la asignación de `atrás`; Entrada regla 20 y 7, regla 23), nunca con `Retroceso` ni con `Esc` (que es `pausa`). Al cerrar, 7 envía `cancelación` de cualquier gesto, `on_close(motivo)` con `motivo ∈ {jugador, sistema}` y devuelve la cámara. En `on_close` 19: (1) saca el foco del campo y oculta el teclado en pantalla, (2) pide `reposo()` al Jugador (fin de `HAND_TYPE`), (3) conserva en memoria la consulta y la lista abierta, sin guardarlas (se reabre como se dejó durante la sesión), (4) **no interrumpe** una impresión en curso (R25). Con `motivo = sistema` (director de escenas 21, p. ej. antes del apagón) el comportamiento es idéntico; no hay mensaje.
+R7. **Cerrar.** El jugador cierra con `atrás` (clic derecho / botón este / la asignación de `atrás`; Entrada regla 20 y 7, regla 23), nunca con `Retroceso` ni con `Esc` (que es `pausa`). Al cerrar, 7 envía `cancelación` de cualquier gesto, `on_close(motivo)` con `motivo ∈ {jugador, sistema}` y devuelve la cámara. En `on_close` 19: (1) saca el foco del campo y oculta el teclado en pantalla, (2) pide `reposo()` al Jugador (fin de `HAND_TYPE`), (3) conserva en memoria la consulta y la lista abierta, sin guardarlas (se reabre como se dejó durante la sesión), (4) **no interrumpe** una impresión en curso (R25). Con `motivo = sistema` (cierre forzado `cerrar_modos()` de 7, regla 27a, que puede pedir el director de escenas 21 antes de una escena dirigida con `sin control`) el comportamiento es idéntico; no hay mensaje. En el slice no hay camino que lo use con el ordenador abierto: 21 solo lo pide en `ESC8_CIERRE`, en Recepción, donde no hay ordenador (21 regla 20), y el apagón (`ESC7_APAGON`) no toma `sin control` ni cierra modos (21 regla 13); es un caso de robustez, no de flujo.
 
 R8. **Siempre se puede salir.** 19 no puede bloquear `atrás`. Con una consulta a medias o un teclado abierto, `atrás` cierra el ordenador (no «cierra el teclado» primero): el teclado en pantalla es parte de la vista.
 
@@ -185,7 +185,7 @@ Dependencias recíprocas con regla o AC citado de la otra parte. `‡` = la cont
 | 17 Sistema de pistas | Blanda | Expone `V08` como objetivo resaltable; las pistas 2 y 3 del P1 no añaden información sobre la hora de envío (D19-16: la hoja ya la lleva) | Pistas del P1 (slice 10.1, B.1) ‡ |
 | 18 Base de contenido | Dura | Seis correos con día, hora, remitente, asunto, cuerpo, etiquetas y orden de presentación; claves `UI_MAIL_*`, `OBJ_V08_*`, `MAIL_1`–`MAIL_4`, `MAIL_X1`, `MAIL_X2`; pie `PISTA_P1_N2` | Reglas 3, 8, 11, 12, 13, 17; AC-11; filas «19» de las tablas de dependencias |
 | 20 Documentos y bolsillo | Dura | `otorgar_sesion("I-01")` (acordado: 20, R8 fila `I-01` e Interfaz) y `has_item("I-01")`. 20 solo guarda la pertenencia al conjunto de sesión (`I-01`, Relegible = No); **no** guarda ni muestra el contenido | 20, R8, R9, AC-05; «19 Ordenador (futuro)» en Interactions de 20 |
-| 21 Director de escenas | Blanda | Pide `cerrar_modos()` → `on_close(sistema)` | `cerrar_modos()` de 7 (regla 27a); 21 ya tiene GDD (`director-de-escenas.md`): verificar su llamada a `cerrar_modos` ‡ |
+| 21 Director de escenas | Blanda (sin camino en el slice; asimétrica: 21 no la lista) | 19 solo recibe `on_close(sistema)` si 21 pide `cerrar_modos()`; no depende de 21 para nada más | `cerrar_modos()` de 7 (regla 27a); 21 reglas 13 y 20 (verificado: `cerrar_modos()` incluye `ordenador`, pero solo se pide en `ESC8_CIERRE`, en Recepción; el apagón no cierra modos); el contrato real es 21 → 7 |
 | 26 Subtítulos | Ninguna | 19 no genera voz; los sonidos de la impresora llevan subtítulo no verbal si 26 lo decide | — |
 | 23 Audio | Blanda | `SFX_PRINTER`, `SFX_KEY`, `SFX_CLICK_SUBTLE` | Catálogo de efectos ‡ |
 | 25 Pausa / 30 Accesibilidad | Blanda | Pantalla de opciones (escala de texto, PA-3) | ‡ |
@@ -272,6 +272,7 @@ Tipos: **L** = lógica (test automático), **I** = integración (incluye inyecci
 | D19-14 | Se elimina la tecla `´` (y `-`) del teclado en pantalla | Teclas muertas de acento | La búsqueda ignora tildes (R11, D19-8); las teclas muertas añaden estados sin valor |
 | D19-15 | «Imprimir» habilitado ⇔ `correos_leidos` verdadero y `V08` ≠ `imprimiendo` | Habilitado solo cuando hay resultados en pantalla | Coherente con la carga de partida con lista vacía (edge, AC-14) |
 | D19-16 | **Aprobada por el usuario, 2026-11-09 (cierra PA-1 y la parte de la hoja de PA-2; slice v0.4, B.1 literal):** la hoja `I-01` lleva siempre `Enviado: hh:mm` en cada bloque y el pie «Ordena por hora de envío» (`i01_hora_visible` = verdadero, `i01_pie_ordena_visible` = verdadero; los datos siguen existiendo y son parametrizables). Las pistas 2 y 3 del P1 no añaden esa información; la escalera de pistas es más corta (aceptado). | Hoja sin pie ni hora, que 17 los revele con las pistas 2 y 3. | Es el texto literal de B.1 del slice; mantiene la hoja autosuficiente y evita contradecir el slice; el coste (pistas 2 y 3 redundantes) lo asume el usuario. |
+| D19-17 | **(Ronda de corrección 2, W-8, W-4)** El ejemplo de `motivo = sistema` ya no es «antes del apagón» (21 reglas 13 y 20: el apagón no cierra modos); la dependencia 19 ↔ 21 queda Blanda y asimétrica (21 no la lista; el contrato real es 21 → 7). Se confirma que `compose_i01()` es la R30 de 19 (L110). Discrepancia de dureza anotada: 19 declara a 1 Dura y 1 lista a 19 como Blanda; 19 declara a 4 Dura y 4 no lista a 19. | Quitar la fila de 21 o dejar el ejemplo del apagón. | El ejemplo era falso; 19 sí recibe `on_close(sistema)` y debe poder tolerarlo. Decisión por defecto. |
 
 Reclasificadas como preguntas abiertas en la ronda de corrección 1 (alcance del slice, no decisiones): D19-1 (hoja no sostenible) y D19-2 (hoja en bandeja y botón de pantalla) → PA-7; D19-3 (sin Recibidos) → PA-5; D19-5 (sin ordenar) → PA-6. La implementación provisional no cambia.
 
@@ -304,7 +305,7 @@ Reclasificadas como preguntas abiertas en la ronda de corrección 1 (alcance del
 | 4 Escena de planta | Prop de hoja en bandeja de `V08`; anclaje de cámara de `V01` y sonido de impresora a ≈ 4,05 m | R18, R21 (cond. PA-7) |
 | 1 Entrada y controles | Cerrar Open Question 1 con R16; el AC-20 citado puede referirse al AC-10a de 19 | R16 |
 | 17 Sistema de pistas | Pistas 2 y 3 del P1 sin información nueva sobre la hora (D19-16; el slice v0.4 lo acepta); solo la pista 1 orienta (guía a `V08`); usar `V08` como `targets_if_missing_items` | R26 |
-| 21 Director de escenas | Verificar que su cierre del ordenador usa `cerrar_modos()` de 7 (→ `on_close(sistema)`) | R7 |
+| 21 Director de escenas | Verificado (ronda 5): `cerrar_modos()` de 21 (regla 20) incluye `ordenador` y produce `on_close(sistema)`; sin camino real en el slice (solo `ESC8_CIERRE`, en Recepción). Sin cambio. | R7 |
 | `design/ux/` | **UX spec** de la pantalla del ordenador (`design/ux/ordenador-correo.md`): disposición, foco, teclado en pantalla (modo teclado D19-13), estados vacío/sin resultados/resultados y legibilidad; la escribe `/ux-design`, no este GDD | Sistema con pantalla y flujo |
 | `systems-index.md` | Marcar 19 «Revisado (ronda de corrección 1) — pendiente de re-review» | Estado |
 
@@ -326,3 +327,4 @@ Reclasificadas como preguntas abiertas en la ronda de corrección 1 (alcance del
 | 0.1 | 2026-11-09 | Borrador del lote Feature 1 (ux-designer, modo autónomo). Pendiente de review. |
 | 0.2 | 2026-11-09 | Ronda de corrección 1 según la revisión independiente (3 bloqueantes, 11 avisos): contrato con 20 (`otorgar_sesion`), dueño del contenido de `I-01` (`compose_i01()`, R30), PA-1 y D19-1/2/3/5 reclasificadas como preguntas abiertas con valores provisionales parametrizados, teclado en pantalla simplificado y con scroll (D19-13/14), «Imprimir» ligado a `correos_leidos` (D19-15), ACs retipados y ampliados (AC-10a/b, 18a/b, 26–30), valores † uniformes, distancia recalculada (≈ 4,05 m). Estado: Revisado (ronda de corrección 1) — pendiente de re-review. |
 | 0.3 | 2026-11-09 | Ronda de decisiones 1: D19-16 (aprobada por el usuario): PA-1 cerrada y PA-2 cerrada en lo que toca a la hoja (`i01_hora_visible` y `i01_pie_ordena_visible` = verdadero, B.1 literal, pistas 2 y 3 sin información nueva); `pantalla_muestra_hora` sigue abierta (el slice no lo define). PA-3 a PA-9 sin cambios. Estado: pendiente de re-review. |
+| 0.4 | 2026-11-09 | Ronda de corrección 2 (informe cruzado ronda 5, W-8, W-4): R7 sin el ejemplo falso del apagón, fila de 21 reescrita (Blanda, asimétrica), D19-17; discrepancias de dureza anotadas. Estado: Revisado (ronda de corrección 2) — pendiente de re-review. |
