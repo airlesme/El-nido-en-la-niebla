@@ -1,6 +1,6 @@
 # Base de contenido narrativo
 
-> **Status**: Revisado (ronda de decisiones 1) — pendiente de re-review (ronda 6 aplicó A-3 y A-4 de `gdd-cross-review-2026-11-09-r4.md`; la ronda de propagación 1 aplicó los cambios requeridos por 8, 19, 20 y 21; la ronda de decisiones 1 aplica D18-20 a D18-24: `MEGA_03` al §12, `UI_BOLSILLO_AYUDA`, `I-05`/`I-06a` y B.1 del slice)
+> **Status**: Revisado (ronda de corrección 2) — pendiente de re-review (ronda de corrección 2: W-7, D18-25; ronda 6 aplicó A-3 y A-4 de `gdd-cross-review-2026-11-09-r4.md`; la ronda de propagación 1 aplicó los cambios requeridos por 8, 19, 20 y 21; la ronda de decisiones 1 aplica D18-20 a D18-24: `MEGA_03` al §12, `UI_BOLSILLO_AYUDA`, `I-05`/`I-06a` y B.1 del slice)
 > **Author**: Álvaro + agentes
 > **Last Updated**: 2026-11-09
 > **Last Verified**: 2026-11-09
@@ -203,7 +203,7 @@ El idioma activo es `es` en todo el slice y no cambia durante la partida.
 
 **Aguas arriba (de qué depende):** ninguna. Solo necesita sus ficheros de datos (`assets/data/narrative/`), la capacidad del motor de leerlos al arrancar y el texto del slice (`design/slice/slice-v0.3.md`, §12) para la verificación. No lee el estado del juego, de modo que no depende del sistema 3.
 
-**Aguas abajo (quién depende de este sistema).** Estado real: 1, 2, 4, 5, 6, 7 y 9 ya tienen GDD y declaran rótulos o textos como entradas de este sistema; los demás aún no. Dura = no puede funcionar sin él; blanda = mejora con él pero su lógica sigue.
+**Aguas abajo (quién depende de este sistema).** Estado real: 1, 2, 3, 4, 5, 6, 7, 8, 9, 19, 20 y 21 ya tienen GDD y declaran rótulos o textos como entradas de este sistema (10 pide los suyos a través de 7 y 9 y no lo lista); los demás (11–17, 22–27) aún no. Dura = no puede funcionar sin él; blanda = mejora con él pero su lógica sigue.
 
 | Sistema | Tipo | Interfaz |
 |---|---|---|
@@ -222,7 +222,7 @@ El idioma activo es `es` en todo el slice y no cambia durante la partida.
 
 **Índice de sistemas:** ya refleja al 18 como dependencia de 1, 2, 4, 5, 6, 7, 8, 9, 11, 24 y 25 (y de 12, 14, 16, 17, 19–23, 26 y 27).
 
-**Bidireccionalidad.** Los GDD 1, 2, 4, 5, 6, 7 y 9 ya listan este sistema (rótulos `UI_…`, claves de pista) y piden el contenido solo por identificador. Los que aún no existen deben, al redactarse, listarlo como dependencia.
+**Bidireccionalidad.** Los GDD 1, 2, 3, 4, 5, 6, 7, 8, 9, 19, 20 y 21 ya listan este sistema (rótulos `UI_…`, claves de pista, correos, documentos, líneas) y piden el contenido solo por identificador. Los que aún no existen (11–17 y 22–27) deben, al redactarse, listarlo como dependencia.
 
 ## Visual/Audio Requirements
 
@@ -371,9 +371,11 @@ Ronda de propagación 1 (2026-11-09), cambios requeridos por los GDD 8, 19, 20 y
 | D18-22 | **`I-05` e `I-06a` se pueden releer desde el bolsillo** (D18-21); 9 y 10 no añaden presentación nueva al resolver P4/P3. Sus textos siguen siendo las entradas `DOC_LISTA_TAREAS` y `NOTA_01` de este sistema; sin claves nuevas. Aprobada por el usuario, 2026-11-09. | Textos de lectura nuevos al resolver P4/P3 (Q2 de 20, pregunta 7 de 10). | Los documentos ya existen; la relectura basta y no amplía el slice. |
 | D18-23 | **Slice B.1 literal** para el P1: la hoja lleva `Enviado: hh:mm` siempre y el pie `PISTA_P1_N2` «Ordena por hora de envío»; las pistas 2 y 3 no añaden esa información. Se cierra solo eso (PA-1/PA-2 de 19 y lo de PA-4/PA-8 que decide B.1); 4 o 6 resultados (PA-4), ruido `MAIL_X1`/`MAIL_X2` (PA-8) y el resto de 19 quedan abiertos (pregunta 15). Aprobada por el usuario, 2026-11-09. | Dar la hora solo con pistas, o cambiar B.1. | Es lo que el slice ya fija; no cambia claves ni recuentos. |
 | D18-24 | D18-18 queda **sustituida** por D18-20. Los demás recuentos (8 `PISTA_*`, 6 correos, 7 documentos) no cambian. | — | Evita dos decisiones vigentes sobre la misma línea. |
+| D18-25 | **(Ronda de corrección 2, W-7, 2026-11-09)** Se retiran los «sin GDD» obsoletos de Dependencies (aguas abajo y Bidireccionalidad): ya existen los GDD 3, 8, 19, 20 y 21 y todos listan a 18. Sin cambios de reglas ni de recuentos | Dejar la lista antigua hasta el próximo lote | Un texto desfasado hace creer que faltan reciprocidades que ya están cerradas |
 
 ## Historial de cambios
 
+- **2026-11-09 (ronda de corrección 2, W-7 de `gdd-cross-review-2026-11-09-r5.md`):** textos «sin GDD» de Dependencies actualizados (D18-25). Sin cambios de reglas. Estado: Revisado (ronda de corrección 2) — pendiente de re-review.
 - **2026-11-09 (ronda de decisiones 1, D-A a D-D aprobadas por el usuario):** `MEGA_03` pasa al §12 (28 entradas, 21 audibles, 3 de megafonía; recuentos actualizados), `UI_BOLSILLO_AYUDA` decidida, `I-05`/`I-06a` releíbles, B.1 literal para la hoja del P1 (D18-20 a D18-24); sigue abierto el resto de 19 y «Ahora no». Estado: pendiente de re-review.
 
 - **2026-11-09 (ronda de propagación 1, lote Feature 1):** regla 23 (claves pedidas por 8, 19, 20 y 21 con marcador de pendiente), campo `asunto` en el correo, bullet del verificador, AC-22, filas de Interacciones y Dependencies de 7·8, 19, 20 y 21, `MEGA_03` provisional y bloque «Pendiente de decisión (lote Feature 1)». No cambian los recuentos (27 entradas del §12; 8 `PISTA_*`). Estado: pendiente de re-review.
