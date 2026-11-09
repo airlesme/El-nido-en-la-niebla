@@ -1,6 +1,6 @@
 # Puzle 4 · Tablero de tareas
 
-> **Status**: Revisado (ronda de corrección 7) — pendiente de re-review
+> **Status**: Revisado (ronda de corrección 8) — pendiente de re-review
 > **Author**: game-designer (lote autónomo, 2026-11-09)
 > **Last Updated**: 2026-11-09
 > **Sistema**: 14 · Capa `Feature` · Categoría `Gameplay` · Prioridad `MVP`
@@ -150,7 +150,7 @@ Hallazgo vigente de la revisión cruzada (r2): la regla visible empuja a «Devol
 - **P4-E10. Carga con `caja_c2` verdadero y `t4_decision` sin fijar** (solo consola): T4 se dibuja «ACEPTADA» (sello por defecto) y 22 usa `VO_G_14_RET` con una advertencia (regla 16 de 22). No se bloquea nada.
 - **P4-E11. Orden P4 antes que P3:** válido; `I-05` llega antes que `I-06a` (regla 24 de 9; edge 18 de 10).
 - **P4-E12. Textos largos o subtítulos** (accesibilidad de texto): el rechazo «No corresponde» y los sellos nunca tapan los selectores; si el tamaño de texto crece, la ficha crece, no se recorta (ux).
-- **P4-E13. Mando:** el cursor virtual de 7 selecciona; la separación de 128 px (R = 64) evita ambigüedad de la atracción asistida (F5b es de Entrada (1); la regla 22 de 7 la cita). Con «reducir movimiento» el rechazo no vibra (P4-R8).
+- **P4-E13. Mando:** el cursor virtual de 7 selecciona; la separación de 128 px (R = 64 ‡ 7) evita ambigüedad de la atracción asistida (F5b es de Entrada (1); la regla 22 de 7 la cita). Con «reducir movimiento» el rechazo no vibra (P4-R8).
 - **Estrategias degeneradas (Sirlin).**
   - **D-W1 · Fuerza bruta en T1–T3.** Posible y barata (≈ 13 s de media, P4-F2); no salta contenido narrativo (T4 e `I-05` no se pueden forzar). Aceptada e instrumentada. Alternativa descartada: que el rechazo reinicie las demás o añada espera (castigo, contradice *Tensión sin castigo*).
   - **D-W10 · T4 apenas se percibe como elección.** Mitigaciones y medición en P4-F4; parte queda fuera de 14 (Open Question 2).
@@ -197,7 +197,7 @@ Hallazgo vigente de la revisión cruzada (r2): la regla visible empuja a «Devol
 | `hover_highlight_s` (nivel 2) | F | continuo mientras el cursor esté sobre la ficha | n/a | Resaltado de `Tn/body` al pasar; no es un temporizador |
 | `stamp_s` (`SFX_STAMP`) | F | lo fija 23 | — | Duración del sello; la misma para las dos salidas de T4 |
 | `lock` | G | **`NONE`** | fijo | Una ficha rechazada se puede reeditar al instante; cambiarlo rompe F2 y `lock_max_s` |
-| `elements_min_separation_px` | F | 128 (R = 64) | 128–176 | Separación mínima entre centros (7, regla 22); mayor = más legible, ocupa más |
+| `elements_min_separation_px` (`element_zones[].min_separation_px`) | F | 128 (R = 64 ‡ 7) | 128–176 | Separación mínima entre centros (7, regla 22); mayor = más legible, ocupa más |
 | `view_distance_m` (D01b) | F | pendiente (Open Question 1) | lo fija 7/10 | Escala de la vista (F6 de 7) |
 | `t4_accept` | C | `[RETURN, ASSIGN]` | no editable (decisión del usuario, D9-39) | Qué acciones acepta T4; añadir una exigencia reintroduciría una respuesta errónea |
 | `t_clic` (modelo) | — | 0,4 s | 0,3–0,6 | Solo de P4-F2/P4-F3 (no es un knob de juego) |
@@ -256,6 +256,7 @@ Entrada de `assets/data/puzzles/puzzles.json` según el esquema de 9 (regla 4). 
 
 ```json
 {
+  "schema_version": 2,
   "id": "P4", "mode": "VIEW", "view": "D01b",
   "solved_flag": "caja_c2",
   "requires": { "all": [] },
@@ -277,12 +278,12 @@ Entrada de `assets/data/puzzles/puzzles.json` según el esquema de 9 (regla 4). 
   "on_reopen": "NO_VIEW",
   "resolution": { "kind": "IMMEDIATE" },
   "persist": [],
-  "elements": { "atraccion_desactivada": false, "min_separation_px": 128 },
+  "element_zones": [ { "ids": ["D01b/*"], "atraccion_desactivada": false, "min_separation_px": 128 } ],
   "hints": [
     { "level": 1, "trigger": "REQUEST", "availability": "ALWAYS",
       "effects": [ { "type": "TEXT", "key": "PISTA_P4_N1" } ] },
     { "level": 2, "trigger": "REQUEST", "availability": "ON_HINT",
-      "effects": [ { "type": "AFFORDANCE", "name": "HOVER_HIGHLIGHT", "targets": ["D01b/T1/body", "D01b/T2/body", "D01b/T3/body", "D01b/T4/body"] } ] },
+      "effects": [ { "type": "AFFORDANCE", "affordance": "HOVER_HIGHLIGHT", "targets": ["D01b/T1/body", "D01b/T2/body", "D01b/T3/body", "D01b/T4/body"] } ] },
     { "level": 3, "trigger": "REQUEST", "availability": "ON_HINT",
       "effects": [ { "type": "AUTO_SOLVE_ELEMENT", "target": "D01b/T1" },
                    { "type": "TEXT", "key": "PISTA_P4_N3" } ] }
@@ -290,7 +291,7 @@ Entrada de `assets/data/puzzles/puzzles.json` según el esquema de 9 (regla 4). 
 }
 ```
 
-Notas de datos: (1) Los campos `on_solved.write[].value_from`/`map`, `on_partial.stamp_text_keys`, `elements.{atraccion_desactivada, min_separation_px}`, `on_reject.{message_key, message_s, applies_to}` y el `name` de `AFFORDANCE` **no son de este GDD: los define el esquema v2 de 9** (regla 4; ver Cambios requeridos, 9). El bloque de arriba es su **uso** por P4 y no se considera implementable hasta que 9 los acepte (la regla 12c de 9 solo exige que el valor de `t4_decision` salga de la carga útil del veredicto). El `PARTIAL` de 9 tampoco lleva hoy ficha ni acción (P4-R6). (2) Las claves `UI_P4_*` son **propuestas** para 18 (Cambios requeridos); `PISTA_P4_N1` ya existe y se usa también como texto fijo de la regla (D18-3). (3) `reset_after_s` = 0 y `lock: NONE` cumplen `lock_max_s` (≤ 2,0 s). (4) El estado inicial (ninguna ficha aceptada) no satisface la solución, como exige la regla 29.
+Notas de datos: (1) Los campos `schema_version`, `on_solved.write[].value_from`/`map`, `on_partial.stamp_text_keys`, `element_zones`, `on_reject.{message_key, message_s, applies_to}` y el campo `affordance` **no son de este GDD: los define el esquema v2 de 9** (regla 4b; D9-67 a D9-72), que ya los absorbe; el bloque es su **uso** por P4 (`schema_version: 2` es de la raíz del fichero y se repite para fijar la versión de la entrada). `element_zones` sustituye al `elements` objeto del borrador (chocaba con la lista `elements` de `WORLD`, D9-69). `PARTIAL` lleva `action` (regla 4b-b). Sin `tolerance_px`, los elementos usan R = 64 px (‡ 7, propuesta de 9, D9-78); separación 128 px. (2) Las claves `UI_P4_*` son **propuestas** para 18 (Cambios requeridos); `PISTA_P4_N1` ya existe y se usa también como texto fijo de la regla (D18-3). (3) `reset_after_s` = 0 y `lock: NONE` cumplen `lock_max_s` (≤ 2,0 s). (4) El estado inicial (ninguna ficha aceptada) no satisface la solución, como exige la regla 29.
 
 ## Decisiones tomadas
 
@@ -315,6 +316,7 @@ Decididas del lote autónomo con recomendación propia (el usuario las aprueba a
 | D14-15 | Criterio único de duración: mediana 2–4 min conforme, aviso 1,5–2/4–5 (recalibra F7), alerta <1,5 o >5 (revisión de diseño) | Dejar AC-14-25 en 2–4 y la alerta en 1,5–5 sin escalón | Eran dos umbrales sin relación; el escalón separa «F7 mal calibrado» de «el puzle falla» |
 | D14-16 | `t_fallo` = 10,8 s: no suma los 1,5 s de «No corresponde» | Mantener 12 s | `lock: NONE` no bloquea la entrada (P4-R8): el mensaje y el repensar son simultáneos; sumarlos sobrestimaba |
 | D14-17 | Asimetría de clics Devolver (1) / Asignar (2) **no se corrige aquí**: pregunta abierta 7 | Confirmación en «Devolver» decidida por el autor | Afecta al pilar *Ambivalencia* y quizá a B.4 del slice (opción d): lo decide el usuario |
+| D14-18 | (Ronda 8) Alineado con el esquema v2 de `puzzles.json` (regla 4b de 9): `schema_version: 2`; `element_zones` sustituye al `elements` objeto; `affordance` en lugar de `name`; peticiones a 9 marcadas como absorbidas; R = 64 px ‡ 7 | Mantener `elements` objeto y `name` | Un nombre por concepto; `elements` chocaba con la lista de `WORLD` (D9-69, D9-72, D9-78); sin cambio de diseño ni de tiempos |
 
 ## Open Questions
 
@@ -332,14 +334,14 @@ Decididas del lote autónomo con recomendación propia (el usuario las aprueba a
 
 No se ha editado ningún archivo existente. Propuestas:
 
-1. **9 Marco de puzles** (esquema v2, regla 4; lo redacta otro agente: 14 solo pide): (a) campos que P4 usa y que la regla 4 no recoge: `on_solved.write[].value_from` + `map` (`t4_decision` desde `t4_action`; la regla 12c ya exige el valor pero no el campo), `on_partial.stamp_text_keys`, `elements.{atraccion_desactivada, min_separation_px}`, `on_reject.{message_key, message_s, applies_to}`, `on_reject.shake_s` y el `name` de `AFFORDANCE`; (b) **`PARTIAL` con carga útil**: `PARTIAL {element, action}` (hoy ni ficha ni acción) para que el feedback de sello (regla 13b) elija «ACEPTADA»/«DEVUELTA» y para que el controlador de T4 lo emita al aceptar `RETURN`; (c) F6: el coste de P4 queda en ≈ 22,8 s para T1–T3 (incluye el intento correcto; P4-F2) en lugar de ≈ 22 s, o dejar la cota; (d) Dependencies: citar `puzle-4-tablero-de-tareas.md` como GDD del 14 (fila de dependiente: «14 Puzle 4 · controlador y datos de P4 · `t4_decision`»); (e) F7: sin cambio salvo que el playtest mueva la mediana (AC-14-25); (f) regla 32 (opcional): **no** se pide calcular `r_T4`, `p_RET` ni `p_oir` (son métrica de playtest de 14, P4-F4); como mucho, que el registro local anote el valor de `t4_decision` al resolver P4, que es solo dejar visible un hecho ya existente.
+1. **9 Marco de puzles:** (a) **absorbido en 9 (esquema v2, D9-68, D9-69, D9-70, D9-72; regla 4b):** `on_solved.write[].value_from` + `map` (`t4_decision` desde `t4_action`), `on_partial.stamp_text_keys`, `element_zones` (antes `elements.{…}`), `on_reject.{message_key, message_s, applies_to}`, `on_reject.shake_s` y el campo `affordance` (antes `name`); no se vuelven a pedir; (b) **absorbido en 9 (regla 4b-b, D9-69):** `PARTIAL` con `action` para el feedback de sello (regla 13b); queda ‡ 7 el R = 64 px de los elementos sin tolerancia (D9-78); (c) F6: el coste de P4 queda en ≈ 22,8 s para T1–T3 (incluye el intento correcto; P4-F2) en lugar de ≈ 22 s, o dejar la cota; (d) Dependencies: citar `puzle-4-tablero-de-tareas.md` como GDD del 14 (fila de dependiente: «14 Puzle 4 · controlador y datos de P4 · `t4_decision`»); (e) F7: sin cambio salvo que el playtest mueva la mediana (AC-14-25); (f) regla 32 (opcional): **no** se pide calcular `r_T4`, `p_RET` ni `p_oir` (son métrica de playtest de 14, P4-F4); como mucho, que el registro local anote el valor de `t4_decision` al resolver P4, que es solo dejar visible un hecho ya existente.
 2. **18 Base de contenido:** claves propuestas `UI_P4_NO_CORRESPONDE`, `UI_P4_SELLO_ACEPTADA`, `UI_P4_SELLO_DEVUELTA`, `UI_P4_URGENCIA` y `UI_P4_RESPONSABLE` (rótulos), `UI_P4_URG_ALTA/MEDIA/BAJA`, `UI_P4_RESP_VERA/GUARDIAN/DIRECCION`, `UI_P4_DEVOLVER`, con texto provisional y marcador de pendiente (regla 23 de 18). Los textos de las fichas (T1–T4) ya son de 18. **Sin** clave para ningún aviso de «elección recordada» (D14-11).
 3. **10 Caja:** `D01b` necesita tamaño del tablero y `view_distance_m` compatibles con el layout (Open Question 1); el papel de `I-05` es decorado sobre el tablero y no puede tapar selectores ni sellos (regla 17 de 10); **fila concreta en Dependencies (dependientes):** «14 Puzle 4 · Tablero de tareas · blanda · resultado de P4 por `caja_c2`, «compartimento completado» (2); P4 usa `get_view_gate('D01b')` y `set_final_pose(2)`» (hoy 10 no cita a 14).
 4. **7 Interacción:** catálogo de `D01b`: `t_vista_entrada_s`, distancia, FOV y los 33 IDs de elemento `D01b/...` (28 botones, 4 `body`, `rule`; P4-R2); P4 no declara `atraccion_desactivada`.
 5. **22 Llamada telefónica:** **fila concreta en Dependencies (fila «9 Marco de puzles»/estado):** «14 Puzle 4 · quien escribe `t4_decision` (vía 9) · indirecta, por el estado»; sin cambio de comportamiento y **sin** pedirle a 22 que calcule `p_oir` (no lo hace; P4-F4 lo mide por observación). La línea `VO_G_14_ASG` sigue pendiente de narrative-director.
 6. **20 Documentos y bolsillo:** sin cambio de comportamiento; fila concreta: «`I-05` · `DOC_LISTA_TAREAS` · origen: 14 Puzle 4 (`caja_c2`)».
 6b. **16 Puzle 6:** citar 14 como proveedor de `caja_c2` (`requires.all`) en Dependencies, si no lo hace ya.
-7. **systems-index:** fila 14 → `Revisado (ronda de corrección 7) — pendiente de re-review`, enlace a este archivo, dependencias `9, 10, 18`; dependientes: 22 (indirecta) y 20, 10 (blandas); la línea ~277 («14 Puzle 4 (GDD aún sin redactar)») la corrige otro agente.
+7. **systems-index:** fila 14 → `Revisado (ronda de corrección 8) — pendiente de re-review`, enlace a este archivo, dependencias `9, 10, 18`; dependientes: 22 (indirecta) y 20, 10 (blandas); la línea ~277 («14 Puzle 4 (GDD aún sin redactar)») la corrige otro agente.
 8. **Slice (con autorización del usuario):** alinear §10.4 con B.4 en la pista de nivel 1 (Open Question 3).
 9. **3 Estado y bus:** confirmar `t4_decision` como hecho con `owner = 9` (ya listado en D.2).
 
@@ -392,5 +394,6 @@ facts:
 
 | Fecha | Cambio |
 |---|---|
+| 2026-11-09 (ronda de corrección 8) | Alineación mecánica con el esquema v2 de `puzzles.json` (regla 4b de 9): `schema_version: 2`, `elements` → `element_zones`, `name` → `affordance`, peticiones a 9 absorbidas marcadas, R = 64 px ‡ 7; D14-18. Sin cambio de diseño. Estado: Revisado (ronda 8), pendiente de re-review. |
 | 2026-11-09 | Ronda de corrección 7 (revisión independiente: 1 bloqueante, 12 avisos): `p_oir`/`r_T4`/`p_RET` pasan a métrica de playtest propia de 14 (ni 22 ni regla 32 de 9; fuentes y umbrales en P4-F4); esquema v2 de 9 referenciado, no reproducido (`PARTIAL` con ficha y acción pedido en Cambios); `shake_s` y `message_s` en Tuning Knobs; mediana 2–4 min unificada con la alerta (AC-14-25); `t_fallo` 10,8 s (sin los 1,5 s) y F3 recalculada: nominal 176,8 s, máximo 406,6 s (registro actualizado); asimetría Devolver/Asignar elevada a Open Question 7; D14-13 marcada débil y corregida; AC-14-29 a 34 (R11, R14, E5, E7, E8, E10); citas «F5b» y «regla 21b» corregidas; reciprocidad con 9, 10, 16, 20 y 22 en filas concretas de Cambios. Estado: pendiente de re-review. Decisiones D14-14 a D14-17. |
 | 2026-11-09 | Primer borrador (lote Feature 3): reglas P4-R1 a R20, fórmulas P4-F1 a F5, 28 AC, datos de `puzzles.json`, 13 decisiones y 6 preguntas abiertas. Estado: pendiente de review. |
