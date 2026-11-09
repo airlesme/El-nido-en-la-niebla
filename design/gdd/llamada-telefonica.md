@@ -1,6 +1,6 @@
 # Llamada telefónica (sistema 22)
 
-> **Estado:** Revisado (ronda de corrección 6) — pendiente de re-review
+> **Estado:** Revisado (ronda de corrección 8) — pendiente de re-review
 > **Autor:** narrative-director (lote autónomo, 2026-11-09)
 > **Capa:** Feature · **Categoría:** Narrativa / Gameplay
 > **Fuente de verdad:** `design/slice/slice-v0.3.md` (contenido v0.4.2): §11 escena 7 y 11.1, §8.5/D-03, §13, Anexo C.7, Anexo D.2/D.3.
@@ -188,7 +188,7 @@ Efectos sobre la escena: `llamada_completada` en `T_compl`; luces y lluvia en `T
 | 18 Base de contenido narrativo | Dura | 22 (18 la declara dura en su fila 22) | `VO_G_12A–C`, `VO_G_13A–D`, `VO_G_14_RET/ASG`, textos de las cuatro opciones, `fallback_s`, `SUB_BREATH_BROKEN` | Petición de claves por ID; sin modificar textos | 18, reglas 5, 16 y 22; D18-10 |
 | 21 Director de escenas | Indirecta (vía 3, por `llamada_completada`; la declara 21 en su fila 22). 22 respeta el límite de 21 | 21 | `V02` en `vibrando`; apagón activo; reanudación sin sillas ni tecleo; aviso «estado de objeto pedido» ‡ **solo para `V02`**, que 22 ejecuta (regla 33; 21 regla 15, PA-7) | Hecho `llamada_completada` (21 reacciona con `ESC7_RESTAURAR`); `V02` `en_llamada`, `reposo` y `vibrando` (con `SFX_PHONE_BUZZ`) en la reanudación con `llamada_iniciada`; ninguna orden a 21 | 21, reglas 4, 14, 15 y 17; fila 22 |
 | 8 Control de acceso | Indirecta (vía 3, por `llamada_completada`; la declara 8) | 8 | Nada | `llamada_completada` (8 activa `C08` a `t_ascensor_s`) | 8, regla 13 |
-| 9 Marco de puzles | Indirecta (por el bus) | 22 | `carta_variante` (la escribe P6), `t4_decision` (la escribe P4) | Ninguna; 9 estima la duración de la llamada | 9, tiempos (llamada), regla 20 |
+| 9 Marco de puzles (con 14 y 16) | Indirecta (por el bus; la declara 22) | 22 | `carta_variante` (hecho de 9, escrito en `on_solved` del controlador de **16 Puzle 6**: A, B o C; la llamada se dispara al salir de `D01d`, cuando la carta y su variante ya están fijadas) · `t4_decision` (`returned`/`assigned`; lo escribe **9** en `on_solved` del **14 Puzle 4**, antes de `caja_c2`; la llamada lo lee para elegir `VO_G_14_RET`/`VO_G_14_ASG`) | Ninguna; 9 estima la duración de la llamada. 22 **no** calcula ni emite `p_oir`, `r_T4` ni `p_RET`: son métrica de playtest de 14 (P4-F4, por observación) | 9, tiempos (llamada), regla 20; 14, filas «Aguas abajo» (22) y P4-F4; 16, reglas 7 y 21 y D16-12 |
 | 4 Escena de planta | Sin dependencia directa | 22 | Nada | `llamada_completada` es la precondición de `recepcion` | 4, regla 13 |
 | 23 Director de audio ‡ | Blanda | 22 | «línea terminada» / «línea sin audio» / «línea fallida»; reproducción y mezcla | «línea pedida» (VO y `SFX_*`); «sonido de llamada pedido» ‡ (parar `SFX_PHONE_BUZZ`, `SFX_BREATH_BROKEN`, `SFX_PHONE_END`, `SFX_CALL_BREATH`); interrumpir ‡ | 3, tabla de avisos (23); sin GDD |
 | 26 Subtítulos ‡ | Blanda | 22 | Muestra el subtítulo de las líneas y de `SUB_BREATH_BROKEN` | Nada directo (lo pide 23/18) | 18, regla 22; sin GDD |
@@ -289,6 +289,7 @@ Tipos: L = lógica (automática), I = integración, PV = playtest o verificació
 | D22-28 | `HAND_PHONE_HOLD` va desde el final de `ANIM_PHONE_PICKUP` hasta el inicio de `HAND_PHONE_PUTDOWN` (R3 y R24 coinciden con el catálogo de 2). | Solo `LINEA` a `CIERRE`. | `SILENCIO` y `RESPIRACION` también son «durante la llamada». |
 | D22-29 | Los textos pendientes (respiración inicial, `SUB_BREATH_BROKEN`, `VO_G_14_ASG`) siguen como preguntas abiertas para el writer (nº 2, 4, 5). | Fijarlos aquí. | Los textos son de 18 y del writer; este GDD no los escribe. |
 | D22-30 | Ronda 6: 8 y 21 declaran Indirecta (vía 3, por `llamada_completada`); 22 la repite. La vuelta a `INACTIVA` solo la dispara la descarga del despacho (R19). Con el contexto `llamada` rechazado, 22 no repite `SFX_PHONE_BUZZ`. D-15 sigue pendiente de confirmar por el usuario; 21 R15 admite solo la devolución a `reposo` de `V02` con `llamada_iniciada`. | «Escena lista» como disparador; dar D-15 por confirmado. | Regla común: manda el dependiente; el slice no se toca y D-15 está en «Confirmar». |
+| D22-31 | Ronda 8: 22 cita a 14 y 16 en su fila de 9 como proveedores indirectos de `t4_decision` y `carta_variante`, sin cambiar su contrato (lectura de dos hechos de 9; fallos con consola como antes, R16 y Edge Cases). La métrica `p_oir` (cuántos jugadores oyen la línea de 14 antes de elegir) es de playtest de 14 y 22 no la calcula ni la registra. | Que 22 cuente `p_oir`/`r_T4` en un registro propio; abrir la dependencia 22 → 14 como directa. | 14 lo resuelve por observación (P4-F4); 22 solo lee `t4_decision` y no sabe de qué puzle viene. La dependencia sigue siendo indirecta por el estado (vía 3), como la declara 22. |
 
 ## Open Questions
 
@@ -324,7 +325,7 @@ Tipos: L = lógica (automática), I = integración, PV = playtest o verificació
 
 ## Entradas para el registro
 
-- **Hechos (ya existen):** `llamada_iniciada`, `respuesta_llamada`, `llamada_completada`; dueño 22; sin hechos nuevos.
+- **Hechos (ya existen):** `llamada_iniciada`, `respuesta_llamada`, `llamada_completada`; dueño 22; sin hechos nuevos. Lee `carta_variante` (9, controlador de 16) y `t4_decision` (9, controlador de 14), ya registrados; este GDD figura en su `referenced_by`. Ninguna constante ni métrica de 14 (`p_oir`) es de 22.
 - **Avisos:** «llamada iniciada» (22 → 3, 5), «llamada completada» (22 → 8, 21, 4), «línea pedida» (también 22), «sonido de llamada pedido» ‡ (22 → 23); **recibe** «estado de objeto pedido» ‡ (21 → 22, solo para `V02`).
 - **Estados de `V02`:** `reposo`, `vibrando` (21; 22 en reanudación), `en_llamada` (22; 22 ejecuta «estado de objeto pedido» solo para `V02`).
 - **Contexto de entrada:** `llamada` (22 abre y cierra).
@@ -337,3 +338,4 @@ Tipos: L = lógica (automática), I = integración, PV = playtest o verificació
 - 2026-11-09 — Borrador completo (lote Feature 2): 32 reglas, 5 fórmulas, 26 AC, 20 decisiones, 9 preguntas abiertas, 11 cambios requeridos. Pendiente de review independiente.
 - 2026-11-09 — Ronda de corrección 1 (revisión independiente: 1 bloqueante, 12 avisos, 5 info). B-1: regla 34, Edge Case y AC-22-27 (60 s de `ESC7_APAGON` no reinicia el timbre; guarda en 21). A-1: regla 33 (22 dueño de `V02`, orden con 21 R15, AC-22-28). A-2: R30 pide `SFX_PHONE_BUZZ` (AC-22-29). Estado final `COMPLETADA`/`INACTIVA` unificado (D22-24). Dependencias corregidas (Dura con 1, 3, 5, 7, 18; Blanda con 2; 22 → 7 no circular). F3–F5 recalculadas (L14 por rama, cuatro ramas, franja baja fuera de 24–60 s). OQ nº 1 y nº 3 cerradas por el usuario; D22-9 y D22-10 mantenidas; OQ nº 10 (accesibilidad con cursor oculto) abierta. R15, R24/R3 y AC-22-06/-16 corregidas; AC-22-27 a -34 nuevas; D22-21 a D22-29. Estado: Revisado (ronda de corrección 1) — pendiente de re-review.
 - 2026-11-09 — Ronda de corrección 6 (avisos de la revisión de dependencias): 8 y 21 Indirecta (vía 3) en Dependencies; vuelta a `INACTIVA` solo por descarga del despacho (R19, AC-22-34, D22-24); rechazo del contexto `llamada` sin repetir `SFX_PHONE_BUZZ` (Edge Case, AC-22-30); D-15 del slice pendiente de confirmar (cambio nº 10, OQ nº 3); cabecera v0.4.2; D22-30. Estado: Revisado (ronda de corrección 6) — pendiente de re-review.
+- 2026-11-09 — Ronda de corrección 8 (propagación de los puzles 11 a 16): fila de 9 en Dependencies cita a 14 (`t4_decision`, escrito por 9 tras el puzle 4) y a 16 (`carta_variante`; la llamada se dispara al salir de `D01d`); se aclara que `p_oir` es métrica de playtest de 14 y no de 22; contrato sin cambios; D22-31. Estado: Revisado (ronda de corrección 8) — pendiente de re-review.
