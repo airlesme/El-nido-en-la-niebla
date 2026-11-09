@@ -42,6 +42,15 @@ Existe por cuatro razones: (1) el nombre de Vera es provisional (D-04), así que
 4. **No se reutilizan ni se renombran.** Un identificador retirado se marca como inactivo, no se borra ni se reasigna. Renombrar equivale a dar de baja uno y dar de alta otro.
 5. **Variantes agrupadas.** Las líneas con variante forman un **grupo** con un prefijo y las letras que lo completan, declaradas en los datos: `CARTA_` (A, B, C), `VO_G_12` (A, B, C), `VO_G_13` (A, B, C, D) y `VO_V_12` (A, B, C, D). `CARTA_CUERPO` y `VO_V_12E` son líneas simples, no pertenecen a ningún grupo. Quien consume (la llamada, el director de escenas, el puzle 6) construye el identificador a partir del prefijo y de la letra que lee del estado del juego (`carta_variante`, `respuesta_llamada`). Este sistema **no lee el estado**: solo entrega el contenido del identificador pedido y declara qué letras completan cada grupo.
 
+   **Variante por la decisión de T4 (D-B1, 2026-11-09; propuesta — pendiente de narrative-director/usuario).** El hecho `t4_decision` (`returned`/`assigned`, GDD 3) cambia **una** línea: la última del Guardián en la llamada (escena 7, la más cercana al puzle 4 que lee el hecho). Grupo provisional `VO_G_14` con sufijos `_RET` y `_ASG` (declarados en los datos como las letras de otros grupos). Entradas con `fuente: propuesta_D-B1` (no son del §12, D18-7; no cuentan en las 26 de AC-02 hasta que el slice las recoja):
+
+   | Clave provisional | Cuándo | Texto | Estado |
+   |---|---|---|---|
+   | `VO_G_14_RET` | `t4_decision` = `returned` | «Sigo aquí.» (es la `VO_G_14` actual del slice, sin cambios) | existente |
+   | `VO_G_14_ASG` | `t4_decision` = `assigned` | «Sigo aquí. La carta a Dirección ya va firmada.» | **propuesta — pendiente de narrative-director/usuario** |
+
+   Criterio de la propuesta: una frase mínima que no confirma la intención del Guardián (anti-pilar; D-B2) ni juzga la elección. Si el slice la rechaza, ambas claves se sustituyen por `VO_G_14` simple y el hecho queda sin lector narrativo (sigue guardándose). Quien consume (22) construye el identificador con el sufijo que lee de `t4_decision`.
+
 **Texto y traducción**
 
 6. **Ningún texto en el código ni en las escenas.** Ningún texto que vea el jugador aparece escrito en scripts o en escenas; todos se piden por identificador. Se exceptúan los mensajes de depuración y del log. Un escaneo de scripts y escenas busca literales en las propiedades de texto de la interfaz y en las llamadas que muestran texto; la lista de excepciones se mantiene junto al verificador y contiene, como únicas excepciones de texto de jugador, los dos textos de emergencia de la regla 21. **Definición provisional de «literal visible»** (a confirmar en el ADR, Open Question 5): cualquier cadena literal no vacía asignada a la propiedad de texto de un nodo de interfaz (`Label`, `RichTextLabel`, `Button`, etc.) en un script o una escena, o pasada a una función que muestre texto; las cadenas vacías, los números y los literales de depuración o de log no cuentan.
@@ -125,11 +134,11 @@ El idioma activo es `es` en todo el slice y no cambia durante la partida.
 | 20 Documentos y bolsillo | Formulario, memorando, notas, cartas, lista de tareas, libro de visitas, con su estilo de presentación |
 | 11 Puzle 1 | Textos del panel y de la impresión (a través de 19) |
 | 12 Puzle 2 | `DOC_01` por fragmentos (F1, F2, F3), el sello, `NOTA_02` y las pistas |
-| 14 Puzle 4 | Fichas T1 a T4, regla del tablero, sellos «ACEPTADA» y «DEVUELTA» y el mensaje «No corresponde» |
+| 14 Puzle 4 | Fichas T1 a T4, regla del tablero, sellos «ACEPTADA» y «DEVUELTA» y el mensaje «No corresponde» (solo para T1–T3: T4 acepta devolver o asignar, D-B1) |
 | 16 Puzle 6 | Los tres botones, `CARTA_A/B/C` y `CARTA_CUERPO` |
 | 17 Sistema de pistas | Textos de pista de los 6 puzles: 3 niveles en P1 a P5 y 2 en P6 |
 | 21 Director de escenas | `MEGA_*`, `VO_V_*`, los mensajes del teléfono de la escena 1 y los de sistema |
-| 22 Llamada telefónica | `VO_G_12A/B/C`, `VO_G_13A–D`, `VO_G_14` y las cuatro opciones de respuesta |
+| 22 Llamada telefónica | `VO_G_12A/B/C`, `VO_G_13A–D`, `VO_G_14` (propuesta D-B1: `VO_G_14_RET`/`VO_G_14_ASG` según `t4_decision`) y las cuatro opciones de respuesta |
 | 23 Director de audio | La referencia de audio y los segmentos de cada línea |
 | 26 Subtítulos | El texto y los segmentos de cada línea |
 | 27 Pantalla de título | Título, advertencias de contenido (slice §17) y el rótulo «Continuará» |
@@ -220,7 +229,7 @@ Ninguno propio. Cada consumidor decide cómo mostrar el texto que recibe (reduci
 | `design/slice/slice-v0.3.md` · §17, §19 (criterio 8) | Reglas de contenido y subtítulos que coinciden con todas las líneas | Reglas 16 y 18 |
 | `design/gdd/game-pillars.md` | *Información incompleta*, *Ambivalencia sin moral binaria* | Pilares que este sistema sirve |
 | `design/art/art-bible.md` · §7.2 | Tipografía, comillas, hora de 24 h, caracteres que debe cubrir | Condiciona la sección Visual/Audio |
-| `design/gdd/estado-y-bus-de-eventos.md` | `carta_variante` y `respuesta_llamada` | Los consumidores eligen la variante leyendo esos hechos (regla 5); este sistema no los lee |
+| `design/gdd/estado-y-bus-de-eventos.md` | `carta_variante`, `respuesta_llamada` y `t4_decision` | Los consumidores eligen la variante leyendo esos hechos (regla 5); este sistema no los lee |
 | `design/gdd/entrada-y-controles.md` | Mensaje «Mando desconectado» y otros textos de interfaz | Texto de interfaz que debe existir en el catálogo |
 | `design/gdd/marco-de-puzles.md` | Reglas 25 y 29 (claves `PISTA_*` y fallo de carga) | Contrato de la regla 20 |
 | `design/gdd/systems-index.md` | Fila 18 y dependientes | Debe reflejar la tabla de Dependencies |
@@ -283,6 +292,7 @@ Revisados por `qa-lead`. **Evidencia:** **L** = test unitario automático (gdUni
 | 7 | **Forma de la tabla de nombres** (nombre e inicial de Vera y del Guardián, regla 8): ¿un fichero propio o parte de los datos? | `/architecture-decision` | Fase de arquitectura |
 | 8 | **D-04 (nombre de Vera) y D-07 (nombre del Guardián):** siguen abiertas en el slice. El sistema las tolera con los marcadores de nombre e inicial (regla 8); queda por decidir qué nombre e inicial se graban en las voces y se firman en los documentos. **Nota:** las líneas ya grabadas (`VO_G_07` dice «Vera») hacen que cambiar la tabla de nombres rompa la coincidencia voz-subtítulo: cualquier cambio de nombre exige volver a grabar. | Autor | Antes de la grabación de voces |
 | 9 | ~~Índice de sistemas: añadir el sistema 18 como dependencia de 7, 8, 11, 24 y 25.~~ **Resuelta:** el índice ya lo refleja. | — | Cerrada (2026-11-08) |
+| 10 | **Línea que cambia con `t4_decision` (D-B1):** `VO_G_14_ASG` es una propuesta mínima; texto, hablante (¿Guardián o Vera?) y escena definitivos. El texto retirado del REJECT de T4 era «No corresponde» (1,5 s, ficha a neutra). | Narrative-director / usuario | GDD 22 y actualización del slice |
 
 ## Decisiones tomadas
 
@@ -298,8 +308,11 @@ Ronda 2 (2026-11-09), por lotes; la re-review está en `design/gdd/reviews/base-
 | D18-6 | Marcador de nombre obligatorio en cualquier texto; el verificador falla con el nombre vigente literal. | Lista cerrada de usos. | La lista cerrada olvida T4, libro y T1. |
 | D18-7 | Comparación con el slice solo para entradas marcadas `fuente: slice_§12`. | Igualdad de conjuntos con todas las líneas audibles. | Hay líneas audibles fuera del §12. |
 | D18-8 | 9 es dependencia dura en validación y blanda en ejecución. | Solo dura o solo blanda. | Unifica las tres redacciones previas. |
+| D18-9 | **(usuario, 2026-11-09, D-B1)** Se elimina el mensaje «No corresponde» (rechazo de 1,5 s) **para T4**: T4 acepta devolver («DEVUELTA») o asignar («ACEPTADA»). El texto «No corresponde» se conserva para T1–T3. Una línea cambia según `t4_decision` (regla 5), como **propuesta** pendiente de narrative-director/usuario | Mantener «Devolver» como única solución; cambiar una línea de Vera en vez de la del Guardián | Pilar 1: ninguna opción es incorrecta. La línea del Guardián (`VO_G_14`) es la última de la llamada y no obliga a tocar las cartas ni las de Vera, ya con 4 variantes |
 
 ## Historial de cambios
+
+- **2026-11-09 (D-B1):** hueco de contenido por la decisión de T4: grupo provisional `VO_G_14_RET`/`VO_G_14_ASG` (propuesta, `fuente: propuesta_D-B1`), texto del REJECT de T4 retirado (D18-9) y referencias a `t4_decision`. Cambia contenido propuesto: pendiente de re-review y de narrative-director.
 
 - **2026-11-09 (ronda 2, re-review):** se añaden la sección «Decisiones tomadas», la regla 20 (claves de pista: 8 con texto, tabla por puzle y nivel), la regla 21 (textos de emergencia), la lista de presentación completa con X1/X2, marcadores de nombre exhaustivos, marca `fuente: slice_§12`, dependencias reales (1, 2, 4, 5, 6) y el estado «Recarga fallida». Cambia reglas: pendiente de re-review.
 

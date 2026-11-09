@@ -732,10 +732,10 @@ constants:
   - name: game_state_facts
     status: active
     source: design/gdd/estado-y-bus-de-eventos.md
-    referenced_by: [design/slice/slice-v0.3.md, design/gdd/guardado-y-carga.md]
-    value: 19
+    referenced_by: [design/slice/slice-v0.3.md, design/gdd/guardado-y-carga.md, design/gdd/marco-de-puzles.md, design/gdd/base-de-contenido-narrativo.md]
+    value: 20
     unit: facts
-    note: "tipo / inicial / owner. correos_leidos bool falso 19; archivo_abierto bool falso 9; formulario_leido bool falso 20; tarjeta_B bool falso 20; tarjeta_D bool falso 20; memo_leido bool falso 9; pos_L/pos_C/pos_R int 1-4 inicial 2 owner 9; caja_c1..c4 bool falso 9; pendiente_revelacion bool falso 9 (reversible: se escribe al iniciar la revelación, se limpia al terminar); caja_completa bool derivado falso (3); carta_variante enum A/B/C 9; llamada_iniciada bool falso 22; respuesta_llamada enum A-D 22; llamada_completada bool falso 22"
+    note: "tipo / inicial / owner. correos_leidos bool falso 19; archivo_abierto bool falso 9; formulario_leido bool falso 20; tarjeta_B bool falso 20; tarjeta_D bool falso 20; memo_leido bool falso 9; pos_L/pos_C/pos_R int 1-4 inicial 2 owner 9; caja_c1..c4 bool falso 9; pendiente_revelacion bool falso 9 (reversible: se escribe al iniciar la revelación, se limpia al terminar); caja_completa bool derivado falso (3); carta_variante enum A/B/C 9; llamada_iniciada bool falso 22; respuesta_llamada enum A-D 22; llamada_completada bool falso 22; t4_decision enum returned/assigned sin fijar 9 (nuevo, D-B1 2026-11-09: 19 en el slice D.2 + 1; lo escribe el marco al resolver el puzle 4, antes de caja_c2; lo lee 22 Llamada para una variación de VO_G_14; el slice aún no lo recoge)"
     added: 2026-11-09
     revised: ""
   - name: save_causes

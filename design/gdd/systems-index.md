@@ -261,3 +261,14 @@ Consolidado de `design/gdd/reviews/*-re-review.md`. No se han creado GDDs; cada 
 - **30 Accesibilidad:** ofrece `reducir_movimiento` como conmutador (el sistema 6 ya lo tiene en su catálogo).
 - **11 a 16 Puzles:** declaran `gestos_aceptados` por elemento y su tolerancia en px (P5 acepta `rotar` y funciona con «alternar en lugar de mantener»); datos de pista con las 8 claves `PISTA_*`.
 - **Preguntas abiertas para el usuario** (el GDD 9 sigue la recomendación): D9-34 (icono en compartimentos bloqueados), D9-35 / D-16 (orden de la caja) y D7-32 (la carta del P6 se abre igualmente si el jugador salió antes).
+
+---
+
+## Notas pendientes de D-B1 (2026-11-09): puzle 4 con T4 de doble salida
+
+Decisión del usuario: T4 «Carta a Dirección» acepta devolver o asignar; la elección queda en el hecho nuevo `t4_decision` (`returned`/`assigned`; 20 hechos). Cada sistema sin GDD debe recoger esto al redactarse:
+
+- **22 Llamada:** lee `t4_decision` para la variación de `VO_G_14` (propuesta en el GDD 18, pendiente de narrative-director/usuario; clave provisional `VO_G_14_ASG`, `VO_G_14` queda como línea de `returned`). Si el director de escenas (21) reproduce esa línea, el lector es 21; confirmar en su GDD.
+- **21 Director de escenas:** lector alternativo de `t4_decision` si es él quien reproduce la escena posterior más cercana al puzle 4.
+- **14 Puzle 4 (GDD aún sin redactar):** T4 de doble salida (regla 12c del GDD 9); sin «No corresponde» en T4; la pista de nivel 3 no la toca.
+- **Slice:** B.4, §10.4 y D.2 (20 hechos) pendientes de autorización del usuario.
