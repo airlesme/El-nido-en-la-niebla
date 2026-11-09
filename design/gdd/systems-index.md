@@ -4,7 +4,7 @@
 > **Created**: 2026-11-08
 > **Last Updated**: 2026-11-09
 > **Source Concept**: design/gdd/game-concept.md
-> **Source of truth for details**: design/slice/slice-v0.3.md (Anexos A–D)
+> **Source of truth for details**: design/slice/slice-v0.3.md (versión v0.4; Anexos A–D)
 
 ---
 
@@ -23,10 +23,10 @@ Se excluyen a propósito combate, IA de enemigos, economía, progresión, red y 
 | # | System Name | Category | Priority | Status | Design Doc | Depends On |
 |---|-------------|----------|----------|--------|------------|------------|
 | 1 | Entrada y controles | Core | MVP | Revisado (ronda 5) — sin bloqueantes | design/gdd/entrada-y-controles.md | — (blandas: 3, 4, 18) |
-| 2 | Jugador en primera persona (movimiento, cámara, manos) | Core | MVP | Revisado (ronda 5) — sin bloqueantes | design/gdd/jugador-en-primera-persona.md | 1, 4 (blandas: 6, 18) |
-| 3 | Estado del juego y bus de eventos | Core | MVP | Revisado (ronda de propagación 1) — pendiente de re-review | design/gdd/estado-y-bus-de-eventos.md | — |
-| 4 | Escena de planta y carga de Recepción | Core | MVP | Revisado (ronda 5) — sin bloqueantes | design/gdd/escena-de-planta.md | 3 (blandas: 1, 6, 18); 2 (dura) |
-| 5 | Guardado y carga | Persistence | MVP | Revisado (ronda 5) — sin bloqueantes | design/gdd/guardado-y-carga.md | 3, 4 (blanda: 18) |
+| 2 | Jugador en primera persona (movimiento, cámara, manos) | Core | MVP | Revisado (ronda de decisiones 1) — pendiente de re-review | design/gdd/jugador-en-primera-persona.md | 1, 4 (blandas: 6, 18) |
+| 3 | Estado del juego y bus de eventos | Core | MVP | Revisado (ronda de decisiones 1) — pendiente de re-review | design/gdd/estado-y-bus-de-eventos.md | — |
+| 4 | Escena de planta y carga de Recepción | Core | MVP | Revisado (ronda de decisiones 1) — pendiente de re-review | design/gdd/escena-de-planta.md | 3 (blandas: 1, 6, 18); 2 (dura) |
+| 5 | Guardado y carga | Persistence | MVP | Revisado (ronda de decisiones 1) — pendiente de re-review | design/gdd/guardado-y-carga.md | 3, 4 (blanda: 18) |
 | 6 | Ajustes persistentes (inferred) | Persistence | MVP | Revisado (ronda 5) — sin bloqueantes | design/gdd/ajustes-persistentes.md | 1 (blanda: 18) |
 | 7 | Interacción e inspección | Gameplay | MVP | Revisado (ronda 5) — sin bloqueantes | design/gdd/interaccion-e-inspeccion.md | 1, 2, 4, 18 (blanda: 3) |
 | 8 | Control de acceso (puertas, tarjetas, lectores, ascensor `C08`, cajón `A05`) | Gameplay | MVP | Revisado (ronda de corrección 1) — pendiente de re-review | design/gdd/control-de-acceso.md | 3, 4, 7, 18, 20 (blandas: 2, 5, 9, 21, 22, 23, 28/29) |
@@ -39,7 +39,7 @@ Se excluyen a propósito combate, IA de enemigos, economía, progresión, red y 
 | 15 | Puzle 5 · Espejo de la diferencia | Gameplay | MVP | Not Started | — | 6, 9, 10, 13 |
 | 16 | Puzle 6 · Decisión | Gameplay | MVP | Not Started | — | 9, 10, 18 |
 | 17 | Sistema de pistas (hasta 3 niveles; 2 en el puzle 6) | Gameplay | Vertical Slice | Not Started | — | 3, 9, 18 |
-| 18 | Base de contenido narrativo (líneas, documentos, claves de traducción) | Narrative | MVP | Revisado (ronda 5) — sin bloqueantes | design/gdd/base-de-contenido-narrativo.md | — |
+| 18 | Base de contenido narrativo (líneas, documentos, claves de traducción) | Narrative | MVP | Revisado (ronda de decisiones 1) — pendiente de re-review | design/gdd/base-de-contenido-narrativo.md | — |
 | 19 | Ordenador, correo e impresora | Narrative | MVP | Revisado (ronda de corrección 1) — pendiente de re-review | design/gdd/ordenador-correo-impresora.md | 1, 3, 4, 7, 18, 20 (blandas: 2, 6, 17, 21, 23, 25/30) |
 | 20 | Documentos y bolsillo | Narrative | MVP | Revisado (ronda de corrección 1) — pendiente de re-review | design/gdd/documentos-y-bolsillo.md | 3, 7, 18 (blandas: 1, 2, 9, 17, 24); dependen de 20 (duras): 8, 19 |
 | 21 | Director de escenas (escenas 1–8, disparadores, eventos temporizados) | Narrative | MVP | Revisado (ronda de corrección 1) — pendiente de re-review | design/gdd/director-de-escenas.md | 1, 3, 4, 18 (blandas: 5, 6, 7, 8) |
@@ -280,7 +280,8 @@ Decisión del usuario: T4 «Carta a Dirección» acepta devolver o asignar; la e
 
 Propagados a 3, al registro y a este índice los «Cambios requeridos» de los cinco GDD. **Quedan sin propagar** (los edita otro agente o dependen de una decisión):
 
-- **Preguntas de alcance pendientes de decisión del usuario:** releer desde el bolsillo con `atrás` (`repasar_bolsillo`, Q1 de 20 → 1, 7, 24); B.1 del slice (pie y hora de `I-01`, PA-1/PA-2 de 19); `MEGA_03` y slice v0.4 (28 entradas; texto «Planta en modo de ahorro energético»; 8 Q1); quién muestra `I-05`/`I-06a` (Q2 de 20; 10 Q7; 9); `D01d` sin cadena (7, regla 19). Hasta decidirse, sus valores en el registro son PROPUESTA (†/‡).
+- **Decididas por el usuario (2026-11-09, slice v0.4):** `atrás` en `exploración` = «repasar bolsillo» (`repasar_bolsillo`, un documento por pulsación, sin menú; 1, 7, 20, 24); `I-05`/`I-06a` releíbles desde el bolsillo sin presentación nueva (9, 10, 18, 20); B.1 literal del P1 (hoja con `Enviado: hh:mm` y pie «Ordena por hora de envío»); `MEGA_03` como línea 28 del §12 (28 entradas, 21 audibles; 8, 18, 21); zonas `T-D-OUT` y `T-OFI-IN` en el Anexo A.3 (4, 21; coordenadas † hasta el nivel).
+- **Preguntas de alcance pendientes de decisión del usuario:** `escala_texto_ui` (PA-3 de 19; 6); si `reducir_movimiento` acorta las animaciones de la caja (pregunta 5 de 10; 6, 10); 4 o 6 resultados de búsqueda y correos de ruido `MAIL_X1`/`MAIL_X2` (PA-4 y PA-8 de 19); `I-01` relegible fuera de `C05` (PA-9 de 19); «Ahora no» como mensaje del teléfono (PA-9 de 21); `D01d` sin cadena (7, regla 19). Hasta decidirse, sus valores en el registro son PROPUESTA (†/‡).
 - **GDD 22 (Llamada) sin escribir:** debe describir que 21 pone `V02` en `vibrando` y 22 en `en_llamada`, que «Descolgar» solo vale en `vibrando`, que 22 inicia la llamada y escribe `llamada_iniciada`/`respuesta_llamada`/`llamada_completada`, que 8 lee `llamada_completada` (activa `C08` a +2,0 s) y que 22 es el único lector de `t4_decision`. Lista a 8 y 21 como lectores.
 - **Dependencia 9 → 19 (dura):** 9 llama a `compose_i01()` de 19 (R30 de 19); la fila 9 no la recoge aún. 9 no lee `correos_leidos`.
 - **Estado de 21 en su lista de cambios:** pedía «Borrador»; el GDD ya está en ronda de corrección 1 y así figura arriba.

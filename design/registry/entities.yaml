@@ -1125,9 +1125,9 @@ constants:
     referenced_by: [design/gdd/base-de-contenido-narrativo.md, design/gdd/director-de-escenas.md]
     value: "Planta en modo de ahorro energetico"
     unit: "line"
-    note: "Linea de megafonia pedida solo por 8 (C08 INACTIVO). PROPUESTA ‡: texto y slice v0.4 pendientes (pregunta de alcance, 8 Q1)"
+    note: "Linea 28 del §12 (slice v0.4; megafonia 3 de 28 entradas, 21 audibles), aprobada por el usuario 2026-11-09 (D18-20). Pedida por 8 (C08 INACTIVO). Texto provisional con marcador de pendiente hasta el writer; antes PROPUESTA ‡"
     added: 2026-11-09
-    revised: ""
+    revised: 2026-11-09
   - name: SFX_CARD_OK
     status: active
     source: design/gdd/control-de-acceso.md
@@ -1435,7 +1435,7 @@ constants:
     status: active
     source: design/gdd/documentos-y-bolsillo.md
     referenced_by: [design/gdd/control-de-acceso.md, design/gdd/ordenador-correo-impresora.md]
-    value: "has_item(id) · otorgar(origen_id) [8, \"A05\"] · otorgar_sesion(id) [19] · sostener_item(id) -> ACEPTADA|RECHAZADA(motivo) [8] · guardar_item() [8] · repasar_bolsillo() [accion de 1; pendiente de Q1]"
+    value: "has_item(id) · otorgar(origen_id) [8, \"A05\"] · otorgar_sesion(id) [19] · sostener_item(id) -> ACEPTADA|RECHAZADA(motivo) [8] · guardar_item() [8] · repasar_bolsillo() [accion derivada de 1: atras en exploracion; decidida 2026-11-09, un documento por pulsacion, sin menu]"
     unit: ""
     note: "Interfaz de 20; guardar_item() sin item sostenido no hace nada"
     added: 2026-11-09
@@ -1606,7 +1606,7 @@ constants:
     referenced_by: [design/gdd/estado-y-bus-de-eventos.md, design/gdd/escena-de-planta.md]
     value: "ESC1_LLEGADA, ESC1_MENSAJE, ESC3_FORMULARIO, ESC4_PASILLO_MEGA, ESC4_PASILLO_REFLEJO, ESC5_MEMORANDO, ESC7_APAGON, ESC7_TIMBRE, ESC7_RESTAURAR, ESC8_ASCENSOR, ESC8_CIERRE"
     unit: ""
-    note: "scenes.json; ESC8_AHORRO retirada (C08 es de 8). Sistema 21 persistente, sin hechos propios. Zonas propuestas T-D-OUT, T-OFI-IN (en 4). Memoria volatil (no hechos): apagon_activo, esc4_mega_hecha, esc4_reflejo_hecho, mensaje_telefono_pendiente, cierre_iniciado"
+    note: "scenes.json; ESC8_AHORRO retirada (C08 es de 8). Sistema 21 persistente, sin hechos propios. Zonas T-D-OUT, T-OFI-IN definitivas (slice v0.4, en 4; coordenadas † hasta el nivel; aprobadas 2026-11-09). Memoria volatil (no hechos): apagon_activo, esc4_mega_hecha, esc4_reflejo_hecho, mensaje_telefono_pendiente, cierre_iniciado"
     added: 2026-11-09
     revised: ""
   - name: state_notices_director
