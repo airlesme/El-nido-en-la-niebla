@@ -1,6 +1,6 @@
 # Guardado y carga
 
-> **Status**: Revisado (ronda de propagación 1) — pendiente de re-review (aplicadas `gdd-cross-review-2026-11-09-r2.md`, `reviews/guardado-y-carga-review.md`, `reviews/guardado-y-carga-re-review.md` y `gdd-cross-review-2026-11-09.md`, 2026-11-09)
+> **Status**: Revisado (ronda de decisiones 1) — pendiente de re-review (aplicadas `gdd-cross-review-2026-11-09-r2.md`, `reviews/guardado-y-carga-review.md`, `reviews/guardado-y-carga-re-review.md` y `gdd-cross-review-2026-11-09.md`, 2026-11-09)
 > **Author**: Álvaro + agentes
 > **Last Updated**: 2026-11-09
 > **Last Verified**: 2026-11-09
@@ -553,6 +553,7 @@ Solo se registran puntos que dependen de otro documento o de una medición. Las 
 | D-44 | **(propagación 1, lote Feature 1: 8, 10, 19, 20, 21)** `door_opened:<ID>` con `<ID>` = `A`, `B` o `D`, emitido por 8 en el primer paso de `ABRIÉNDOSE`; no se añade ninguna causa ni hecho nuevo (8, 19 y 20 no lo piden: `card_acquired` cubre las tarjetas, `formulario_leido` y `correos_leidos` van por `periodic`/`quit`). | Causa propia para `formulario_leido` (opcional en 20); causa al terminar la animación de la puerta | Una causa nueva no protege un hecho cuya pérdida (releer un formulario) es barata; guardar en el primer paso evita depender de que el jugador espere 1,2 s |
 | D-45 | **(propagación 1)** Lo que 20 expone sin persistir no entra en el guardado: `guardar_item()` sin ítem sostenido no hace nada, `I-01` es de sesión y nada nuevo del bolsillo se guarda; el cajón `A05` y la caja se reconstruyen de sus hechos. | Guardar el ítem sostenido o la hoja de `I-01` | Los 20 hechos del catálogo bastan (D-2); lo demás se reconstruye |
 | D-46 | **(propagación 1)** Open Question 5 cerrada con la regla 14 de 21 (apagón reducido al reanudar). | Mantener la pregunta abierta | 21 ya la resuelve sin tocar el slice |
+| D-47 | **(ronda de decisiones 1, aprobada por el usuario, 2026-11-09)** La acción `atrás` en `exploración` es «repasar bolsillo» (un documento por pulsación, sin menú; Q1 de 20): **nada de ella se persiste** (ni el documento repasado ni la posición del repaso); concreta D-45. `MEGA_03` en el §12 no añade causa ni hecho de guardado. | Guardar el último documento repasado | Repasar no es progreso; los 20 hechos bastan y la reanudación no debe depender de un gesto de lectura. |
 
 ## Propuesta de registro
 
@@ -573,6 +574,8 @@ Entradas que se proponen para `design/registry/entities.yaml` (no editado por es
 | Regla entre sistemas | La llamada se reanuda desde su principio cuando `llamada_iniciada` ∧ ¬`llamada_completada` al restaurar | Regla 12 | 5, 22 |
 
 ## Historial de cambios
+
+- **2026-11-09 (ronda de decisiones 1):** D-47: «repasar bolsillo» no persiste nada. Sin causas ni hechos nuevos. Estado: pendiente de re-review.
 
 - **2026-11-09 (ronda 3, aplica `gdd-cross-review-2026-11-09.md`):** C-B2: causa `notices_dropped` (reglas 6 y 8, F1, Tuning Knobs, AC-04c, D-35); S-B1: 4 único emisor de «partida terminada» (regla 29, tablas, D-36); S-W1: contenido capturado cuando la partida nace Sellada (reglas 18 y 29, F1, AC-18c, D-37); S-W2: fallo de carga de Recepción (regla 29, estados, Edge Cases, AC-18d, D-38); línea base de `dif` y escrituras silenciosas (regla 7a). **Cambia reglas: pendiente de re-review.**
 - **2026-11-09 (ronda 4, aplica `gdd-cross-review-2026-11-09-r2.md`):** regla 24 (`control_final` = `ninguno`), tabla de estados (Sellada → Sellando → Sellada), disparador de re-inspección «descarga total completada», «20 hechos» recogido en el slice D.2, AC-18e/f/g, D-39 a D-41. Regla 6 sigue con 11 causas.
