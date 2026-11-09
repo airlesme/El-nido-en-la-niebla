@@ -1,6 +1,6 @@
 # Ajustes persistentes
 
-> **Status**: Revisado (ronda de corrección 3) — pendiente de re-review (R6-1 dureza de dependencias y R6-2 `BOX_Cn_OPEN`) (ronda de corrección 2: W-9 `fov_step_deg`; la ronda de propagación 1 añade a 19 y 21 como consumidores de `reducir_movimiento`; ronda 6 aplica G-2 e INFO de `gdd-cross-review-2026-11-09-r4.md`; ronda 5 aplica C-W6 y F-3 de `gdd-cross-review-2026-11-09-r3.md`; ronda 2: re-review)
+> **Status**: Revisado (ronda de corrección 4) — pendiente de re-review (ronda de corrección 4: R6-1, cierre de durezas, 18 aguas arriba; R6-1 dureza de dependencias y R6-2 `BOX_Cn_OPEN`) (ronda de corrección 2: W-9 `fov_step_deg`; la ronda de propagación 1 añade a 19 y 21 como consumidores de `reducir_movimiento`; ronda 6 aplica G-2 e INFO de `gdd-cross-review-2026-11-09-r4.md`; ronda 5 aplica C-W6 y F-3 de `gdd-cross-review-2026-11-09-r3.md`; ronda 2: re-review)
 > **Author**: Álvaro + agentes
 > **Last Updated**: 2026-11-09
 > **Last Verified**: 2026-11-09
@@ -206,7 +206,7 @@ La fórmula de guardado diferido se define como:
 
 ## Dependencies
 
-**Aguas arriba (de qué depende):** el sistema 1 (Entrada y controles), **dura en cuanto a contrato**: el formato del bloque `controles` lo define Entrada (reglas 18 y 19 de su GDD) y este sistema lo guarda sin interpretarlo; en ejecución funciona sin él, simplemente sin bloque que guardar. Necesita además su fichero de valores iniciales (`assets/data/settings/defaults.json`, definido por este GDD) y la capacidad del motor de leer y escribir ficheros en la carpeta de datos del usuario. No depende del sistema 3: el aviso de cambio es propio (regla 7).
+**Aguas arriba (de qué depende):** el sistema 1 (Entrada y controles), **dura en cuanto a contrato**: el formato del bloque `controles` lo define Entrada (reglas 18 y 19 de su GDD) y este sistema lo guarda sin interpretarlo; en ejecución funciona sin él, simplemente sin bloque que guardar. Necesita además su fichero de valores iniciales (`assets/data/settings/defaults.json`, definido por este GDD) y la capacidad del motor de leer y escribir ficheros en la carpeta de datos del usuario. No depende del sistema 3: el aviso de cambio es propio (regla 7). **18 Base de contenido narrativo, blanda** (la declara 18, el proveedor, y 6 la repite): los rótulos `UI_…` de las pantallas de ajustes viven en 18; sin el catálogo se usa el texto de emergencia de 18. 6 no lee ni escribe nada de 18 en ejecución.
 
 **Aguas abajo (quién depende de este sistema).** Dura = no puede funcionar sin él; blanda = mejora con él pero su lógica sigue.
 
@@ -221,7 +221,7 @@ La fórmula de guardado diferido se define como:
 | 2 Jugador en primera persona | Blanda | Lee `balanceo_camara` y `campo_vision` (GDD 2, reglas 16 y 17); aplicación inmediata |
 | 9 Marco de puzles (13 y 15 vía el marco) | Blanda | Lee `asistencia_encaje`, `asistencia_rotacion` y `reducir_movimiento` |
 | 7 Interacción e inspección | Blanda | Lee `multiplicador_pie` y `pie_persistente` (F5 de ese GDD); sin Ajustes usa 1,0 y falso |
-| 18 Base de contenido narrativo | Blanda | Aloja los textos de interfaz `UI_…` de las pantallas de ajustes (25, 27, 30); no lee ni escribe ajustes. Relación que el índice ya recoge; este GDD no depende de 18 en ejecución |
+| 18 Base de contenido narrativo | Blanda (aguas arriba: 6 depende de 18 para sus rótulos `UI_…`; ver el párrafo de aguas arriba) | Aloja los textos de interfaz `UI_…` de las pantallas de ajustes (25, 27, 30); no lee ni escribe ajustes. Relación que el índice ya recoge (fila 6: «blanda 18») |
 | 4 Escena de planta | Blanda | Lee `reducir_movimiento` (cortina); exige que el nodo de Ajustes sobreviva a los cambios de escena (su regla 1, AC-01) |
 | 19 Ordenador, correo e impresora | Blanda | Lee `reducir_movimiento` (fundido de 100 ms, 19 R4); sin Ajustes usa falso (transición normal) |
 | 21 Director de escenas | Blanda | Lee `reducir_movimiento` en cada disparo de escena (21 regla 23, DT-12); sin Ajustes usa falso |
@@ -384,6 +384,8 @@ Sin criterio hasta que exista el ADR: el tope del bucle de avisos encadenados, l
 
 ## Decisiones tomadas
 
+- **Dureza de 6 con 18 y con 7 (ronda de corrección 4, R6-1):** 18 pasa a aguas arriba como dependencia **blanda** (solo rótulos `UI_…`; la declara 18 en su D18-27 y la repite 6). 7 depende de 6 de forma **blanda** (`multiplicador_pie` y `pie_persistente`; la declara 7) y la fila 7 del índice debe listarlo. Descartado: dejar 18 en «aguas abajo», que contradecía el índice y a 18; motivo: en 18 las filas de la tabla son sus dependientes y 6 es uno de ellos.
+
 - **`reducir_movimiento` entra en el MVP** (usuario, 2026-11-09): clave `bool`, falsa por defecto, lectores 9 (feedback de error) y 4 (cortina). Descartado: dejarla en una Open Question genérica; el art bible ya la da por hecha y sin clave no se pueden diseñar 9 ni 25 contra ella.
 - **Pistas no son ajustes** (decisión del P6 a dos niveles): son hechos de partida; el progreso de pistas no se guarda. Descartado: una clave de pistas en el catálogo.
 - **Entrada recibe `controles` al oír «ajustes aplicados»** (push por señal, no pull): un solo contrato de arranque para todos los lectores. Descartado: que Entrada lea en su propia inicialización (orden de arranque frágil).
@@ -417,4 +419,5 @@ Sin criterio hasta que exista el ADR: el tope del bucle de avisos encadenados, l
 - **2026-11-09 (lote 2/5/7/9, cambios derivados de la revisión del GDD 2):** regla 1 con `balanceo_camara` (enum `completo`/`reducido`/`ninguno`, inicial `reducido`†) y `campo_vision` (float 60 a 90, paso 5, inicial 70†), lector «2 Jugador»; incorporados a «restablecer todos» (regla 8), a las interacciones y a AC-01 (diez claves). Las pantallas 25 y 30 los ofrecen junto a «reducir sobresaltos». Informe de 5: `save_format_version` no lo usa este GDD (se quita de su `referenced_by` en el registro); ninguna acción. **Cambia reglas: pendiente de re-review.** Estado sin cambios.
 - **2026-11-09 (ronda 6, `gdd-cross-review-2026-11-09-r4.md`):** G-2: Dependencies sustituye «Ninguno de los demás sistemas tiene GDD» por la lista real (1, 2, 4, 7, 9, 18) y añade a 24 (pie de texto) como dependiente sin GDD (alternativa descartada: dejar la frase obsoleta; motivo: ya no era cierta).
 
+- **2026-11-09 (ronda de corrección 4, R6-1 de `gdd-cross-review-2026-11-09-r6.md` y `reviews/cross-review-r6-2.md`):** 18 declarado dependencia blanda aguas arriba; 7 → 6 blanda confirmada. Sin cambios de reglas ni de claves. Estado: Revisado (ronda de corrección 4) — pendiente de re-review.
 - **2026-11-09 (ronda de corrección 3, R6-1 y R6-2 de `gdd-cross-review-2026-11-09-r6.md`):** pregunta 16 con `BOX_C1_OPEN`…`BOX_C4_OPEN` y `BOX_OPEN_MAX` en lugar de `BOX_Cn_OPEN`; nota del índice de Dependencies con la dureza confirmada. Sin cambios de reglas ni de claves (11). Estado: Revisado (ronda de corrección 3) — pendiente de re-review.
