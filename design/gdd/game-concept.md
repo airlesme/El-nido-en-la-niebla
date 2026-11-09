@@ -21,7 +21,7 @@
 | **Platform** | PC (Windows y Linux), teclado/ratón y mando |
 | **Target Audience** | Pendiente (ver «Target Player Profile») |
 | **Player Count** | Un jugador |
-| **Session Length** | Slice: 25–30 minutos |
+| **Session Length** | Slice: entre ~15 y ~30 minutos según el jugador (mínimo 15,0 min con fuentes firmes, techo ≈ 33 min en el peor caso; a confirmar en playtest con AC-X5 de `marco-de-puzles.md`) |
 | **Monetization** | Pendiente. Objetivo inmediato: enseñar el slice para conseguir financiación |
 | **Estimated Scope** | Slice: ~6–7 semanas (ver `docs/PLAN-TECNICO.md`). Versión completa: pendiente (el slice sirve para medirlo, objetivo 6 del §2) |
 | **Comparable Titles** | Pendiente de confirmar por el autor |
@@ -92,7 +92,7 @@ Un solo puñado de decisiones, pocas pero visibles. No hay moral binaria, ni bar
 
 ### Flow State Design
 - **Onboarding curve**: ordenador → impresión → primer puzle (cronología) → primera puerta; cada paso enseña un verbo (buscar, leer, colocar).
-- **Difficulty scaling**: los seis puzles tienen funciones distintas; ninguno requiere más de dos minutos (§22).
+- **Difficulty scaling**: los seis puzles tienen funciones distintas; cada puzle entre ~1 y ~6 min (§22, F7 de `marco-de-puzles.md`).
 - **Feedback clarity**: cada acción tiene feedback visual y sonoro, correcta o no (§16).
 - **Recovery from failure**: inmediata y sin penalización; no hay muerte ni game over (pilar 4).
 
@@ -107,7 +107,7 @@ Caminar a velocidad de paseo, mirar, interactuar con un único botón contextual
 Buscar información → resolver un puzle → descubrir una pieza de historia. Cada puzle abre una puerta, un compartimento o una escena.
 
 ### Session-Level (30-120 minutes)
-En el slice, una sesión completa son 25–30 min: de la llegada (23:40) a la recepción (03:40–04:10) con un final que deja abierta la pregunta «¿quién firmó?». Pendiente: estructura de sesión en la versión completa.
+En el slice, una sesión completa son entre ~15 y ~30 min según el jugador (a confirmar en playtest con AC-X5; no se afirma 25–30 min): de la llegada (23:40) a la recepción (03:40–04:10) con un final que deja abierta la pregunta «¿quién firmó?». Pendiente: estructura de sesión en la versión completa.
 
 ### Long-Term Progression
 Pendiente. El slice no define progresión de largo plazo; la versión completa (más plantas, ciudad exterior) queda fuera del alcance actual.
