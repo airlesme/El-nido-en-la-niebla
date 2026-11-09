@@ -1,6 +1,6 @@
 # Ajustes persistentes
 
-> **Status**: Revisado (ronda de corrección 2) — pendiente de re-review (ronda de corrección 2: W-9 `fov_step_deg`; la ronda de propagación 1 añade a 19 y 21 como consumidores de `reducir_movimiento`; ronda 6 aplica G-2 e INFO de `gdd-cross-review-2026-11-09-r4.md`; ronda 5 aplica C-W6 y F-3 de `gdd-cross-review-2026-11-09-r3.md`; ronda 2: re-review)
+> **Status**: Revisado (ronda de corrección 3) — pendiente de re-review (R6-1 dureza de dependencias y R6-2 `BOX_Cn_OPEN`) (ronda de corrección 2: W-9 `fov_step_deg`; la ronda de propagación 1 añade a 19 y 21 como consumidores de `reducir_movimiento`; ronda 6 aplica G-2 e INFO de `gdd-cross-review-2026-11-09-r4.md`; ronda 5 aplica C-W6 y F-3 de `gdd-cross-review-2026-11-09-r3.md`; ronda 2: re-review)
 > **Author**: Álvaro + agentes
 > **Last Updated**: 2026-11-09
 > **Last Verified**: 2026-11-09
@@ -229,7 +229,7 @@ La fórmula de guardado diferido se define como:
 | 24 Pie de texto (dibuja el pie) | Blanda (sin GDD aún) | Lee `multiplicador_pie` y `pie_persistente` para dibujar el pie de texto; al redactarse debe listar a Ajustes como dependencia |
 | 5 Guardado y carga | Ninguna | Ficheros independientes; retirada por el GDD 5 (regla 4, D-12) |
 
-**Índice de sistemas:** los puzles 13 y 15 y la atmósfera 28 ya listan al sistema 6 como dependencia; la dependencia del sistema 5 está retirada (el índice ya no la lista).
+**Índice de sistemas:** los puzles 13 y 15 y la atmósfera 28 ya listan al sistema 6 como dependencia; la dependencia del sistema 5 está retirada (el índice ya no la lista). La fila 6 del índice dice «1 (dura de contrato) · blanda 18». Las durezas de la tabla de arriba son las que declaran los dependientes (1 dura; 2, 4, 7, 9, 19 y 21 blandas); 7 declara a Ajustes como blanda pero su fila del índice aún no lo lista.
 
 **Bidireccionalidad.** El par con el sistema 1 está cerrado: Entrada ya lista a Ajustes como dependiente (su tabla de Dependencies y su regla 19). El GDD del 3 ya declara que los ajustes quedan fuera del estado (regla 14), y su tabla de interacciones dice «Nada». Los GDDs que ya existen y se relacionan con este sistema son: 1 Entrada y controles (bloque `controles`, dura de su lado), 2 Jugador (`balanceo_camara`, `campo_vision`), 4 Escena de planta (`reducir_movimiento`, supervivencia del nodo), 7 Interacción (`multiplicador_pie`, `pie_persistente`), 9 Marco de puzles (asistencias y `reducir_movimiento`), 18 Base de contenido (textos `UI_…`), 19 Ordenador y 21 Director de escenas (`reducir_movimiento`); el 3 los deja fuera del estado y el 5 no tiene relación. Los demás sistemas de la tabla (23, 24, 25, 26, 27, 28, 30) aún no tienen GDD: cada uno debe, al redactarse, listar a Ajustes como dependencia y usar las claves del catálogo de la regla 1.
 
@@ -380,7 +380,7 @@ Sin criterio hasta que exista el ADR: el tope del bucle de avisos encadenados, l
 | # | Pregunta | Pide | Efecto |
 |---|---|---|---|
 | 15 | **`escala_texto_ui`** (PA-3 de 19): la pantalla del ordenador fija 24 px lógicos mínimos y el catálogo no tiene ajuste de tamaño de texto. Es la «escala de texto UI» (100, 125, 150 %) de la OQ 9 y del art bible §7.5; alcance del MVP de accesibilidad (slice §14) | 19, accessibility-specialist, usuario | Si se aprueba: clave `float`/`enum` en la regla 1, restablecer todos pasa de 12 a 13 claves, AC-01 de trece a catorce, lector 19 |
-| 16 | **¿Debe `reducir_movimiento` acortar las animaciones de la caja?** (pregunta 5 de 10; por defecto solo `ajar_s` y el cierre, no `BOX_Cn_OPEN`) | 10, ux-designer, accessibility | Si sí: 10 pasa a ser lector (hoy no lo es) |
+| 16 | **¿Debe `reducir_movimiento` acortar las animaciones de la caja?** (pregunta 5 de 10; por defecto solo `ajar_s` y el cierre, no la animación de apertura de la caja, sustituida por `BOX_C1_OPEN`…`BOX_C4_OPEN` y `BOX_OPEN_MAX` (dueño 10)) | 10, ux-designer, accessibility | Si sí: 10 pasa a ser lector (hoy no lo es) |
 
 ## Decisiones tomadas
 
@@ -399,6 +399,8 @@ Sin criterio hasta que exista el ADR: el tope del bucle de avisos encadenados, l
 - **18 figura como dependencia blanda** en Dependencies (solo aloja los `UI_…`), alineado con el índice. Descartado: no listarlo, que dejaba el par incoherente con el índice.
 - **Rango de `fov_step_deg` propio** (ronda de corrección 2, W-9, 2026-11-09): el registro lo tenía con el rango 60–90 del FOV; se separa en un rango de paso 1–15† (propuesta, el slice solo fija 5). Descartado: dejar el rango de la clave, porque un validador de datos aceptaría un paso de 60°.
 - **Lista de GDDs existentes de Bidireccionalidad ampliada** (W-7/E): añade 19 y 21, que ya leen `reducir_movimiento` y figuran en la tabla.
+- **`BOX_Cn_OPEN` sustituida en la pregunta 16** (ronda de corrección 3, R6-2): la animación de apertura de la caja son `BOX_C1_OPEN`…`BOX_C4_OPEN` y su tope `BOX_OPEN_MAX` (dueño 10). Descartado: seguir citando el nombre antiguo (en el registro está `deprecated`).
+- **Dureza de dependencias alineada con los dependientes** (ronda de corrección 3, R6-1): 1 → dura de contrato (1 la declara «Dura»); 2, 4, 7, 9, 19, 21 → blanda; 5 → ninguna; 18 → blanda. Descartado: tomar la dureza del proveedor cuando discrepa (regla común del índice).
 
 ## Historial de cambios
 
@@ -414,3 +416,5 @@ Sin criterio hasta que exista el ADR: el tope del bucle de avisos encadenados, l
 
 - **2026-11-09 (lote 2/5/7/9, cambios derivados de la revisión del GDD 2):** regla 1 con `balanceo_camara` (enum `completo`/`reducido`/`ninguno`, inicial `reducido`†) y `campo_vision` (float 60 a 90, paso 5, inicial 70†), lector «2 Jugador»; incorporados a «restablecer todos» (regla 8), a las interacciones y a AC-01 (diez claves). Las pantallas 25 y 30 los ofrecen junto a «reducir sobresaltos». Informe de 5: `save_format_version` no lo usa este GDD (se quita de su `referenced_by` en el registro); ninguna acción. **Cambia reglas: pendiente de re-review.** Estado sin cambios.
 - **2026-11-09 (ronda 6, `gdd-cross-review-2026-11-09-r4.md`):** G-2: Dependencies sustituye «Ninguno de los demás sistemas tiene GDD» por la lista real (1, 2, 4, 7, 9, 18) y añade a 24 (pie de texto) como dependiente sin GDD (alternativa descartada: dejar la frase obsoleta; motivo: ya no era cierta).
+
+- **2026-11-09 (ronda de corrección 3, R6-1 y R6-2 de `gdd-cross-review-2026-11-09-r6.md`):** pregunta 16 con `BOX_C1_OPEN`…`BOX_C4_OPEN` y `BOX_OPEN_MAX` en lugar de `BOX_Cn_OPEN`; nota del índice de Dependencies con la dureza confirmada. Sin cambios de reglas ni de claves (11). Estado: Revisado (ronda de corrección 3) — pendiente de re-review.
