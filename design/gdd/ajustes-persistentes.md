@@ -1,6 +1,6 @@
 # Ajustes persistentes
 
-> **Status**: Revisado (ronda 6) — pendiente de re-review (ronda 6 aplica G-2 e INFO de `gdd-cross-review-2026-11-09-r4.md`; ronda 5 aplica C-W6 y F-3 de `gdd-cross-review-2026-11-09-r3.md`; ronda 2: re-review)
+> **Status**: Revisado (ronda de propagación 1) — pendiente de re-review (la ronda de propagación 1 añade a 19 y 21 como consumidores de `reducir_movimiento`; ronda 6 aplica G-2 e INFO de `gdd-cross-review-2026-11-09-r4.md`; ronda 5 aplica C-W6 y F-3 de `gdd-cross-review-2026-11-09-r3.md`; ronda 2: re-review)
 > **Author**: Álvaro + agentes
 > **Last Updated**: 2026-11-09
 > **Last Verified**: 2026-11-09
@@ -39,7 +39,7 @@ Existe por dos razones. La primera es el pilar *Tensión sin castigo*: reducir s
    | `asistencia_rotacion` | bool · falso | Tolerancia asistida de ±6° en el puzle 5 (slice B.5); nombre provisional, ver Open Questions | 15 Puzle 5 |
    | `balanceo_camara` | enum `completo`, `reducido`, `ninguno` · `reducido` | Balanceo de la cámara al caminar (solo traslación; GDD 2, regla 16) | 2 Jugador |
    | `campo_vision` | float 60 a 90 (grados verticales), paso 5 · 70 | Campo de visión vertical (GDD 2, regla 17; tope horizontal `fov_h_max`) | 2 Jugador |
-   | `reducir_movimiento` | bool · falso | Fundido fijo de 100 ms en lugar de la transición larga y cambio estático en lugar de temblor (art bible §7.4): feedback de error de los puzles y cortina de escena | 9 Marco de puzles, 4 Escena de planta (cortina) |
+   | `reducir_movimiento` | bool · falso | Fundido fijo de 100 ms en lugar de la transición larga y cambio estático en lugar de temblor (art bible §7.4): feedback de error de los puzles, cortina de escena, fundido de encendido de la pantalla del ordenador (100 ms, 19) y sustitución del parpadeo del pasillo / reflejo retardado y fundido propio de la escena de cierre (21) | 9 Marco de puzles, 4 Escena de planta (cortina), 19 Ordenador (R4), 21 Director de escenas (regla 23) |
    | `multiplicador_pie` | float 1,0 a 3,0, paso 0,25 · 1,0 | Accesibilidad: multiplica la duración del pie de texto de objeto (GDD 7, F5 y regla 12); 1,0 = duración normal | 7 Interacción e inspección (el sistema 24 dibuja el pie) |
    | `pie_persistente` | bool · falso | Accesibilidad: el pie de texto dura hasta que cambie el objetivo o se active otro objeto, en lugar de la duración de F5 (GDD 7, regla 12) | 7 Interacción e inspección |
    | `modo_ventana` | enum `pantalla_completa`, `ventana` · `pantalla_completa` | Modo de la ventana del juego | este sistema (regla 12) |
@@ -92,6 +92,8 @@ La tabla del catálogo (regla 1) indica quién lee cada ajuste. Otras interaccio
 | 9 Marco de puzles (y 13, 15 vía el marco) | `asistencia_encaje`, `asistencia_rotacion`, `reducir_movimiento` (feedback de error) | — |
 | 7 Interacción e inspección | `multiplicador_pie`, `pie_persistente` (duración del pie de texto, GDD 7 regla 12 y F5); avisos de cambio | — |
 | 4 Escena de planta | `reducir_movimiento` (cortina). Requiere que el nodo de Ajustes sobreviva a los cambios de escena (4, regla 1) | — |
+| 19 Ordenador, correo e impresora | `reducir_movimiento` (fundido fijo de 100 ms en el encendido de la pantalla, 19 R4). No lee `reducir_sobresaltos` (19 D19-12) | — |
+| 21 Director de escenas | `reducir_movimiento` en cada disparo (atenuación única en lugar del parpadeo, aparición gradual del reflejo, `d_cierre` de 0,1 s; 21 regla 23) | — |
 | 25 Menú de pausa · 30 Accesibilidad · 27 Pantalla de título | Valor actual de los ajustes que muestran | Escrituras del jugador y peticiones de restablecer |
 | 5 Guardado y carga | Ninguna: ficheros independientes; los ajustes quedan fuera de la partida (regla 3) | — |
 | 3 Estado y bus de eventos | Nada | Nada |
@@ -221,6 +223,8 @@ La fórmula de guardado diferido se define como:
 | 7 Interacción e inspección | Blanda | Lee `multiplicador_pie` y `pie_persistente` (F5 de ese GDD); sin Ajustes usa 1,0 y falso |
 | 18 Base de contenido narrativo | Blanda | Aloja los textos de interfaz `UI_…` de las pantallas de ajustes (25, 27, 30); no lee ni escribe ajustes. Relación que el índice ya recoge; este GDD no depende de 18 en ejecución |
 | 4 Escena de planta | Blanda | Lee `reducir_movimiento` (cortina); exige que el nodo de Ajustes sobreviva a los cambios de escena (su regla 1, AC-01) |
+| 19 Ordenador, correo e impresora | Blanda | Lee `reducir_movimiento` (fundido de 100 ms, 19 R4); sin Ajustes usa falso (transición normal) |
+| 21 Director de escenas | Blanda | Lee `reducir_movimiento` en cada disparo de escena (21 regla 23, DT-12); sin Ajustes usa falso |
 | 1 Entrada y controles | Dura (su lado) | Entrega y recupera el bloque `controles` |
 | 24 Pie de texto (dibuja el pie) | Blanda (sin GDD aún) | Lee `multiplicador_pie` y `pie_persistente` para dibujar el pie de texto; al redactarse debe listar a Ajustes como dependencia |
 | 5 Guardado y carga | Ninguna | Ficheros independientes; retirada por el GDD 5 (regla 4, D-12) |
@@ -346,6 +350,7 @@ Revisados por `qa-lead`. **Evidencia:** **L** = test unitario automático (gdUni
 - **AC-F2b (L)**: **GIVEN** db_min = −50 y n = 1, **THEN** −47,5 dB / 0,0042; con db_min = −60 y −30, n = 1 da −57 y −28,5 dB. *(La entrega de la ganancia al bus se cierra cuando exista el sistema 23.)*
 
 **Interacciones entre sistemas (se cierran cuando existan)**
+- **AC-18b (I, `reducir_movimiento`)**: **GIVEN** 19 y 21, **WHEN** el jugador cambia `reducir_movimiento` en el menú de pausa, **THEN** la siguiente apertura de la pantalla del ordenador dura 100 ms ± 1 fotograma y el siguiente disparo de `LUCES_PARPADEO` es una atenuación única (consumidores 19 y 21; la escena en curso termina como se emitió). *(Se cierra con 25/30.)*
 - **AC-18 (I)**: **GIVEN** el director de audio (23), subtítulos (26) y atmósfera (28), **WHEN** el jugador cambia `vol_*`, `subtitulos_activos` o `reducir_sobresaltos`, **THEN** cada consumidor reacciona en el mismo fotograma en que se recibe el aviso. *(Se cierra cuando existan 23, 26, 28 y las pantallas de 25, 27 y 30.)*
 
 Sin criterio hasta que exista el ADR: el tope del bucle de avisos encadenados, la ruta y el formato de la copia del fichero dañado, y la representación de NaN en el fichero (JSON estándar no la admite).
@@ -369,6 +374,13 @@ Sin criterio hasta que exista el ADR: el tope del bucle de avisos encadenados, l
 | 14 | **Menú de pausa (25), sin GDD:** debe ofrecer `multiplicador_pie` (deslizador de paso 0,25) y `pie_persistente` junto a los demás ajustes de accesibilidad (reglas 1 y 8, UI Requirements); anotar en el GDD de 25 y en el de 30. | GDD de los sistemas 25 y 30 | Esos GDD |
 | 13 | **Registro de entidades:** lista completa de valores a registrar en la re-review («Cambios requeridos en otros GDDs»). | Revisión de consistencia | Aprobación del GDD |
 
+**Pendiente de decisión (lote Feature 1).** No se aplican; no hay clave nueva hasta que se resuelvan.
+
+| # | Pregunta | Pide | Efecto |
+|---|---|---|---|
+| 15 | **`escala_texto_ui`** (PA-3 de 19): la pantalla del ordenador fija 24 px lógicos mínimos y el catálogo no tiene ajuste de tamaño de texto. Es la «escala de texto UI» (100, 125, 150 %) de la OQ 9 y del art bible §7.5; alcance del MVP de accesibilidad (slice §14) | 19, accessibility-specialist, usuario | Si se aprueba: clave `float`/`enum` en la regla 1, restablecer todos pasa de 12 a 13 claves, AC-01 de trece a catorce, lector 19 |
+| 16 | **¿Debe `reducir_movimiento` acortar las animaciones de la caja?** (pregunta 5 de 10; por defecto solo `ajar_s` y el cierre, no `BOX_Cn_OPEN`) | 10, ux-designer, accessibility | Si sí: 10 pasa a ser lector (hoy no lo es) |
+
 ## Decisiones tomadas
 
 - **`reducir_movimiento` entra en el MVP** (usuario, 2026-11-09): clave `bool`, falsa por defecto, lectores 9 (feedback de error) y 4 (cortina). Descartado: dejarla en una Open Question genérica; el art bible ya la da por hecha y sin clave no se pueden diseñar 9 ni 25 contra ella.
@@ -381,9 +393,13 @@ Sin criterio hasta que exista el ADR: el tope del bucle de avisos encadenados, l
 - **Tuning Knobs** se añade como tabla única (opcional en `standard`, barato).
 - **`multiplicador_pie` y `pie_persistente` son ajustes de 6** (C-W6, opción a; ronda 5): 7 ya los usa en F5 y regla 12 y son accesibilidad pura. `multiplicador_pie` es `float` 1,0–3,0 con paso 0,25 (9 pasos, defecto 1,0†); `pie_persistente` `bool` falso. Entran en «restablecer todos» (12 claves) y en AC-01 (trece claves). Descartado (b): fijar el valor en los Tuning Knobs de 7, porque el jugador que no llega a leer el pie necesita regularlo y 7 no persiste preferencias.
 - **Baja automática al descargar la planta** (F-3): regla 7 la recoge como en el bus de 3 (AC-06g). Descartado: exigir la baja manual a cada suscriptor, que deja referencias colgantes si un sistema de planta olvida darse de baja.
+- **19 y 21 pasan a consumidores de `reducir_movimiento`** (ronda de propagación 1; piden 19 y 21 regla 23): ya existe la clave, solo se amplía la tabla de consumidores, las interacciones, las dependencias (blandas) y AC-18b. Descartado: crear una clave por consumidor o que 19/21 la lean solo al arrancar; motivo: la lectura en cada disparo da el mismo resultado sin avisos nuevos, y una clave única es lo que el art bible §7.4 define.
+- **19 no consume `reducir_sobresaltos`** (19 D19-12) y **`escala_texto_ui` queda como pregunta abierta** (PA-3 de 19, OQ 15). Descartado: añadir `escala_texto_ui` ahora; motivo: es alcance del MVP de accesibilidad, no se decide por propagación.
 - **18 figura como dependencia blanda** en Dependencies (solo aloja los `UI_…`), alineado con el índice. Descartado: no listarlo, que dejaba el par incoherente con el índice.
 
 ## Historial de cambios
+
+- **2026-11-09 (ronda de propagación 1, lote Feature 1):** 19 y 21 añadidos como consumidores de `reducir_movimiento` (catálogo, interacciones, dependencias, AC-18b); `escala_texto_ui` (PA-3 de 19) y el alcance de `reducir_movimiento` en la caja (pregunta 5 de 10) como Open Questions 15 y 16. Sin claves nuevas. Estado: pendiente de re-review.
 
 - **2026-11-09 (ronda 5, aplica C-W6 y F-3 de `gdd-cross-review-2026-11-09-r3.md`):** añadidos `multiplicador_pie` y `pie_persistente` (catálogo, cuantización, restablecer todos = 12 claves, interacciones, dependencias con 7, Tuning Knobs, UI, AC-01 = trece claves, AC-04f, AC-04g, AC-07, OQ 14); regla 7 con baja automática de suscriptores al descargar la planta (AC-06g); 18 añadido a Dependencies; aclarado que `reducir_movimiento` ya está en el catálogo.
 
