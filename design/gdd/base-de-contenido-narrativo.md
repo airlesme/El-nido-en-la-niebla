@@ -1,6 +1,6 @@
 # Base de contenido narrativo
 
-> **Status**: Revisado (ronda de corrección 5) — pendiente de re-review (ronda de corrección 5: claves pedidas por 22 (`UI_LLAMADA_OPCION_A–D`, `SUB_BREATH_BROKEN` provisional) y retirada de «22 sin GDD», D18-28; ronda de corrección 3, R6-1/R6-2 de `gdd-cross-review-2026-11-09-r6.md`: nombre `repasar_bolsillo` y dureza de dependencias) (ronda de corrección 2: W-7, D18-25; ronda 6 aplicó A-3 y A-4 de `gdd-cross-review-2026-11-09-r4.md`; la ronda de propagación 1 aplicó los cambios requeridos por 8, 19, 20 y 21; la ronda de decisiones 1 aplica D18-20 a D18-24: `MEGA_03` al §12, `UI_BOLSILLO_AYUDA`, `I-05`/`I-06a` y B.1 del slice)
+> **Status**: Revisado (ronda de corrección 8) — pendiente de re-review (ronda de corrección 8: claves provisionales de los puzles 4 y 6 (`UI_P4_*`, `UI_P6_BOTON_A/B/C`), fila P3 N3 y preguntas abiertas 16 a 18, D18-29 a D18-31; ronda de corrección 5: claves pedidas por 22 (`UI_LLAMADA_OPCION_A–D`, `SUB_BREATH_BROKEN` provisional) y retirada de «22 sin GDD», D18-28; ronda de corrección 3, R6-1/R6-2 de `gdd-cross-review-2026-11-09-r6.md`: nombre `repasar_bolsillo` y dureza de dependencias) (ronda de corrección 2: W-7, D18-25; ronda 6 aplicó A-3 y A-4 de `gdd-cross-review-2026-11-09-r4.md`; la ronda de propagación 1 aplicó los cambios requeridos por 8, 19, 20 y 21; la ronda de decisiones 1 aplica D18-20 a D18-24: `MEGA_03` al §12, `UI_BOLSILLO_AYUDA`, `I-05`/`I-06a` y B.1 del slice)
 > **Author**: Álvaro + agentes
 > **Last Updated**: 2026-11-09
 > **Last Verified**: 2026-11-09
@@ -104,7 +104,7 @@ Existe por cuatro razones: (1) el nombre de Vera es provisional (D-04), así que
     | P2 N3 | Halo del haz actual en el cristal | — (efecto visual) |
     | P3 N1 | Silueta de cada hueco | — (efecto visual) |
     | P3 N2 | Número de fila al mantener `PULSAR` 0,5 s | — (dato del objeto) |
-    | P3 N3 | Contorno del hueco correcto tras 60 s | — (efecto visual) |
+    | P3 N3 | Contorno del hueco correcto tras 60 s; **permanece hasta que la pieza encaja** (13, D13-8) | — (efecto visual) |
     | P4 N1 | Regla del tablero siempre visible | `PISTA_P4_N1`: «Acepta lo que tiene urgencia y responsable. Devuelve lo que no te corresponde». Es la misma clave del texto fijo del tablero (no se duplica en `UI_…`) |
     | P4 N2 | Resalte de la descripción de la ficha | — (efecto visual) |
     | P4 N3 | T1 se resuelve sola y muestra su explicación | `PISTA_P4_N3`: «La urgencia sigue al plazo; el responsable, a quien ya lleva el caso» |
@@ -140,6 +140,20 @@ Existe por cuatro razones: (1) el nombre de Vera es provisional (D-04), así que
     | `SUB_BREATH_BROKEN` | Sonido no verbal con subtítulo (regla 22) | 22 (regla 20; D22-18) | Subtítulo del llanto contenido (`SFX_BREATH_BROKEN`, escena 7). **Entrada provisional con marcador de pendiente**: el texto lo escribe el writer/narrative-director (Open Question 11; 22 propone «[Llanto contenido]» sin fijarlo aquí). No es del §12 |
 
     `SUB_BREATH_BROKEN` es la única `SUB_…` de este lote.
+
+    **Claves de los puzles 4 y 6 (ronda de corrección 8; D18-29).** Pedidas por 14 (Cambios requeridos, punto 2) y 16 (Cambios requeridos, 18 (a)). Mismo régimen que la tabla anterior: entradas `UI_…` provisionales con marcador de pendiente (regla 22), no son del §12 y **no cambian** el recuento de 28 ni el de 8 `PISTA_*`. Los literales entre comillas son los del slice o del GDD pedidor, anotados como texto provisional; los nombres definitivos se confirman al poblar los datos.
+
+    | Clave | Tipo | Pide | Contenido / nota |
+    |---|---|---|---|
+    | `UI_P4_URGENCIA`, `UI_P4_RESPONSABLE` | Interfaz (rótulo) | 14 (P4-R2) | Rótulos de los dos selectores de cada ficha. Texto pendiente del writer |
+    | `UI_P4_URG_ALTA`, `UI_P4_URG_MEDIA`, `UI_P4_URG_BAJA` | Interfaz (opción) | 14 | «Alta», «Media», «Baja» (provisional) |
+    | `UI_P4_RESP_VERA`, `UI_P4_RESP_GUARDIAN`, `UI_P4_RESP_DIRECCION` | Interfaz (opción) | 14 | «Vera», «Guardián», «Dirección» (provisional; el nombre depende de la regla 8 y de D-04/D-07) |
+    | `UI_P4_DEVOLVER` | Interfaz (botón) | 14 | «Devolver» (provisional) |
+    | `UI_P4_SELLO_ACEPTADA`, `UI_P4_SELLO_DEVUELTA` | Interfaz (sello) | 14 (D14-3) | «ACEPTADA», «DEVUELTA» (provisional). Sin color ni sonido que codifique bien o mal |
+    | `UI_P4_NO_CORRESPONDE` | Interfaz (aviso) | 14 (`no_corresponde_s` 1,5 s) | «No corresponde», solo T1–T3 (T4 no se rechaza) |
+    | `UI_P6_BOTON_A`, `UI_P6_BOTON_B`, `UI_P6_BOTON_C` | Interfaz (botón) | 16 (regla 4) | «Estoy bien», «La verdad», «Todavía no» (slice §10.6 y B.6; provisional). Entradas independientes de `CARTA_A/B/C` y de `UI_LLAMADA_OPCION_*` aunque repitan texto (Edge Case de entradas con el mismo texto). El texto de B y su efecto sobre `CARTA_A` es la Open Question 17 |
+
+    **Confirmaciones.** (1) 16 **no necesita más claves**; (2) 13 y 15 no piden claves nuevas; (3) el sello del cristal del P2 es gráfico, **sin clave** (D12-5), y `PISTA_P2_N1` basta para su pista 1 (Q12-4: solo texto; la vista previa en espejo es efecto visual); (4) la hoja del P1 solo tiene la cabecera de `DOC_I01` (arriba) y `PISTA_P1_N2`; (5) **no hay clave** para un aviso de «elección recordada» (D14-11); (6) la regla del tablero es `PISTA_P4_N1` (no se duplica en `UI_…`); (7) ningún puzle cambia el número de claves `PISTA_*`: siguen siendo 8.
 
 ### States and Transitions
 
@@ -330,6 +344,9 @@ Revisados por `qa-lead`. **Evidencia:** **L** = test unitario automático (gdUni
 |---|---|---|---|
 | 13 | **«Ahora no» como mensaje del teléfono** (PA-9 de 21): si el verbo «Responder» de `V02` sustituye la opción en pantalla del slice, hace falta `UI_VERBO_RESPONDER`; si no, «Ahora no» sigue siendo opción de pantalla | 21, 7 | Mensajes de la regla 23; sin `UI_VERBO_RESPONDER` |
 | 15 | **Resto de lo de 19 (`I-01`):** `I-01` relegible fuera de `C05` (PA-9 de 19), 4 o 6 resultados (PA-4) y correos de ruido `MAIL_X1`/`MAIL_X2` dentro del alcance (PA-8): cambian el contenido de `DOC_I01` y de los correos, no las claves. La hoja con `Enviado: hh:mm` y el pie «Ordena por hora de envío» (PA-1/PA-2) ya no están abiertos: D18-23 | 19 | Valores provisionales de 19 |
+| 16 | **Fuente de `t_lectura` del P6** (16, F3): «21–25 palabras» entre la primera frase y `CARTA_CUERPO` no tiene fuente en 18; 16 pide esa fuente o el **conteo real** de `CARTA_A/B/C` y `CARTA_CUERPO` para recalcular `t_lectura`. **No se inventa aquí**: a 18 le corresponde contar los textos del §12 cuando se pueblen los datos | writer / 18 (verificador de datos) | 6–12 s† de 16 sin cambio |
+| 17 | **`CARTA_A` y el botón B «La verdad»** (Open Question 2 de 16): juntas pueden leerse como A = mentira, B = verdad; roza el pilar 1 y el 5. No se aplica | narrative-director / usuario | Textos del slice §12 sin tocar |
+| 18 | **Textos definitivos de `UI_P4_*` y `UI_P6_BOTON_*`** y nombres definitivos de las claves | writer / narrative-director | Los literales de la tabla de la regla 23 |
 
 ## Decisiones tomadas
 
@@ -378,6 +395,9 @@ Ronda de propagación 1 (2026-11-09), cambios requeridos por los GDD 8, 19, 20 y
 | D18-26 | **(Ronda de corrección 3, R6-2, 2026-11-09)** La acción de `atrás` en `exploración` se escribe siempre `repasar_bolsillo` (con guion bajo, como en 1, 7 y 20) en la fila de `UI_BOLSILLO_AYUDA` y en D18-21. Sin cambios de reglas ni de recuentos | Mantener «repasar bolsillo» en prosa | Un solo identificador en todos los GDD y en el registro; la búsqueda por texto lo encuentra. |
 | D18-27 | **(Ronda de corrección 3, R6-1, 2026-11-09)** Dureza de las filas «aguas abajo» alineada con lo que declaran los dependientes: 1, 2, 4, 5 y 6 → blanda (solo claves `UI_…`); 7, 8, 19, 20 y 21 → dura; 9 → dura en validación y blanda en ejecución (regla 29 de 9). 5 no figuraba como dependiente en su GDD y ahora lo lista (blanda). 10 no depende de 18 (pide sus textos vía 7 y 9). | Dejar la dureza del proveedor cuando discrepa | Regla común del índice: manda el GDD dependiente. |
 | D18-28 | **(Ronda de corrección 5, GDD 22 y A12 de `reviews/dependencias-r7-review.md`, 2026-11-09)** Se añaden a la regla 23 las claves que pide 22: `UI_LLAMADA_OPCION_A–D` (Interfaz, nombres propuestos por 22, textos del slice §11.1 como provisionales) y `SUB_BREATH_BROKEN` (regla 22, entrada provisional con marcador de pendiente; no se inventa el texto definitivo). No son del §12: no cambian el recuento de 28 entradas ni el de 8 `PISTA_*`. Se quita «22 sin GDD» de Dependencies y de la bidireccionalidad. `fallback_s` **no** es un campo de este sistema (la regla 17 deja la duración del subtítulo a 26): no se añade; queda como pregunta de 22/26. Pendientes 10 y 11 siguen abiertos (los cierra el writer, no 22). La respuesta de Vera es definitiva y la llamada repetible se repite idéntica al cargar (22, regla 17, D22-4 y regla 30): 18 no guarda variantes de «repetición» (sin claves nuevas por repetir). | Inventar el texto de `SUB_BREATH_BROKEN` o cerrar los Pendientes 10 y 11 aquí; añadir `fallback_s` como campo de línea; subir el recuento oficial | El texto es del writer/narrative-director; el recuento oficial es el del §12; `fallback_s` es de la capa de subtítulos. |
+| D18-29 | **(Ronda de corrección 8, de 14 y 16)** Claves nuevas de los puzles 4 y 6 (`UI_P4_*`, `UI_P6_BOTON_A/B/C`) como entradas provisionales con marcador de pendiente en la regla 23, sin texto definitivo inventado y **sin cambiar** el recuento de 28 entradas del §12 ni el de 8 `PISTA_*` | Meterlas en el §12; esperar al writer para nombrar las claves | Los puzles las necesitan para validar `puzzles.json` y la regla 23 ya admite este régimen |
+| D18-30 | **(Ronda de corrección 8, de 16)** La fuente de las «21–25 palabras» de `t_lectura` queda como pregunta abierta 16 (conteo real de `CARTA_*` al poblar los datos); no se estima aquí | Contar con el texto del slice ahora y fijar la cifra | La cifra la usa 16 como estimación de playtest; contar es del verificador de 18, no de este diseño |
+| D18-31 | **(Ronda de corrección 8, de 13)** Fila P3 N3 de la regla 20: el contorno permanece hasta que la pieza encaja (D13-8). Sin clave nueva; 12 (sello y `PISTA_P2_N1`) y 11 confirmados sin claves nuevas | Dejar «tras 60 s» solo | Coherencia con 13 |
 
 ## Historial de cambios
 
@@ -395,3 +415,4 @@ Ronda de propagación 1 (2026-11-09), cambios requeridos por los GDD 8, 19, 20 y
 - **2026-11-09 (ronda de corrección 3, R6-1 y R6-2 de `gdd-cross-review-2026-11-09-r6.md`):** `repasar_bolsillo` con guion bajo (fila `UI_BOLSILLO_AYUDA`, D18-21; D18-26); línea del índice de Dependencies con la dureza que declara cada dependiente (D18-27). Sin cambios de reglas ni de recuentos. Estado: Revisado (ronda de corrección 3) — pendiente de re-review.
 
 - **2026-11-09 (ronda de corrección 5, GDD 22 y A12 de `reviews/dependencias-r7-review.md`):** regla 23 con `UI_LLAMADA_OPCION_A–D` y `SUB_BREATH_BROKEN` (provisionales, marcador de pendiente), filas de 22 en Interacciones y Dependencies, retirada de «22 sin GDD», Pendientes 10 y 11 anotados, D18-28. No cambian los recuentos (28 entradas del §12; 8 `PISTA_*`). Estado: Revisado (ronda de corrección 5) — pendiente de re-review.
+- **2026-11-09 (ronda de corrección 8, propagación de los GDDs 11 a 16):** claves provisionales de 14 (`UI_P4_*`, 12 claves) y 16 (`UI_P6_BOTON_A/B/C`) en la regla 23 con marcador de pendiente; confirmaciones sin clave nueva para 11, 12, 13, 15 y 16 (el recuento de 28 y de 8 `PISTA_*` no cambia); fila P3 N3 de la regla 20; preguntas abiertas 16 (fuente de `t_lectura`), 17 (`CARTA_A` y botón B) y 18 (textos definitivos); D18-29 a D18-31. Estado: Revisado (ronda de corrección 8) — pendiente de re-review.
