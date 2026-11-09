@@ -1,6 +1,6 @@
 # Jugador en primera persona (movimiento, cámara, manos)
 
-> **Status**: Revisado (ronda de corrección 3) — pendiente de re-review (ronda 6: R6-3, R6-2; antes ronda de corrección 2 (la ronda de decisiones 1 cierra la relectura del bolsillo con `atrás`, D-40; la ronda de propagación 1 aplica los cambios requeridos por 8, 19 y 20 sobre gestos de tarjeta, cajón, teclear y lectura: D-37 a D-39; ronda 3 aplica C-B1 y C-W1 de `gdd-cross-review-2026-11-09.md`: el Jugador mueve el objeto inspeccionado, D-35; ronda 2: H-01 a H-15, B-01, B-02, I-01 a I-05 y M-01 a M-04; este GDD es la fuente de verdad del contrato 2↔7)
+> **Status**: Revisado (ronda de corrección 5) — pendiente de re-review (ronda de corrección 5: gestos del teléfono pedidos por 22, D-43, y dependencias de 9, 10 y 22; ronda 6: R6-3, R6-2; antes ronda de corrección 2 (la ronda de decisiones 1 cierra la relectura del bolsillo con `atrás`, D-40; la ronda de propagación 1 aplica los cambios requeridos por 8, 19 y 20 sobre gestos de tarjeta, cajón, teclear y lectura: D-37 a D-39; ronda 3 aplica C-B1 y C-W1 de `gdd-cross-review-2026-11-09.md`: el Jugador mueve el objeto inspeccionado, D-35; ronda 2: H-01 a H-15, B-01, B-02, I-01 a I-05 y M-01 a M-04; este GDD es la fuente de verdad del contrato 2↔7)
 > **Author**: Álvaro + agentes
 > **Last Updated**: 2026-11-09
 > **Last Verified**: 2026-11-09
@@ -297,7 +297,9 @@ Ver Tuning Knobs.
 | 28 Atmósfera reactiva | Dura | `pose_con_retardo`, `giro_acumulado` |
 | 4 Escena de planta | Dura (en ambos sentidos, como declara el 4; C-W3) | Cápsula, sensor de zona; `colocar` |
 | 23 Director de audio | Blanda | Señal `paso`; oyente |
-| 19 Ordenador · 22 Llamada · 20 Documentos | Blanda | Gestos de manos (`HAND_TYPE`, `HAND_PHONE_*`, `sostener`) |
+| 19 Ordenador · 22 Llamada · 20 Documentos | Blanda | Gestos de manos (`HAND_TYPE`, `HAND_PHONE_*`, `sostener`); 22 también `reposo()` al terminar `HAND_PHONE_PUTDOWN` (D-43; 22 declara Blanda a 2) |
+| 9 Marco de puzles | Blanda (la declara 9; vía 7) | Gestos de manos que 9 pide a través de 7 (`HAND_POINT`, `HAND_PLACE`); 2 no llama a 9 |
+| 10 Caja y compartimentos | Indirecta (la declara 10) | Gestos y `sostener` que pide 7 en nombre de 10 (`HAND_DRAWER`, `HAND_REACH`); 2 no llama a 10 |
 | 21 Director de escenas | Indirecta | Congelado vía contexto `sin control` |
 | 8 Control de acceso | Blanda (8 declara a 2 como blanda) | Contrato de colisión de las puertas (retira la colisión de la hoja en el primer paso de `ABRIÉNDOSE`); `HAND_CARD_SWIPE`, `HAND_DRAWER`, `objeto_sujeto` |
 
@@ -337,7 +339,7 @@ Ver Tuning Knobs.
 - **Atmósfera reactiva (28), cuando se diseñe:** consume la pose y el giro acumulado; fija el umbral de «gira la cabeza».
 - **Art bible, Open Questions:** confirmar el eje del FOV (D-06) y el campo de visión de las manos (regla 25).
 
-**Bidireccionalidad.** Entrada, Escena de planta, Ajustes, Interacción, 8, 19 y 20 ya nombran al Jugador; 22 y 23 lo harán al diseñarse.
+**Bidireccionalidad.** Entrada, Escena de planta, Ajustes, Interacción, 8, 19 y 20 ya nombran al Jugador; 22 ya lo nombra (Blanda, gestos `HAND_PHONE_*` y `reposo()`; verificado en la ronda 5), igual que 9 (Blanda, vía 7) y 10 (Indirecta; sus filas están arriba); 23 lo hará al diseñarse.
 
 ## Tuning Knobs
 
@@ -399,8 +401,8 @@ Todos viven en `assets/data/player/player.json`, salvo los dos ajustes del jugad
 | `ANIM_PAGE_TURN` | Pasar página (R01); corre sobre `HAND_READ` sin suspenderla | derecha | ≤ 1,0 s† | sí |
 | `HAND_TYPE` | Teclear (V01) | derecha | bucle | no |
 | `ANIM_PHONE_PICKUP` | Descolgar (V02) | ambas | **0,8 s** (slice B.7) | sí |
-| `HAND_PHONE_HOLD` | Teléfono en la mano durante la llamada, pantalla hacia Vera | izquierda | bucle | no |
-| `HAND_PHONE_PUTDOWN` | Colgar tras `SFX_PHONE_END` | ambas | ≤ 0,6 s† | sí |
+| `HAND_PHONE_HOLD` | Teléfono en la mano durante la llamada, pantalla hacia Vera. **Empieza al terminar `ANIM_PHONE_PICKUP`** (encadenado por este catálogo, sin petición de 22 y sin hueco, D-43) y dura hasta `HAND_PHONE_PUTDOWN` | izquierda | bucle | no |
+| `HAND_PHONE_PUTDOWN` | Colgar: lo pide 22 en `SFX_PHONE_END` (tras `llamada_completada`, 22 reglas 19 y 24); suspende `HAND_PHONE_HOLD` | ambas | ≤ 0,6 s† | sí |
 | `HAND_POINT` | La mano derecha sigue un punto 3D en vista cercana (`apuntar`) | derecha | bucle | no |
 | `HAND_PLACE` | Encajar una pieza en su hueco (puzle 3) tras el arrastre; suspende `HAND_POINT`; la pieza es un elemento de la vista (no hay objeto sujeto ni `sostener`, D-42) | derecha | ≤ 0,5 s† | sí |
 
@@ -495,6 +497,7 @@ El Jugador no tiene pantalla. Requisitos a las pantallas de 25 (menú de pausa) 
 | D-40 | **(ronda de decisiones 1, aprobada por el usuario, 2026-11-09)** La acción `atrás` en `exploración` es «repasar bolsillo» (un documento por pulsación, sin menú; Q1 de 20). Para el Jugador no hay API nueva: la relectura entra por `abrir_lectura` de 7, que llama a `reposo()` y reproduce `HAND_READ` como en cualquier lectura; el repaso no mueve la cámara ni la cápsula. | Una API propia `repasar()` en el Jugador, o un menú de inventario | El repaso es una lectura más; el slice D.1 descarta el menú y la API actual ya cubre el gesto. |
 | D-41 | **(ronda de corrección 2, W-2, `gdd-cross-review-2026-11-09-r5.md`)** El catálogo de sostenibles de escena sigue siendo solo `V05` (7 regla 13); la pieza del puzle 3 no se añade. AC-47 usa `V05` como sostenible válido, AC-32 y AC-49 pasan `pose_inspeccion` (nulo para ítems de 20) y se anota en «Cambios requeridos» lo que 7 debe aclarar | Ampliar la lista a la pieza del puzle 3 (contradice la lista única de 7 sin que 7 lo haya decidido); mantener AC-47 con `pieza` indefinida | No se edita 7; los AC deben ser ejecutables con un sostenible válido |
 | D-42 | **(ronda de corrección 3, R6-3)** La pieza arrastrada del puzle 3 no es sostenible: se mueve con el puntero (7) y `HAND_PLACE` actúa sobre el elemento de la vista, sin `sostener`/`soltar()`. Enmienda D-25 y cierra D-41. `sostener` lleva siempre tres argumentos (`sostener(id, mano, pose_inspeccion)`; nulo para ítems de 20) y la mano de `V05` es `izquierda` (7 regla 13). | Declarar la pieza `sostenible` (amplía la lista única de 7, que solo admite `V05`) | La lista de 7 es única y cerrada; sostener la pieza no aporta nada a un arrastre con el cursor. |
+| D-43 | **(ronda de corrección 5, cambio nº 8 de `llamada-telefonica.md` § «Cambios requeridos»)** (a) `HAND_PHONE_HOLD` empieza al `gesto_terminado` de `ANIM_PHONE_PICKUP` y lo inicia el propio Jugador, encadenado por el catálogo como `HAND_HOLD_ITEM` tras `sostener` (22 regla 24: «2 muestra `HAND_PHONE_HOLD`»; 22 no lo pide; el bloqueante ya terminó, así que la izquierda está libre, regla 24); (b) `HAND_PHONE_PUTDOWN` lo pide 22 al sonar `SFX_PHONE_END`, suspende `HAND_PHONE_HOLD` (regla 24, ranuras) y, al `gesto_terminado` (o a los 0,6 s† si se rechaza), 22 llama a `reposo()` y el hold termina sin `gesto_terminado` propio; (c) dependencias: se añaden 9 (Blanda vía 7) y 10 (Indirecta) como aguas abajo, que 9 y 10 ya declaraban (A5 de `reviews/dependencias-r7-review.md`). Sin API nueva ni cambio de reglas. | Que 2 encadene HOLD y PUTDOWN solo; que 22 no llame a `reposo()` | El Jugador no decide nada (regla 24): lo pide el sistema que conoce la llamada. |
 
 ## Acceptance Criteria
 
@@ -546,6 +549,7 @@ Revisados por `qa-lead`. **Evidencia:** **L** = test unitario automático (gdUni
 - **AC-34 (R28, V)**: **GIVEN** el apagón de la escena 7, **THEN** las manos son legibles con la luz de la pantalla del teléfono: razón de luminancia manos/entorno inmediato ≥ 1,5 : 1† en la captura retenida y aprobación explícita del art director (art bible §2.5).
 - **AC-49 (R24, L)**: **GIVEN** `sostener("I-03", izquierda, nulo)` aceptado (ítem del catálogo de 20; sin `pose_inspeccion`) y `objeto_sujeto("I-03")` emitido, **WHEN** se pide `reproducir_gesto(HAND_CARD_SWIPE)` sin parámetros, **THEN** el gesto se acepta, usa el objeto sujeto, `HAND_HOLD_ITEM` no se pide y al terminar se emite `gesto_terminado(HAND_CARD_SWIPE, completo)`; **GIVEN** que no hay objeto sujeto, **THEN** el gesto se reproduce igualmente y termina `completo`; **WHEN** se pide `sostener("I-99", izquierda, nulo)`, **THEN** se rechaza y se registra.
 - **AC-50 (R24, L)**: **GIVEN** `I-02` sujeto en la izquierda, **WHEN** 7 llama a `reposo()` y a continuación pide `HAND_READ`, **THEN** `objeto_soltado("I-02")` se emite en el paso de `reposo()` y `HAND_READ` se acepta; **WHEN** se pide `HAND_READ` sin `reposo()` previo con el objeto aún sujeto, **THEN** se rechaza (D-33 a); **GIVEN** `HAND_DRAWER` en curso, **WHEN** llega `reposo()`, **THEN** se emite `gesto_terminado(HAND_DRAWER, cancelado)` que un doble de 8 recibe como cualquier otro `motivo`; **GIVEN** un bloqueante en curso, **WHEN** 20 u 8 piden `sostener`, **THEN** se rechaza y no se reintenta.
+- **AC-51 (R24, L)** *(D-43)*: **GIVEN** `ANIM_PHONE_PICKUP` en curso, **WHEN** emite `gesto_terminado(completo)`, **THEN** el Jugador inicia `HAND_PHONE_HOLD` sin petición (izquierda libre de bloqueantes) y se mantiene hasta que 22 pide `HAND_PHONE_PUTDOWN`; **WHEN** este termina y 22 llama a `reposo()`, **THEN** las manos vuelven a `HAND_IDLE` y no queda ningún gesto de fondo del teléfono.
 - **AC-46 (R24, L)**: **GIVEN** `HAND_POINT` activo (derecha), **WHEN** se pide `HAND_READ` (izquierda), **THEN** ambos coinciden; **WHEN** se pide `reposo()` con un gesto bloqueante en curso, **THEN** se emite `gesto_terminado(id, cancelado)` en ese tick y no queda objeto en la mano; **GIVEN** `sostener` en la derecha, **THEN** `apuntar` es compatible.
 - **AC-47 (R24, L)**: **GIVEN** `HAND_POINT` activo (derecha) durante un arrastre en la vista cercana del puzle 3 y ningún objeto sujeto, **WHEN** se pide `HAND_PLACE`, **THEN** se acepta, `HAND_POINT` se suspende, no se llama a `sostener` ni a `soltar()` y al `gesto_terminado(HAND_PLACE, completo)` `HAND_POINT` se reanuda sin aviso propio; **GIVEN** `sostener("V05", izquierda, pose_inspeccion)` aceptado (7 regla 13: mano `izquierda`) y `HAND_POINT` activo, **WHEN** se pide `HAND_PLACE`, **THEN** se acepta (ranuras distintas), `V05` sigue sujeto y `HAND_POINT` se reanuda al terminar. **GIVEN** `HAND_READ` activo (izquierda), **WHEN** se pide `ANIM_PAGE_TURN`, **THEN** se acepta, `HAND_READ` no se suspende y se emite `gesto_terminado` a la duración de datos. **GIVEN** un gesto bloqueante en curso, **WHEN** se pide otro bloqueante, **THEN** se rechaza; **GIVEN** `HAND_READ` activo, **WHEN** se pide otro gesto de fondo en la izquierda, **THEN** se rechaza.
 
@@ -719,3 +723,4 @@ formulas:
 
 - **2026-11-09 (ronda de corrección 2, `gdd-cross-review-2026-11-09-r5.md`):** W-2 (regla 24, tabla de objetos sostenibles, AC-32, AC-47, AC-49, D-41, Cambios requeridos de 7), W-7 (bidireccionalidad). Estado: pendiente de re-review.
 - **2026-11-09 (ronda de corrección 3, `gdd-cross-review-2026-11-09-r6.md`):** R6-3 (la pieza del puzle 3 no es sostenible: reglas 24, tabla de objetos sostenibles, ranuras, `HAND_PLACE`, AC-32, AC-47, D-25, D-42; `sostener` con tres argumentos en D-38 y en la fila de 20; mano de `V05` izquierda; cerrado el «Cambios requeridos» sobre 7) y R6-2 (`repasar_bolsillo` en la Open Question). Estado: Revisado (ronda de corrección 3) — pendiente de re-review.
+- **2026-11-09 (ronda de corrección 5, propagación de 22 y `dependencias-r7-review.md`):** D-43 (`HAND_PHONE_HOLD` al terminar `ANIM_PHONE_PICKUP`, `HAND_PHONE_PUTDOWN` pedido por 22 y `reposo()`), AC-51, filas 9 y 10 en Dependencies y Bidireccionalidad al día. Estado: Revisado (ronda de corrección 5) — pendiente de re-review.
