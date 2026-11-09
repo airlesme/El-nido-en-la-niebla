@@ -1,6 +1,6 @@
 # Puzle 2 · Memorando en el cristal
 
-> **Status**: Revisado (ronda de corrección 7) — pendiente de re-review
+> **Status**: Revisado (ronda de corrección 8) — pendiente de re-review
 > **Author**: Álvaro + agentes (`game-designer`)
 > **Last Updated**: 2026-11-09 (ronda de corrección 7)
 > **Sistema**: 12 (índice: `design/gdd/systems-index.md`) · Layer `Feature` · Categoría `Gameplay` · Prioridad `MVP`
@@ -311,10 +311,10 @@ Entrada de `assets/data/puzzles/puzzles.json` según el esquema de la regla 4 de
 
 ```json
 {
+  "schema_version": 2,
   "id": "P2",
   "mode": "WORLD",
-  "elements": ["B01", "B02", "B03"],
-  "decor_elements": [ { "element": "B08", "decor": true } ],
+  "elements": ["B01", "B02", "B03", { "id": "B08", "decor": true }],
   "solved_flag": "memo_leido",
   "requires": { "all": [] },
   "validation": { "policy": "ON_CHANGE" },
@@ -348,16 +348,17 @@ Entrada de `assets/data/puzzles/puzzles.json` según el esquema de la regla 4 de
     { "level": 1, "trigger": "REQUEST", "availability": "ON_HINT",
       "effects": [
         { "type": "TEXT", "key": "PISTA_P2_N1", "duration_s": 2.0 },
-        { "type": "AFFORDANCE", "kind": "MIRROR_PREVIEW", "fragment": "F1", "duration_s": 2.0 }
+        { "type": "AFFORDANCE", "affordance": "MIRROR_PREVIEW", "fragment": "F1", "duration_s": 2.0 }
       ] },
     { "level": 2, "trigger": "REQUEST", "availability": "ON_HINT",
-      "effects": [ { "type": "AFFORDANCE", "kind": "FLOOR_MARKS", "targets": ["B08"] } ] },    { "level": 3, "trigger": "REQUEST", "availability": "ON_HINT",
-      "effects": [ { "type": "AFFORDANCE", "kind": "BEAM_HALO", "targets": ["B01", "B02", "B03"], "distance_m": 1.5 } ] }
+      "effects": [ { "type": "AFFORDANCE", "affordance": "FLOOR_MARKS", "targets": ["B08"] } ] },
+    { "level": 3, "trigger": "REQUEST", "availability": "ON_HINT",
+      "effects": [ { "type": "AFFORDANCE", "affordance": "BEAM_HALO", "targets": ["B01", "B02", "B03"], "distance_m": 1.5 } ] }
   ]
 }
 ```
 
-Notas: **esquema v2 de 9 (propuesto por 9, aprobado por el usuario):** `B08` no es interactuable ni está en el catálogo de 7 (regla 26 de 7: «no se declaran»), así que se declara aquí con `decor: true` y la validación de la regla 29 de 9 lo acepta como `targets` de `FLOOR_MARKS` sin exigir que exista en 7. `MIRROR_PREVIEW` **no lleva `targets`**: es un efecto sin objetivo y el esquema v2 lo declara válido. El nombre exacto del campo `decor_elements` lo fija 9. `on_reopen` en un `WORLD` no abre vista; las lámparas responden `SIN_EFECTO` (regla 35 de 9). `AFFORDANCE.kind` lo interpreta el controlador (regla 25 de 9: catálogo de efectos); los tres `kind` son nuevos y se registran (Entradas para el registro).
+Notas: **esquema v2 de 9 (regla 4b, D9-67 a D9-79; `schema_version: 2` es de la raíz del fichero y se repite aquí para fijar la versión de la entrada; el decorado, D9-71, es decisión del usuario):** `B08` no es interactuable ni está en el catálogo de 7 (regla 26 de 7: «no se declaran»), así que se declara aquí con `decor: true` y la validación de la regla 29 de 9 lo acepta como `targets` de `FLOOR_MARKS` sin exigir que exista en 7. `MIRROR_PREVIEW` **no lleva `targets`**: es un efecto sin objetivo y el esquema v2 lo declara válido. La marca es `decor: true` dentro de la lista `elements` de `WORLD` (`{ "id": "B08", "decor": true }`, regla 4b-f); no es un manejador. `on_reject` ausente equivale a `null` (válido en P2, regla 4b-d). `on_reopen` en un `WORLD` no abre vista; las lámparas responden `SIN_EFECTO` (regla 35 de 9). El campo se llama `affordance` en todos los puzles (regla 4b-m, D9-72; sustituye a `kind`); lo interpreta el controlador (catálogo cerrado de 8 nombres); los tres de P2 se registran (Entradas para el registro).
 
 ## Decisiones tomadas
 
@@ -386,6 +387,7 @@ Notas: **esquema v2 de 9 (propuesto por 9, aprobado por el usuario):** `B08` no 
 | D12-21 | (Ronda 7, A4) `t_clic` de F3 = 0,8 s (techo de `HAND_TURN`), `t_paso` = 3,6 s | Mantener 0,4 s | 7 descarta pulsaciones durante el gesto (Edge Case 2), así que 0,4 s no es alcanzable con el gesto de 0,8 s |
 | D12-22 | (Ronda 7, A5) R19 dice «tanteo por lámpara con feedback `PARTIAL`; sin softlock»; Q12-1 sigue abierta | Afirmar que la solución se deduce | Sin marca del punto vacío (R17, D12-6) solo se deduce el mecanismo, no la posición |
 | D12-23 | (Ronda 7, A6/A7) Dependencies: duras 7, 9 y 18 (como el índice); 3, 4, 2 y 6 blandas; la «matriz de encaje» existe en 9 y se cita por su título | Subir 3, 4, 2, 6 a duras | La dureza la declara el dependiente y ninguna impide arrancar el P2. A7 (Q12-3/Q12-6 frente al slice) ya está abierta |
+| D12-24 | (Ronda 8) Alineado con el esquema v2 (regla 4b de 9): `schema_version: 2`; `affordance` en lugar de `kind`; `B08` como `{ "id": "B08", "decor": true }` dentro de `elements` (sustituye al `decor_elements` provisional) | Mantener `kind` y `decor_elements` | Un nombre por concepto y validación única (D9-71, D9-72); sin cambio de diseño ni de tiempos |
 
 ## Open Questions
 
@@ -404,7 +406,7 @@ Notas: **esquema v2 de 9 (propuesto por 9, aprobado por el usuario):** `B08` no 
 
 No se ha editado ningún archivo existente. Pendiente:
 
-- **9 Marco de puzles:** (1) F7: **no cambiar** el valor del P2 hasta medir (Q12-2); (2) **esquema v2:** catálogo `AFFORDANCE` con los `kind` `MIRROR_PREVIEW` (**sin `targets`**, válido), `FLOOR_MARKS` y `BEAM_HALO`; elementos con `decor: true` (`B08`) aceptados por la validación de la regla 29 como `targets` sin exigir presencia en 7; y que el P2 **no lleva** `on_reject`; (3) la fila «Pistas» de la matriz: aclarar que las 3 del P2 son `REQUEST`; (4) AC-12 de 9: añadir que el sello no cuenta como progreso.
+- **9 Marco de puzles:** (1) F7: **no cambiar** el valor del P2 hasta medir (Q12-2); (2) **absorbido en 9 (esquema v2, D9-71, D9-72, D9-70):** catálogo `AFFORDANCE` (`affordance`: `MIRROR_PREVIEW` sin `targets`, `FLOOR_MARKS`, `BEAM_HALO`), `decor: true` (`B08`) aceptado como `targets` sin exigir presencia en 7, y `on_reject: null` válido (el P2 no lleva `on_reject`); (3) la fila «Pistas» de la matriz: aclarar que las 3 del P2 son `REQUEST`; (4) AC-12 de 9: añadir que el sello no cuenta como progreso.
 - **18 Base de contenido:** fila 163 («el sello»): el sello es gráfico, sin clave ni texto (D12-5); confirmar Q12-4 sobre `PISTA_P2_N1`.
 - **17 Sistema de pistas (al redactarse):** las pistas del P2 son solo a petición; `memo_leido` es su único dato del P2.
 - **21 Director de escenas:** nota sobre Q12-8.
@@ -429,4 +431,5 @@ Hechos (sin cambios): `pos_L/C/R` (owner 9), `memo_leido` (owner 9; lector 17).
 | 2026-11-09 | Esqueleto creado (lote Feature 3). |
 | 2026-11-09 | Borrador completo: reglas R1–R32, F1–F6, 20 casos límite, 20 AC, datos de `puzzles.json`, D12-1 a D12-17, Q12-1 a Q12-8. Pendiente de review independiente. |
 | 2026-11-09 | Review independiente: NEEDS REVISION (1 bloqueante, 7 avisos). |
+| 2026-11-09 (ronda de corrección 8) | Alineación mecánica con el esquema v2 de `puzzles.json` (regla 4b de 9): `schema_version: 2`, `kind` → `affordance`, `decor_elements` → `decor: true` en `elements`; petición a 9 marcada como absorbida; D12-24. Sin cambio de diseño. Estado: Revisado (ronda 8), pendiente de re-review. |
 | 2026-11-09 | Ronda de corrección 7: B1 (`B08` con `decor: true`, petición a 9 esquema v2 y a 4; se quita la petición a 7); A1 (`MIRROR_PREVIEW` sin `targets`); A2 (`cobertura_anexo_a.json` planificado, no existe); A3 (F4: se declara qué pulsaciones usa cada cálculo; Q12-2 «medir antes»; F7 no se toca); A4 (F3 con `t_clic` 0,8 s, `t_paso` 3,6 s; F4 recalculada: 66,6 / 122,4 / 270,6 s, ≈ 1,1–4,5 min); A5 (R19 reescrita; Q12-1 abierta); A6/A7 (Dependencies; matriz de encaje verificada en 9). D12-18 a D12-23. Estado: pendiente de re-review. |
