@@ -1,8 +1,8 @@
 # Puzle 2 · Memorando en el cristal
 
-> **Status**: Borrador (lote Feature 3) — pendiente de review
+> **Status**: Revisado (ronda de corrección 7) — pendiente de re-review
 > **Author**: Álvaro + agentes (`game-designer`)
-> **Last Updated**: 2026-11-09
+> **Last Updated**: 2026-11-09 (ronda de corrección 7)
 > **Sistema**: 12 (índice: `design/gdd/systems-index.md`) · Layer `Feature` · Categoría `Gameplay` · Prioridad `MVP`
 > **Fuente de verdad**: `design/slice/slice-v0.3.md` (§10.2, §19.2, Anexo A.5, B.2, C.5, D.2; contenido v0.4.2). Prevalece sobre este GDD.
 > **Marco**: `design/gdd/marco-de-puzles.md` (9). Este GDD **instancia** el contrato del marco para el P2; no lo redefine.
@@ -40,7 +40,7 @@ Estética principal (MDA): **Sensation** (luz ámbar contra cristal frío, el hu
 
 ### A. Identidad, estado y reparto de responsabilidades
 
-**R1. Identidad.** `id` = `P2`; `mode` = `WORLD` (modo `MUNDO` en 7 y en la prosa; mismo modo); `elements` = `B01` (lámpara L), `B02` (lámpara C), `B03` (lámpara R); `solved_flag` = `memo_leido`; `validation.policy` = `ON_CHANGE`; `resolution.kind` = `IMMEDIATE`. El ventanal `B04` **no es interactuable** (D7-18 de 7; `interactuable: false` en `cobertura_anexo_a.json`): sus fragmentos son consecuencia de `B01`–`B03`, no un objetivo. `B08` (marcas del suelo) tampoco es interactuable.
+**R1. Identidad.** `id` = `P2`; `mode` = `WORLD` (modo `MUNDO` en 7 y en la prosa; mismo modo); `elements` = `B01` (lámpara L), `B02` (lámpara C), `B03` (lámpara R); `solved_flag` = `memo_leido`; `validation.policy` = `ON_CHANGE`; `resolution.kind` = `IMMEDIATE`. El ventanal `B04` **no es interactuable** (D7-18 de 7; `interactuable: false` en `cobertura_anexo_a.json`, **fichero planificado que hoy no existe** en `assets/data`; solo lo menciona `design/registry/entities.yaml`: ver «Cambios requeridos»): sus fragmentos son consecuencia de `B01`–`B03`, no un objetivo. `B08` (marcas del suelo) tampoco es interactuable.
 
 **R2. Estado público.** `requires.all` = `[]`: el P2 está `ACTIVO` desde el arranque del juego, no `BLOQUEADO`. La puerta de la Sala B la gobierna 8 (`tarjeta_B` en `C06`), no el puzle (B.2: «Estado: `ACTIVO` al entrar en la sala»). Pasos permitidos: `ACTIVO → RESUELTO`; nunca hacia atrás (regla 6 y S2 de 9).
 
@@ -93,13 +93,13 @@ Fragmentos (`DOC_01` partido en tres por 18, regla 10 de 18): **F1** «Traslado 
 
 **R16. Lo que muestra la cabeza de la lámpara.** Cada pulsación gira físicamente la cabeza de la lámpara hacia el nuevo punto en `lamp_turn_s` (0,4 s†; ≤ la duración de `HAND_TURN`). Esto es feedback de la **acción** (el jugador ve que su pulsación hizo algo) y no revela dónde está el fragmento. Con `reducir_movimiento` activo (regla 14b de 9) la cabeza cambia de orientación **al instante** (cambio estático); el fundido de luz del fragmento (R11) se conserva porque es luminancia, no movimiento (D12-12).
 
-**R17. Sin marca del punto vacío por defecto.** Sin pista de nivel 3, un haz que cae en un punto vacío **no** se marca en el cristal (D12-6): lo que el jugador ve es la orientación de la cabeza y la ausencia de texto. Con la pista de nivel 3 (tabla de pistas, sección F) aparece el halo del haz. Ver Q12-1 (deducibilidad).
+**R17. Sin marca del punto vacío por defecto.** Sin pista de nivel 3, un haz que cae en un punto vacío **no** se marca en el cristal (D12-6): lo que el jugador ve es la orientación de la cabeza y la ausencia de texto. Con la pista de nivel 3 (tabla de pistas, sección F) aparece el halo del haz. Ver Q12-1 (tanteo frente a deducción).
 
 ### D. Solución y derivación
 
 **R18. Solución.** `pos_L = 3`, `pos_C = 1`, `pos_R = 4` (slice B.2): con esa combinación F1, F2 y F3 son visibles a la vez. La solución es **única**: cada lámpara tiene exactamente un punto con fragmento, así que de las 64 combinaciones solo una ilumina los tres (F1).
 
-**R19. Derivación.** La solución no es un código que el jugador introduce: es la **configuración de los haces**. Se **deduce** así: (1) el cristal y el texto en espejo se perciben (película del cristal, hum de las lámparas); (2) cada lámpara ilumina un punto distinto al girar; (3) el sello de L en 2 enseña que la luz revela texto; (4) hay tres lámparas y el memorando se lee en tres tramos (el texto cobra sentido solo con los tres: una frase que empieza «Traslado de Vera…», un tramo «Ratificación pendiente» y un cierre «de firma del responsable.»); (5) cada lámpara se resuelve **por separado** (R10), de modo que un fragmento que aparece indica «esta lámpara ya está», y se pasa a la siguiente. Los números 3, 1 y 4 son etiquetas de implementación; el jugador solo los ve en la pista de nivel 2 (tabla de pistas, sección F). El orden de lectura F1, F2, F3 coincide con el orden izquierda-centro-derecha de las lámparas L, C, R (diseño de nivel; la geometría exacta es de 4). La deducibilidad real de este puzle es una pregunta abierta (Q12-1, D-W2 del índice).
+**R19. Derivación.** La solución no es un código que el jugador introduce: es la **configuración de los haces**. La **comprensión del mecanismo** se deduce así; **dónde** está cada fragmento **no** se deduce: se encuentra por **tanteo por lámpara con feedback `PARTIAL`** (hum y fragmento al acertar), sin softlock (toda posición es alcanzable con `Girar`, F2). El punto vacío no lleva marca (D12-6; sin pista 3 no se ve), así que no hay forma de inferir la posición correcta sin probar. (1) el cristal y el texto en espejo se perciben (película del cristal, hum de las lámparas); (2) cada lámpara ilumina un punto distinto al girar; (3) el sello de L en 2 enseña que la luz revela texto; (4) hay tres lámparas y el memorando se lee en tres tramos (el texto cobra sentido solo con los tres: una frase que empieza «Traslado de Vera…», un tramo «Ratificación pendiente» y un cierre «de firma del responsable.»); (5) cada lámpara se resuelve **por separado** (R10), de modo que un fragmento que aparece indica «esta lámpara ya está», y se pasa a la siguiente. Los números 3, 1 y 4 son etiquetas de implementación; el jugador solo los ve en la pista de nivel 2 (tabla de pistas, sección F). El orden de lectura F1, F2, F3 coincide con el orden izquierda-centro-derecha de las lámparas L, C, R (diseño de nivel; la geometría exacta es de 4). Si el tanteo basta como puzle (Autonomía, D-W2 del índice) sigue abierto (Q12-1).
 
 ### E. Resolución y recompensa
 
@@ -167,9 +167,9 @@ El P2 declara **tres** pistas (regla 27 de 9). Todas son `trigger: REQUEST`: el 
 
 `t_paso = t_clic + t_fundido + t_obs`   ·   `T_tanteo = clics · t_paso`   ·   `T_peor_clics = cota · t_clic`
 
-**Variables:** `t_clic` = 0,4 s (convención de F6 de 9); `t_fundido` = `fragment_fade_s` = 0,8 s; `t_obs` = 2,0 s† (mirar el cristal y decidir si apareció algo; a validar en playtest).
-**Output Range:** `t_paso` = 3,2 s.
-**Example:** `T_tanteo` = 6 · 3,2 = **19,2 s** (concreto); con la cota, 9 · 3,2 = **28,8 s**; con una lámpara «pasada de largo» por cada una (21 pulsaciones) = **67,2 s**. Solo las pulsaciones puras: 9 · 0,4 = 3,6 s (frente a ≈ 122 s de P1 y ≈ 22 s de P4 en F6 de 9). **Conclusión de diseño:** el P2 es el de **menor coste de fuerza bruta** de los seis; no hay rechazo, `delay_s` ni reset que lo encarezcan. No es un defecto de *Tensión sin castigo* (es la intención), pero sí un riesgo de **resolución sin comprensión** (D-W2): ver Q12-1.
+**Variables:** `t_clic` = **0,8 s** = techo de `HAND_TURN` (7 descarta las pulsaciones durante el gesto, Edge Case 2, así que el jugador no puede pulsar más rápido que el gesto; con `lamp_turn_s` = 0,4 el mínimo sería 0,4 s, que es la convención de F6 de 9 y **no** se usa aquí); `t_fundido` = `fragment_fade_s` = 0,8 s (se toma **sin solape** con el gesto: cota conservadora); `t_obs` = 2,0 s† (mirar el cristal y decidir si apareció algo; a validar en playtest).
+**Output Range:** `t_paso` = 0,8 + 0,8 + 2,0 = **3,6 s** (rango 3,2–3,6 s según el gesto dure 0,4 o 0,8 s).
+**Example:** `T_tanteo` = 6 · 3,6 = **21,6 s** (concreto); con la cota, 9 · 3,6 = **32,4 s**; con una vuelta completa «pasada de largo» en cada lámpara (21 pulsaciones) = **75,6 s**. Solo las pulsaciones puras: 9 · 0,8 = 7,2 s (frente a ≈ 22 s de P4 en F6 de 9, **sin recalcular** a 0,8 s; P1 ≈ 122 s). **Conclusión de diseño:** el P2 es el de **menor coste de fuerza bruta** de los seis; no hay rechazo, `delay_s` ni reset que lo encarezcan. No es un defecto de *Tensión sin castigo* (es la intención), pero sí un riesgo de **resolución sin comprensión** (D-W2): ver Q12-1.
 
 ### F4 · Tiempo esperado de un jugador nuevo frente a F7 de 9
 
@@ -181,12 +181,14 @@ El P2 declara **tres** pistas (regla 27 de 9). Todas son `trigger: REQUEST`: el 
 |---|---|---|---|---|
 | `T_entrada` | 20 s | 35 s | 45 s | Entrar en la Sala B, mirar el cristal y las lámparas |
 | `T_descubrir` | 15 s | 40 s | 60 s | Entender que las lámparas giran y que el haz revela (ayuda: el sello inicial, R14) |
-| `T_tanteo` | 19,2 s | 28,8 s | 67,2 s | F3: 6 / 9 / 21 pulsaciones |
+| `T_tanteo` | 21,6 s | 32,4 s | 75,6 s | F3 con `t_paso` = 3,6 s: **6** pulsaciones (F2, distancia exacta desde (2,2,2)) / **9** (cota de F2) / **21** (peor caso práctico de F2) |
 | `T_lectura` | 10 s | 15 s | 30 s | Leer F1–F3 y esperar `VO_V_08` (+3,0 s tras resolver) |
 | `T_pistas` | 0 | 0 | 60 s | Dos pistas pedidas en pausa |
-| **Total** | **64,2 s = 1,07 min** | **118,8 s = 1,98 min** | **262,2 s = 4,37 min** | |
+| **Total** | **66,6 s = 1,11 min** | **122,4 s = 2,04 min** | **270,6 s = 4,51 min** | |
 
-**Output Range:** ≈ **1,1 a 4,4 min**, típico ≈ **2,0 min**. **F7 de 9 pide 3–6 min** (slice §22 lo repite). El modelo solo alcanza el objetivo con jugadores indecisos o que piden pistas: **el objetivo de F7 está por encima de lo que el diseño del slice produce**. No lo resuelvo aquí (cambia un valor de 9 y del slice §22): **Q12-2**.
+**Qué pulsaciones usa cada cálculo:** F2 da **6** (distancia exacta desde (2,2,2), el caso real del slice) y la media sobre los 64 estados es 4,5; F3 y esta tabla usan 6 en «Bajo», **9** (la cota) en «Típico» y 21 en «Alto». Es decir, el «típico» es **deliberadamente conservador** (la cota, no el valor esperado de F2); con 6 pulsaciones el típico sería 122,4 − 10,8 = 111,6 s = 1,86 min. Todos los términos son † sin validar: **el modelo no está medido**.
+
+**Output Range:** ≈ **1,1 a 4,5 min**, típico ≈ **2,0 min**. **F7 de 9 pide 3–6 min** (slice §22 lo repite). El modelo solo alcanza el objetivo con jugadores indecisos o que piden pistas: **el objetivo de F7 parece por encima de lo que el diseño del slice produce**, pero es una estimación sin datos. No se toca F7 aquí: **medir primero** (Q12-2).
 
 ### F5 · Fundido de un fragmento
 
@@ -231,7 +233,7 @@ Cada caso dice **qué ocurre**, no «se gestiona».
 
 ## Dependencies
 
-La **dureza la declara el dependiente**. El índice (`systems-index.md`, fila 12) lista 7, 9 y 18.
+La **dureza la declara el dependiente**. El índice (`systems-index.md`, fila 12) lista **7, 9 y 18**, que son las **tres dependencias duras** de este GDD. Las demás (3, 4, 2 y 6) son **blandas** y el índice no las lista (solo recoge las duras): no hay contradicción.
 
 **12 depende de (declara 12):**
 
@@ -245,7 +247,7 @@ La **dureza la declara el dependiente**. El índice (`systems-index.md`, fila 12
 | 2 Jugador | Blanda (vía 7) | `HAND_TURN` (≤ 0,8 s) | — |
 | 6 Ajustes | Blanda (vía 9) | `reducir_movimiento` | — |
 
-**Dependen de 12** (la dureza la declara el dependiente): **17** lee `memo_leido`; **21** reacciona a `EV_PUZZLE_SOLVED_P2` (`ESC5_MEMORANDO`, `VO_V_08`; indirecta, vía bus); **5** guarda `pos_*` y `memo_leido` (causa `puzzle_solved:P2`); **29** (fila 29 del índice) y **28** presentan el reflejo; **23** reproduce `SFX_GLASS_HUM`. 9 lista al P2 en su matriz de encaje y en las dependencias de 11–16.
+**Dependen de 12** (la dureza la declara el dependiente): **17** lee `memo_leido`; **21** reacciona a `EV_PUZZLE_SOLVED_P2` (`ESC5_MEMORANDO`, `VO_V_08`; indirecta, vía bus); **5** guarda `pos_*` y `memo_leido` (causa `puzzle_solved:P2`); **29** (fila 29 del índice) y **28** presentan el reflejo; **23** reproduce `SFX_GLASS_HUM`. La sección «Matriz de encaje: los seis puzles frente al marco» de 9 (columna «P2 Memorando») recoge al P2. 21 no declara a 12 (relación indirecta vía bus).
 
 ## Tuning Knobs
 
@@ -299,7 +301,7 @@ Tipos: **L** lógica (test automático, `tests/unit/`), **I** integración (`tes
 - **AC-P2-17 (R16, PV)**: **GIVEN** `reducir_movimiento` activo, **WHEN** se pulsa `Girar`, **THEN** la cabeza cambia al instante y el fundido de luz se mantiene (captura retenida).
 
 **Experienciales (playtest, 5 jugadores)**
-- **AC-P2-18 (PV)**: ≥ 4 de 5 resuelven sin pista de nivel 3; el tiempo se compara con F4 (1,1–4,4 min) y F7 de 9 (3–6 min); se registra el número de pulsaciones (esperado ≈ 6–21).
+- **AC-P2-18 (PV)**: ≥ 4 de 5 resuelven sin pista de nivel 3; el tiempo se compara con F4 (1,1–4,5 min) y F7 de 9 (3–6 min); se registra el número de pulsaciones (esperado ≈ 6–21) y el intervalo real entre pulsaciones (valida `t_paso` = 3,6 s y `t_obs`); es la medición que decide Q12-2.
 - **AC-P2-19 (PV)**: ≥ 4 de 5, al preguntarles, dicen que **encontraron** cada fragmento y no que acertaron por azar (mide Q12-1); y ≥ 3 de 5 mencionan que el memorando y el formulario no coinciden (función narrativa, sin que se afirme una intención).
 - **AC-P2-20 (PV)**: ningún jugador describe el puzle como «tedioso» ni percibe una lámpara como «mal puesta»; 0 jugadores intentan «reiniciar» el puzle.
 
@@ -312,6 +314,7 @@ Entrada de `assets/data/puzzles/puzzles.json` según el esquema de la regla 4 de
   "id": "P2",
   "mode": "WORLD",
   "elements": ["B01", "B02", "B03"],
+  "decor_elements": [ { "element": "B08", "decor": true } ],
   "solved_flag": "memo_leido",
   "requires": { "all": [] },
   "validation": { "policy": "ON_CHANGE" },
@@ -348,14 +351,13 @@ Entrada de `assets/data/puzzles/puzzles.json` según el esquema de la regla 4 de
         { "type": "AFFORDANCE", "kind": "MIRROR_PREVIEW", "fragment": "F1", "duration_s": 2.0 }
       ] },
     { "level": 2, "trigger": "REQUEST", "availability": "ON_HINT",
-      "effects": [ { "type": "AFFORDANCE", "kind": "FLOOR_MARKS", "targets": ["B08"] } ] },
-    { "level": 3, "trigger": "REQUEST", "availability": "ON_HINT",
+      "effects": [ { "type": "AFFORDANCE", "kind": "FLOOR_MARKS", "targets": ["B08"] } ] },    { "level": 3, "trigger": "REQUEST", "availability": "ON_HINT",
       "effects": [ { "type": "AFFORDANCE", "kind": "BEAM_HALO", "targets": ["B01", "B02", "B03"], "distance_m": 1.5 } ] }
   ]
 }
 ```
 
-Notas: `on_reopen` en un `WORLD` no abre vista; las lámparas responden `SIN_EFECTO` (regla 35 de 9). `AFFORDANCE.kind` lo interpreta el controlador (regla 25 de 9: catálogo de efectos); los tres `kind` son nuevos y se registran (Entradas para el registro).
+Notas: **esquema v2 de 9 (propuesto por 9, aprobado por el usuario):** `B08` no es interactuable ni está en el catálogo de 7 (regla 26 de 7: «no se declaran»), así que se declara aquí con `decor: true` y la validación de la regla 29 de 9 lo acepta como `targets` de `FLOOR_MARKS` sin exigir que exista en 7. `MIRROR_PREVIEW` **no lleva `targets`**: es un efecto sin objetivo y el esquema v2 lo declara válido. El nombre exacto del campo `decor_elements` lo fija 9. `on_reopen` en un `WORLD` no abre vista; las lámparas responden `SIN_EFECTO` (regla 35 de 9). `AFFORDANCE.kind` lo interpreta el controlador (regla 25 de 9: catálogo de efectos); los tres `kind` son nuevos y se registran (Entradas para el registro).
 
 ## Decisiones tomadas
 
@@ -373,18 +375,24 @@ Notas: `on_reopen` en un `WORLD` no abre vista; las lámparas responden `SIN_EFE
 | D12-10 | Halo de la pista 3 por proximidad (≤ 1,5 m) | Por mirada fija a la lámpara | «Al acercar la cámara» (B.2); la mirada exigiría coordinar con 2 |
 | D12-11 | Al resolver, las lámparas quedan en 3,1,4 y la presentación final se impone aunque `pos_*` difiera | Reescribir `pos_*` | El controlador no escribe hechos (regla 10 de 9) |
 | D12-12 | Con `reducir_movimiento`, la cabeza salta; el fundido de luz se mantiene | Fundido instantáneo | La regla 14b de 9 habla de movimiento; la luminancia suave no lo es (verificar con art bible §7.4) |
-| D12-13 | La independencia de lámparas es requisito de nivel (R10) | Solapar haces | Sin ella, F1–F3 no valen y el puzle no se deduce lámpara a lámpara |
+| D12-13 | La independencia de lámparas es requisito de nivel (R10) | Solapar haces | Sin ella, F1–F3 no valen y el puzle no se resuelve lámpara a lámpara |
 | D12-14 | El P2 no bloquea nada y no es puerta | Exigirlo para B o D | Grafo §8 y D-16; el §7 del slice dice «Puzle 2» como acceso a B (Q12-3) |
 | D12-15 | La reevaluación inicial dispara `VO_V_08` aunque la escena arranque en el despacho | Suprimirlo | Caso rarísimo (cierre forzado); suprimirlo exigiría lógica extra en 21 (Q12-8) |
 | D12-16 | No se alarga el puzle para alcanzar F7 | Añadir lámparas o posiciones | Cambiaría el slice (§10.2) y arriesga «puzles tediosos» (§22); ver Q12-2 |
 | D12-17 | `B04` no interactuable | Verbo «Examinar» | D7-18 de 7 |
+| D12-18 | (Ronda 7, B1) `B08` se declara en «Datos del puzle» con `decor: true`; se pide a 9 el esquema v2 y a 4 la geometría | Pedir a 7 que lo incluya en su catálogo (rompe su regla 26) o eximir a todos los decorados | La regla 29 de 9 exige que los `targets` existan; con `decor: true` la validación arranca sin tocar el catálogo de 7. Aprobado por el usuario |
+| D12-19 | (Ronda 7, A3) No se baja F7 hasta medir; el «típico» de F4 usa 9 pulsaciones (cota) y se declara | Bajar F7 a 1,5–4 min ya | Bajarlo mueve el mínimo de F9 de 14,8 a 13,3 min y roza el criterio 1 del slice (15–30 min) y §22; el modelo está sin validar |
+| D12-20 | (Ronda 7, A1) `MIRROR_PREVIEW` sin `targets` es válido en el esquema v2 | Darle un `targets` artificial (la zona neutra) | Es un efecto sin objetivo; un `targets` falso confundiría la validación |
+| D12-21 | (Ronda 7, A4) `t_clic` de F3 = 0,8 s (techo de `HAND_TURN`), `t_paso` = 3,6 s | Mantener 0,4 s | 7 descarta pulsaciones durante el gesto (Edge Case 2), así que 0,4 s no es alcanzable con el gesto de 0,8 s |
+| D12-22 | (Ronda 7, A5) R19 dice «tanteo por lámpara con feedback `PARTIAL`; sin softlock»; Q12-1 sigue abierta | Afirmar que la solución se deduce | Sin marca del punto vacío (R17, D12-6) solo se deduce el mecanismo, no la posición |
+| D12-23 | (Ronda 7, A6/A7) Dependencies: duras 7, 9 y 18 (como el índice); 3, 4, 2 y 6 blandas; la «matriz de encaje» existe en 9 y se cita por su título | Subir 3, 4, 2, 6 a duras | La dureza la declara el dependiente y ninguna impide arrancar el P2. A7 (Q12-3/Q12-6 frente al slice) ya está abierta |
 
 ## Open Questions
 
 | ID | Pregunta | Opciones | Recomendación | Estado |
 |---|---|---|---|---|
 | Q12-1 | **D-W2: ¿el P2 se puede deducir o solo se tantea?** Hoy se resuelve en ≤ 9 pulsaciones con feedback por lámpara (F2, F3): la comprensión del mecanismo se deduce, pero **dónde** está cada fragmento no se puede inferir de nada visible. Toca *Autonomía* y *Competencia* | O1: dejar como está (tanteo por lámpara). O2: huellas casi invisibles en la película del cristal, visibles al acercarse a `B04`, que indican dónde hay texto (deducción espacial). O3: haz siempre visible como mancha de luz (el jugador aprende el mapa posición → punto) y el halo de la pista 3 pasa a ser un anillo | O3 primero (solo arte, no revela la solución) y medir con AC-P2-19; O2 si el playtest dice «azar» | **Abierta (decide el usuario)** |
-| Q12-2 | **F7 y slice §22 piden 3–6 min para el P2**; el modelo F4 da 1,1–4,4 (típico 2,0). El P2 tiene el mayor objetivo y el menor coste de fuerza bruta | (a) Bajar F7 del P2 a 1,5–4 min. (b) Mantener y medir. (c) Subir profundidad (Q12-1) | (a) y medir en playtest | Abierta (toca slice §22) |
+| Q12-2 | **F7 y slice §22 piden 3–6 min para el P2**; el modelo F4 da 1,1–4,5 (típico 2,0), todo sin validar. El P2 tiene el mayor objetivo y el menor coste de fuerza bruta | (a) **Medir antes** (AC-P2-18) y decidir con datos. (b) Si tras medir se baja F7 del P2 a 1,5–4 min, el mínimo de F9 pasa de 14,8 a 13,3 min y **roza el criterio 1 del slice (15–30 min)** y su §22 (fuente de verdad): decide el usuario. (c) Subir profundidad (Q12-1) | (a) **Medir antes; no bajar F7 hasta tener datos** (D12-19) | Abierta (toca slice §22) |
 | Q12-3 | El slice §7 dice que B se accede con «Tarjeta de A + Puzle 2», pero B.2 y §8 sitúan el puzle **dentro** de B. ¿Es el P2 un requisito de algo? | Leer §7 como contenido de la sala (por defecto, D12-14) o convertirlo en puerta | Por defecto | Abierta (contradice el slice) |
 | Q12-4 | La pista 1: el slice B.2 dice «se muestra durante 2 s el texto de F1 en espejo» y da el texto de `PISTA_P2_N1`. ¿Son dos cosas (texto + vista previa) o una? | Dos (D12-9) / solo texto | Dos | Abierta |
 | Q12-5 | B08 «visibles siempre» (A.5) frente a la pista 2 que los «indica» (B.2) | Enfatizar (D12-7) / aparecer | Enfatizar | Abierta |
@@ -396,11 +404,12 @@ Notas: `on_reopen` en un `WORLD` no abre vista; las lámparas responden `SIN_EFE
 
 No se ha editado ningún archivo existente. Pendiente:
 
-- **9 Marco de puzles:** (1) F7: valor del P2 según Q12-2; (2) catálogo `AFFORDANCE`: añadir los `kind` `MIRROR_PREVIEW`, `FLOOR_MARKS`, `BEAM_HALO` del P2 y que el P2 **no lleva** `on_reject`; (3) la fila «Pistas» de la matriz: aclarar que las 3 del P2 son `REQUEST`; (4) AC-12 de 9: añadir que el sello no cuenta como progreso.
+- **9 Marco de puzles:** (1) F7: **no cambiar** el valor del P2 hasta medir (Q12-2); (2) **esquema v2:** catálogo `AFFORDANCE` con los `kind` `MIRROR_PREVIEW` (**sin `targets`**, válido), `FLOOR_MARKS` y `BEAM_HALO`; elementos con `decor: true` (`B08`) aceptados por la validación de la regla 29 como `targets` sin exigir presencia en 7; y que el P2 **no lleva** `on_reject`; (3) la fila «Pistas» de la matriz: aclarar que las 3 del P2 son `REQUEST`; (4) AC-12 de 9: añadir que el sello no cuenta como progreso.
 - **18 Base de contenido:** fila 163 («el sello»): el sello es gráfico, sin clave ni texto (D12-5); confirmar Q12-4 sobre `PISTA_P2_N1`.
 - **17 Sistema de pistas (al redactarse):** las pistas del P2 son solo a petición; `memo_leido` es su único dato del P2.
 - **21 Director de escenas:** nota sobre Q12-8.
-- **4 Escena de planta:** requisitos de nivel de R10 (12 puntos sin solape, haces independientes, orden izquierda-centro-derecha) y que `B08` esté siempre presente.
+- **4 Escena de planta:** requisitos de nivel de R10 (12 puntos sin solape, haces independientes, orden izquierda-centro-derecha) y que `B08` esté siempre presente (geometría; no hace falta que esté en el catálogo de 7).
+- **Datos / registro (`assets/data`, `design/registry/entities.yaml`):** `cobertura_anexo_a.json` **no existe** (solo lo cita el registro): crearlo con `B04` y `B08` como `interactuable: false`, o corregir la referencia (R1).
 - **28/29 (al redactarse):** película del cristal y fundido de 0,8 s (Visual/Audio Requirements).
 - **`systems-index.md`:** fila 12 → «Borrador (lote Feature 3) — pendiente de review», ruta de este GDD.
 - **Slice (decide el usuario):** Q12-3, Q12-5, Q12-6 y el §22 (Q12-2).
@@ -408,7 +417,7 @@ No se ha editado ningún archivo existente. Pendiente:
 ## Entradas para el registro
 
 Constantes (verificar duplicados con 9, que ya tiene `fragment_fade_s` y `glass_hum_s`): `p2_lamp_count` = 3 · `p2_positions` = 4 · `p2_initial_pos` = 2 · `p2_solution` = [3, 1, 4] · `p2_combinations` = 64 · `p2_clicks_worst_case` = 9 · `p2_clicks_slice` = 6 · `p2_lamp_turn_s` = 0,4 † · `p2_halo_distance_m` = 1,5 † · `p2_mirror_preview_s` = 2,0 †.
-Fórmulas: `p2_clicks_to_target` = (p* − p₀) mod 4 (0–3) · `p2_expected_time_min` (1,1–4,4; típico 2,0).
+Fórmulas: `p2_clicks_to_target` = (p* − p₀) mod 4 (0–3) · `p2_expected_time_min` (1,1–4,5; típico 2,0; sin validar).
 Entidades: `B01`–`B03` (lámparas L, C, R), `B04` (ventanal, no interactuable), `B08` (marcas), fragmentos `F1`–`F3` de `DOC_01`, sello de Dirección (distractor).
 Efectos de pista nuevos: `MIRROR_PREVIEW`, `FLOOR_MARKS`, `BEAM_HALO`.
 Hechos (sin cambios): `pos_L/C/R` (owner 9), `memo_leido` (owner 9; lector 17).
@@ -419,3 +428,5 @@ Hechos (sin cambios): `pos_L/C/R` (owner 9), `memo_leido` (owner 9; lector 17).
 |---|---|
 | 2026-11-09 | Esqueleto creado (lote Feature 3). |
 | 2026-11-09 | Borrador completo: reglas R1–R32, F1–F6, 20 casos límite, 20 AC, datos de `puzzles.json`, D12-1 a D12-17, Q12-1 a Q12-8. Pendiente de review independiente. |
+| 2026-11-09 | Review independiente: NEEDS REVISION (1 bloqueante, 7 avisos). |
+| 2026-11-09 | Ronda de corrección 7: B1 (`B08` con `decor: true`, petición a 9 esquema v2 y a 4; se quita la petición a 7); A1 (`MIRROR_PREVIEW` sin `targets`); A2 (`cobertura_anexo_a.json` planificado, no existe); A3 (F4: se declara qué pulsaciones usa cada cálculo; Q12-2 «medir antes»; F7 no se toca); A4 (F3 con `t_clic` 0,8 s, `t_paso` 3,6 s; F4 recalculada: 66,6 / 122,4 / 270,6 s, ≈ 1,1–4,5 min); A5 (R19 reescrita; Q12-1 abierta); A6/A7 (Dependencies; matriz de encaje verificada en 9). D12-18 a D12-23. Estado: pendiente de re-review. |
