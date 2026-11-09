@@ -1,9 +1,9 @@
 # El Nido en la Niebla · Documento de referencia del vertical slice «Turno de noche»
 
-**Versión:** 0.4
+**Versión:** 0.4.1 (contenido v0.4; ver §24)
 **Fecha:** 2026-11-09
 **Estado:** base para desarrollo. Sujeta a revisión tras el primer playtest.
-**Alcance:** vertical slice de 25 a 30 minutos.
+**Alcance:** vertical slice de entre ~15 y ~30 minutos según el jugador (mínimo 15,0 min con fuentes firmes, techo ≈ 33 min en el peor caso; rango a confirmar en playtest con AC-X5 de `marco-de-puzles.md`; no se afirma 25–30 min).
 
 > Este documento es la fuente de verdad para el slice. Prevalece sobre el GDD general (v0.1, 26 de octubre de 2026) y sobre las versiones 0.1, 0.2 y 0.3 (con sus ajustes 0.3.1 y 0.3.2) de este documento. Donde el GDD general diga tercera persona, el slice usa **primera persona** (decisión D-01). Los anexos A a D contienen el detalle de implementación de espacios, puzles, eventos e inventario.
 
@@ -445,7 +445,7 @@ Según la política de Steam de 2026, hay que declarar el contenido generado por
 
 El slice se considera aceptable cuando:
 
-1. Un jugador nuevo completa el slice en 25 a 30 minutos sin guía externa.
+1. Un jugador nuevo completa el slice sin guía externa en entre ~15 y ~30 minutos según el jugador (mínimo 15,0 min con fuentes firmes, techo ≈ 33 min en el peor caso). Rango **a confirmar en playtest** con AC-X5 de `marco-de-puzles.md` (F9): el criterio queda «a medir» y no se afirma como logrado.
 2. Cada puzle se resuelve con información que está en el juego (pistas en tres niveles; dos en el puzle 6).
 3. Ningún fallo en un puzle bloquea el avance.
 4. Tres de cada cuatro jugadores de prueba describen el ambiente como «tenso» o «inquietante» sin usar la palabra «confuso» como única descripción.
@@ -492,7 +492,7 @@ El slice se considera aceptable cuando:
 
 | Riesgo | Mitigación |
 |---|---|
-| Los puzles se perciben como tediosos | Seis puzles con funciones distintas. Ninguno requiere más de dos minutos. |
+| Los puzles se perciben como tediosos | Seis puzles con funciones distintas. Cada puzle entre ~1 y ~6 min para un jugador nuevo (objetivos F7 de `marco-de-puzles.md`: P1 2–4, P2 3–6, P3 1,5–3, P4 2–4, P5 1,5–3, P6 0,5–2), a confirmar en playtest. |
 | La ambigüedad se confunde con incoherencia | Hechos observables fijos (fechas, correos, memorando, formulario). Solo las intenciones son ambiguas. |
 | La voz convertida suena artificial | Grabar las líneas en varias tomas. Probar con dos motores de voz antes de decidir. |
 | Los assets low poly no transmiten atmósfera | Iluminación y shaders como prioridad. Probar la escena de 30 segundos antes de modelar el resto. |
@@ -506,7 +506,7 @@ El slice se considera aceptable cuando:
 1. **Prototipo gris (semana 1):** despacho, Archivo y puzle 1, con geometría sin texturas.
 2. **Prototipo de caja (semana 2):** compartimentos 3 a 6, sin audio final.
 3. **Prototipo de llamada (semana 3):** diálogo con las tres variantes de carta y las cuatro respuestas.
-4. **Primer playtest:** cinco personas, sin explicaciones previas. Observar dónde se atascan y qué elección toman.
+4. **Primer playtest:** al menos cinco testers nuevos (≥ 5, igual que AC-X5 de `marco-de-puzles.md`; se unifica en 5 porque es el tamaño de partida que ya usaba este documento y la mediana se contrasta con rangos, no con un umbral estadístico), sin explicaciones previas, cronometrando el total y cada componente de F9. Observar dónde se atascan y qué elección toman.
 5. **Gate de preproducción:** decidir si se continúa con la versión completa, se reduce el alcance o se rediseña el puzle que falló.
 
 ## Anexo A · Espacios (implementación)
@@ -1100,6 +1100,7 @@ Son 20 hechos en total (los de la tabla, contando `pos_L`, `pos_C` y `pos_R` por
 
 | Versión | Fecha | Cambio |
 |---|---|---|
+| 0.4.1 | 2026-11-09 | Decisión del usuario (opción (c) de la Open Question 10 de `marco-de-puzles.md`, R6-9): el criterio de duración «25–30 min» (cabecera, §19.1) pasa a «entre ~15 y ~30 min según el jugador (mínimo 15,0 min con fuentes firmes, techo ≈ 33 min), a confirmar en playtest con AC-X5». §22: se retira «ningún puzle requiere más de dos minutos» (choca con F7) por «cada puzle entre ~1 y ~6 min». §23: playtest de ≥ 5 testers nuevos (unificado con AC-X5). Sin cambios de pilares ni de alcance. |
 | 0.4 | 2026-11-09 | Versión mayor que integra cinco decisiones del usuario surgidas de los GDDs de la capa Feature: (1) `MEGA_03`, megafonía de ahorro energético del ascensor inactivo, entra en §12 (27→28 entradas; 21 audibles, 3 de megafonía) con el texto de §13.3, redacción final pendiente del writer; (2) zonas `T-D-OUT` y `T-OFI-IN` añadidas al Anexo A.3 y D.4 con coordenadas propuestas; (3) `atrás` corta en `exploración` = «repasar bolsillo» (un documento por pulsación, sin menú), matiza D.1; (4) I-05 e I-06a releíbles desde el bolsillo; (5) B.1 confirmado literal (hoja con `Enviado: hh:mm` y pie «Ordena por hora de envío»; pistas 2 y 3 sin información nueva). Afecta a §12, §13.3, A.3, B.1, D.1 y D.4. |
 | 0.3.2 | 2026-11-09 | Ajustes autorizados por el usuario sobre v0.3 (sin cambiar de versión): la ficha T4 «Carta a Dirección» acepta Devolver o resolverla con los selectores (cualquier combinación), sin respuesta incorrecta ni «No corresponde»; la elección se guarda en `t4_decision` (`returned`/`assigned`, escrito antes de `caja_c2`); `VO_G_14` pasa a `VO_G_14_RET`/`VO_G_14_ASG` (propuesta provisional pendiente de narrative-director); D.2 pasa de 19 a 20 hechos. Afecta a B.4, 10.4, 11, 12, 13.3 y D.2. |
 | 0.3.1 | 2026-11-09 | Ajustes autorizados por el usuario sobre v0.3 (sin cambiar de versión): P1 nivel 1 pasa de gesto de cámara a resaltado; D.2 `llamada_iniciada` no evita repetir la llamada y `pendiente_revelacion` se escribe al iniciar la revelación; tras llegar a Recepción la partida queda sellada y el título ofrece solo «Nueva partida»; «reducir movimiento» entra en la accesibilidad del MVP. |
