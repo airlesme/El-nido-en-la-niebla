@@ -1,6 +1,6 @@
 # Base de contenido narrativo
 
-> **Status**: Revisado (ronda 2) — pendiente de re-review
+> **Status**: Revisado (ronda 5) — pendiente de re-review
 > **Author**: Álvaro + agentes
 > **Last Updated**: 2026-11-09
 > **Last Verified**: 2026-11-09
@@ -8,13 +8,13 @@
 
 ## Summary
 
-Es el almacén único de todo lo que el jugador lee u oye —las 26 líneas del guion, los documentos, los correos, las fichas, las pistas y los mensajes— identificado por los mismos códigos que usa el slice y guardado en ficheros de datos, no en el código. Garantiza que cada frase es la que fija el guion, que los subtítulos coinciden con la voz y que los hechos observables (fechas, horas, remitentes) son idénticos en todas las pantallas. Existe para poder cambiar un nombre en un solo sitio (el de Vera es provisional) y editar los textos sin tocar código, verificar los subtítulos contra el slice y dejar el juego listo para traducir. Las 26 entradas del §12 se editan primero en el slice y luego en los datos; el resto, solo en datos; un verificador comprueba que coinciden.
+Es el almacén único de todo lo que el jugador lee u oye —las 27 líneas del guion, los documentos, los correos, las fichas, las pistas y los mensajes— identificado por los mismos códigos que usa el slice y guardado en ficheros de datos, no en el código. Garantiza que cada frase es la que fija el guion, que los subtítulos coinciden con la voz y que los hechos observables (fechas, horas, remitentes) son idénticos en todas las pantallas. Existe para poder cambiar un nombre en un solo sitio (el de Vera es provisional) y editar los textos sin tocar código, verificar los subtítulos contra el slice y dejar el juego listo para traducir. Las 27 entradas del §12 se editan primero en el slice y luego en los datos; el resto, solo en datos; un verificador comprueba que coinciden.
 
 > **Quick reference** — Layer: `Foundation` · Priority: `MVP` · Key deps: `None`
 
 ## Overview
 
-La base de contenido narrativo es el almacén único de todo lo que el jugador lee u oye: las 26 líneas con identificador del guion (voces, megafonía, notas y cartas), los documentos (formulario, memorando, lista de tareas, libro de visitas), los correos, los textos de las fichas y de los botones, las pistas con texto de cada puzle (tres niveles, dos en el P6; no todas las pistas son texto, ver regla 20) y los mensajes del sistema. Cada pieza tiene un identificador estable —los del slice, como `VO_G_12A`, `DOC_01` o `CARTA_B`— y vive en ficheros de datos, no en el código ni en las escenas. Los demás sistemas piden contenido por identificador y no saben cuál es el texto.
+La base de contenido narrativo es el almacén único de todo lo que el jugador lee u oye: las 27 líneas con identificador del guion (voces, megafonía, notas y cartas), los documentos (formulario, memorando, lista de tareas, libro de visitas), los correos, los textos de las fichas y de los botones, las pistas con texto de cada puzle (tres niveles, dos en el P6; no todas las pistas son texto, ver regla 20) y los mensajes del sistema. Cada pieza tiene un identificador estable —los del slice, como `VO_G_12A`, `DOC_01` o `CARTA_B`— y vive en ficheros de datos, no en el código ni en las escenas. Los demás sistemas piden contenido por identificador y no saben cuál es el texto.
 
 El jugador no ve este sistema; ve su resultado: cada frase es exactamente la que fija el guion, los subtítulos coinciden con la voz y los hechos observables (fechas, horas, remitentes) son los mismos en todas las pantallas. Eso sostiene el pilar *Información incompleta*: los hechos son fijos y fiables, y solo las intenciones quedan abiertas.
 
@@ -26,25 +26,26 @@ Existe por cuatro razones: (1) el nombre de Vera es provisional (D-04), así que
 
 **Qué contiene**
 
-1. **Tipos de contenido.** Siete tipos, cada uno con sus campos:
+1. **Tipos de contenido.** Ocho tipos, cada uno con sus campos:
    - **Línea** (voz de Vera, voz del Guardián, megafonía o voz interior): identificador, hablante, escena (1 a 8), uno o más segmentos de texto y una referencia opcional a su audio.
    - **Documento** (memorando, formulario, nota, carta, lista de tareas, libro de visitas, impresión): identificador, tipo, cuerpo (en uno o más fragmentos ordenados), estilo de presentación (`impreso`, `manuscrito_vera`, `manuscrito_guardian`, `cristal_espejo`, `pantalla`, `libro`) y, si procede, el ítem que representa (`I-01` a `I-07`).
    - **Correo**: referencia (1 a 4 o sin numerar), remitente, cuerpo, día, hora de envío y etiquetas de búsqueda.
    - **Ficha de tarea** (T1 a T4): título, descripción y marcas de edición (el nombre tachado y reemplazado por «G» en T4).
    - **Pista**: puzle, nivel (1 a 3) y texto. Solo existen como entrada las pistas cuyo efecto muestra texto (regla 20); las demás son efectos de los datos del puzle (9) y no llevan clave.
    - **Texto de interfaz y mensaje del sistema**: botones («Estoy bien», «La verdad», «Todavía no»), opciones de la llamada, mensajes del teléfono, sellos del tablero, advertencias de la pantalla de inicio, avisos de megafonía del sistema, etc.
+   - **Sonido no verbal con subtítulo**: un evento sonoro sin palabras que el jugador necesita poder leer (p. ej. el llanto contenido de la llamada, escena 7). Identificador `SUB_…` (uno por evento), texto breve entre corchetes y referencia opcional a su audio (el sonido lo reproduce 23; este sistema solo guarda el texto). Ver regla 22.
    - **Texto de objeto**: lo que dice el juego al inspeccionar un objeto o un relleno (la caja «Pertenencias · Equipo anterior», «Café frío. Lo dejó a las siete», las cajas de las estanterías…).
-2. **Cantidad inicial.** El slice contiene las 26 líneas del §12 (8 de Vera, 9 del Guardián, 2 de megafonía, 1 memorando, 2 notas y 4 cartas), 6 correos (4 numerados y 2 de ruido), el formulario del Anexo A.4, las fichas T1 a T4, los textos de las 8 pistas con texto del Anexo B (regla 20) y los textos de objeto y de interfaz del Anexo A. Las cifras de las líneas son las del §12 y las comprueba el verificador (regla 16); el resto de cifras son orientativas. **Las 26 entradas del §12 son de dos tipos:** 19 líneas audibles (8 de Vera, 9 del Guardián y 2 de megafonía) y 7 entradas de **documento** con identificador de línea (`DOC_01`, `NOTA_01`, `NOTA_02` y `CARTA_A`, `CARTA_B`, `CARTA_C` y `CARTA_CUERPO`), que no se oyen y se tratan como documentos (regla 1). Además hay textos de interfaz que otros GDD ya anticipan (p. ej. «Mando desconectado», la pantalla de reasignación y los ajustes de manejo del GDD de Entrada y controles) y que necesitarán entradas `UI_…`; son orientativos.
+2. **Cantidad inicial.** El slice contiene las 27 líneas del §12 (8 de Vera, 10 del Guardián —incluidas `VO_G_14_RET` y `VO_G_14_ASG`—, 2 de megafonía, 1 memorando, 2 notas y 4 cartas), 6 correos (4 numerados y 2 de ruido), el formulario del Anexo A.4, las fichas T1 a T4, los textos de las 8 pistas con texto del Anexo B (regla 20) y los textos de objeto y de interfaz del Anexo A. Las cifras de las líneas son las del §12 y las comprueba el verificador (regla 16); el resto de cifras son orientativas. **Las 27 entradas del §12 son de dos tipos:** 20 líneas audibles (8 de Vera, 10 del Guardián y 2 de megafonía) y 7 entradas de **documento** con identificador de línea (`DOC_01`, `NOTA_01`, `NOTA_02` y `CARTA_A`, `CARTA_B`, `CARTA_C` y `CARTA_CUERPO`), que no se oyen y se tratan como documentos (regla 1). Además hay textos de interfaz que otros GDD ya anticipan (p. ej. «Mando desconectado», la pantalla de reasignación y los ajustes de manejo del GDD de Entrada y controles) y que necesitarán entradas `UI_…`; son orientativos.
 
 **Identificadores**
 
 3. **Identificador estable.** Cada pieza se pide por un identificador que no cambia. Los identificadores que ya existen en el slice se conservan tal cual, con las mismas mayúsculas (`VO_G_12A`, `MEGA_02`, `DOC_01`, `NOTA_01`, `CARTA_CUERPO`…). Los nuevos usan prefijos coherentes con el Anexo D.4: `PISTA_P<n>_N<nivel>` para las pistas **con texto** (conjunto cerrado de 8, regla 20; P1 a P5 tienen tres niveles y **P6 dos**, decisión del usuario 2026-11-09, Anexo B.6), `UI_…` para interfaz y mensajes del sistema, `OBJ_<id del objeto>` para textos de objeto y, para correos, `MAIL_1` a `MAIL_4` (los numerados, con su referencia) y `MAIL_X1` y `MAIL_X2` (los dos sin numerar, en el orden del slice: X1 = recordatorio de extensiones, lunes 10:30; X2 = aviso del aire acondicionado, martes 14:00).
 4. **No se reutilizan ni se renombran.** Un identificador retirado se marca como inactivo, no se borra ni se reasigna. Renombrar equivale a dar de baja uno y dar de alta otro.
-5. **Variantes agrupadas.** Las líneas con variante forman un **grupo** con un prefijo y las letras que lo completan, declaradas en los datos: `CARTA_` (A, B, C), `VO_G_12` (A, B, C), `VO_G_13` (A, B, C, D) y `VO_V_12` (A, B, C, D). `CARTA_CUERPO` y `VO_V_12E` son líneas simples, no pertenecen a ningún grupo. Quien consume (la llamada, el director de escenas, el puzle 6) construye el identificador a partir del prefijo y de la letra que lee del estado del juego (`carta_variante`, `respuesta_llamada`). Este sistema **no lee el estado**: solo entrega el contenido del identificador pedido y declara qué letras completan cada grupo.
+5. **Variantes agrupadas.** Las líneas con variante forman un **grupo** con un prefijo y las letras que lo completan, declaradas en los datos: `CARTA_` (A, B, C), `VO_G_12` (A, B, C), `VO_G_13` (A, B, C, D), `VO_G_14` (`RET`, `ASG`; sufijos de más de una letra, declarados en los datos igual que las letras) y `VO_V_12` (A, B, C, D). `CARTA_CUERPO` y `VO_V_12E` son líneas simples, no pertenecen a ningún grupo. Quien consume (la llamada, el director de escenas, el puzle 6) construye el identificador a partir del prefijo y de la letra que lee del estado del juego (`carta_variante`, `respuesta_llamada`). Este sistema **no lee el estado**: solo entrega el contenido del identificador pedido y declara qué letras completan cada grupo.
 
-   **Variante por la decisión de T4 (D-B1, 2026-11-09; propuesta — pendiente de narrative-director/usuario).** El hecho `t4_decision` (`returned`/`assigned`, GDD 3) cambia **una** línea: la última del Guardián en la llamada (escena 7, la más cercana al puzle 4 que lee el hecho). Grupo provisional `VO_G_14` con sufijos `_RET` y `_ASG` (declarados en los datos como las letras de otros grupos). Entradas con `fuente: propuesta_D-B1` (no son del §12, D18-7; no cuentan en las 26 de AC-02 hasta que el slice las recoja):
+   **Variante por la decisión de T4 (D-B1, 2026-11-09; propuesta — pendiente de narrative-director/usuario).** El hecho `t4_decision` (`returned`/`assigned`, GDD 3) cambia **una** línea: la última del Guardián en la llamada (escena 7, la más cercana al puzle 4 que lee el hecho). Grupo `VO_G_14` con sufijos `_RET` y `_ASG` (declarados en los datos como las letras de otros grupos). Desde la ronda 5 **son entradas del §12** del slice v0.3.x (27 entradas; `fuente: slice_§12`, el verificador las compara como las demás, regla 16); `_ASG` sigue siendo un texto propuesto pendiente de narrative-director/usuario:
 
-   | Clave provisional | Cuándo | Texto | Estado |
+   | Clave | Cuándo | Texto | Estado |
    |---|---|---|---|
    | `VO_G_14_RET` | `t4_decision` = `returned` | «Sigo aquí.» (es la `VO_G_14` actual del slice, sin cambios) | existente |
    | `VO_G_14_ASG` | `t4_decision` = `assigned` | «Sigo aquí. La carta a Dirección ya va firmada.» | **propuesta — pendiente de narrative-director/usuario** |
@@ -68,12 +69,12 @@ Existe por cuatro razones: (1) el nombre de Vera es provisional (D-04), así que
 **Solo lectura y verificación**
 
 14. **Solo lectura en juego.** El contenido no cambia entre cargas (la recarga en caliente de la regla 19 solo existe en desarrollo). Lo que el jugador ha leído o hecho se guarda como hechos en el estado del juego (3), no aquí.
-15. **Fuente de verdad.** Los ficheros de datos son lo que lee el juego. El texto de las 26 entradas del §12 se edita primero en el slice y después en los datos; el resto (pistas, interfaz, objetos, correos de ruido) se edita solo en los datos. Un verificador en `tools/` compara el contenido con la tabla de líneas de la sección 12 del slice y **falla** si no coinciden. Los cambios de texto de diseño entran como una versión nueva del slice (v0.4…) y se reflejan en los datos.
+15. **Fuente de verdad.** Los ficheros de datos son lo que lee el juego. El texto de las 27 entradas del §12 se edita primero en el slice y después en los datos; el resto (pistas, interfaz, objetos, correos de ruido) se edita solo en los datos. Un verificador en `tools/` compara el contenido con la tabla de líneas de la sección 12 del slice y **falla** si no coinciden. Los cambios de texto de diseño entran como una versión nueva del slice (v0.4…) y se reflejan en los datos.
 16. **Qué comprueba el verificador:**
     - Que no hay identificadores duplicados.
     - Que cada identificador usado por otros ficheros de datos existe.
     - Que cada línea que se oye tiene texto (nunca es legal una línea audible sin texto).
-    - Que los grupos de variantes están completos (A, B y C; A a D).
+    - Que los grupos de variantes están completos (A, B y C; A a D; `VO_G_14`: `RET` y `ASG`).
     - Que los marcadores de nombre son válidos.
     - Que ningún texto contiene literalmente el nombre o la inicial vigentes de la tabla de nombres (regla 8).
     - Que el conjunto de claves `PISTA_*` es exactamente el de la regla 20 (8).
@@ -114,6 +115,8 @@ Existe por cuatro razones: (1) el nombre de Vera es provisional (D-04), así que
     Las 8 claves son un conjunto cerrado (`PISTA_P1_N2`, `PISTA_P2_N1`, `PISTA_P4_N1`, `PISTA_P4_N3`, `PISTA_P5_N1`, `PISTA_P5_N2`, `PISTA_P6_N1`, `PISTA_P6_N2`); P6 no tiene `PISTA_P6_N3`. Los textos coinciden con el slice (Anexo B). La carga de `puzzles.json` falla si un efecto `TEXT` referencia una clave `PISTA_*` inexistente (GDD 9, regla 29).
 21. **Textos de emergencia.** Existen dos textos que el catálogo no puede servir porque pueden pedirse sin catálogo cargado: el marcador «…» (petición sin catálogo o no encontrada en la build final) y un único **mensaje de fallo de carga** («No se ha podido cargar el contenido del juego. Vuelve a intentarlo desde el título.», en `es`, redacción provisional del writer). Son constantes definidas fuera del catálogo, listadas como únicas excepciones de la regla 6. Ningún otro literal visible está permitido.
 
+22. **Sonido no verbal con subtítulo.** Los eventos sonoros sin palabras que el jugador debe poder leer (el llanto contenido de la llamada en el silencio de 20 s, escena 7; `SFX_BREATH_BROKEN` es solo su audio) llevan una clave `SUB_<EVENTO>` por evento, con un texto breve entre corchetes (forma `[…]`; describe el sonido, no lo que siente nadie, regla 18). Campos: identificador, escena, texto y `audio` opcional (rige la regla 17: sin audio, el subtítulo se muestra igual). No son líneas del §12 (el verificador no las compara con el slice), no pertenecen a ningún grupo y las pide quien emite el evento (22 para el llanto); el sistema de subtítulos (26) decide cómo se muestran. **El texto definitivo de cada `SUB_…` lo escribe el writer/narrative-director** (Open Question 11): este GDD no lo fija. Hasta entonces el dato lleva un marcador de pendiente que el verificador lista como aviso (error con `--hito=calidad`).
+
 ### States and Transitions
 
 | Estado | Qué ocurre | Sale hacia |
@@ -138,7 +141,7 @@ El idioma activo es `es` en todo el slice y no cambia durante la partida.
 | 16 Puzle 6 | Los tres botones, `CARTA_A/B/C` y `CARTA_CUERPO` |
 | 17 Sistema de pistas | Textos de pista de los 6 puzles: 3 niveles en P1 a P5 y 2 en P6 |
 | 21 Director de escenas | `MEGA_*`, `VO_V_*`, los mensajes del teléfono de la escena 1 y los de sistema |
-| 22 Llamada telefónica | `VO_G_12A/B/C`, `VO_G_13A–D`, `VO_G_14` (propuesta D-B1: `VO_G_14_RET`/`VO_G_14_ASG` según `t4_decision`) y las cuatro opciones de respuesta |
+| 22 Llamada telefónica | `VO_G_12A/B/C`, `VO_G_13A–D`, `VO_G_14_RET`/`VO_G_14_ASG` (según `t4_decision`) y las cuatro opciones de respuesta |
 | 23 Director de audio | La referencia de audio y los segmentos de cada línea |
 | 26 Subtítulos | El texto y los segmentos de cada línea |
 | 27 Pantalla de título | Título, advertencias de contenido (slice §17) y el rótulo «Continuará» |
@@ -193,7 +196,7 @@ El idioma activo es `es` en todo el slice y no cambia durante la partida.
 | 23 Director de audio | Dura | Referencia de audio de cada línea |
 | 26 Subtítulos | Dura | Texto y segmentos de cada línea |
 | 27 Pantalla de título y cierre | Dura | Título, advertencias, «Continuará» |
-| 1 Entrada y controles · 2 Cámara y movimiento · 4 Guardado · 5 Transiciones de escena · 6 Ajustes | Blanda | Solo claves `UI_…`: rótulos y mensajes propios (p. ej. «Mando desconectado», reasignación, ajustes de manejo, errores de carga/guardado, «Reducir movimiento»). Cierra OQ 11 del GDD 6 y OQ 8 del GDD 4 (mensaje de fallo de carga: regla 21) |
+| 1 Entrada y controles · 2 Jugador en primera persona · 4 Escena de planta · 5 Guardado y carga · 6 Ajustes | Blanda | Solo claves `UI_…`: rótulos y mensajes propios (p. ej. «Mando desconectado», reasignación, ajustes de manejo, errores de carga/guardado, «Reducir movimiento»). Contribuye a la OQ 11 del GDD 6 (sigue abierta allí) y cierra la OQ 8 del GDD 4 (mensaje de fallo de carga: regla 21) |
 | 7 Interacción · 8 Control | Etiquetas de acción (claves `UI_VERBO_*` que 7 necesita: Abrir, Girar, Examinar, Leer, **Descolgar, Encender, Apagar, Imprimir, Usar, Entrar**), textos de objeto (`OBJ_<id>`, incluidos **`OBJ_A02a` a `OBJ_A02c`**), textos de objeto, mensajes de puerta cerrada y menús (incluidos los `UI_…` que anticipa el GDD de Entrada y controles: «Mando desconectado», reasignación y ajustes de manejo) |
 
 **Índice de sistemas:** refleja al 18 como dependencia de 7, 8, 11, 24 y 25 (y de 12, 14, 16, 17, 19–23, 26 y 27); falta añadirlo a las filas de 1, 2, 4, 5, 6 y 9 (ver «Cambios requeridos» de la re-review).
@@ -221,7 +224,7 @@ Ninguno propio. Cada consumidor decide cómo mostrar el texto que recibe (reduci
 
 | Documento | Elemento | Naturaleza |
 |---|---|---|
-| `design/slice/slice-v0.3.md` · §12 | Tabla de 26 líneas con identificador | Fuente de verdad del diseño de las líneas; el verificador compara contra ella (reglas 15 y 16) |
+| `design/slice/slice-v0.3.md` · §12 | Tabla de 27 líneas con identificador | Fuente de verdad del diseño de las líneas; el verificador compara contra ella (reglas 15 y 16) |
 | `design/slice/slice-v0.3.md` · Anexo B.1 | Correos, horas y orden de impresión | Origen de los registros de correo (reglas 11 y 12) |
 | `design/slice/slice-v0.3.md` · Anexo A.4, D.1 | Formulario y lista de ítems `I-01` a `I-07` | Documentos y su relación con los ítems |
 | `design/slice/slice-v0.3.md` · Anexo B.2 | Fragmentos F1 «Traslado de Vera: aprobado a petición de la interesada.», F2 «Ratificación pendiente» y F3 «de firma del responsable.» | Parten `DOC_01` (regla 10); su concatenación con espacios da el texto del §12 |
@@ -240,10 +243,10 @@ Revisados por `qa-lead`. **Evidencia:** **L** = test unitario automático (gdUni
 
 **Contenido e identificadores (reglas 1 a 5)**
 - **AC-01 (R1, L)**: **GIVEN** el catálogo en «Listo», **WHEN** se pide un ejemplo de cada tipo (línea, documento, correo, ficha T1, pista, `UI_…`, `OBJ_…`), **THEN** cada uno devuelve todos sus campos obligatorios y ninguno vacío.
-- **AC-02 (R2, T)**: **GIVEN** los datos del slice, **WHEN** corre el verificador, **THEN** cuenta 26 entradas del §12 (19 líneas audibles: 8 de Vera, 9 del Guardián y 2 `MEGA_`; y 7 de documento: 1 `DOC_`, 2 `NOTA_`, 4 `CARTA_`), 6 correos (4 numerados y 2 sin numerar) y las fichas T1 a T4.
-- **AC-03 (R3, T)**: **GIVEN** los datos, **WHEN** se listan los identificadores, **THEN** los 26 del §12 existen con las mayúsculas exactas, las claves `PISTA_*` son exactamente las 8 de la regla 20 (ninguna `PISTA_P6_N3`) y los demás nuevos cumplen `UI_…`, `OBJ_…`, `MAIL_1` a `MAIL_4` o `MAIL_X1` y `MAIL_X2`; el orden de presentación de los correos referencia exactamente esos seis identificadores.
+- **AC-02 (R2, T)**: **GIVEN** los datos del slice, **WHEN** corre el verificador, **THEN** cuenta 27 entradas del §12 (20 líneas audibles: 8 de Vera, 10 del Guardián —incluidas `VO_G_14_RET` y `VO_G_14_ASG`— y 2 `MEGA_`; y 7 de documento: 1 `DOC_`, 2 `NOTA_`, 4 `CARTA_`), 6 correos (4 numerados y 2 sin numerar) y las fichas T1 a T4.
+- **AC-03 (R3, T)**: **GIVEN** los datos, **WHEN** se listan los identificadores, **THEN** los 27 del §12 existen con las mayúsculas exactas, las claves `PISTA_*` son exactamente las 8 de la regla 20 (ninguna `PISTA_P6_N3`) y los demás nuevos cumplen `UI_…`, `OBJ_…`, `MAIL_1` a `MAIL_4` o `MAIL_X1` y `MAIL_X2`; el orden de presentación de los correos referencia exactamente esos seis identificadores.
 - **AC-04 (R4, L + T)**: **GIVEN** un identificador marcado inactivo, **WHEN** se pide, **THEN** se trata como «no encontrado»; **GIVEN** una referencia de otro fichero a un identificador que no existe ni está inactivo, **THEN** el verificador falla.
-- **AC-05 (R5, L + T)**: **GIVEN** los grupos `CARTA_` (A–C), `VO_G_12` (A–C), `VO_G_13` (A–D) y `VO_V_12` (A–D), **WHEN** se quita una letra de cualquiera, **THEN** el verificador falla; **WHEN** se pide `VO_G_12D`, **THEN** devuelve «no encontrado»; `CARTA_CUERPO` y `VO_V_12E` se piden como líneas simples.
+- **AC-05 (R5, L + T)**: **GIVEN** los grupos `CARTA_` (A–C), `VO_G_12` (A–C), `VO_G_13` (A–D), `VO_G_14` (`RET`, `ASG`) y `VO_V_12` (A–D), **WHEN** se quita una letra o sufijo de cualquiera, **THEN** el verificador falla; **WHEN** se pide `VO_G_12D`, **THEN** devuelve «no encontrado»; `CARTA_CUERPO` y `VO_V_12E` se piden como líneas simples.
 
 **Texto y traducción (reglas 6 a 10)**
 - **AC-06 (R6, T + I)**: **GIVEN** los scripts y escenas del juego, **WHEN** corre el escaneo con la definición de «literal visible» de la regla 6, **THEN** no hay ninguno fuera de depuración, log y la lista de excepciones; **GIVEN** un script de prueba con `label.text = "Hola"`, **THEN** el escaneo lo marca; con `label.text = ""` o un literal de log, no.
@@ -260,7 +263,7 @@ Revisados por `qa-lead`. **Evidencia:** **L** = test unitario automático (gdUni
 
 **Solo lectura y verificación (reglas 14 a 17)**
 - **AC-14 (R14, L; la parte de revisión de la interfaz pública es revisión humana)**: **GIVEN** el catálogo en «Listo», **WHEN** se inspecciona su interfaz pública, **THEN** no tiene operaciones de escritura ni lee el estado del juego.
-- **AC-15 (R15, T)**: **GIVEN** los datos del slice sin tocar, **WHEN** corre el verificador, **THEN** termina con código 0; **WHEN** se cambia una letra de cualquiera de las 26 líneas, **THEN** termina con código distinto de 0 y nombra el identificador; **WHEN** solo cambian espacios o saltos de línea, **THEN** sigue en 0.
+- **AC-15 (R15, T)**: **GIVEN** los datos del slice sin tocar, **WHEN** corre el verificador, **THEN** termina con código 0; **WHEN** se cambia una letra de cualquiera de las 27 líneas, **THEN** termina con código distinto de 0 y nombra el identificador; **WHEN** solo cambian espacios o saltos de línea, **THEN** sigue en 0.
 - **AC-16 (R15, T)**: **GIVEN** `VO_G_07` (celda con `[pausa]`), `DOC_01` (fragmentos) y un texto con `{vera}`, **WHEN** corre el verificador, **THEN** los compara con el §12 según la regla 16 (segmento a segmento, fragmentos unidos con espacio, marcadores sustituidos) y los da por coincidentes.
 - **AC-17 (R16, T)**: **GIVEN** datos con un identificador duplicado, una referencia inexistente o una línea audible sin texto, **WHEN** corre el verificador, **THEN** falla en cada caso, también en prototipos; un fichero de audio ausente da aviso con código 0.
 - **AC-18 (R17, T)**: **GIVEN** líneas audibles con `audio` nulo o con un fichero ausente, **WHEN** corre el verificador, **THEN** las lista como aviso con código 0 (`DOC_01`, `NOTA_*` y `CARTA_*` no se listan: no son audibles); **WHEN** se ejecuta con `--hito=calidad`, **THEN** pasan a error.
@@ -293,6 +296,7 @@ Revisados por `qa-lead`. **Evidencia:** **L** = test unitario automático (gdUni
 | 8 | **D-04 (nombre de Vera) y D-07 (nombre del Guardián):** siguen abiertas en el slice. El sistema las tolera con los marcadores de nombre e inicial (regla 8); queda por decidir qué nombre e inicial se graban en las voces y se firman en los documentos. **Nota:** las líneas ya grabadas (`VO_G_07` dice «Vera») hacen que cambiar la tabla de nombres rompa la coincidencia voz-subtítulo: cualquier cambio de nombre exige volver a grabar. | Autor | Antes de la grabación de voces |
 | 9 | ~~Índice de sistemas: añadir el sistema 18 como dependencia de 7, 8, 11, 24 y 25.~~ **Resuelta:** el índice ya lo refleja. | — | Cerrada (2026-11-08) |
 | 10 | **Línea que cambia con `t4_decision` (D-B1):** `VO_G_14_ASG` es una propuesta mínima; texto, hablante (¿Guardián o Vera?) y escena definitivos. El texto retirado del REJECT de T4 era «No corresponde» (1,5 s, ficha a neutra). | Narrative-director / usuario | GDD 22 y actualización del slice |
+| 11 | **Texto del subtítulo del llanto contenido** (regla 22, D-W7): clave `SUB_…` y texto breve entre corchetes de cada sonido no verbal con subtítulo. No se inventa aquí. | Writer / narrative-director | GDD 22 y 26 (y antes del hito de calidad) |
 
 ## Decisiones tomadas
 
@@ -317,6 +321,9 @@ Ronda 3 (2026-11-09), tras `/review-all-gdds` (informe `gdd-cross-review-2026-11
 | D18-10 | **(D-B2)** `VO_G_13B` pasa a «Lo sé» (slice v0.3.3). | Mantener «Lo sé. Por eso lo pedí» como excepción registrada; reescribirla con narrative-director. | «Por eso lo pedí» confirma la intención del Guardián, que el pilar 1 («Violating») prohíbe; «Lo sé» reconoce a Vera sin explicar la historia (anti-pilar). La línea sigue siendo audible y la clave no cambia. Sin subtítulo ni audio fuera del slice. |
 
 | D18-11 | **(S-W4)** El mensaje de fallo de carga dice «Vuelve a intentarlo desde el título» (regla 21). | «Reinicia la aplicación». | Todo fallo de carga vuelve al título con acción «Volver al título» (GDD 4 regla 14); reiniciar castiga (*Tensión sin castigo*). |
+| D18-12 | **(Ronda 5, F-2)** El §12 del slice ya tiene 27 entradas: `VO_G_14_RET` y `VO_G_14_ASG` son del §12, forman el grupo `VO_G_14` (reglas 5 y 16, AC-05) y cuentan en AC-02/AC-03 (27 = 20 audibles + 7 de documento). | Mantener 26 y marcarlas «no son del §12». | El verificador compara contra el §12; con 26 fallaría. |
+| D18-13 | **(Ronda 5, D-W7)** Nuevo tipo «sonido no verbal con subtítulo» (`SUB_…`, regla 22) con texto definitivo pendiente del writer. | Meter el llanto como línea de Vera o del Guardián, o dejarlo sin subtítulo. | No es una línea de un personaje ni del §12; sin subtítulo, un sonido que solo se oye no sería accesible. |
+| D18-14 | **(Ronda 5, F-1)** Dependencias con la numeración del índice (2 Jugador en primera persona, 4 Escena de planta, 5 Guardado y carga) y «contribuye a» la OQ 11 del GDD 6. | Seguir diciendo que la cierra. | La pregunta sigue abierta en 6; 18 solo aporta las claves `UI_…`. |
 
 ## Historial de cambios
 
