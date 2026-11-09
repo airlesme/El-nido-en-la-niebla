@@ -1,6 +1,6 @@
 # Base de contenido narrativo
 
-> **Status**: Revisado (ronda de corrección 3) — pendiente de re-review (ronda de corrección 3, R6-1/R6-2 de `gdd-cross-review-2026-11-09-r6.md`: nombre `repasar_bolsillo` y dureza de dependencias) (ronda de corrección 2: W-7, D18-25; ronda 6 aplicó A-3 y A-4 de `gdd-cross-review-2026-11-09-r4.md`; la ronda de propagación 1 aplicó los cambios requeridos por 8, 19, 20 y 21; la ronda de decisiones 1 aplica D18-20 a D18-24: `MEGA_03` al §12, `UI_BOLSILLO_AYUDA`, `I-05`/`I-06a` y B.1 del slice)
+> **Status**: Revisado (ronda de corrección 5) — pendiente de re-review (ronda de corrección 5: claves pedidas por 22 (`UI_LLAMADA_OPCION_A–D`, `SUB_BREATH_BROKEN` provisional) y retirada de «22 sin GDD», D18-28; ronda de corrección 3, R6-1/R6-2 de `gdd-cross-review-2026-11-09-r6.md`: nombre `repasar_bolsillo` y dureza de dependencias) (ronda de corrección 2: W-7, D18-25; ronda 6 aplicó A-3 y A-4 de `gdd-cross-review-2026-11-09-r4.md`; la ronda de propagación 1 aplicó los cambios requeridos por 8, 19, 20 y 21; la ronda de decisiones 1 aplica D18-20 a D18-24: `MEGA_03` al §12, `UI_BOLSILLO_AYUDA`, `I-05`/`I-06a` y B.1 del slice)
 > **Author**: Álvaro + agentes
 > **Last Updated**: 2026-11-09
 > **Last Verified**: 2026-11-09
@@ -119,7 +119,7 @@ Existe por cuatro razones: (1) el nombre de Vera es provisional (D-04), así que
 
 22. **Sonido no verbal con subtítulo.** Los eventos sonoros sin palabras que el jugador debe poder leer (el llanto contenido de la llamada en el silencio de 20 s, escena 7; `SFX_BREATH_BROKEN` es solo su audio) llevan una clave `SUB_<EVENTO>` por evento, con un texto breve entre corchetes (forma `[…]`; describe el sonido, no lo que siente nadie, regla 18). Campos: identificador, escena, texto y `audio` opcional (rige la regla 17: sin audio, el subtítulo se muestra igual). No son líneas del §12 (el verificador no las compara con el slice), no pertenecen a ningún grupo y las pide quien emite el evento (22 para el llanto); el sistema de subtítulos (26) decide cómo se muestran. **El texto definitivo de cada `SUB_…` lo escribe el writer/narrative-director** (Open Question 11): este GDD no lo fija. Hasta entonces el dato lleva un marcador de pendiente que el verificador lista como aviso (error con `--hito=calidad`).
 
-23. **Claves pedidas por el lote Feature 1 (8, 19, 20, 21).** Estas entradas no son del §12 (no llevan `fuente: slice_§12`, no cambian el recuento de 28 ni el de 8 claves `PISTA_*`). **El texto de cada una es provisional**: cada entrada lleva el marcador de pendiente de la regla 22 (aviso del verificador; error con `--hito=calidad`) hasta que lo cierre el writer/narrative-director. Este GDD fija el tipo, la clave y quién la pide; no inventa el texto definitivo. Excepción: cuando el GDD pedidor o el slice ya dan el literal, se anota como texto provisional. `MEGA_03` ya no está en esta regla: desde D18-20 es una entrada del §12 (regla 2).
+23. **Claves pedidas por el lote Feature 1 (8, 19, 20, 21) y por 22 (lote Feature 2).** Estas entradas no son del §12 (no llevan `fuente: slice_§12`, no cambian el recuento de 28 ni el de 8 claves `PISTA_*`). **El texto de cada una es provisional**: cada entrada lleva el marcador de pendiente de la regla 22 (aviso del verificador; error con `--hito=calidad`) hasta que lo cierre el writer/narrative-director. Este GDD fija el tipo, la clave y quién la pide; no inventa el texto definitivo. Excepción: cuando el GDD pedidor o el slice ya dan el literal, se anota como texto provisional. `MEGA_03` ya no está en esta regla: desde D18-20 es una entrada del §12 (regla 2).
 
     | Clave | Tipo | Pide | Contenido / nota |
     |---|---|---|---|
@@ -136,7 +136,10 @@ Existe por cuatro razones: (1) el nombre de Vera es provisional (D-04), así que
     | Rótulo «Continuará» | Interfaz | 21, 27 | Rótulo de la tarjeta final; lo pinta 27. Distribución del tiempo título/rótulo: PA-4 de 21 |
     | `MEGA_03` | Línea (megafonía) | 8 (único pedidor); 21 no la pide | **Entrada del §12 desde el slice v0.4** (D18-20; `fuente: slice_§12`; aprobada por el usuario, 2026-11-09). Cuenta entre las 28 del §12 y en AC-02/AC-03; el verificador la compara con el §12 (regla 16). Texto: «Planta en modo de ahorro energético» (slice §13.3), **provisional** y con marcador de pendiente hasta que el writer lo cierre si el slice no da el definitivo |
 
-    Sin `SUB_…` nuevas en este lote.
+    | `UI_LLAMADA_OPCION_A`, `UI_LLAMADA_OPCION_B`, `UI_LLAMADA_OPCION_C`, `UI_LLAMADA_OPCION_D` | Interfaz (opción de respuesta de la llamada) | 22 (regla 9; D22-11) | Las cuatro opciones de la escena 7 en el orden A, B, C, D (slice §11.1; el texto ya lo da el slice, que se anota como provisional: «Estoy bien», «Estoy desbordada», «No quiero hablarlo ahora», «No responder»). Las claves son **propuestas de 22** (marcador de pendiente: nombres definitivos al poblar los datos). Son entradas `UI_…`, no líneas del §12: no cuentan en el recuento de 28 ni en el de 8 `PISTA_*` |
+    | `SUB_BREATH_BROKEN` | Sonido no verbal con subtítulo (regla 22) | 22 (regla 20; D22-18) | Subtítulo del llanto contenido (`SFX_BREATH_BROKEN`, escena 7). **Entrada provisional con marcador de pendiente**: el texto lo escribe el writer/narrative-director (Open Question 11; 22 propone «[Llanto contenido]» sin fijarlo aquí). No es del §12 |
+
+    `SUB_BREATH_BROKEN` es la única `SUB_…` de este lote.
 
 ### States and Transitions
 
@@ -162,7 +165,7 @@ El idioma activo es `es` en todo el slice y no cambia durante la partida.
 | 16 Puzle 6 | Los tres botones, `CARTA_A/B/C` y `CARTA_CUERPO` |
 | 17 Sistema de pistas | Textos de pista de los 6 puzles: 3 niveles en P1 a P5 y 2 en P6 |
 | 21 Director de escenas | `MEGA_*`, `VO_V_*`, los mensajes del teléfono de la escena 1, el rótulo «Continuará» y los de sistema (regla 23) |
-| 22 Llamada telefónica | `VO_G_12A/B/C`, `VO_G_13A–D`, `VO_G_14_RET`/`VO_G_14_ASG` (según `t4_decision`) y las cuatro opciones de respuesta |
+| 22 Llamada telefónica | `VO_G_12A/B/C`, `VO_G_13A–D`, `VO_G_14_RET`/`VO_G_14_ASG` (según `t4_decision`), las cuatro opciones de respuesta (`UI_LLAMADA_OPCION_A–D`, regla 23) y el subtítulo `SUB_BREATH_BROKEN` (regla 22, provisional) |
 | 23 Director de audio | La referencia de audio y los segmentos de cada línea |
 | 26 Subtítulos | El texto y los segmentos de cada línea |
 | 27 Pantalla de título | Título, advertencias de contenido (slice §17) y el rótulo «Continuará» |
@@ -203,7 +206,7 @@ El idioma activo es `es` en todo el slice y no cambia durante la partida.
 
 **Aguas arriba (de qué depende):** ninguna. Solo necesita sus ficheros de datos (`assets/data/narrative/`), la capacidad del motor de leerlos al arrancar y el texto del slice (`design/slice/slice-v0.3.md`, §12) para la verificación. No lee el estado del juego, de modo que no depende del sistema 3.
 
-**Aguas abajo (quién depende de este sistema).** Estado real: 1, 2, 3, 4, 5, 6, 7, 8, 9, 19, 20 y 21 ya tienen GDD y declaran rótulos o textos como entradas de este sistema (10 pide los suyos a través de 7 y 9 y no lo lista); los demás (11–17, 22–27) aún no. Dura = no puede funcionar sin él; blanda = mejora con él pero su lógica sigue.
+**Aguas abajo (quién depende de este sistema).** Estado real: 1, 2, 3, 4, 5, 6, 7, 8, 9, 19, 20, 21 y 22 ya tienen GDD y declaran rótulos o textos como entradas de este sistema (10 pide los suyos a través de 7 y 9 y no lo lista); los demás (11–17, 23–27) aún no. Dura = no puede funcionar sin él; blanda = mejora con él pero su lógica sigue.
 
 | Sistema | Tipo | Interfaz |
 |---|---|---|
@@ -213,7 +216,7 @@ El idioma activo es `es` en todo el slice y no cambia durante la partida.
 | 19 Ordenador, correo e impresora | Dura | Correos con hora, asunto, etiquetas y orden de presentación; claves `UI_MAIL_*`, `OBJ_V*` y cabecera de `DOC_I01` (regla 23) |
 | 20 Documentos y bolsillo | Dura | Documentos con estilo de presentación; `UI_BOLSILLO_AYUDA` (regla 23) |
 | 21 Director de escenas | Dura | Líneas de voz y megafonía; mensajes de sistema; mensajes del teléfono y rótulo «Continuará» (regla 23) |
-| 22 Llamada telefónica | Dura | Líneas del Guardián y opciones de respuesta |
+| 22 Llamada telefónica | Dura (la declara 22; ya tiene GDD) | Líneas del Guardián, opciones de respuesta (`UI_LLAMADA_OPCION_A–D`) y `SUB_BREATH_BROKEN`; las pide por ID sin modificar textos |
 | 23 Director de audio | Dura | Referencia de audio de cada línea |
 | 26 Subtítulos | Dura | Texto y segmentos de cada línea |
 | 27 Pantalla de título y cierre | Dura | Título, advertencias, «Continuará» |
@@ -222,7 +225,7 @@ El idioma activo es `es` en todo el slice y no cambia durante la partida.
 
 **Índice de sistemas:** ya refleja al 18 como dependencia, con la dureza que declara cada dependiente (ronda de corrección 3): **blanda** de 1, 2, 4, 5 y 6; **dura** de 7, 8, 9 (en validación), 19, 20 y 21, y también de 11, 12, 14, 16, 17, 22, 23, 24, 25, 26 y 27 (los que aún no tienen GDD deben repetir la dureza de la tabla de arriba al redactarse). Regla común: la dureza la declara el dependiente y el proveedor la repite; si discrepan, manda el dependiente.
 
-**Bidireccionalidad.** Los GDD 1, 2, 3, 4, 5, 6, 7, 8, 9, 19, 20 y 21 ya listan este sistema (rótulos `UI_…`, claves de pista, correos, documentos, líneas) y piden el contenido solo por identificador. Los que aún no existen (11–17 y 22–27) deben, al redactarse, listarlo como dependencia.
+**Bidireccionalidad.** Los GDD 1, 2, 3, 4, 5, 6, 7, 8, 9, 19, 20, 21 y 22 ya listan este sistema (rótulos `UI_…`, claves de pista, correos, documentos, líneas) y piden el contenido solo por identificador. Los que aún no existen (11–17 y 23–27) deben, al redactarse, listarlo como dependencia.
 
 ## Visual/Audio Requirements
 
@@ -318,8 +321,8 @@ Revisados por `qa-lead`. **Evidencia:** **L** = test unitario automático (gdUni
 | 7 | **Forma de la tabla de nombres** (nombre e inicial de Vera y del Guardián, regla 8): ¿un fichero propio o parte de los datos? | `/architecture-decision` | Fase de arquitectura |
 | 8 | **D-04 (nombre de Vera) y D-07 (nombre del Guardián):** siguen abiertas en el slice. El sistema las tolera con los marcadores de nombre e inicial (regla 8); queda por decidir qué nombre e inicial se graban en las voces y se firman en los documentos. **Nota:** las líneas ya grabadas (`VO_G_07` dice «Vera») hacen que cambiar la tabla de nombres rompa la coincidencia voz-subtítulo: cualquier cambio de nombre exige volver a grabar. | Autor | Antes de la grabación de voces |
 | 9 | ~~Índice de sistemas: añadir el sistema 18 como dependencia de 7, 8, 11, 24 y 25.~~ **Resuelta:** el índice ya lo refleja. | — | Cerrada (2026-11-08) |
-| 10 | **Línea que cambia con `t4_decision` (D-B1):** `VO_G_14_ASG` es una propuesta mínima; texto, hablante (¿Guardián o Vera?) y escena definitivos. El texto retirado del REJECT de T4 era «No corresponde» (1,5 s, ficha a neutra). | Narrative-director / usuario | GDD 22 y actualización del slice |
-| 11 | **Texto del subtítulo del llanto contenido** (regla 22, D-W7): clave `SUB_…` y texto breve entre corchetes de cada sonido no verbal con subtítulo. No se inventa aquí. | Writer / narrative-director | GDD 22 y 26 (y antes del hito de calidad) |
+| 10 | **Línea que cambia con `t4_decision` (D-B1):** `VO_G_14_ASG` es una propuesta mínima; texto, hablante (¿Guardián o Vera?) y escena definitivos. El texto retirado del REJECT de T4 era «No corresponde» (1,5 s, ficha a neutra). | Narrative-director / usuario | Texto de `VO_G_14_ASG`: el GDD 22 existe y **no cambia el texto** (su Open Question 2 repite esta pregunta); queda la actualización del slice |
+| 11 | **Texto del subtítulo del llanto contenido** (regla 22, D-W7): clave `SUB_…` y texto breve entre corchetes de cada sonido no verbal con subtítulo. No se inventa aquí. | Writer / narrative-director | El GDD 22 ya propone la clave `SUB_BREATH_BROKEN` (regla 23, texto provisional «[Llanto contenido]», su Open Question 5); 26 y el texto final, antes del hito de calidad |
 
 **Pendiente de decisión (lote Feature 1) — lo que sigue abierto tras la ronda de decisiones 1.** Se cerraron `MEGA_03` (D18-20), `UI_BOLSILLO_AYUDA` (D18-21), los textos de `I-05`/`I-06a` (D18-22) y la hoja y la hora del P1 en lo que decide B.1 (D18-23). Siguen abiertas, con el valor provisional indicado:
 
@@ -374,6 +377,7 @@ Ronda de propagación 1 (2026-11-09), cambios requeridos por los GDD 8, 19, 20 y
 | D18-25 | **(Ronda de corrección 2, W-7, 2026-11-09)** Se retiran los «sin GDD» obsoletos de Dependencies (aguas abajo y Bidireccionalidad): ya existen los GDD 3, 8, 19, 20 y 21 y todos listan a 18. Sin cambios de reglas ni de recuentos | Dejar la lista antigua hasta el próximo lote | Un texto desfasado hace creer que faltan reciprocidades que ya están cerradas |
 | D18-26 | **(Ronda de corrección 3, R6-2, 2026-11-09)** La acción de `atrás` en `exploración` se escribe siempre `repasar_bolsillo` (con guion bajo, como en 1, 7 y 20) en la fila de `UI_BOLSILLO_AYUDA` y en D18-21. Sin cambios de reglas ni de recuentos | Mantener «repasar bolsillo» en prosa | Un solo identificador en todos los GDD y en el registro; la búsqueda por texto lo encuentra. |
 | D18-27 | **(Ronda de corrección 3, R6-1, 2026-11-09)** Dureza de las filas «aguas abajo» alineada con lo que declaran los dependientes: 1, 2, 4, 5 y 6 → blanda (solo claves `UI_…`); 7, 8, 19, 20 y 21 → dura; 9 → dura en validación y blanda en ejecución (regla 29 de 9). 5 no figuraba como dependiente en su GDD y ahora lo lista (blanda). 10 no depende de 18 (pide sus textos vía 7 y 9). | Dejar la dureza del proveedor cuando discrepa | Regla común del índice: manda el GDD dependiente. |
+| D18-28 | **(Ronda de corrección 5, GDD 22 y A12 de `reviews/dependencias-r7-review.md`, 2026-11-09)** Se añaden a la regla 23 las claves que pide 22: `UI_LLAMADA_OPCION_A–D` (Interfaz, nombres propuestos por 22, textos del slice §11.1 como provisionales) y `SUB_BREATH_BROKEN` (regla 22, entrada provisional con marcador de pendiente; no se inventa el texto definitivo). No son del §12: no cambian el recuento de 28 entradas ni el de 8 `PISTA_*`. Se quita «22 sin GDD» de Dependencies y de la bidireccionalidad. `fallback_s` **no** es un campo de este sistema (la regla 17 deja la duración del subtítulo a 26): no se añade; queda como pregunta de 22/26. Pendientes 10 y 11 siguen abiertos (los cierra el writer, no 22). La respuesta de Vera es definitiva y la llamada repetible se repite idéntica al cargar (22, regla 17, D22-4 y regla 30): 18 no guarda variantes de «repetición» (sin claves nuevas por repetir). | Inventar el texto de `SUB_BREATH_BROKEN` o cerrar los Pendientes 10 y 11 aquí; añadir `fallback_s` como campo de línea; subir el recuento oficial | El texto es del writer/narrative-director; el recuento oficial es el del §12; `fallback_s` es de la capa de subtítulos. |
 
 ## Historial de cambios
 
@@ -389,3 +393,5 @@ Ronda de propagación 1 (2026-11-09), cambios requeridos por los GDD 8, 19, 20 y
 - **2026-11-09 (lote 2/5/7/9, cambios derivados de las revisiones de 7 y 9):** (a) P6 tiene **dos** claves de pista (`PISTA_P6_N1`, `PISTA_P6_N2`), no tres (decisión del usuario; B.6 prevalece sobre slice §10/§16/§19.2): reglas 3, AC-03 y tablas de dependencias. Nota: el slice ya refleja los dos niveles del P6 (actualizado 2026-11-09). (b) Se listan las claves de etiqueta que 7 necesita (`Descolgar`, `Encender`/`Apagar`, `Imprimir`, `Usar`, `Entrar`) y `OBJ_A02a` a `OBJ_A02c`. (c) 9 listado como dependencia (la carga falla si faltan claves). Las claves concretas se crean al poblar los datos, no en este GDD. **Cambia reglas: pendiente de re-review.** Estado sin cambios.
 
 - **2026-11-09 (ronda de corrección 3, R6-1 y R6-2 de `gdd-cross-review-2026-11-09-r6.md`):** `repasar_bolsillo` con guion bajo (fila `UI_BOLSILLO_AYUDA`, D18-21; D18-26); línea del índice de Dependencies con la dureza que declara cada dependiente (D18-27). Sin cambios de reglas ni de recuentos. Estado: Revisado (ronda de corrección 3) — pendiente de re-review.
+
+- **2026-11-09 (ronda de corrección 5, GDD 22 y A12 de `reviews/dependencias-r7-review.md`):** regla 23 con `UI_LLAMADA_OPCION_A–D` y `SUB_BREATH_BROKEN` (provisionales, marcador de pendiente), filas de 22 en Interacciones y Dependencies, retirada de «22 sin GDD», Pendientes 10 y 11 anotados, D18-28. No cambian los recuentos (28 entradas del §12; 8 `PISTA_*`). Estado: Revisado (ronda de corrección 5) — pendiente de re-review.
