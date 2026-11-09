@@ -25,7 +25,7 @@ Se excluyen a propósito combate, IA de enemigos, economía, progresión, red y 
 | 1 | Entrada y controles | Core | MVP | Needs Revision | design/gdd/entrada-y-controles.md | — (blandas: 3, 4, 18) |
 | 2 | Jugador en primera persona (movimiento, cámara, manos) | Core | MVP | Needs Revision | design/gdd/jugador-en-primera-persona.md | 1, 4 (blandas: 6, 18) |
 | 3 | Estado del juego y bus de eventos | Core | MVP | Needs Revision | design/gdd/estado-y-bus-de-eventos.md | — |
-| 4 | Escena de planta y carga de Recepción | Core | MVP | Needs Revision | design/gdd/escena-de-planta.md | 3 (blandas: 1, 6, 18) |
+| 4 | Escena de planta y carga de Recepción | Core | MVP | Needs Revision | design/gdd/escena-de-planta.md | 3 (blandas: 1, 6, 18); 2 (dura) |
 | 5 | Guardado y carga | Persistence | MVP | Needs Revision | design/gdd/guardado-y-carga.md | 3, 4 (blanda: 18) |
 | 6 | Ajustes persistentes (inferred) | Persistence | MVP | Revisado (ronda 2) — pend. re-review | design/gdd/ajustes-persistentes.md | 1 (blanda: 18) |
 | 7 | Interacción e inspección | Gameplay | MVP | Needs Revision | design/gdd/interaccion-e-inspeccion.md | 1, 2, 4, 18 (blanda: 3) |

@@ -493,16 +493,17 @@ constants:
     referenced_by: [design/gdd/interaccion-e-inspeccion.md]
     value: 1.0
     unit: s
-    note: "slice B.3"
+    range: [0.6, 1.2]
+    note: "slice B.3. Ronda 3 (C-W11): en vistas encadenadas D01a-D01d t_vista_entrada_s <= 1,2 s para que 1,6 s (BOX_Cn_OPEN) + 1,2 s = 2,8 s quepa en el tope unico de 3 s de Entrada F8"
     added: 2026-11-09
     revised: ""
   - name: t_vista_salida_s
-    status: active
+    status: deprecated
     source: design/gdd/jugador-en-primera-persona.md
-    referenced_by: [design/gdd/interaccion-e-inspeccion.md]
+    referenced_by: []
     value: 0.5
     unit: s
-    note: "Alias de t_devolver del Jugador (propietario: GDD 2, única duración de regreso, F9); no usar 0,6 s. Puede retirarse en favor de t_devolver"
+    note: "RETIRADA (ronda 3, C-W13): era un alias de t_devolver del Jugador (GDD 2, única duración de regreso, F9, 0,5 s). Usar t_devolver; no definir otro valor"
     added: 2026-11-09
     revised: ""
   - name: close_view_after_s
@@ -859,12 +860,12 @@ constants:
     revised: ""
   - name: t_mano_s
     status: active
-    source: design/gdd/interaccion-e-inspeccion.md
-    referenced_by: [design/gdd/jugador-en-primera-persona.md]
+    source: design/gdd/jugador-en-primera-persona.md
+    referenced_by: [design/gdd/interaccion-e-inspeccion.md]
     value: 0.4
     unit: s
     range: [0.2, 0.8]
-    note: "CONFLICTO ABIERTO: el GDD 2 (D-34) pide eliminarlo (la duración del fundido es t_item_dentro/fuera, 0,3 s); el GDD 7 lo conserva (D7-30). Decidir antes del siguiente lote"
+    note: "Propietario: GDD 2 (D-35, ronda 3; F10). Traslado de un objeto de escena (V05) entre su sitio y la mano de inspección, en sostener(..., pose_inspeccion) y soltar(). 7 no lo define: espera objeto_sujeto / objeto_soltado. No confundir con t_item_dentro/fuera (0,3 s, fundido de ítems del bolsillo)"
     added: 2026-11-09
     revised: ""
   - name: cobertura_anexo_a_file
@@ -929,6 +930,42 @@ constants:
     added: 2026-11-09
     revised: ""
 
+  - name: save_cause_notices_dropped
+    status: active
+    source: design/gdd/guardado-y-carga.md
+    referenced_by: [design/gdd/estado-y-bus-de-eventos.md]
+    value: "notices_dropped"
+    unit: ""
+    note: "Causa de guardado no urgente y no desactivable: aviso «avisos descartados» del 3 (tope de avisos encadenados). Ronda 3, C-B2"
+    added: 2026-11-09
+    revised: ""
+  - name: scene_load_notices
+    status: active
+    source: design/gdd/escena-de-planta.md
+    referenced_by: [design/gdd/estado-y-bus-de-eventos.md, design/gdd/entrada-y-controles.md, design/gdd/guardado-y-carga.md]
+    value: "iniciada (destino, motivo, D_carga) · escena lista (destino) · terminada · fallida (destino, motivo, causa) · partida terminada (sin datos; único emisor: 4, tras terminada de recepcion)"
+    unit: ""
+    note: "Avisos de carga emitidos por Escena de planta. «Fallida» es nuevo (ronda 3); Entrada termina carga_en_curso con terminada o fallida. Lo solicita C-W2/S-B1"
+    added: 2026-11-09
+    revised: ""
+  - name: input_sin_control_ops
+    status: active
+    source: design/gdd/entrada-y-controles.md
+    referenced_by: [design/gdd/escena-de-planta.md]
+    value: "abrir(dueño, duración) · cerrar (solo el dueño) · traspasar(nuevo dueño, duración; renueva el tope) · pedir exploración (dueño) · reponer menú (4)"
+    unit: ""
+    note: "Operaciones sobre el contexto sin control (ronda 3, C-B4). El reinicio de pila al descargar conserva dueño, duración y cuenta del tope del sin control vigente"
+    added: 2026-11-09
+    revised: ""
+  - name: state_silent_write
+    status: active
+    source: design/gdd/estado-y-bus-de-eventos.md
+    referenced_by: [design/gdd/marco-de-puzles.md, design/gdd/guardado-y-carga.md]
+    value: "escribir_silencioso(hecho, valor): solo owner (9), solo hechos reversibles, solo entre «carga de escena iniciada» y «escena lista», sin aviso; no rehace la línea base de dif de Guardado"
+    unit: ""
+    note: "Ronda 3, S-W7: limpieza de pendiente_revelacion al configurar tras una carga (GDD 9 regla 8, AC-41)"
+    added: 2026-11-09
+    revised: ""
 # Example:
 #
 # constants:
