@@ -115,7 +115,7 @@ Esta es la cronología interna del slice. Los personajes no la explican. El juga
 
 ## 10. Puzles
 
-Todos los puzles tienen tres niveles de pista, accesibles desde el menú de pausa o mediante gesto de cámara. Ningún puzle bloquea la historia si el jugador falla. Cada puzle tiene una **función narrativa**: qué pregunta responde o qué elección obliga.
+Los puzles 1 a 5 tienen tres niveles de pista y el puzle 6 tiene dos (Anexo B.6; decisión del usuario, 2026-11-09), accesibles desde el menú de pausa o mediante gesto de cámara. Ningún puzle bloquea la historia si el jugador falla. Cada puzle tiene una **función narrativa**: qué pregunta responde o qué elección obliga.
 
 | Puzle | Pregunta que responde o elección que fuerza | Ubicación |
 |---|---|---|
@@ -402,7 +402,7 @@ Cada línea tiene un ID para que audio, localización y QA puedan referenciarla.
 - **Sin game over.**
 - Los puzles muestran feedback visual y sonoro en cada acción, correcta o no.
 - La interacción aparece como un icono discreto cuando el objeto es interactuable.
-- El menú de pausa incluye: pistas (tres niveles por puzle), subtítulos, controles y opciones de accesibilidad.
+- El menú de pausa incluye: pistas (tres niveles por puzle; dos en el puzle 6), subtítulos, controles y opciones de accesibilidad.
 - Los **correos y documentos** se guardan automáticamente. Se pueden consultar desde el ordenador en cualquier momento.
 
 ## 17. Contenido sensible y clasificación
@@ -438,7 +438,7 @@ Según la política de Steam de 2026, hay que declarar el contenido generado por
 El slice se considera aceptable cuando:
 
 1. Un jugador nuevo completa el slice en 25 a 30 minutos sin guía externa.
-2. Cada puzle se resuelve con información que está en el juego (pistas en tres niveles).
+2. Cada puzle se resuelve con información que está en el juego (pistas en tres niveles; dos en el puzle 6).
 3. Ningún fallo en un puzle bloquea el avance.
 4. Tres de cada cuatro jugadores de prueba describen el ambiente como «tenso» o «inquietante» sin usar la palabra «confuso» como única descripción.
 5. Los jugadores identifican la diferencia de la foto (puzle 5) sin pista de nivel 3 en al menos la mitad de los casos.
