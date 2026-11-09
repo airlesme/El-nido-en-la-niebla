@@ -504,8 +504,8 @@ constants:
     referenced_by: [design/gdd/entrada-y-controles.md, design/gdd/marco-de-puzles.md]
     value: 1.6
     unit: s
-    range: [1.2, 1.8]
-    note: "Animacion del compartimento Cn (C1-C4), duenio GDD 7 (regla 19, D7-19). Cadena D01a: BOX_Cn_OPEN + t_vista_entrada_s (<= 1,2 s) debe caber en player_camera_transition_cap_s (3 s): maximo 1,8 s con 1,2 s de camara. El rango es propuesta derivada de esa cadena; 7 Tuning Knobs no lo lista aun"
+    range: [1.2, 1.6]
+    note: "Animacion del compartimento Cn (C1-C4), duenio GDD 7 (regla 19, D7-19). Cadena D01a: BOX_Cn_OPEN + t_vista_entrada_s (<= 1,2 s) debe caber en player_camera_transition_cap_s (3 s): con 1,2 s de camara el maximo es 1,6 s (ronda 5, E-5: 1,8 + 1,2 = 3,0 s no cabe en el tope minimo de 3 s). Rango [1,2; 1,6] tambien en 7 Tuning Knobs"
     added: 2026-11-09
     revised: 2026-11-09
   - name: t_vista_salida_s
@@ -714,11 +714,30 @@ constants:
     note: "Tolerancia normal del puzle 5 (asistido 6°)"
     added: 2026-11-09
     revised: ""
+  - name: multiplicador_pie
+    status: active
+    source: design/gdd/ajustes-persistentes.md
+    referenced_by: [design/gdd/interaccion-e-inspeccion.md]
+    value: 1.0
+    unit: x
+    range: [1.0, 3.0]
+    note: "Ajuste de accesibilidad (float, paso 0,25), duenio GDD 6 (regla 1). Multiplica la duracion del pie de texto (7 F5, regla 12). 7 lo lee. Ronda 5, C-W6"
+    added: 2026-11-09
+    revised: ""
+  - name: pie_persistente
+    status: active
+    source: design/gdd/ajustes-persistentes.md
+    referenced_by: [design/gdd/interaccion-e-inspeccion.md]
+    value: false
+    unit: ""
+    note: "Ajuste de accesibilidad (bool), duenio GDD 6 (regla 1). El pie de texto dura hasta que cambie el objetivo o se active otro objeto (7 regla 12). Ronda 5, C-W6"
+    added: 2026-11-09
+    revised: ""
   - name: settings_defaults
     status: active
     source: design/gdd/ajustes-persistentes.md
     referenced_by: [design/gdd/jugador-en-primera-persona.md, design/gdd/escena-de-planta.md, design/gdd/marco-de-puzles.md]
-    value: "vol_voces 1.0, vol_efectos 1.0, vol_musica 1.0, subtitulos_activos true, reducir_sobresaltos false, asistencia_encaje false, asistencia_rotacion false, balanceo_camara reducido, campo_vision 70, reducir_movimiento false, modo_ventana pantalla_completa (controles: bloque ausente)"
+    value: "vol_voces 1.0, vol_efectos 1.0, vol_musica 1.0, subtitulos_activos true, reducir_sobresaltos false, asistencia_encaje false, asistencia_rotacion false, balanceo_camara reducido, campo_vision 70, reducir_movimiento false, multiplicador_pie 1.0, pie_persistente false, modo_ventana pantalla_completa (controles: bloque ausente)"
     unit: ""
     note: "Valores iniciales de la regla 1 del GDD 6 (provisionales); consumen 2, 4, 9, 23, 25, 30. Las pistas no son ajustes"
     added: 2026-11-09
