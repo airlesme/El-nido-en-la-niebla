@@ -1,6 +1,6 @@
 # Documentos y bolsillo
 
-> **Estado:** Revisado (ronda de corrección 1) — pendiente de re-review
+> **Estado:** Revisado (ronda de decisiones 1) — pendiente de re-review
 > **Sistema:** 20 del índice (`design/gdd/systems-index.md`) · Categoría: Narrative · Prioridad: MVP
 > **Autor:** game-designer (lote autónomo, 2026-11-09)
 > **Fuente de verdad del slice:** `design/slice/slice-v0.3.md` (D.1 ítems, D.2 banderas, A.4/A.5/A.6 objetos, C.3/C.6 escenas)
@@ -10,7 +10,7 @@
 
 ## Summary
 
-El sistema 20 es el **dueño de lo que Vera lleva encima y de cómo se lee**. Tiene tres funciones: (1) **dibujar y gestionar la pantalla de lectura** de todos los documentos del slice (formulario, memorando, notas, lista de tareas, carta, libro de visitas), a partir de las claves y estilos de la base de contenido (18); (2) ser el **dueño de los hechos** `formulario_leido`, `tarjeta_B` y `tarjeta_D` y de la pregunta `has_item(id)`; (3) presentar el **bolsillo visual**: el gesto breve de «sacar y guardar» tarjetas (al obtenerlas y al usarlas, a petición de 8), y una relectura sin menú (decisión por defecto, Q1). El bolsillo **no guarda estado propio**: es una *vista derivada de los hechos* (salvo `I-01`, que es de sesión). Por eso no puede perderse nada, ni al cargar ni al fallar un gesto.
+El sistema 20 es el **dueño de lo que Vera lleva encima y de cómo se lee**. Tiene tres funciones: (1) **dibujar y gestionar la pantalla de lectura** de todos los documentos del slice (formulario, memorando, notas, lista de tareas, carta, libro de visitas), a partir de las claves y estilos de la base de contenido (18); (2) ser el **dueño de los hechos** `formulario_leido`, `tarjeta_B` y `tarjeta_D` y de la pregunta `has_item(id)`; (3) presentar el **bolsillo visual**: el gesto breve de «sacar y guardar» tarjetas (al obtenerlas y al usarlas, a petición de 8), y una relectura sin menú (decisión del usuario, 2026-11-09, D20-8). El bolsillo **no guarda estado propio**: es una *vista derivada de los hechos* (salvo `I-01`, que es de sesión). Por eso no puede perderse nada, ni al cargar ni al fallar un gesto.
 
 ## Overview
 
@@ -20,7 +20,7 @@ Hay tres clases de ítem. **Llave** (`I-02`, `I-03`: las tarjetas): se obtienen 
 
 La decisión estructural es que **ningún ítem tiene almacenamiento propio**. `has_item(id)` es una función de los hechos del estado (3): `tarjeta_B` ⇔ `I-02`, `tarjeta_D` ⇔ `I-03`, `formulario_leido` ⇔ `I-04`, `caja_c1` ⇔ `I-06a`, `caja_c2` ⇔ `I-05`, `caja_c4` ⇔ `I-07`. Guardar y cargar (5) ya persiste esos hechos, de modo que el bolsillo se reconstruye solo. La presentación (la tarjeta en la mano, la pantalla de lectura) es siempre **posterior** al hecho y **nunca lo condiciona**: si un gesto se cancela, el ítem ya está en el bolsillo.
 
-Para releer sin menú, el slice no define ningún mando. Este GDD propone (decisión por defecto, Pregunta abierta Q1 de **alcance**: el slice D.1 dice «No hay menú de inventario» y hoy Entrada no tiene `atrás` activo en `exploración`) que `atrás` en `exploración` «repase el bolsillo»: abre la lectura del siguiente documento relegible, de uno en uno, sin pantalla de selección. Los AC-11, AC-12, AC-12b y AC-14 dependen de esa decisión por defecto.
+Para releer sin menú, el slice no define ningún mando. Por decisión del usuario (2026-11-09, ronda de decisiones 1; D20-8) `atrás` en `exploración` «repasa el bolsillo»: abre la lectura del siguiente documento relegible, de uno en uno, sin menú ni pantalla de inventario (el slice D.1, «No hay menú de inventario», se respeta). Entrada (1) activa `atrás` en `exploración` con esta acción (1, regla 23). Los AC-11, AC-12, AC-12b y AC-14 son firmes.
 
 ## Player Fantasy
 
@@ -115,7 +115,7 @@ No hay sonido de «recompensa»: solo el foley de papel/plástico del Jugador/23
 
 ### F. Relectura (repaso del bolsillo)
 
-**R18. Acción.** Se añade una acción derivada: `atrás` (pulsación corta) con el contexto en `exploración` lanza `repasar_bolsillo()`. 20 no exige «estable»: el estado de la transición o del gesto lo evalúa 7 en `abrir_lectura` (R20). Es una propuesta del lote, **pendiente de Pregunta abierta Q1** (decisión de alcance) y de un cambio en Entrada (1): hoy `atrás` **no** está activa en `exploración` (acciones activas: `mover`, `mirar`, `interactuar`, `pausa`). El `atrás` que **cierra** un modo (lectura, inspección, vista) no cuenta: la pulsación debe empezar con el contexto ya en `exploración` (Entrada, tabla de contextos).
+**R18. Acción.** Se añade una acción derivada: `atrás` (pulsación corta) con el contexto en `exploración` lanza `repasar_bolsillo()`. 20 no exige «estable»: el estado de la transición o del gesto lo evalúa 7 en `abrir_lectura` (R20). Decisión aprobada por el usuario (2026-11-09): Entrada (1) la incorpora como acción `repasar_bolsillo` de `atrás` en `exploración` (1, regla 23; AC-E15 a AC-E17 de 1). El `atrás` que **cierra** un modo (lectura, inspección, vista) no cuenta: la pulsación debe empezar con el contexto ya en `exploración` (Entrada, tabla de contextos).
 
 **R19. Qué hace `repasar_bolsillo()`.** Calcula la lista de documentos relegibles presentes: los ítems de la R1 con «Relegible = Sí» y `has_item` verdadero, ordenados según R6. Si está vacía, no hace nada (sin sonido, sin mensaje). Si no, elige el siguiente según F2 y llama a `abrir_lectura(<item_id>)` a 7 (7, regla 27b).
 
@@ -250,11 +250,11 @@ Tipos: **L** lógica (prueba unitaria), **I** integración, **PV** playtest/visu
 - **AC-08 (R16, I)**: **GIVEN** `tarjeta_B` verdadero, **WHEN** 8 usa `I-02` (sostener → gesto → guardar), **THEN** `has_item("I-02")` sigue verdadero; **WHEN** se carga la partida, **THEN** la puerta B está cerrada y la tarjeta la abre de nuevo.
 - **AC-09 (R15, I)**: **GIVEN** `A03` cerrada, **THEN** `A04` no está habilitado; **WHEN** se abre `A03`, **THEN** `A04` es legible; **WHEN** se carga con `formulario_leido` verdadero, **THEN** `A03` está abierta.
 - **AC-10 (R14, I)**: **GIVEN** `A04`, **WHEN** se lee 1,9 s y se cierra, **THEN** `formulario_leido` sigue falso; **WHEN** se lee 2,0 s, **THEN** es verdadero.
-- **AC-11 (R19, R22, F2, L; depende de Q1)**: **GIVEN** `I-07`, `I-05` e `I-04` presentes, **WHEN** se llama cuatro veces a `repasar_bolsillo()` con `ACEPTADA`, **THEN** abre `I-07`, `I-05`, `I-04`, `I-07`; **GIVEN** ninguno, **THEN** no hace nada.
-- **AC-12 (R20, I; depende de Q1)**: **GIVEN** una petición de 9 aplazada (carta del P6, regreso de cámara en curso), **WHEN** el jugador pulsa `atrás` en `exploración`, **THEN** `abrir_lectura` devuelve `RECHAZADA`, el cursor no avanza y no hay mensaje.
-- **AC-12b (R20, I; depende de Q1)**: **GIVEN** `exploración` con un gesto bloqueante en curso y ningún aplazamiento previo, **WHEN** se pulsa `atrás` y 7 devuelve `APLAZADA`, **THEN** 20 espera «lectura abierta» sin repetir la petición y el cursor avanza solo cuando llega; **WHEN** 7 emite «lectura descartada», **THEN** el cursor no avanza.
+- **AC-11 (R19, R22, F2, L; firme, D20-8)**: **GIVEN** `I-07`, `I-05` e `I-04` presentes, **WHEN** se llama cuatro veces a `repasar_bolsillo()` con `ACEPTADA`, **THEN** abre `I-07`, `I-05`, `I-04`, `I-07`; **GIVEN** ninguno, **THEN** no hace nada.
+- **AC-12 (R20, I; firme, D20-8)**: **GIVEN** una petición de 9 aplazada (carta del P6, regreso de cámara en curso), **WHEN** el jugador pulsa `atrás` en `exploración`, **THEN** `abrir_lectura` devuelve `RECHAZADA`, el cursor no avanza y no hay mensaje.
+- **AC-12b (R20, I; firme, D20-8)**: **GIVEN** `exploración` con un gesto bloqueante en curso y ningún aplazamiento previo, **WHEN** se pulsa `atrás` y 7 devuelve `APLAZADA`, **THEN** 20 espera «lectura abierta» sin repetir la petición y el cursor avanza solo cuando llega; **WHEN** 7 emite «lectura descartada», **THEN** el cursor no avanza.
 - **AC-13 (R2, R14, L)**: **GIVEN** `carta_variante` = B, **WHEN** se lee `I-07`, **THEN** muestra `CARTA_B` y después `CARTA_CUERPO` con estilo `manuscrito_vera` y los textos exactos de 18.
-- **AC-14 (R18, I; depende de Q1)**: **GIVEN** una lectura abierta, **WHEN** se cierra con `atrás`, **THEN** no se lanza un segundo repaso con la misma pulsación.
+- **AC-14 (R18, I; firme, D20-8)**: **GIVEN** una lectura abierta, **WHEN** se cierra con `atrás`, **THEN** no se lanza un segundo repaso con la misma pulsación.
 - **AC-15 (R26, I)**: **GIVEN** una presentación en curso, **WHEN** se descarga la escena, **THEN** se cancela sin avisos al bus y el conjunto de sesión queda vacío.
 - **AC-16 (R3, R27, L)**: **GIVEN** los textos de 18 de `I-04`, `I-05`, `I-06a` e `I-07`, **THEN** el texto dibujado es idéntico al de 18 (sin marcas, resaltado ni anotación), la API de 20 no expone ningún campo de importancia/valoración, y el orden de `repasar_bolsillo()` es el de `repaso_orden` con independencia del orden de adquisición.
 - **AC-17 (R12, PV)**: **GIVEN** la presentación de las tarjetas, **THEN** la captura retenida muestra la tarjeta en la mano izquierda, sin icono ni texto superpuesto, y el lead de arte firma que la pose es de oficina (checklist: sin brillo, sin partículas, sin destello).
@@ -278,7 +278,7 @@ Tipos: **L** lógica (prueba unitaria), **I** integración, **PV** playtest/visu
 | D20-5 | Solo las tarjetas se presentan al obtenerse; los documentos los presentan 9/10. | Animación de adquisición para todos. | Evita duplicar la animación de recompensas de 9/10 y el fanfarreo («sin recompensas visibles»). |
 | D20-6 | `I-04` se añade al terminar de leer `A04`, y `A04` permanece en la caja. | Retirar `A04` de la escena al leerlo. | Nada se quita al jugador; sigue legible en el sitio y la copia está en el bolsillo. |
 | D20-7 | `I-01` es un material de sesión (R9). | Persistirlo. | Decisión de 9 (D9-33): evita saltar la impresión y la pista de `V08`. |
-| D20-8 | Relectura con `atrás` corta en `exploración` y ciclo de un documento por pulsación (R18–R22). | (a) Menú de inventario. (b) Sin relectura (solo objetos de escena). (c) `interactuar` mantenida sin objetivo. | (a) contradice D.1 del slice. (b) la carta no tiene objeto de escena y 9 (D9-23) la relee desde el bolsillo. (c) choca con el gesto `LEER` y no es descubrible. Pregunta abierta Q1. |
+| D20-8 | Relectura con `atrás` corta en `exploración` y ciclo de un documento por pulsación (R18–R22). | (a) Menú de inventario. (b) Sin relectura (solo objetos de escena). (c) `interactuar` mantenida sin objetivo. | (a) contradice D.1 del slice. (b) la carta no tiene objeto de escena y 9 (D9-23) la relee desde el bolsillo. (c) choca con el gesto `LEER` y no es descubrible. Aprobada por el usuario (2026-11-09): sin menú, un documento por pulsación; activada en Entrada (1). |
 | D20-9 | Orden de repaso fijo, empieza por la carta. | Orden de adquisición. | La adquisición de `caja_c1..c4` es libre (7 y 9) y no se guarda: derivar de hechos no da el orden. |
 | D20-10 | 20 no emite avisos nuevos al bus. | «ítem obtenido» (id). | Nadie lo consume en el slice (23 y 28 reaccionan a «interacción ejecutada», 7 regla 29); se puede añadir sin cambiar el resto. |
 | D20-11 | `A03` se reconstruye de `formulario_leido` al cargar. | Guardar su estado. | Misma regla que las puertas (índice, ronda 2); no añade campos. |
@@ -289,24 +289,25 @@ Tipos: **L** lógica (prueba unitaria), **I** integración, **PV** playtest/visu
 | D20-16 | R18 exige solo el contexto `exploración`, no «estable»; 7 decide ACEPTADA/APLAZADA/RECHAZADA. | 20 filtra transiciones. | Duplicar la lógica de 7 deja `APLAZADA` inalcanzable y desincroniza ambos. |
 | D20-17 | `HAND_HOLD_ITEM` lo pide 20 solo en la presentación de adquisición (R12); en el uso (R16) lo sustituye `HAND_CARD_SWIPE`. | 20 siempre pide `HAND_HOLD_ITEM`. | El gesto de 8 ya ocupa la mano; dos poses encadenadas dibujarían una tarjeta fantasma (‡ 2). |
 | D20-18 | La relectura de la carta tras reabrir P6 la hace el jugador (R18); 9 responde `SIN_EFECTO` en `on_reopen` (regla 35). | 9 pide `abrir_lectura(I-07)` al reabrir. | 9 regla 35 y D9-23 lo dejan como petición independiente de la vista. |
+| D20-19 | `I-05` (lista, P4) e `I-06a` (nota, P3) no tienen presentación nueva al resolver el puzle: quedan como decorado de la caja (10) y son releíbles desde el bolsillo con `repasar_bolsillo()` (R18–R22). Cierra Q2. Aprobada por el usuario, 2026-11-09. | Mostrarlos con `abrir_lectura` al resolver P4/P3 como la carta del P6. | Cambiaría el ritmo de la escena 6 (slice C.6) y el tono del clímax; la relectura voluntaria da el mismo acceso sin interrumpir. |
+| D20-8b | Confirmación de D20-8 (Q1): acción `atrás` corta en `exploración` aprobada y activada en Entrada (1). Aprobada por el usuario, 2026-11-09. | Rechazarla y dar un objeto de escena a la carta. | Mantener D.1 del slice (sin menú) y mantener la relectura que 9 (D9-23) ya asume; riesgo mínimo: abrir una lectura sin querer, sin coste. |
 
 ## Preguntas abiertas
 
 | # | Pregunta | Por qué es del autor | Valor por defecto aplicado |
 |---|---|---|---|
-| Q1 | ¿Se acepta una acción de relectura sin menú (`atrás` corta en `exploración`)? **Pregunta de alcance**: el slice D.1 dice «No hay menú de inventario» (es del slice, no un anti-pilar de `game-pillars.md`) y Entrada hoy **no** tiene `atrás` activo en `exploración` (solo `mover`, `mirar`, `interactuar`, `pausa`). | Toca el alcance de interfaz del slice y el GDD 1; el riesgo menor es abrir una lectura sin querer (sin coste). | Sí, mínima: un documento por pulsación, sin pantalla de selección. **AC-11, AC-12, AC-12b y AC-14** (y la relectura de la carta, 9 AC-42) dependen de esta decisión por defecto. Si se rechaza, la carta necesita un objeto de escena y 9 (D9-23) cambia. |
-| Q2 | ¿Se muestran `I-05` e `I-06a` en el momento de resolver P4/P3 mediante `abrir_lectura` (como la carta del P6)? | Cambia el ritmo de la escena 6 (slice C.6) y el tono del clímax. | No decidido aquí: lo resuelven 9 y 10; 20 solo garantiza el bolsillo. |
+| — | Q1 (acción de relectura sin menú) y Q2 (¿se muestran `I-05`/`I-06a` al resolver P4/P3?) quedan **decididas** (ver «Decisiones tomadas», D20-8 y D20-19). No hay preguntas abiertas de alcance en este GDD. | — | — |
 
 ## Cambios requeridos en otros GDDs
 
 | GDD | Cambio |
 |---|---|
-| 1 Entrada y controles | Añadir `atrás` (pulsación corta, sólo si empieza en `exploración`) a las acciones activas de `exploración` (hoy: `mover`, `mirar`, `interactuar`, `pausa`) y emitir la acción derivada `repasar_bolsillo` (R18). Depende de Q1 (decisión de alcance). |
+| 1 Entrada y controles | Hecho (D-A, regla 23 de 1): `atrás` (pulsación corta, solo si empieza en `exploración`) activa en `exploración` con la acción derivada `repasar_bolsillo` (R18); AC-E15 a AC-E17 de 1 (AC-E16 cubre AC-14 de 20). |
 | 7 Interacción | Fila de `A03`/`A04`: dueño 20 (ya es así). Añadir `repasar_bolsillo` a quien llama a `abrir_lectura` (regla 27b ya lo cita). Ya confirmado: «lectura abierta» solo tras `APLAZADA` (regla 29); R20 lo respeta. Confirmar que 7 llama a `reposo()` de 2 antes de `HAND_READ` si hay un objeto sujeto (R12). `HAND_CARD_SWIPE` no recibe `tarjeta_item`. |
 | 2 Jugador | Confirmar que `sostener(item_id, izquierda)` acepta IDs del catálogo del 20 (no de escena) y el emisor de `objeto_sujeto`/`objeto_soltado` (regla 24); que `HAND_HOLD_ITEM` se pide aparte tras `objeto_sujeto` (R12) y que `HAND_CARD_SWIPE` sustituye a esa pose (R16). |
 | 3 Estado | Fila 20 de la tabla de interacciones: ya escribe los tres hechos (correcto). No requiere avisos nuevos (D20-10). |
 | 5 Guardado | Ninguno (`card_acquired` cubre las tarjetas). Opcional: causa para `formulario_leido`. |
-| 9 Marco | `rewards` de P3/P4/P6 solo informativos para 20 (R8); fijar quién muestra `I-05`/`I-06a` (Q2). Regla 35: `on_reopen` responde `SIN_EFECTO`; la relectura de la carta no la pide 9 (la hace `repasar_bolsillo()`, R18); actualizar la mención de 9 en Dependencies (hecho aquí). |
+| 9 Marco | `rewards` de P3/P4/P6 solo informativos para 20 (R8); `I-05`/`I-06a` no tienen presentación nueva en 9 ni en 10 (D20-19). Regla 35: `on_reopen` responde `SIN_EFECTO`; la relectura de la carta no la pide 9 (la hace `repasar_bolsillo()`, R18); actualizar la mención de 9 en Dependencies (hecho aquí). |
 | 18 Contenido | Claves para el formulario y la lista de tareas como documentos con estilo; clave `UI_BOLSILLO_AYUDA`; confirmar el estilo de `NOTA_01` y de la lista. |
 | 8 Control de acceso | Reconocer a 20 como dependencia dura recíproca; 8 es dueño de `A05` y de su `interact()` y llama a `otorgar("A05")`, `sostener_item(id)`, `guardar_item()` alrededor de `HAND_CARD_SWIPE`; no consumir llaves; quitar «8 no tiene GDD / sin 20» y la propuesta de 7 pasando `tarjeta_item` (Pregunta abierta 3 y Cambios a 7 (d) de 8). |
 | 19 Ordenador, correo e impresora | Sustituir `entregar_item('I-01')` por `otorgar_sesion("I-01")`; 19 posee `DOC_I01` y su contenido; 20 no lo lee ni lo ofrece al repaso; la vista de `C05` (R27 de 19) obtiene las referencias de `I-01` de 19, no de 20; pasar la dependencia con 20 a «de 19 hacia 20 (dura)». |
@@ -341,3 +342,4 @@ Tipos: **L** lógica (prueba unitaria), **I** integración, **PV** playtest/visu
 |---|---|
 | 2026-11-09 | Borrador inicial (lote Feature 1), pendiente de review. |
 | 2026-11-09 | Ronda de corrección 1 tras la review independiente (2 bloqueantes, 13 avisos): contrato con 8 (`A05`, gesto de tarjeta, recíproca), `I-01` de 19, cita 7 regla 27b, orden de repaso (R22/F2/`repaso_orden`), regla 29 de 7, regla 35 de 9, Q1 como pregunta de alcance, `quit`/120 s†, R12 con `HAND_HOLD_ITEM` y orden `reposo()`/`HAND_READ`, R18/R20, R23/AC-18, `repaso_cerrar_ciclo`, ACs nuevos y separados, valores con †. Decisiones D20-12 a D20-18. Estado: pendiente de re-review. |
+| 2026-11-09 | Ronda de decisiones 1: Q1 decidida (D-A, `atrás` corta en `exploración` = repasar bolsillo; AC-11, AC-12, AC-12b y AC-14 firmes, activada en 1) y Q2 decidida (D-B, D20-19: `I-05`/`I-06a` sin presentación nueva, releíbles con el repaso). Estado: pendiente de re-review. |
