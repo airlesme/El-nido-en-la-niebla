@@ -105,3 +105,17 @@ No hay más preguntas que cambien pilares, tono o alcance.
 ## Alcance estimado
 
 Rough scope signal: M (el sistema es pequeño; el trabajo es de propagación y de contratos). Un ADR sigue pendiente para el formato de avisos, el mecanismo de `owner` y la instantánea (Open Questions 2, 3, 7), y debería cubrir también el mecanismo de avisos del GDD 6.
+
+## Cambios requeridos en otros GDDs
+
+Ronda 2 (2026-11-09). El GDD 3 ya está corregido; esto debe hacerse fuera de él.
+
+1. **`design/slice/slice-v0.3.md` D.2:** `pendiente_revelacion` se escribe al iniciar la revelación del puzle 5 y se limpia al terminar (no «si se interrumpe»); `llamada_iniciada` no evita repetir la llamada, marca el sellado del guardado (GDD 5).
+2. **GDD 5 (Guardado):** adoptar el contrato de instantánea (GDD 3, regla 13): `cola_vacía()` de solo lectura y petición síncrona que devuelve «no disponible» con la cola no vacía, sin esperar; tratar «avisos descartados» como causa de guardado; confirmar que su causa `pause_opened` la emite 25.
+3. **GDD 22 (Llamada, sin redactar):** escribir `llamada_iniciada` inmediatamente antes de emitir «llamada iniciada»; listar al 3 con los nombres de la tabla.
+4. **GDD 21 (Director de escenas):** leer `llamada_iniciada` (reanudación `caja_completa ∧ ¬llamada_iniciada`); confirmar o retirar la lectura opcional de `memo_leido` en Recepción.
+5. **GDD 8, 10, 19, 20, 23, 25, 26, 27, 28 (sin redactar):** listar al 3 como dependencia; 8 emite «puerta abierta»; 23 emite «línea terminada/sin audio/fallida»; 25 emite `pause_opened`.
+6. **GDD 6 (Ajustes) y ADR de avisos:** unificar el mecanismo de aviso de cambio con el del bus (mismo ADR, mismo tope de cadena).
+7. **`design/registry/entities.yaml` (H-07):** registrar los 19 hechos (tipo, valor inicial, `owner`), `snapshot_version = 1`, `max_chained_notices` y los avisos con nombre, con `source: design/gdd/estado-y-bus-de-eventos.md`.
+8. **`design/gdd/systems-index.md`:** estado de la fila 3 a «Revisado (ronda 2)».
+9. **GDD 9 (Marco de puzles):** ninguno; este GDD asume su regla 19 y que limpia `pendiente_revelacion` en silencio al restaurar `caja_c3 ∧ pendiente_revelacion`.
