@@ -182,7 +182,7 @@ Hay además dos correos sin relación (un recordatorio de cambio de extensiones 
 
 ### 10.4 Puzle 4 · Tablero de tareas (Caja, compartimento 2)
 
-- **Mecánica:** cuatro fichas de tarea. Cada una tiene una descripción que indica lo que pide. El jugador asigna urgencia y responsable, o devuelve la ficha.
+- **Mecánica:** cuatro fichas de tarea. Cada una tiene una descripción que indica lo que pide. El jugador asigna urgencia y responsable, o devuelve la ficha. En las tres primeras, la acción correcta es única; la ficha de la carta admite ambas.
 - **Regla visible en el tablero:** «Acepta lo que tiene urgencia y responsable. Devuelve lo que no te corresponde».
 
 | Ficha | Descripción | Acción correcta |
@@ -190,7 +190,7 @@ Hay además dos correos sin relación (un recordatorio de cambio de extensiones 
 | Cliente Lima | «Revisión antes del jueves. Ya la tiene asignada Vera.» | Urgencia **Alta**, responsable **Vera** |
 | Revisión de contrato | «Lleva tres semanas parada. Solo puede firmarla quien dirigía el equipo anterior.» | Urgencia **Media**, responsable **Guardián** |
 | Mudanza del archivo | «Sin fecha. Requiere aprobación de Dirección.» | Urgencia **Baja**, responsable **Dirección** |
-| Carta a Dirección | «Explicar a Dirección la solicitud de traslado en nombre de la interesada.» (Nombre tachado y reemplazado por «G».) | **Devolver** |
+| Carta a Dirección | «Explicar a Dirección la solicitud de traslado en nombre de la interesada.» (Nombre tachado y reemplazado por «G».) | **Devolver**, o urgencia y responsable (cualquier combinación). Sin respuesta incorrecta |
 
 - **Si falla:** la ficha se resiste (vibración y devolución a la posición inicial). Sin penalización.
 - **Sin temporizador:** una ficha sin decidir permanece en la mesa. Este puzle no tiene reglas de tiempo.
@@ -199,7 +199,8 @@ Hay además dos correos sin relación (un recordatorio de cambio de extensiones 
   2. Nivel 2: la descripción de la ficha se resalta al pasar el cursor.
   3. Nivel 3: la regla del tablero se ejemplifica con la ficha «Cliente Lima».
 - **Recompensa:** la lista de tareas del Guardián, con el nombre de Vera tachado en la última entrada.
-- **Función:** la respuesta se deduce del contenido, no del azar. La ficha de la carta obliga a elegir si Vera habla por otra persona. Es la primera elección de autonomía del slice.
+- **Función:** la respuesta de T1 a T3 se deduce del contenido, no del azar. La ficha de la carta obliga a elegir si Vera habla por otra persona (devolverla o asumirla) y ninguna de las dos es errónea. Es la primera elección de autonomía del slice.
+- **Efecto de la elección de T4:** se guarda en el hecho `t4_decision` (`returned` si se devuelve, `assigned` si se resuelve con los selectores) y cambia la última línea del Guardián en la llamada: `VO_G_14_RET` o `VO_G_14_ASG` (sección 12, propuesta provisional).
 
 ### 10.5 Puzle 5 · Espejo de la diferencia (Caja, compartimento 3)
 
@@ -264,7 +265,7 @@ Hay además dos correos sin relación (un recordatorio de cambio de extensiones 
   - Carta B (`carta_variante = B`): `VO_G_12B` «Has escrito que no sabes qué firmaste. ¿Estás resfriada?».
   - Carta C (`carta_variante = C`): `VO_G_12C` «Has escrito que todavía no puedes enviarlo. ¿Estás resfriada?».
 - Opciones de respuesta (sección 11.1).
-- Si no hay respuesta durante veinte segundos: se oye un llanto contenido y El Guardián dice «Sigo aquí» (`VO_G_14`). Las opciones siguen visibles y no hay elección automática. El botón «No responder» equivale al silencio.
+- Si no hay respuesta durante veinte segundos: se oye un llanto contenido y El Guardián dice `VO_G_14_RET` «Sigo aquí.» (T4 devuelta) o `VO_G_14_ASG` «Sigo aquí. La carta a Dirección ya va firmada.» (T4 resuelta con selectores), según `t4_decision`. Las opciones siguen visibles y no hay elección automática. El botón «No responder» equivale al silencio.
 - La llamada termina. Vuelve la lluvia.
 
 #### 11.1 Respuestas de la llamada
@@ -315,12 +316,15 @@ Cada línea tiene un ID para que audio, localización y QA puedan referenciarla.
 | `VO_G_13B` | El Guardián | «Lo sé. Por eso lo pedí». | 7 |
 | `VO_G_13C` | El Guardián | «Vale. Pero la caja sigue en tu mesa». | 7 |
 | `VO_G_13D` | El Guardián | «Entonces hablo yo. Te he dejado la caja abierta. Cuando quieras». | 7 |
-| `VO_G_14` | El Guardián | «Sigo aquí». | 7 |
+| `VO_G_14_RET` | El Guardián | «Sigo aquí.» (si `t4_decision` = `returned`) | 7 |
+| `VO_G_14_ASG` | El Guardián | «Sigo aquí. La carta a Dirección ya va firmada.» (si `t4_decision` = `assigned`) | 7 |
 | `VO_V_12A` | Vera | «Le dije que estaba bien. Ninguno de los dos se lo creyó». | 8 |
 | `VO_V_12B` | Vera | «Le dije que estaba desbordada. Era lo más cierto de la noche». | 8 |
 | `VO_V_12C` | Vera | «No quise hablarlo. La caja sigue en mi mesa». | 8 |
 | `VO_V_12D` | Vera | «No dije nada. Él habló por los dos». | 8 |
 | `VO_V_12E` | Vera | «La V no me convence». | 8 |
+
+**Nota sobre `VO_G_14`:** `VO_G_14_RET` y `VO_G_14_ASG` sustituyen a la antigua `VO_G_14` única. `_RET` conserva su texto; `_ASG` es una **propuesta provisional pendiente de narrative-director**. La tabla pasa de 26 a 27 entradas; el GDD base-de-contenido-narrativo (D18-9) mantiene 26 hasta que recoja estas dos.
 
 **Regla de escritura:** las líneas del Guardián nunca explican por qué pasó algo. Pueden contradecirse con los documentos. Ningún personaje confirma intenciones.
 
@@ -351,7 +355,7 @@ Cada línea tiene un ID para que audio, localización y QA puedan referenciarla.
 ### 13.3 Casos límite (sin softlock)
 
 - Si el jugador sale de la Sala B sin cuadrar las lámparas, quedan en la última posición. Puede volver cuando quiera.
-- Si el jugador deja «Carta a Dirección» sin decidir, la ficha permanece en la mesa y el compartimento 2 no se resuelve hasta devolverla.
+- Si el jugador deja «Carta a Dirección» sin decidir, la ficha permanece en la mesa y el compartimento 2 no se resuelve hasta decidirla.
 - Si el jugador sale de D sin completar la caja, la llamada no se activa. Puede volver a D en cualquier momento. Ningún compartimento depende de otro para ser resoluble.
 - Si el jugador intenta salir del edificio antes de la llamada, el ascensor no responde y la megafonía indica «Planta en modo de ahorro energético».
 
@@ -837,26 +841,27 @@ S6 queda vacío.
 | T1 | Alta | Vera | Aceptar |
 | T2 | Media | Guardián | Aceptar |
 | T3 | Baja | Dirección | Aceptar |
-| T4 | — | — | Devolver |
+| T4 | cualquiera | cualquiera | Devolver, o aceptar con cualquier combinación de selectores (sin respuesta incorrecta) |
 
 **Verificación**
 
 - Cada ficha se evalúa cuando tiene sus dos selectores completos o el botón «Devolver» activo.
+- T4 nunca se rechaza: cualquier decisión la deja bloqueada como correcta.
 
 **Resultado por ficha**
 
 - Correcta: sello «ACEPTADA» o «DEVUELTA» (`SFX_STAMP`). La ficha queda bloqueada.
-- Incorrecta: la ficha vuelve a neutra (`SFX_REJECT`) y aparece «No corresponde» durante 1,5 s. Las fichas correctas no se reinician.
+- Incorrecta (solo T1 a T3): la ficha vuelve a neutra (`SFX_REJECT`) y aparece «No corresponde» durante 1,5 s. Las fichas correctas no se reinician. T4 nunca da «No corresponde».
 
 **Resultado del compartimento**
 
-- Cuando T1 a T4 están bloqueadas como correctas: `caja_c2` pasa a verdadero. Aparece I-05 (lista de tareas del Guardián). Estado: `RESUELTO`.
+- Cuando T1 a T4 están bloqueadas como correctas: primero se escribe `t4_decision` (`returned` si T4 se devolvió, `assigned` si se resolvió con selectores) y después `caja_c2` pasa a verdadero (`t4_decision` se escribe siempre antes de `caja_c2`). Aparece I-05 (lista de tareas del Guardián). Estado: `RESUELTO`.
 
 **Sin temporizador:** una ficha sin decidir permanece en la mesa.
 
 **Pistas**
 
-1. Nivel 1: la regla del tablero es visible en todo momento: «Acepta lo que tiene urgencia y responsable. Devuelve lo que no te corresponde».
+1. Nivel 1: la regla del tablero es visible en todo momento: «Acepta lo que tiene urgencia y responsable. Devuelve lo que no te corresponde». Sigue siendo válida para T4 sin implicar error: devolver es una opción, no la única.
 2. Nivel 2: la descripción de la ficha se resalta al pasar el cursor.
 3. Nivel 3: T1 se resuelve sola y muestra su explicación: «La urgencia sigue al plazo; el responsable, a quien ya lleva el caso».
 
@@ -999,7 +1004,7 @@ S6 queda vacío.
 | Al pulsar V02 | `ANIM_PHONE_PICKUP` (0,8 s). Silencio de 2,0 s. Respiración de 2,0 s. |
 | +4,0 | Línea de variante: `VO_G_12A`, `VO_G_12B` o `VO_G_12C` (unos 5 s). |
 | +1,0 tras la línea | Aparecen las opciones: «Estoy bien», «Estoy desbordada», «No quiero hablarlo ahora» y «No responder». |
-| +20,0 sin elegir | `SFX_BREATH_BROKEN` (4 s) y `VO_G_14`: «Sigo aquí». Las opciones siguen visibles. No hay elección automática. |
+| +20,0 sin elegir | `SFX_BREATH_BROKEN` (4 s) y `VO_G_14_RET` «Sigo aquí.» o `VO_G_14_ASG` «Sigo aquí. La carta a Dirección ya va firmada.» según `t4_decision`. Las opciones siguen visibles. No hay elección automática. |
 | Al elegir | Se reproduce la línea de respuesta (`VO_G_13A` a `VO_G_13D`). Se guarda `respuesta_llamada`. |
 | +1,0 tras la respuesta | `SFX_PHONE_END`. Se activa `llamada_completada`. |
 | +2,0 | C03 se restablece (2,0 s). Vuelve la lluvia. Se activa C08 (ascensor). |
@@ -1036,7 +1041,7 @@ Vera lleva los ítems en un bolsillo visual. No hay menú de inventario en el sl
 
 ### D.2 Banderas
 
-Son 19 hechos en total (los de la tabla, contando `pos_L`, `pos_C` y `pos_R` por separado).
+Son 20 hechos en total (los de la tabla, contando `pos_L`, `pos_C` y `pos_R` por separado).
 
 | Flag | Tipo | Inicial | Se activa en | Se usa en |
 |---|---|---|---|---|
@@ -1048,6 +1053,7 @@ Son 19 hechos en total (los de la tabla, contando `pos_L`, `pos_C` y `pos_R` por
 | `memo_leido` | bool | falso | Puzle 2 | Pistas, recompensa de B |
 | `pos_L`, `pos_C`, `pos_R` | int (1 a 4) | 2 | Puzle 2 | Puzle 2 |
 | `caja_c1` | bool | falso | Puzle 3 | Dependencias de c3 y c4 |
+| `t4_decision` | enum (`returned`, `assigned`) | sin fijar | Puzle 4 (se escribe antes de `caja_c2`) | Llamada (escena 7, `VO_G_14_RET`/`VO_G_14_ASG`) |
 | `caja_c2` | bool | falso | Puzle 4 | Dependencia de c4 |
 | `caja_c3` | bool | falso | Puzle 5 | Dependencia de c4 |
 | `caja_c4` | bool | falso | Puzle 6 | `caja_completa` |
@@ -1087,6 +1093,7 @@ Son 19 hechos en total (los de la tabla, contando `pos_L`, `pos_C` y `pos_R` por
 
 | Versión | Fecha | Cambio |
 |---|---|---|
+| 0.3.2 | 2026-11-09 | Ajustes autorizados por el usuario sobre v0.3 (sin cambiar de versión): la ficha T4 «Carta a Dirección» acepta Devolver o resolverla con los selectores (cualquier combinación), sin respuesta incorrecta ni «No corresponde»; la elección se guarda en `t4_decision` (`returned`/`assigned`, escrito antes de `caja_c2`); `VO_G_14` pasa a `VO_G_14_RET`/`VO_G_14_ASG` (propuesta provisional pendiente de narrative-director); D.2 pasa de 19 a 20 hechos. Afecta a B.4, 10.4, 11, 12, 13.3 y D.2. |
 | 0.3.1 | 2026-11-09 | Ajustes autorizados por el usuario sobre v0.3 (sin cambiar de versión): P1 nivel 1 pasa de gesto de cámara a resaltado; D.2 `llamada_iniciada` no evita repetir la llamada y `pendiente_revelacion` se escribe al iniciar la revelación; tras llegar a Recepción la partida queda sellada y el título ofrece solo «Nueva partida»; «reducir movimiento» entra en la accesibilidad del MVP. |
 | 0.3 | 2026-11-08 | Añadidos los anexos A (espacios), B (puzles), C (eventos y tiempos) y D (inventario, banderas e índice). Ajustes en v0.2: la impresión de correos sustituye a la búsqueda como fuente de referencias; el silencio en la llamada pasa a ser el botón «No responder» y no hay elección automática a los 20 s; se elimina el temporizador de la ficha «Carta a Dirección». Decisiones D-14 a D-16. |
 | 0.1 | 2026-11-08 | Creación del documento a partir del guion del turno de noche. |
