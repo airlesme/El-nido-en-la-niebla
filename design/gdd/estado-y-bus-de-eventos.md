@@ -1,6 +1,6 @@
 # Estado del juego y bus de eventos
 
-> **Status**: Revisado (ronda de propagación 1) — pendiente de re-review
+> **Status**: Revisado (ronda de decisiones 1) — pendiente de re-review
 > **Author**: Álvaro + agentes
 > **Last Updated**: 2026-11-09
 > **Last Verified**: 2026-11-08
@@ -322,8 +322,10 @@ Revisados por `qa-lead`. **Testeabilidad hoy:** los CA marcados L se ejecutan si
 | DT-16 | Propietarios cerrados: `correos_leidos` 19 (único lector 19; 9 no lo lee); `formulario_leido`, `tarjeta_B`, `tarjeta_D` 20 (8 solo lee las tarjetas). Se quitan las ‡ de esos escritores. Recuento: 20 hechos, sin cambios (verificado contra el slice D.2) | Que 9 lea `correos_leidos` para su `requires`; que 8 escriba las tarjetas | 9 declara `requires: all: []` (GDD 19 R27); `A05` es de 8 pero `tarjeta_B/D` las escribe 20 al `otorgar` (un solo dueño, regla 2) |
 | DT-17 | 21 deja de leer `memo_leido` y `t4_decision` (los lee 17 y 22 respectivamente) y pasa a leer `formulario_leido`; cierra Open Question 6 y sustituye a DT-8 | Mantener la lectura opcional del 21 | En Recepción no hay puzle ni pistas (GDD 21 DT-5, DT-6) |
 | DT-18 | `caja_completa` lo leen 21 (apagón y timbre; la llamada la inicia 22) y 8 (`C08` en `EN_APAGON`); `llamada_completada` la leen 21, 8 (activa `C08` +2,0 s) y 4 (precondición). 8 y 21 no escriben hechos | Que 21 «active el ascensor» o «dispare la llamada» | `C08` es íntegramente de 8 (D8-13, DT-17 de 21); corrige el texto previo de la tabla de hechos |
+| DT-19 | **(ronda de decisiones 1, aprobada por el usuario, 2026-11-09)** Sin cambio de contrato: la acción `atrás` en `exploración` («repasar bolsillo», 20) no escribe hechos ni emite avisos (repasar es de sesión y no cambia ninguno de los 20 hechos), y `MEGA_03` pasa a ser la línea 28 del §12 con el mismo aviso «línea pedida» (regla 10) y sin hecho nuevo. | Un hecho `bolsillo_repasado` o un aviso «bolsillo repasado»; un aviso propio para la megafonía de ahorro | Ningún sistema lee que se haya releído un documento; la relectura no es progreso y los 20 hechos bastan. |
 
 ## Historial de cambios
+- **2026-11-09 (ronda de decisiones 1):** DT-19 deja constancia de que las decisiones «repasar bolsillo» y `MEGA_03` al §12 no cambian hechos, avisos ni recuentos de este GDD (siguen 20 hechos). Estado: pendiente de re-review.
 - **2026-11-09 (D-B1, decisión del usuario):** hecho nuevo `t4_decision` (enum `returned`/`assigned`, owner 9, un solo sentido): el catálogo pasa de 19 a 20 hechos (regla 2, regla 4, tabla de hechos, CA-01, CA-04, CA-18, CA-19, CA-24, CA-30, DT-9). Cambia el catálogo, no el mecanismo: pendiente de re-review.
 - **2026-11-09 (ronda 2, re-review):** aplicada la re-review (H-01 a H-06 y H-08; H-07, el registro de entidades, queda en «Cambios requeridos en otros GDDs»). Regla 10 convertida en tabla por emisor (3, 1, 4, 5, 7, 8, 9, 22, 23, 25); reglas 5, 9 y 13 ampliadas; tablas de lectores y Dependencies completadas (21, 7, 5, 4, 6, 23, 25); Cross-References y bidireccionalidad reescritas con los GDD existentes; fila 17; Open Questions 1, 4, 6 y 8; CA-05, 11, 15, 17, 23, 25 a 29 retocados y CA-32 a 34 añadidos; sección «Decisiones tomadas». Estado: revisado, pendiente de re-review.
 
