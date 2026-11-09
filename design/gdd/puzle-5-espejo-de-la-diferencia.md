@@ -1,6 +1,6 @@
 # Puzle 5 · Espejo de la diferencia
 
-> **Estado:** Revisado (ronda de corrección 7) — pendiente de re-review
+> **Estado:** Revisado (ronda de corrección 8) — pendiente de re-review
 > **Sistema:** 15 (capa Feature, MVP) · **Autor:** game-designer · **Fecha:** 2026-11-09
 > **Fuente de verdad:** `design/slice/slice-v0.3.md` (contenido v0.4.2): §10.5, §19.5, Anexo B.5, C.6, D.2 · **Marco:** `design/gdd/marco-de-puzles.md` (9), que este GDD **instancia, no redefine**.
 > **Pilares:** Información incompleta (P5), Tensión sin castigo (P4), Autonomía como progresión (P3), El espacio expresa la emoción (P2); anti-pilar *NOT una historia explicada*.
@@ -55,7 +55,7 @@ El jugador **descubre por sí mismo** que Vera estaba en la foto. No recibe la n
    | `D01c/mark_40` | visual | La marca de 40°; solo se ilumina con la pista nivel 3. |
    | `D01c/speaker` | visual/audio | El altavoz del compartimento; la fuente de audio 3D la ofrece 10 (`SPK_D01C`). |
 
-   Los elementos visuales no son objetivo de puntero. Sus IDs deben existir en el catálogo de 7 y declararse en `solution.visual_elements` para que `HIGHLIGHT` y `MARK_LIT` los referencien: admitir `HIGHLIGHT` sobre elementos visuales no interactivos y el campo `solution.visual_elements` lo define el esquema v2 de 9 (Cambios requeridos; hasta que 9 lo publique, ‡).
+   Los elementos visuales no son objetivo de puntero. Se declaran en `solution.visual_elements` (IDs con el prefijo de la vista, únicos; no están en `elements()` ni en el catálogo de 7) para que `HIGHLIGHT` y `MARK_LIT` los referencien: ambos los admite el esquema v2 de 9 (regla 4b-e y 4b-m, D9-71, D9-72).
 5. **Entrada.** El gesto aceptado es `rotar` (nombre y fases de 7: `inicio`, `actualización`, `fin`, `cancelación`) sobre `D01c/frame`. Con ratón, 1 px = 0,25° (`delta_grados`, Entrada); con mando, velocidad angular × Δt. El controlador suma `delta_grados` a θ y **limita θ a [0°, 90°]** (regla 9 de 9): no hay vuelta completa ni envoltura. Sentido: `delta_grados` positivo aumenta θ (el reflejo gira hacia su posición de solución al aumentar θ desde 0°). Se admite el modo «alternar» de Entrada (pulsar para empezar a rotar y pulsar para soltar, en lugar de mantener).
 6. **θ inicial y persistencia.** θ parte de `theta_initial_deg` = 0° al cargar la escena. Al cerrar la vista **conserva** θ durante la sesión de la escena (regla 21b de 9, `KEEP`); no se guarda en disco (regla 22 de 9: solo `pendiente_revelacion`). Tras cargar vuelve a 0°.
 7. **Aspecto del reflejo.** El reflejo es **puramente geométrico**: la foto de `D04` rota con θ respecto a la foto de la caja, y solo en θ* ± tolerancia las figuras coinciden una a una. No hay ayuda de coherencia (sin brillo, enfoque, zumbido ni «imán» que crezca al acercarse a θ*): lo que el jugador ve es la única señal. Mientras θ está en tolerancia **no suena nada** (`HOLDING` no emite feedback, regla 13 de 9).
@@ -294,10 +294,11 @@ Tipos: **L** = prueba lógica automática (reloj falso, `GameClock` de la regla 
 
 ## Datos del puzle
 
-Entrada canónica de `assets/data/puzzles/puzzles.json` (esquema de la regla 4 de 9; sustituye al ejemplo ilustrativo de la regla 5 de 9, que no llevaba pistas ni `persist`). Todo valor numérico vive aquí, nunca en el controlador (coding standards). Las claves van en inglés; los IDs del slice se conservan.
+Entrada canónica de `assets/data/puzzles/puzzles.json` (esquema v2 de la regla 4b de 9, D9-67 a D9-79; `schema_version: 2` es de la raíz del fichero y se repite aquí para fijar la versión de la entrada; sustituye al ejemplo ilustrativo de la regla 5 de 9, que no llevaba pistas ni `persist`). Todo valor numérico vive aquí, nunca en el controlador (coding standards). Las claves van en inglés; los IDs del slice se conservan.
 
 ```json
 {
+  "schema_version": 2,
   "id": "P5",
   "mode": "VIEW",
   "view": "D01c",
@@ -352,7 +353,7 @@ Entrada canónica de `assets/data/puzzles/puzzles.json` (esquema de la regla 4 d
 }
 ```
 
-Notas: `on_solved` no declara `sfx` (no hay sonido de acierto; D15-9). `on_reject` es nulo (el fallo no existe). `idle_s` no aparece en ninguna pista (todas `REQUEST`). Los campos enteros (`level`, `ajar_cm`, `compartment`, `theta_*_deg`, `mark_step_deg`) se cargan como `int` y `tol_deg`, `hold_s`, `settle_s`, `duration_s` como `float` (regla 29 de 9). `MARK_LIT`, `HIGHLIGHT` sobre elementos no interactivos, `on_reject: null`, `solution.visual_elements`, `request_hint` en `RESOLVING`, `OUTLINE` a 100 ms con `reducir_movimiento` y quién resuelve el entreabierto (14b(b) y (c)) los define el esquema v2 de `puzzles.json` de 9 (otro agente; ‡ hasta que se publique); los IDs visuales de `D01c` van además al catálogo de 7.
+Notas: `on_solved` no declara `sfx` (no hay sonido de acierto; D15-9). `on_reject` es nulo (el fallo no existe). `idle_s` no aparece en ninguna pista (todas `REQUEST`). Los campos enteros (`level`, `ajar_cm`, `compartment`, `theta_*_deg`, `mark_step_deg`) se cargan como `int` y `tol_deg`, `hold_s`, `settle_s`, `duration_s` como `float` (regla 29 de 9). `affordance: MARK_LIT`, `HIGHLIGHT` sobre elementos no interactivos, `on_reject: null`, `solution.visual_elements`, `request_hint` en `RESOLVING`, `OUTLINE` a 100 ms con `reducir_movimiento` y quién resuelve el entreabierto (14b(b) y (c)) están **absorbidos en 9 (esquema v2, regla 4b, D9-70 a D9-75)**; los IDs visuales de `D01c` no van al catálogo de 7. Los `kind` de `resolution` y de sus `steps` son los de la regla 5 de 9 y no cambian (no son el campo `affordance`).
 
 ## Decisiones tomadas
 
@@ -382,6 +383,7 @@ Modo por lotes autónomo: se decide con la recomendación propia y se registra. 
 | D15-20 | **Velocidades de AC-P5-04 con margen (7/8°/s y 14/16°/s) y fase fijada**; los fotogramas se recalculan. | Mantener 7,4/7,6°/s y 14,8/15,2°/s (47 o 48 fotogramas según la fase; 48 ya resuelve). | Revisión de la ronda 6: prueba inestable. Con margen ≥ 3 fotogramas el resultado es independiente de la fase. |
 | D15-21 | **13 es dependencia blanda de contenido, no ‡.** 15 pide a 13 y a 10 que la listen como dependiente. | Mantener la marca «13 sin redactar» (dura, ‡). | 13 existe y su regla 23 ya reserva `slot_6` vacío y la imagen para la secuencia de P5; lo que 15 necesita es un recurso de arte, no un contrato de lógica. |
 | D15-22 | **`T_ent` = 2,4 s** (`BOX_C3_OPEN` 1,4 s† de 10 + vista de entrada 1,0 s), no 1,0 s. | Ignorar la animación de la tapa. | La tapa de C3 se abre antes de ver `D01c` (F1 de 10); el total del modelo pasa a 56,2–188,2 s. |
+| D15-23 | (Ronda 8) Alineado con el esquema v2 de `puzzles.json` (regla 4b de 9): `schema_version: 2`; `visual_elements` y `MARK_LIT` sin ‡ y fuera del catálogo de 7; peticiones a 9 marcadas como absorbidas | Mantener las ‡ y los IDs visuales en el catálogo de 7 | 9 ya los admite (D9-71, D9-72); sin cambio de diseño ni de tiempos |
 
 ## Open Questions
 
@@ -401,7 +403,7 @@ Esta ronda solo edita este GDD; lo siguiente debe hacerlo el dueño de cada docu
 
 | Documento | Cambio |
 |---|---|
-| 9 `marco-de-puzles.md` | (a) **Nota en F7 y F9**: F7 se interpreta con la revelación de ~16 s **incluida** en los 1,5–3 min de `P5` (D15-7; el literal «más ~16 s» contradice AC-P5-19); de lo contrario F9 sube a 15,10–33,36 min. (b) El **esquema v2** de `puzzles.json` (otro agente) debe cubrir lo que 15 usa: 14b(b) `reducir_movimiento` con `OUTLINE` a 100 ms (no solo `FADE`); 14b(c) quién resuelve el entreabierto (15 asume 10); efecto `MARK_LIT` en `AFFORDANCE`; `HIGHLIGHT` sobre elementos visuales no interactivos (regla 29); `on_reject: null`; `solution.visual_elements`; `request_hint` en `RESOLVING` ignorado y sin contar como nivel (D15-18). (c) Declarar que la entrada `P5` de «Datos del puzle» de 15 sustituye al ejemplo ilustrativo de la regla 5. |
+| 9 `marco-de-puzles.md` | (a) **Nota en F7 y F9**: F7 se interpreta con la revelación de ~16 s **incluida** en los 1,5–3 min de `P5` (D15-7; el literal «más ~16 s» contradice AC-P5-19); de lo contrario F9 sube a 15,10–33,36 min. (b) **absorbido en 9 (esquema v2, regla 4b y 14b; D9-70, D9-71, D9-72, D9-74, D9-75):** `OUTLINE` a 100 ms con `reducir_movimiento`; quién resuelve el entreabierto (10); `affordance: MARK_LIT`; `HIGHLIGHT` sobre elementos visuales no interactivos; `on_reject: null`; `solution.visual_elements`; `request_hint` en `RESOLVING` ignorado y sin contar como nivel (D15-18). No se vuelven a pedir. (c) Declarar que la entrada `P5` de «Datos del puzle» de 15 sustituye al ejemplo ilustrativo de la regla 5. |
 | 6 `ajustes-persistentes.md` | Cerrar la Open Question 5: `asistencia_rotacion` (bool, falso, ±6°) confirmada por 15 (D15-16). |
 | 7 `interaccion-e-inspeccion.md` | Catálogo de `D01c`: `D01c/frame` (`rotar`, `atraccion` falso) y los elementos visuales no interactivos de «Datos del puzle»; comprobar que «alternar en lugar de mantener» cubre `rotar`. |
 | 10 `caja-y-compartimentos.md` | **Listar a 15 como dependiente** (hoy no lo menciona); corregir la contradicción interna (una línea deja C3 `ABIERTO` y otras dos `ENTREABIERTO` en la interrupción de `RESOLVING`; 15 usa `ENTREABIERTO`, regla 4 y AC-34 de 10); confirmar `SPK_D01C` y `ANC_D01C` perpendicular al plano de `D01c` y que la tapa de C3 no se cierra durante `RESOLVING`. |
@@ -430,7 +432,7 @@ Ya existen en `design/registry/entities.yaml` (no duplicar; la fuente es la de c
 | fórmula | `T_seq_P5` | 1,2 + 0,8 + T_line: nominal 16,0; rango 2,0 + t_terminada a 18,0 | s | F-P5-4 (instancia de F8 de 9) |
 | fórmula | `T_P5_modelo` | 56,2–188,2 | s | F-P5-5 (con `T_ent` 2,4 s); contrastar con F7 (1,5–3 min, revelación incluida, D15-7) |
 | entidad | `D01c/frame`, `D01c/reflection`, `D01c/box_photo`, `D01c/marks`, `D01c/mark_40`, `D01c/speaker` | — | — | Elementos de la vista de `P5` (IDs con prefijo de vista) |
-| entidad | `MARK_LIT` ‡ · `SFX_FRAME_TURN` ‡ | — | — | Afordancia de pista nivel 3 · lazo de giro opcional |
+| entidad | `MARK_LIT` (catálogo de 9, D9-72) · `SFX_FRAME_TURN` ‡ | — | — | Afordancia de pista nivel 3 · lazo de giro opcional |
 
 ▲ = valor propuesto, a validar en playtest. Ningún hecho nuevo (el catálogo de D.2 no cambia) ni aviso nuevo.
 
@@ -441,3 +443,4 @@ Ya existen en `design/registry/entities.yaml` (no duplicar; la fuente es la de c
 | 2026-11-09 | 0.1 | Esqueleto (lote Feature 3). |
 | 2026-11-09 | 0.2 | Borrador completo: 29 reglas, F-P5-1 a F-P5-5, 25 edge cases, 20 AC, datos de `P5`, 17 decisiones, 7 preguntas abiertas. Pendiente de review independiente. |
 | 2026-11-09 | 0.3 | Ronda de corrección 7 (review: 0 bloqueantes, 10 avisos): AC-P5-04 con 7/8 y 14/16°/s y fase fijada (45 vs 51-52 fotogramas); 13 pasa a dependencia blanda de contenido (regla 23 de 13) y 15 se pide como dependiente en 10 y 13; extensiones de 9 referidas al esquema v2; `request_hint` en `RESOLVING` ignorado (D15-18); D15-19 a D15-22 (§10.5 a B.5, AC-04, 13 blanda, `T_ent` 2,4 s, total 56,2–188,2 s); lectura de F7 con revelación incluida; fuente real de constantes del registro; `VO_G_07` queda abierta para creative-director. Pendiente de re-review. |
+| 2026-11-09 | 0.4 | Ronda de corrección 8: alineación mecánica con el esquema v2 de `puzzles.json` (regla 4b de 9): `schema_version: 2`, quitadas las ‡ de `visual_elements`, `HIGHLIGHT` no interactivo y `MARK_LIT`, peticiones a 9 absorbidas marcadas; D15-23. Sin cambio de diseño. Estado: Revisado (ronda de corrección 8), pendiente de re-review. |
