@@ -2,7 +2,7 @@
 
 > **Status**: Draft
 > **Created**: 2026-11-08
-> **Last Updated**: 2026-11-08
+> **Last Updated**: 2026-11-09
 > **Source Concept**: design/gdd/game-concept.md
 > **Source of truth for details**: design/slice/slice-v0.3.md (Anexos A–D)
 
@@ -23,14 +23,14 @@ Se excluyen a propósito combate, IA de enemigos, economía, progresión, red y 
 | # | System Name | Category | Priority | Status | Design Doc | Depends On |
 |---|-------------|----------|----------|--------|------------|------------|
 | 1 | Entrada y controles | Core | MVP | In Review | design/gdd/entrada-y-controles.md | — |
-| 2 | Jugador en primera persona (movimiento, cámara, manos) | Core | MVP | Designed | design/gdd/jugador-en-primera-persona.md | 1, 4 |
+| 2 | Jugador en primera persona (movimiento, cámara, manos) | Core | MVP | Revisado (pend. re-review) | design/gdd/jugador-en-primera-persona.md | 1, 4 (blanda: 6) |
 | 3 | Estado del juego y bus de eventos | Core | MVP | In Review | design/gdd/estado-y-bus-de-eventos.md | — |
 | 4 | Escena de planta y carga de Recepción | Core | MVP | Designed | design/gdd/escena-de-planta.md | 3 |
-| 5 | Guardado y carga | Persistence | MVP | Designed | design/gdd/guardado-y-carga.md | 3, 4 |
+| 5 | Guardado y carga | Persistence | MVP | Revisado (pend. re-review) | design/gdd/guardado-y-carga.md | 3, 4 |
 | 6 | Ajustes persistentes (inferred) | Persistence | MVP | In Review | design/gdd/ajustes-persistentes.md | 1 |
-| 7 | Interacción e inspección | Gameplay | MVP | Designed | design/gdd/interaccion-e-inspeccion.md | 1, 2, 18 (blanda: 3) |
+| 7 | Interacción e inspección | Gameplay | MVP | Revisado (pend. re-review) | design/gdd/interaccion-e-inspeccion.md | 1, 2, 4, 18 (blanda: 3) |
 | 8 | Control de acceso (puertas, tarjetas, lectores) | Gameplay | MVP | Not Started | — | 3, 7, 18 |
-| 9 | Marco de puzles (inferred) | Gameplay | MVP | Designed | design/gdd/marco-de-puzles.md | 3, 7 (blandas: 6, 18) |
+| 9 | Marco de puzles (inferred) | Gameplay | MVP | Revisado (pend. re-review) | design/gdd/marco-de-puzles.md | 3, 4, 7 (blandas: 6, 18, 20, 23) |
 | 10 | Caja y compartimentos | Gameplay | MVP | Not Started | — | 3, 7, 9 |
 | 11 | Puzle 1 · Cronología | Gameplay | MVP | Not Started | — | 9, 18, 19, 20 |
 | 12 | Puzle 2 · Memorando en el cristal | Gameplay | MVP | Not Started | — | 7, 9, 18 |
@@ -57,6 +57,8 @@ Notas de dependencia:
 - **Eventos, no llamadas directas:** audio (23), atmósfera (28), subtítulos (26) y el avance de la llamada (22) reaccionan al bus de eventos (3). Por eso el director de escenas (21) no depende de ellos ni de la llamada.
 - **Pausa (25) y pistas (17):** el menú de pausa es MVP y no depende de las pistas; el sistema 17 se enchufa a su menú después.
 - **Shaders (29)** tienen versión provisional en los puzles 12 y 15 durante el MVP (texto/mezcla sin shader final).
+- **Dependientes del Jugador (2):** 7, 19, 20, 22, 23 y 28 (informe de revisión del GDD 2). **Contrato 2↔7:** el GDD 2 es la fuente de verdad.
+- **Marco de puzles (9):** el dueño (10) consulta `get_view_gate(view_id)` antes de abrir la vista; 20 debe ofrecer `has_item(item_id)`.
 - **Fuera de este índice:** el registro de herramientas de IA para Steam (slice §18) es una tarea de documentación, no un sistema de juego.
 
 ---
@@ -103,14 +105,14 @@ Reparto: **23 MVP · 7 Vertical Slice · 0 Alpha · 0 Full Vision** (30 en total
 
 1. **Ajustes persistentes (6)** — depends on: 1 (guarda el bloque de asignaciones y ajustes de manejo; volúmenes y subtítulos que otros sistemas leen).
 2. **Escena de planta (4)** — depends on: 3.
-3. **Jugador en primera persona (2)** — depends on: 1, 4.
-4. **Guardado y carga (5)** — depends on: 3, 4, 6.
+3. **Jugador en primera persona (2)** — depends on: 1, 4 (blanda: 6: `balanceo_camara`, `campo_vision`).
+4. **Guardado y carga (5)** — depends on: 3, 4 (no depende de 6: ficheros independientes, GDD 5 regla 4). **Bloqueo cruzado con el 3:** necesita `snapshot_version` y los avisos «guardado en riesgo» / «guardado restablecido» (añadidos al GDD 3 el 2026-11-09; falta re-review del 3).
 5. **Director de audio (23)** — depends on: 3, 6, 18. *(Capa Core, prioridad Vertical Slice.)*
 
 ### Feature Layer (depends on core)
 
-1. **Interacción e inspección (7)** — depends on: 1, 2, 18.
-2. **Marco de puzles (9)** — depends on: 3, 7.
+1. **Interacción e inspección (7)** — depends on: 1, 2, 4, 18 (blanda: 3).
+2. **Marco de puzles (9)** — depends on: 3, 4, 7 (blandas: 6, 18, 20, 23).
 3. **Control de acceso (8)** — depends on: 3, 7, 18.
 4. **Documentos y bolsillo (20)** — depends on: 3, 7, 18.
 5. **Ordenador, correo e impresora (19)** — depends on: 1, 3, 7, 18, 20.
@@ -202,10 +204,10 @@ Esfuerzo: S = 1 sesión, M = 2–3, L = 4+. El puzle 2 va después de la caja po
 | Metric | Count |
 |--------|-------|
 | Total systems identified | 30 |
-| Design docs started | 5 |
-| Design docs reviewed | 0 |
+| Design docs started | 9 |
+| Design docs reviewed | 4 (2, 5, 7, 9: revisados y corregidos el 2026-11-09, pendientes de re-review) |
 | Design docs approved | 0 |
-| MVP systems designed | 5/23 |
+| MVP systems designed | 9/23 |
 | Vertical Slice systems designed | 0/7 |
 
 ---
@@ -224,3 +226,15 @@ Esfuerzo: S = 1 sesión, M = 2–3, L = 4+. El puzle 2 va después de la caja po
 - [ ] Ejecutar `/design-review` sobre cada GDD completado
 - [ ] Ejecutar `/gate-check technical-setup` cuando los sistemas MVP estén diseñados
 - [ ] Validar los sistemas de mayor riesgo con prototipos antes de comprometer Producción
+
+---
+
+## Notas pendientes del lote 2026-11-09 (GDDs 2, 5, 7, 9)
+
+Cambios que los informes de revisión piden a sistemas **sin GDD todavía**; cada uno debe recogerlos al redactarse:
+
+- **20 Documentos:** operación `has_item(item_id)` (informe de 9); sostiene `A03` y las tarjetas con `sostener` (informe de 7).
+- **22 Llamada:** restricción de emisión de `llamada_iniciada` («antes de cualquier elemento no reconstruible y como máximo al descolgar») y nota de reinterpretación de D.2 (informe de 5); registrar manejadores con `can_interact`/`interact`/`etiqueta` (informe de 7).
+- **27 Pantalla de título:** consulta el resultado de la **última** inspección (con `con_futura`); muestra el aviso de versión más nueva con partida cargable; **no pide `planta`** (lo hace 5); Open Question: ¿qué ofrece tras completar el slice? (Open Question 10 de Guardado).
+- **8, 10, 19:** registrar manejadores con `can_interact`/`interact`/`etiqueta`; 10 llama a `abrir_vista` tras animar el compartimento y responde `SIN_EFECTO` según `get_view_gate`.
+- **Revisión pendiente (re-review) de los vecinos tocados:** 1, 3, 4, 6 y 18 (cambian reglas; sus estados no se han modificado).

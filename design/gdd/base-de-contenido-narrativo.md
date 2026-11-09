@@ -38,7 +38,7 @@ Existe por cuatro razones: (1) el nombre de Vera es provisional (D-04), así que
 
 **Identificadores**
 
-3. **Identificador estable.** Cada pieza se pide por un identificador que no cambia. Los identificadores que ya existen en el slice se conservan tal cual, con las mismas mayúsculas (`VO_G_12A`, `MEGA_02`, `DOC_01`, `NOTA_01`, `CARTA_CUERPO`…). Los nuevos usan prefijos coherentes con el Anexo D.4: `PISTA_P<n>_N<nivel>` para las pistas, `UI_…` para interfaz y mensajes del sistema, `OBJ_<id del objeto>` para textos de objeto y, para correos, `MAIL_1` a `MAIL_4` (los numerados, con su referencia) y `MAIL_X1` y `MAIL_X2` (los dos sin numerar, en el orden del slice: X1 = recordatorio de extensiones, lunes 10:30; X2 = aviso del aire acondicionado, martes 14:00).
+3. **Identificador estable.** Cada pieza se pide por un identificador que no cambia. Los identificadores que ya existen en el slice se conservan tal cual, con las mismas mayúsculas (`VO_G_12A`, `MEGA_02`, `DOC_01`, `NOTA_01`, `CARTA_CUERPO`…). Los nuevos usan prefijos coherentes con el Anexo D.4: `PISTA_P<n>_N<nivel>` para las pistas (tres niveles por puzle salvo **P6, que tiene dos: `PISTA_P6_N1` y `PISTA_P6_N2`**, decisión del usuario 2026-11-09, Anexo B.6 prevalece sobre slice §10, §16 y §19.2; GDD 9, D9-14), `UI_…` para interfaz y mensajes del sistema, `OBJ_<id del objeto>` para textos de objeto y, para correos, `MAIL_1` a `MAIL_4` (los numerados, con su referencia) y `MAIL_X1` y `MAIL_X2` (los dos sin numerar, en el orden del slice: X1 = recordatorio de extensiones, lunes 10:30; X2 = aviso del aire acondicionado, martes 14:00).
 4. **No se reutilizan ni se renombran.** Un identificador retirado se marca como inactivo, no se borra ni se reasigna. Renombrar equivale a dar de baja uno y dar de alta otro.
 5. **Variantes agrupadas.** Las líneas con variante forman un **grupo** con un prefijo y las letras que lo completan, declaradas en los datos: `CARTA_` (A, B, C), `VO_G_12` (A, B, C), `VO_G_13` (A, B, C, D) y `VO_V_12` (A, B, C, D). `CARTA_CUERPO` y `VO_V_12E` son líneas simples, no pertenecen a ningún grupo. Quien consume (la llamada, el director de escenas, el puzle 6) construye el identificador a partir del prefijo y de la letra que lee del estado del juego (`carta_variante`, `respuesta_llamada`). Este sistema **no lee el estado**: solo entrega el contenido del identificador pedido y declara qué letras completan cada grupo.
 
@@ -97,7 +97,7 @@ El idioma activo es `es` en todo el slice y no cambia durante la partida.
 | 12 Puzle 2 | `DOC_01` por fragmentos (F1, F2, F3), el sello, `NOTA_02` y las pistas |
 | 14 Puzle 4 | Fichas T1 a T4, regla del tablero, sellos «ACEPTADA» y «DEVUELTA» y el mensaje «No corresponde» |
 | 16 Puzle 6 | Los tres botones, `CARTA_A/B/C` y `CARTA_CUERPO` |
-| 17 Sistema de pistas | Textos de pista de los 6 puzles y 3 niveles |
+| 17 Sistema de pistas | Textos de pista de los 6 puzles: 3 niveles en P1 a P5 y 2 en P6 |
 | 21 Director de escenas | `MEGA_*`, `VO_V_*`, los mensajes del teléfono de la escena 1 y los de sistema |
 | 22 Llamada telefónica | `VO_G_12A/B/C`, `VO_G_13A–D`, `VO_G_14` y las cuatro opciones de respuesta |
 | 23 Director de audio | La referencia de audio y los segmentos de cada línea |
@@ -145,7 +145,8 @@ El idioma activo es `es` en todo el slice y no cambia durante la partida.
 | Sistema | Tipo | Interfaz |
 |---|---|---|
 | 11 Puzle 1 · 12 Puzle 2 · 14 Puzle 4 · 16 Puzle 6 | Dura | Textos de panel, fragmentos, fichas, botones y pistas |
-| 17 Sistema de pistas | Dura | Textos de pista por puzle y nivel |
+| 9 Marco de puzles | Dura | Claves de pista (`PISTA_P<n>_N<m>`; 5 puzles × 3 + P6 × 2 = 17) y textos de feedback; **la carga de `puzzles.json` falla si falta una clave referenciada** (GDD 9, regla 27) |
+| 17 Sistema de pistas | Dura | Textos de pista por puzle y nivel (P6: dos) |
 | 19 Ordenador, correo e impresora | Dura | Correos con hora, etiquetas y orden de presentación |
 | 20 Documentos y bolsillo | Dura | Documentos con estilo de presentación |
 | 21 Director de escenas | Dura | Líneas de voz y megafonía; mensajes de sistema |
@@ -153,9 +154,9 @@ El idioma activo es `es` en todo el slice y no cambia durante la partida.
 | 23 Director de audio | Dura | Referencia de audio de cada línea |
 | 26 Subtítulos | Dura | Texto y segmentos de cada línea |
 | 27 Pantalla de título y cierre | Dura | Título, advertencias, «Continuará» |
-| 7 Interacción · 8 Control de acceso · 24 Prompt · 25 Menú de pausa | Blanda | Etiquetas de acción, textos de objeto, mensajes de puerta cerrada y menús (incluidos los `UI_…` que anticipa el GDD de Entrada y controles: «Mando desconectado», reasignación y ajustes de manejo) |
+| 7 Interacción · 8 Control de acceso · 24 Prompt · 25 Menú de pausa | Blanda | Etiquetas de acción (claves `UI_VERBO_*` que 7 necesita: Abrir, Girar, Examinar, Leer, **Descolgar, Encender, Apagar, Imprimir, Usar, Entrar**), textos de objeto (`OBJ_<id>`, incluidos **`OBJ_A02a` a `OBJ_A02c`**), textos de objeto, mensajes de puerta cerrada y menús (incluidos los `UI_…` que anticipa el GDD de Entrada y controles: «Mando desconectado», reasignación y ajustes de manejo) |
 
-**Índice de sistemas:** ya refleja al sistema 18 como dependencia de 7, 8, 11, 24 y 25 (y de 12, 14, 16, 17, 19–23, 26 y 27).
+**Índice de sistemas:** ya refleja al sistema 18 como dependencia de 7, 8, 11, 24 y 25 (y de 12, 14, 16, 17, 19–23, 26 y 27); el lote 2026-11-09 añade el 9 (blanda en el índice, dura en la carga).
 
 **Bidireccionalidad.** Ninguno de estos sistemas tiene todavía GDD (salvo los dos ya diseñados, que no dependen de este). Cada uno debe, al redactarse, listar este sistema como dependencia y pedir el contenido solo por identificador.
 
@@ -199,7 +200,7 @@ Revisados por `qa-lead`. **Evidencia:** **L** = test unitario automático (gdUni
 **Contenido e identificadores (reglas 1 a 5)**
 - **AC-01 (R1, L)**: **GIVEN** el catálogo en «Listo», **WHEN** se pide un ejemplo de cada tipo (línea, documento, correo, ficha T1, pista, `UI_…`, `OBJ_…`), **THEN** cada uno devuelve todos sus campos obligatorios y ninguno vacío.
 - **AC-02 (R2, T)**: **GIVEN** los datos del slice, **WHEN** corre el verificador, **THEN** cuenta 26 entradas del §12 (19 líneas audibles: 8 de Vera, 9 del Guardián y 2 `MEGA_`; y 7 de documento: 1 `DOC_`, 2 `NOTA_`, 4 `CARTA_`), 6 correos (4 numerados y 2 sin numerar) y las fichas T1 a T4.
-- **AC-03 (R3, T)**: **GIVEN** los datos, **WHEN** se listan los identificadores, **THEN** los 26 del §12 existen con las mayúsculas exactas y los nuevos cumplen `PISTA_P<n>_N<1 a 3>`, `UI_…`, `OBJ_…`, `MAIL_1` a `MAIL_4` o `MAIL_X1` y `MAIL_X2`; el orden de presentación de los correos referencia exactamente esos seis identificadores.
+- **AC-03 (R3, T)**: **GIVEN** los datos, **WHEN** se listan los identificadores, **THEN** los 26 del §12 existen con las mayúsculas exactas y los nuevos cumplen `PISTA_P<n>_N<1 a 3>` (P6 solo `N1` y `N2`), `UI_…`, `OBJ_…`, `MAIL_1` a `MAIL_4` o `MAIL_X1` y `MAIL_X2`; el orden de presentación de los correos referencia exactamente esos seis identificadores.
 - **AC-04 (R4, L + T)**: **GIVEN** un identificador marcado inactivo, **WHEN** se pide, **THEN** se trata como «no encontrado»; **GIVEN** una referencia de otro fichero a un identificador que no existe ni está inactivo, **THEN** el verificador falla.
 - **AC-05 (R5, L + T)**: **GIVEN** los grupos `CARTA_` (A–C), `VO_G_12` (A–C), `VO_G_13` (A–D) y `VO_V_12` (A–D), **WHEN** se quita una letra de cualquiera, **THEN** el verificador falla; **WHEN** se pide `VO_G_12D`, **THEN** devuelve «no encontrado»; `CARTA_CUERPO` y `VO_V_12E` se piden como líneas simples.
 
@@ -248,3 +249,7 @@ Revisados por `qa-lead`. **Evidencia:** **L** = test unitario automático (gdUni
 | 7 | **Forma de la tabla de nombres** (nombre e inicial de Vera y del Guardián, regla 8): ¿un fichero propio o parte de los datos? | `/architecture-decision` | Fase de arquitectura |
 | 8 | **D-04 (nombre de Vera) y D-07 (nombre del Guardián):** siguen abiertas en el slice. El sistema las tolera con los marcadores de nombre e inicial (regla 8); queda por decidir qué nombre e inicial se graban en las voces y se firman en los documentos. | Autor | Antes de la grabación de voces |
 | 9 | ~~Índice de sistemas: añadir el sistema 18 como dependencia de 7, 8, 11, 24 y 25.~~ **Resuelta:** el índice ya lo refleja. | — | Cerrada (2026-11-08) |
+
+## Historial de cambios
+
+- **2026-11-09 (lote 2/5/7/9, cambios derivados de las revisiones de 7 y 9):** (a) P6 tiene **dos** claves de pista (`PISTA_P6_N1`, `PISTA_P6_N2`), no tres (decisión del usuario; B.6 prevalece sobre slice §10/§16/§19.2): reglas 3, AC-03 y tablas de dependencias. Nota: la regla 2 y el Anexo del slice siguen diciendo «tres niveles» y no se han tocado (el slice es solo lectura aquí). (b) Se listan las claves de etiqueta que 7 necesita (`Descolgar`, `Encender`/`Apagar`, `Imprimir`, `Usar`, `Entrar`) y `OBJ_A02a` a `OBJ_A02c`. (c) 9 listado como dependencia (la carga falla si faltan claves). Las claves concretas se crean al poblar los datos, no en este GDD. **Cambia reglas: pendiente de re-review.** Estado sin cambios.

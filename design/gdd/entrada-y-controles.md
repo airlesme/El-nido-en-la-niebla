@@ -28,7 +28,7 @@ Existe porque el slice combina tres modos de manejo muy distintos (caminar en pr
 
 1. **Vocabulario de acciones.** El resto del juego solo conoce acciones lógicas, nunca teclas ni botones. Las acciones del slice son (ver tabla de asignaciones por defecto):
    - *Exploración:* `mover`, `mirar`, `interactuar`, `pausa`.
-   - *Inspección y lectura:* `rotar_objeto` (con el eje de mirar), `leer` (mantener `interactuar`), `atrás`.
+   - *Inspección y lectura:* `rotar_objeto` (con el eje de mirar), `atrás`. (`leer` se retira de `inspección`: 7 no le da uso, D7-28; sigue activa en `exploración`.)
    - *Vista cercana de puzle, ordenador y llamada:* `mover_cursor`, `seleccionar`, `agarrar` (mantener `seleccionar` y mover), `rotar` (mantener `seleccionar` y mover en horizontal: gesto `ROTAR` del Anexo B), `mantener` (mantener `seleccionar` más allá del umbral: gesto `PULSAR` largo del puzle 3), `atrás`.
    - *Menús y opciones de la llamada:* `ui_arriba`, `ui_abajo`, `ui_izquierda`, `ui_derecha`, `ui_aceptar`, `ui_atrás`.
    No existen `correr`, `agacharse` ni `saltar` (slice §5 y A.0).
@@ -41,7 +41,7 @@ Existe porque el slice combina tres modos de manejo muy distintos (caminar en pr
 5. **Un contexto activo.** Hay una pila de contextos y solo el de arriba recibe acciones: `exploración`, `inspección`, `lectura`, `vista cercana`, `ordenador`, `llamada`, `menú` y `sin control`. Las acciones de un contexto no existen en los demás (por ejemplo, `mover` solo en `exploración`).
 6. **Quién abre y cierra contextos.** Este sistema posee la pila y expone «entrar en» y «salir de» un contexto. Los piden: Interacción (7) para `inspección`, `lectura`, `vista cercana` y `ordenador`; el menú de pausa (25) para `menú`; la llamada (22) para `llamada`; y el director de escenas (21) para `sin control`, **declarando una duración máxima** (regla 8). Salir restaura el contexto anterior tal como estaba (posición del cursor incluida). **Aviso de cambio:** tras cada entrada o salida efectiva de la pila se emite «contexto de entrada cambiado» con dos datos (contexto anterior, contexto nuevo); una petición ignorada o rechazada (ver Edge Cases) no emite nada, y el reinicio de la pila al descargar una escena emite uno solo, con `sin control` como contexto nuevo.
 7. **Pausa.** `pausa` abre el menú sobre cualquier contexto salvo durante una carga de escena, detiene el tiempo de juego y, al cerrarlo, restablece el contexto inferior. Con el menú abierto, `atrás` y `pausa` lo cierran; si ambas comparten tecla (`Esc`), una sola pulsación produce un solo cierre, porque el menú consume el evento. Al abrir el menú el ratón se libera; al cerrarlo se recaptura si el contexto restaurado lo requiere. El menú de título es la base de la pila: `pausa`, `atrás` y `ui_atrás` no lo cierran; solo se sale de él al empezar o reanudar la partida.
-8. **Transiciones.** Mientras una transición de cámara o de animación bloquea el contexto (p. ej. la cámara acercándose al marco del puzle 3, o la animación de descolgar), solo se acepta `pausa`; el resto de acciones se descarta y **no se guarda para después**. Las transiciones de cámara y animación tienen un tope de seguridad de 3 s; las escenas dirigidas (`sin control` pedido por el director de escenas) declaran su propia duración máxima (F8).
+8. **Transiciones.** Mientras una transición de cámara o de animación bloquea el contexto (p. ej. la cámara acercándose al marco del puzle 3, o la animación de descolgar), solo se acepta `pausa`. **El bloqueo lo declara y mantiene Interacción (7) como transición bloqueante, sin `sin control`, desde `interactuar()` hasta «cámara devuelta» / «gesto terminado» (tope 3 s, F8); no termina al llegar la cámara.** Solo se acepta `pausa`; el resto de acciones se descarta y **no se guarda para después**. Las transiciones de cámara y animación tienen un tope de seguridad de 3 s; las escenas dirigidas (`sin control` pedido por el director de escenas) declaran su propia duración máxima (F8).
 
 **Exploración, inspección y lectura**
 
@@ -96,10 +96,10 @@ La pila empieza vacía en el arranque, con `menú` (título) como primer context
 | Contexto | Acciones activas | Cursor y ratón | Se entra desde | Se sale con |
 |---|---|---|---|---|
 | `exploración` | `mover`, `mirar`, `interactuar`, `pausa` | Sin cursor; ratón capturado | Inicio de partida; al salir de cualquier otro | — (contexto base) |
-| `inspección` | `rotar_objeto` (eje de mirar), `leer`, `atrás`, `pausa` | Sin cursor; ratón capturado | Interacción (7), al coger un objeto | `atrás` |
+| `inspección` | `rotar_objeto` (eje de mirar), `atrás`, `pausa` | Sin cursor; ratón capturado | Interacción (7), al coger un objeto | `atrás` |
 | `lectura` | `atrás`, `interactuar` (pasar página), `pausa` | Sin cursor | Interacción (7), al leer | `atrás` |
 | `vista cercana` | `mover_cursor`, `seleccionar`, `agarrar`, `rotar`, `mantener`, `atrás`, `pausa` | Cursor visible (virtual con mando) | Interacción (7), al abrir un puzle o panel | `atrás` o resolverse el puzle |
-| `ordenador` | `mover_cursor`, `seleccionar`, texto, `atrás`, `pausa` | Cursor visible | Interacción (7), al sentarse al ordenador | `atrás` |
+| `ordenador` | `mover_cursor`, `seleccionar`, texto, `atrás`, `pausa` | Cursor visible | Interacción (7), al acercarse la cámara al ordenador (V01 solo acerca la cámara; el jugador no se sienta) | `atrás` |
 | `llamada` | `ui_*` o cursor, `seleccionar` (sobre las opciones), `pausa` | Cursor visible | Llamada (22), tras descolgar | La llamada (22) la cierra |
 | `menú` | `ui_*`, cursor, `ui_aceptar`, `ui_atrás` | Cursor visible | `pausa`, título, pérdida de foco o mando | `ui_atrás` · `pausa` |
 | `sin control` | solo `pausa` | Sin cursor | Director de escenas (21), transiciones | El sistema que lo abrió |
@@ -111,7 +111,7 @@ La pila empieza vacía en el arranque, con `menú` (título) como primer context
 | Sistema | Qué recibe de Entrada y controles | Qué entrega a Entrada y controles |
 |---|---|---|
 | 2 Jugador | `mover` (vector 2D) y `mirar` (cambio de orientación) en `exploración` | Nada |
-| 7 Interacción | `interactuar`, `leer`, `rotar_objeto`, `atrás`, gestos de puntero | Peticiones de entrar y salir de `inspección`, `lectura`, `vista cercana` y `ordenador` |
+| 7 Interacción | `interactuar`, `leer`, `rotar_objeto`, `atrás`, gestos de puntero | Posiciones en px de los elementos de la vista (F5b); peticiones de entrar y salir de `inspección`, `lectura`, `vista cercana` y `ordenador` |
 | 24 Prompt de interacción | Dispositivo activo (para elegir el icono) y la asignación actual de la acción | — |
 | 25 Menú de pausa | `pausa`, `ui_*`, `atrás`; avisos de foco y mando | Peticiones de entrar y salir de `menú`; pantalla de reasignación (usa la API de reasignación) |
 | 30 Accesibilidad | API de reasignación, ajustes de manejo, alternar-en-lugar-de-mantener | Valores elegidos por el jugador |
@@ -270,7 +270,7 @@ The histéresis formula is defined as:
 
 ### F8 · Descarte durante transiciones
 
-No hay fórmula: la duración la fijan la cámara o el director de escenas. Sí hay un **tope de seguridad**, tras el cual se registra el error y se libera el contexto: **3 s†** para transiciones de cámara y animaciones; para `sin control` pedido por el director de escenas, la **duración máxima que el propio director declara al pedirlo más un margen de 2 s†** (la declara cada escena en su GDD, sistema 21). Siempre hay un tope: un bloqueo de una transición corta se libera a los 3 s, no a los de la escena más larga. Una tecla mantenida durante la transición no debe dispararse al terminar (se ignora hasta soltarla).
+No hay fórmula: la duración la fijan la cámara o el director de escenas. Sí hay un **tope de seguridad**, tras el cual se registra el error y se libera el contexto: **3 s†** para transiciones de cámara y animaciones; para `sin control` pedido por el director de escenas, la **duración máxima que el propio director declara al pedirlo más un margen de 2 s†** (la declara cada escena en su GDD, sistema 21). Siempre hay un tope: un bloqueo de una transición corta se libera a los 3 s, no a los de la escena más larga. Una tecla mantenida durante la transición no debe dispararse al terminar (se ignora hasta soltarla). **Esta regla se aplica a las acciones disparadoras (`interactuar`, `leer`, `atrás`…), no al eje continuo `mover`:** si el jugador mantiene W cuando vuelve `exploración`, el Jugador (2) camina en ese tick (contrato 2↔7, GDD 2 fuente de verdad). Las transiciones bloqueantes declaradas por 7 (cámara/gesto, sin `sin control`) usan el tope de 3 s y este se detiene con la pausa igual que el de `sin control`.
 
 ### Valores por defecto y rangos seguros
 
@@ -340,7 +340,7 @@ No hay fórmula: la duración la fijan la cámara o el director de escenas. Sí 
 | Sistema | Tipo | Interfaz |
 |---|---|---|
 | 2 Jugador | Dura | `mover`, `mirar` |
-| 7 Interacción | Dura | `interactuar`, `leer`, `rotar_objeto`, `atrás`, gestos de puntero; petición de contextos |
+| 7 Interacción | Dura (contrato 2↔7: el GDD 2 prevalece) | `interactuar`, `leer`, `rotar_objeto`, `atrás`, gestos de puntero; petición de contextos |
 | 25 Menú de pausa | Dura | `pausa`, `ui_*`; contexto `menú`; API de reasignación |
 | 30 Accesibilidad | Dura | API de reasignación y ajustes de manejo |
 | 6 Ajustes | Dura | Guarda y reaplica el bloque de asignaciones y ajustes de manejo |
@@ -464,3 +464,7 @@ Revisados por `qa-lead`. **Evidencia:** **L** = test unitario automático (gdUni
 | 11 | ~~Índice de sistemas: añadir el sistema 1 como dependencia de 6, 19, 21, 22, 24 y 27.~~ **Resuelta:** el índice ya lo refleja. | — | Cerrada (2026-11-08) |
 | 12 | **Duración máxima de cada escena dirigida** que pide `sin control` (F8): el director de escenas debe declararla al pedir el contexto; hay que fijarla por escena (apagón, llamada, ascensor). | GDD del sistema 21 (Director de escenas) | GDD del sistema 21 |
 | 13 | **Resolución lógica del cursor:** confirmar que los píxeles de F5a, F5b y F6 son del viewport lógico 1920 × 1080 (modo de estiramiento). | `/architecture-decision` | Fase de arquitectura |
+
+## Historial de cambios
+
+- **2026-11-09 (lote 2/5/7/9, cambios derivados de las revisiones de 2 y 7):** (a) F8 y regla 8: la descarta-hasta-soltar se aplica a acciones disparadoras, no al eje `mover`; el bloqueo de transición lo mantiene 7 desde `interactuar()` hasta «cámara devuelta» / «gesto terminado» (tope 3 s, la pausa lo detiene). (b) `leer` retirada del contexto `inspección` (D7-28). (c) Contexto `ordenador`: V01 solo acerca la cámara, no hay «sentarse». (d) Fila de 7 en la tabla de contextos: 7 entrega las posiciones en px de los elementos de la vista para F5b (cierra parcialmente Open Question 2). **Cambia reglas: pendiente de re-review.** El estado del documento no se modifica.

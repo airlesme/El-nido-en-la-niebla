@@ -27,7 +27,7 @@ El sistema solo **registra y anuncia**; nunca decide qué ocurre cuando un hecho
 **Hechos (estado)**
 
 1. **Catálogo cerrado.** Solo existen los hechos declarados en un fichero de datos (`assets/data/state/flags.json`). Cada hecho tiene: nombre, tipo (`bool`, `int` con rango, o `enum` con valores permitidos), valor inicial, sistema dueño (`owner`) y, si procede, una regla de derivación (regla 7). El catálogo inicial son los 19 hechos del Anexo D.2 del slice.
-2. **Un único dueño por hecho.** Cada hecho lo escribe un solo sistema (columna «Escribe» de la tabla de interacciones). Cualquier sistema puede leerlo. Un segundo escritor es un error de diseño, no una carrera que resolver: en las builds de desarrollo, una escritura hecha por un sistema distinto del `owner` declarado se trata como inválida (regla 6); en la build final no se comprueba.
+2. **Un único dueño por hecho.** Cada hecho lo escribe un solo sistema (columna «Escribe» de la tabla de interacciones). **Los hechos de puzle** (`archivo_abierto`, `memo_leido`, `pos_*`, `caja_c1` a `caja_c4`, `pendiente_revelacion`, `carta_variante`) tienen `owner = 9` (Marco de puzles): los puzles 11 a 16 los escriben solo a través del marco (GDD 9, regla 1 y D9-4). Cualquier sistema puede leerlo. Un segundo escritor es un error de diseño, no una carrera que resolver: en las builds de desarrollo, una escritura hecha por un sistema distinto del `owner` declarado se trata como inválida (regla 6); en la build final no se comprueba.
 3. **Valor actual siempre disponible.** Cualquier sistema puede preguntar el valor de un hecho en cualquier momento, incluido el valor inicial si aún no se ha tocado. El estado es la verdad; los avisos (regla 9) son solo señales de que algo cambió. **Una escritura válida se aplica en el instante en que se hace** (y los derivados se recalculan en el acto, regla 7), incluso si se produce durante una entrega de avisos: lo único que puede esperar es el aviso (regla 11), nunca el valor. Una lectura inmediatamente posterior a una escritura devuelve siempre el valor nuevo.
 4. **Hechos de un solo sentido.** Todos los hechos `bool` y `enum` del catálogo, salvo `pendiente_revelacion`, solo pasan de su valor inicial a un valor final: una vez activados, escribirlos de nuevo con el mismo valor no hace nada, y con otro valor se rechaza y se registra. Los `enum` se fijan una única vez (decisión D-14 para `carta_variante`; mismo criterio para `respuesta_llamada`) y no se puede escribir «sin fijar» una vez fijados. Esta regla no se aplica a la partida nueva (regla 12), a la restauración (regla 13) ni a la consola de desarrollo (regla 15). El rechazo se trata como dice la regla 6. Es lo que hace seguras las reanudaciones y el pilar *Tensión sin castigo*: nada de lo hecho se deshace por accidente.
 5. **Hechos reversibles.** Solo cuatro hechos pueden cambiar en ambos sentidos: los `int` `pos_L`, `pos_C` y `pos_R` (rango 1 a 4, inicial 2, los escribe el puzle 2) y el `bool` `pendiente_revelacion` (verdadero mientras la revelación del puzle 5 está interrumpida, falso al completarse).
@@ -38,13 +38,13 @@ El sistema solo **registra y anuncia**; nunca decide qué ocurre cuando un hecho
 
 8. **Qué es un aviso.** Un mensaje puntual, con nombre y datos opcionales, que un sistema emite cuando ocurre algo y que otros reciben. No se guarda: si nadie escuchaba, se pierde. Por eso los sistemas nunca deducen su estado de un aviso que hayan podido perder; lo deducen de los hechos (regla 3).
 9. **Aviso automático de cambio.** Cada vez que el valor de un hecho cambia realmente, el sistema emite un aviso con el nombre del hecho, el valor anterior y el nuevo. Escribir el mismo valor que ya había no emite nada. Los sistemas pueden darse de baja en cualquier momento; una baja pedida durante una entrega surte efecto cuando esa entrega termina.
-10. **Avisos con nombre del slice.** Los avisos de la lista siguiente se emiten tal como los nombra el slice. El formato técnico (señales, cadenas…) lo fija un ADR; aquí solo se fija el contrato: `EV_PUZZLE_SOLVED_<ID>` (uno por puzle, Anexo B; identificadores propuestos `P1` a `P6`, pendientes de confirmar: ver Open Questions), «puerta abierta» (con el identificador de la puerta), «compartimento completado» (1 a 4), «llamada iniciada» y «llamada completada»; los dos avisos del sistema de entrada (1), «dispositivo de entrada cambiado» (teclado/ratón o mando) y «contexto de entrada cambiado», que ese sistema documenta y emite; y los dos avisos de ciclo de vida de este sistema, «estado restablecido» (regla 12) y «estado restaurado» (regla 13), ambos sin datos. Cada sistema emisor documenta en su GDD cuándo emite los suyos.
+10. **Avisos con nombre del slice.** Los avisos de la lista siguiente se emiten tal como los nombra el slice. El formato técnico (señales, cadenas…) lo fija un ADR; aquí solo se fija el contrato: `EV_PUZZLE_SOLVED_<ID>` (uno por puzle, Anexo B; identificadores propuestos `P1` a `P6`, pendientes de confirmar: ver Open Questions), «puerta abierta» (con el identificador de la puerta), «compartimento completado» (1 a 4), «llamada iniciada» y «llamada completada»; los dos avisos del sistema de entrada (1), «dispositivo de entrada cambiado» (teclado/ratón o mando) y «contexto de entrada cambiado», que ese sistema documenta y emite; y los dos avisos de ciclo de vida de este sistema, «estado restablecido» (regla 12) y «estado restaurado» (regla 13), ambos sin datos. Emisores añadidos (lote 2026-11-09): **Guardado (5)** emite «guardado en riesgo» (tras `n_fallos_aviso` fallos seguidos de escritura) y «guardado restablecido» (primera escritura con éxito después), ambos sin datos; **Marco de puzles (9)** emite «compartimento completado» (1 a 4), «puzle activado», «resolución de puzle interrumpida», «pista aplicada», «puzle inactivo», «feedback de puzle» y «línea pedida»; **Interacción (7)** emite «vista cercana abierta/cerrada», «lectura completada», «lectura cerrada» e «interacción ejecutada». Cada sistema emisor documenta en su GDD cuándo emite los suyos.
 11. **Orden de entrega.** Los avisos se entregan en el orden en que ocurrieron los cambios; a los suscriptores, en el orden en que se suscribieron. Si un suscriptor, al recibir un aviso, provoca otro cambio, el valor se aplica en el acto (regla 3) y solo el **aviso** de ese cambio se encola, para entregarse cuando termine la entrega en curso (sin reentrada). Una partida nueva o una restauración pedida desde dentro de una entrega se aplica al terminar esta; la cola pendiente se descarta entonces como dicen las reglas 12 y 13.
 
 **Ciclo de vida**
 
-12. **Partida nueva.** Todos los hechos toman su valor inicial y se emite un único aviso «estado restablecido» (no uno por hecho, sin datos). Los avisos que estuvieran pendientes en la cola se descartan.
-13. **Instantánea y restauración.** El sistema ofrece (a) una instantánea con el valor de todos los hechos declarados y (b) restaurar desde una instantánea. Restaurar descarta los avisos pendientes en la cola y no emite un aviso por cada hecho: emite uno solo, «estado restaurado» (sin datos), tras el cual cada sistema relee lo que necesita. La instantánea es un mapa nombre → valor con un número de versión; su formato exacto lo fija un ADR. Un hecho que falte en la instantánea toma su valor inicial; uno que ya no esté declarado se ignora y se registra. Quién guarda, cuándo y dónde lo decide el sistema de guardado (5), no este.
+12. **Partida nueva.** Todos los hechos toman su valor inicial y se emite un único aviso «estado restablecido» (no uno por hecho, sin datos). **Tras restablecer, el contenido resultante (la instantánea del estado inicial) es obtenible con la petición de instantánea de la regla 13**: Guardado (5) lo usa como línea base de `dif` de «Nueva partida» (GDD 5, reglas 7 y 24). Los avisos que estuvieran pendientes en la cola se descartan.
+13. **Instantánea y restauración.** El sistema ofrece (a) una instantánea con el valor de todos los hechos declarados y (b) restaurar desde una instantánea. Restaurar descarta los avisos pendientes en la cola y no emite un aviso por cada hecho: emite uno solo, «estado restaurado» (sin datos), tras el cual cada sistema relee lo que necesita. La instantánea es un mapa nombre → valor con un número de versión (`snapshot_version`); su formato exacto lo fija un ADR. **El sistema expone la `snapshot_version` que conoce** (consulta de solo lectura) para que Guardado (5) detecte instantáneas de una versión futura (GDD 5, regla 20); valor inicial `1`. Un hecho que falte en la instantánea toma su valor inicial; uno que ya no esté declarado se ignora y se registra. Quién guarda, cuándo y dónde lo decide el sistema de guardado (5), no este.
 14. **Ajustes fuera del estado.** Volumen, subtítulos y remapeo de controles no son hechos del juego: los gestiona el sistema de ajustes (6) y no se incluyen en la instantánea.
 15. **Modo de pruebas (solo builds de desarrollo).** Una consola permite ver todos los hechos y forzar su valor, saltándose las reglas 4 y 6, para que QA y los playtests lleguen a cualquier punto sin reiniciar. Cada forzado emite el aviso de cambio normal (regla 9) para que los sistemas reaccionen, y se marca en el log. No existe en la build de la demo. Todo «se registra» de este documento escribe en un destino de log que las pruebas automáticas pueden sustituir.
 
@@ -73,19 +73,19 @@ La tabla recoge los 19 hechos del Anexo D.2. «Escribe» y «Lee» son propuesta
 | Hecho | Tipo · inicial | Escribe | Lee |
 |---|---|---|---|
 | `correos_leidos` | bool · falso | 19 Ordenador ‡ | 19 (habilita imprimir) · 11 Puzle 1 |
-| `archivo_abierto` | bool · falso | 11 Puzle 1 ‡ | 8 Acceso (puerta A) |
+| `archivo_abierto` | bool · falso | 9 Marco de puzles (a petición del puzle 1) | 8 Acceso (puerta A) |
 | `formulario_leido` | bool · falso | 20 Documentos ‡ | 17 Pistas |
 | `tarjeta_B` | bool · falso | 20 Documentos ‡ | 8 Acceso (lector C06) |
 | `tarjeta_D` | bool · falso | 20 Documentos ‡ | 8 Acceso (lector C07) |
-| `memo_leido` | bool · falso | 12 Puzle 2 ‡ | 17 Pistas · 21 Director de escenas |
-| `pos_L`, `pos_C`, `pos_R` | int 1 a 4 · 2 | 12 Puzle 2 ‡ | 12 Puzle 2 · 5 Guardado |
-| `caja_c1` | bool · falso | 13 Puzle 3 ‡ | 10 Caja · 15 Puzle 5 |
-| `caja_c2` | bool · falso | 14 Puzle 4 ‡ | 10 Caja · 16 Puzle 6 |
-| `caja_c3` | bool · falso | 15 Puzle 5 ‡ | 10 Caja · 16 Puzle 6 |
-| `caja_c4` | bool · falso | 16 Puzle 6 ‡ | 10 Caja |
-| `pendiente_revelacion` | bool · falso | 15 Puzle 5 ‡ | 15 Puzle 5 · 5 Guardado |
+| `memo_leido` | bool · falso | 9 Marco de puzles (a petición del puzle 2) | 17 Pistas · 21 Director de escenas |
+| `pos_L`, `pos_C`, `pos_R` | int 1 a 4 · 2 | 9 Marco de puzles (a petición del puzle 2) | 12 Puzle 2 · 5 Guardado |
+| `caja_c1` | bool · falso | 9 Marco de puzles (a petición del puzle 3) | 10 Caja · 15 Puzle 5 |
+| `caja_c2` | bool · falso | 9 Marco de puzles (a petición del puzle 4) | 10 Caja · 16 Puzle 6 |
+| `caja_c3` | bool · falso | 9 Marco de puzles (a petición del puzle 5) | 10 Caja · 16 Puzle 6 |
+| `caja_c4` | bool · falso | 9 Marco de puzles (a petición del puzle 6) | 10 Caja |
+| `pendiente_revelacion` | bool · falso | 9 Marco de puzles (a petición del puzle 5) | 15 Puzle 5 · 5 Guardado |
 | `caja_completa` | bool derivado · falso | este sistema (regla 7) | 21 Director de escenas (dispara el apagón y la llamada) |
-| `carta_variante` | enum A, B, C · sin fijar | 16 Puzle 6 ‡ | 22 Llamada |
+| `carta_variante` | enum A, B, C · sin fijar | 9 Marco de puzles (a petición del puzle 6) | 22 Llamada |
 | `llamada_iniciada` | bool · falso | 22 Llamada ‡ | 22 Llamada · 5 Guardado |
 | `respuesta_llamada` | enum A, B, C, D · sin fijar | 22 Llamada ‡ | 21 Director de escenas (última línea de Vera) |
 | `llamada_completada` | bool · falso | 22 Llamada ‡ | 21 Director de escenas (activa el ascensor) |
@@ -139,9 +139,10 @@ Otras interacciones:
 |---|---|---|
 | 1 Entrada y controles | Blanda | Emite «dispositivo de entrada cambiado» y «contexto de entrada cambiado» por el bus; no lee ni escribe hechos. Funciona sin el bus salvo por esos dos avisos |
 | 4 Escena de planta | Dura | Lee hechos al cargar la escena para dejarla en su estado |
-| 5 Guardado y carga | Dura | Pide instantánea, restaura, escucha «estado restaurado» |
+| 5 Guardado y carga | Dura | Pide instantánea, restaura, restablece (y lee el contenido restablecido), consulta `snapshot_version`, escucha «estado restaurado»; emite «guardado en riesgo» / «guardado restablecido» |
+| 7 Interacción e inspección | Blanda | Lee hechos para `habilitado_si`; emite «vista cercana abierta/cerrada», «lectura completada», «lectura cerrada», «interacción ejecutada» |
 | 8 Control de acceso | Dura | Lee `archivo_abierto`, `tarjeta_B`, `tarjeta_D`, `llamada_completada` |
-| 9 Marco de puzles | Dura | Escribe hechos de puzle; emite `EV_PUZZLE_SOLVED_<ID>` |
+| 9 Marco de puzles | Dura | Es `owner` de los hechos de puzle y único escritor; emite `EV_PUZZLE_SOLVED_<ID>`, «compartimento completado» y los demás avisos de puzle |
 | 10 Caja y compartimentos | Dura | Lee `caja_c1` a `caja_c4` para las dependencias entre compartimentos |
 | 19 Ordenador, correo e impresora | Dura | Escribe `correos_leidos` |
 | 20 Documentos y bolsillo | Dura | Escribe `formulario_leido`, `tarjeta_B`, `tarjeta_D` |
@@ -249,3 +250,7 @@ Revisados por `qa-lead`. **Evidencia:** **L** = test unitario automático (gdUni
 | 5 | ~~Índice de sistemas: añadir el sistema 3 a las dependencias del 17.~~ **Resuelta:** la fila 17 ya lista `3, 9, 18`. | — | Cerrada (2026-11-08) |
 | 6 | ¿`memo_leido` debe leerlo el director de escenas (21)? El slice solo dice «pistas, recompensa de B». | `/design-system` del sistema 21 | GDD del sistema 21 |
 | 7 | **Destino de log inyectable** para las pruebas («se registra» verificable). | `/architecture-decision` | Fase de arquitectura |
+
+## Historial de cambios
+
+- **2026-11-09 (lote 2/5/7/9, cambios derivados de las revisiones de 5, 7 y 9):** (a) `owner = 9` para `archivo_abierto`, `memo_leido`, `pos_*`, `caja_c1` a `caja_c4`, `pendiente_revelacion` y `carta_variante` (regla 2 y tabla; antes «11 a 16»; GDD 9 D9-4). (b) Se exponen `snapshot_version` conocida (regla 13) y el contenido del estado restablecido (regla 12) para Guardado. (c) Avisos nuevos en la regla 10: «guardado en riesgo» / «guardado restablecido» (emisor 5), avisos de puzle (emisor 9) y avisos de vista/lectura/interacción (emisor 7). (d) Dependencias: 7 (blanda) y 9 actualizadas. **Cambia reglas: pendiente de re-review.** Estado del documento sin cambios. Nota: `llamada_iniciada` sigue sin cambios; la restricción de emisión pedida por el informe de 5 pertenece al GDD 22 (sin redactar).

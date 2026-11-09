@@ -54,7 +54,7 @@
 #   in any other shape is reported as unsupported layout, with its number.
 
 version: 1
-last_updated: "2026-11-08"
+last_updated: "2026-11-09"
 
 # ─── ENTITIES ────────────────────────────────────────────────────────────────
 # Named game-world objects: enemies, NPCs, characters, factions, bosses.
@@ -65,7 +65,18 @@ last_updated: "2026-11-08"
 # Attribute fields: any key stats that could appear in another GDD
 #   (health, damage, drops, faction, etc.)
 
-entities: []
+entities:
+  - name: vera_player_character
+    status: active
+    source: design/gdd/jugador-en-primera-persona.md
+    referenced_by: [design/gdd/entrada-y-controles.md, design/gdd/escena-de-planta.md, design/art/art-bible.md]
+    eye_height_m: 1.62
+    capsule_radius_m: 0.25
+    capsule_height_m: 1.75
+    movement: walk_only
+    visible_body: hands_only
+    added: 2026-11-09
+    revised: ""
 
 # Example (remove when first real entry is added):
 #
@@ -140,6 +151,57 @@ formulas:
     notes: "Duración máxima declarada a Entrada para el sin control de una carga de escena. Con los valores propuestos (recepcion) ≈ 11,67 s."
     added: 2026-11-08
     revised: ""
+  # --- Lote 2026-11-09 ---
+  - name: player_ground_velocity
+    status: active
+    source: design/gdd/jugador-en-primera-persona.md
+    referenced_by: []
+    variables: [v_paseo, m, k_lat, k_atras]
+    output_range: [0, 1.6]
+    expression: "v_obj = v_paseo * (m'.x*k_lat, m'.y*(m'.y>=0 ? 1 : k_atras)); m' = m / max(1,|m|)"
+    notes: "Hacia atrás 1,28 m/s"
+    added: 2026-11-09
+    revised: ""
+  - name: player_effective_fov
+    status: active
+    source: design/gdd/jugador-en-primera-persona.md
+    referenced_by: [design/art/art-bible.md, design/gdd/interaccion-e-inspeccion.md]
+    variables: [fov_v, aspect, fov_h_max]
+    output_range: [51.9, 90]
+    expression: "h = 2*atan(tan(fov_v/2)*aspect); if h > 120deg then fov_v = 2*atan(tan(60deg)/aspect)"
+    notes: "El fov_destino de una cesión de cámara también pasa por fov_h_max; 7 lo lee con fov_vigente()"
+    added: 2026-11-09
+    revised: ""
+  - name: player_camera_bob_offset
+    status: active
+    source: design/gdd/jugador-en-primera-persona.md
+    referenced_by: []
+    variables: [A_v, A_h, g, r, d, L_paso]
+    output_range: [0, 0.015]
+    expression: "y = A_v*g*r*cos(2*pi*d/L_paso); x = A_h*g*r*sin(pi*d/L_paso); translation only"
+    notes: "|y| <= 0,015 m, |x| <= 0,010 m"
+    added: 2026-11-09
+    revised: ""
+  - name: player_pose_delayed
+    status: active
+    source: design/gdd/jugador-en-primera-persona.md
+    referenced_by: []
+    variables: [T_hist, f_fisica, tau]
+    output_range: [0, 1.0]
+    expression: "lerp over ring buffer N = ceil(T_hist*f_fisica)+2; s = tau*f_fisica; i = min(floor(s), N-2)"
+    notes: "tau in [0, T_hist]; el +2 es el margen del búfer (revisión del GDD 2)"
+    added: 2026-11-09
+    revised: ""
+  - name: F6_ppm
+    status: active
+    source: design/gdd/interaccion-e-inspeccion.md
+    referenced_by: [design/gdd/entrada-y-controles.md]
+    variables: [H, d, FOV_v]
+    output_range: [0, 10000]
+    expression: "(H/2)/(d*tan(FOV_v/2))"
+    notes: "2.203 px/m en D01a (H = 1080); equivalencia píxeles-metros para F5b de Entrada"
+    added: 2026-11-09
+    revised: ""
 
 # Example:
 #
@@ -211,14 +273,317 @@ constants:
     revised: ""
 
   # --- Lote 2026-11-09 (GDDs 2, 5, 7, 9) ---
-  - {name: player_eye_height_m, status: active, source: design/slice/slice-v0.3.md, referenced_by: [design/gdd/jugador-en-primera-persona.md, design/gdd/escena-de-planta.md], value: 1.62, unit: m, added: 2026-11-09, revised: ""}
-  - {name: player_walk_speed_mps, status: active, source: design/gdd/jugador-en-primera-persona.md, referenced_by: [design/gdd/entrada-y-controles.md], value: 1.6, unit: m/s, range: [1.0, 2.2], added: 2026-11-09, revised: ""}
-  - {name: player_capsule_radius_m, status: active, source: design/gdd/jugador-en-primera-persona.md, referenced_by: [design/gdd/escena-de-planta.md], value: 0.25, unit: m, range: [0.20, 0.30], added: 2026-11-09, revised: ""}
-  - {name: player_fov_vertical_default_deg, status: active, source: design/gdd/jugador-en-primera-persona.md, referenced_by: [design/gdd/entrada-y-controles.md, design/gdd/interaccion-e-inspeccion.md], value: 70, unit: deg, range: [60, 90], added: 2026-11-09, revised: ""}
-  - {name: alcance_interaccion_m, status: active, source: design/gdd/interaccion-e-inspeccion.md, referenced_by: [design/gdd/entrada-y-controles.md], value: 1.8, unit: m, range: [1.2, 3.0], added: 2026-11-09, revised: ""}
-  - {name: lock_max_s, status: active, source: design/gdd/marco-de-puzles.md, referenced_by: [design/gdd/interaccion-e-inspeccion.md], value: 2.0, unit: s, added: 2026-11-09, revised: ""}
-  - {name: save_format_version, status: active, source: design/gdd/guardado-y-carga.md, referenced_by: [design/gdd/ajustes-persistentes.md], value: 1, unit: "", added: 2026-11-09, revised: ""}
-  - {name: save_periodic_interval_s, status: active, source: design/gdd/guardado-y-carga.md, referenced_by: [design/gdd/marco-de-puzles.md], value: 120, unit: s, added: 2026-11-09, revised: ""}
+  - name: player_eye_height_m
+    status: active
+    source: design/slice/slice-v0.3.md
+    referenced_by: [design/gdd/jugador-en-primera-persona.md, design/gdd/escena-de-planta.md]
+    value: 1.62
+    unit: m
+    added: 2026-11-09
+    revised: ""
+  - name: player_walk_speed_mps
+    status: active
+    source: design/gdd/jugador-en-primera-persona.md
+    referenced_by: [design/gdd/entrada-y-controles.md]
+    value: 1.6
+    unit: m/s
+    range: [1.0, 2.2]
+    added: 2026-11-09
+    revised: ""
+  - name: player_capsule_radius_m
+    status: active
+    source: design/gdd/jugador-en-primera-persona.md
+    referenced_by: [design/gdd/escena-de-planta.md]
+    value: 0.25
+    unit: m
+    range: [0.25, 0.25]
+    note: "Fijo (revisión 2026-11-09): 2*radio + 0.10 = player_min_passage_width_m (0.60)"
+    added: 2026-11-09
+    revised: 2026-11-09
+  - name: player_fov_vertical_default_deg
+    status: active
+    source: design/gdd/jugador-en-primera-persona.md
+    referenced_by: [design/gdd/entrada-y-controles.md, design/gdd/interaccion-e-inspeccion.md]
+    value: 70
+    unit: deg
+    range: [60, 90]
+    added: 2026-11-09
+    revised: ""
+  - name: alcance_interaccion_m
+    status: active
+    source: design/gdd/interaccion-e-inspeccion.md
+    referenced_by: [design/gdd/entrada-y-controles.md]
+    value: 1.8
+    unit: m
+    range: [1.2, 3.0]
+    added: 2026-11-09
+    revised: ""
+  - name: lock_max_s
+    status: active
+    source: design/gdd/marco-de-puzles.md
+    referenced_by: []
+    value: 2.0
+    unit: s
+    range: [1.0, 2.0]
+    note: "7 ya no lo usa (el tope de 3 s de transición es de Entrada); rango 1,0-2,0 según GDD 9 regla 14"
+    added: 2026-11-09
+    revised: 2026-11-09
+  - name: save_format_version
+    status: active
+    source: design/gdd/guardado-y-carga.md
+    referenced_by: [design/gdd/guardado-y-carga.md]
+    value: 1
+    unit: ""
+    note: "ajustes-persistentes.md no lo usa (fichero propio); corregido 2026-11-09"
+    added: 2026-11-09
+    revised: 2026-11-09
+  - name: save_periodic_interval_s
+    status: active
+    source: design/gdd/guardado-y-carga.md
+    referenced_by: [design/gdd/marco-de-puzles.md]
+    value: 120
+    unit: s
+    note: "En GDD 5 se llama t_periodico; el GDD 9 (regla 22) lo cita como cota de pérdida de progreso parcial"
+    added: 2026-11-09
+    revised: 2026-11-09
+  # --- Lote 2026-11-09: consolidación de las Propuestas de registro de los GDDs 2, 5, 7 y 9 ---
+  - name: player_min_passage_width_m
+    status: active
+    source: design/gdd/jugador-en-primera-persona.md
+    referenced_by: [design/gdd/escena-de-planta.md]
+    value: 0.60
+    unit: m
+    note: "2*player_capsule_radius_m + 0.10"
+    added: 2026-11-09
+    revised: ""
+  - name: player_pitch_limit_deg
+    status: active
+    source: design/gdd/jugador-en-primera-persona.md
+    referenced_by: [design/gdd/entrada-y-controles.md]
+    value: 80
+    unit: deg
+    range: [60, 89]
+    added: 2026-11-09
+    revised: ""
+  - name: player_step_length_m
+    status: active
+    source: design/gdd/jugador-en-primera-persona.md
+    referenced_by: [design/gdd/jugador-en-primera-persona.md]
+    value: 0.75
+    unit: m
+    added: 2026-11-09
+    revised: ""
+  - name: player_pose_history_s
+    status: active
+    source: design/gdd/jugador-en-primera-persona.md
+    referenced_by: [design/gdd/jugador-en-primera-persona.md]
+    value: 1.0
+    unit: s
+    range: [0.6, 2.0]
+    note: "Debe cubrir el retardo del reflejo (0,6 s, slice C.4)"
+    added: 2026-11-09
+    revised: ""
+  - name: player_camera_transition_cap_s
+    status: active
+    source: design/gdd/entrada-y-controles.md
+    referenced_by: [design/gdd/jugador-en-primera-persona.md, design/gdd/interaccion-e-inspeccion.md]
+    value: 3.0
+    unit: s
+    note: "Tope F8 de Entrada; 7 mantiene el bloqueo hasta camara_devuelta/gesto_terminado con este tope"
+    added: 2026-11-09
+    revised: ""
+  - name: save_files
+    status: active
+    source: design/gdd/guardado-y-carga.md
+    referenced_by: [design/gdd/guardado-y-carga.md]
+    value: "autosave.json, autosave.prev.json, autosave.tmp, autosave.corrupt, autosave.incompatible"
+    unit: ""
+    note: "Carpeta definitiva en el ADR"
+    added: 2026-11-09
+    revised: ""
+  - name: save_config_path
+    status: active
+    source: design/gdd/guardado-y-carga.md
+    referenced_by: [design/gdd/guardado-y-carga.md]
+    value: "assets/data/save/save-config.json"
+    unit: ""
+    added: 2026-11-09
+    revised: ""
+  - name: save_group_window_s
+    status: active
+    source: design/gdd/guardado-y-carga.md
+    referenced_by: [design/gdd/guardado-y-carga.md]
+    value: 0.1
+    unit: s
+    note: "t_agrupar"
+    added: 2026-11-09
+    revised: ""
+  - name: save_retry_base_s
+    status: active
+    source: design/gdd/guardado-y-carga.md
+    referenced_by: [design/gdd/guardado-y-carga.md]
+    value: 2
+    unit: s
+    note: "t_reintento_base"
+    added: 2026-11-09
+    revised: ""
+  - name: save_retry_max_s
+    status: active
+    source: design/gdd/guardado-y-carga.md
+    referenced_by: [design/gdd/guardado-y-carga.md]
+    value: 30
+    unit: s
+    note: "t_reintento_max"
+    added: 2026-11-09
+    revised: ""
+  - name: save_fail_warn_count
+    status: active
+    source: design/gdd/guardado-y-carga.md
+    referenced_by: [design/gdd/guardado-y-carga.md, design/gdd/estado-y-bus-de-eventos.md]
+    value: 3
+    unit: fallos
+    note: "n_fallos_aviso: dispara «guardado en riesgo»"
+    added: 2026-11-09
+    revised: ""
+  - name: save_max_read_bytes
+    status: active
+    source: design/gdd/guardado-y-carga.md
+    referenced_by: [design/gdd/guardado-y-carga.md]
+    value: 65536
+    unit: B
+    note: "max_bytes_lectura"
+    added: 2026-11-09
+    revised: ""
+  - name: radio_apuntado_m
+    status: active
+    source: design/gdd/interaccion-e-inspeccion.md
+    referenced_by: [design/gdd/interaccion-e-inspeccion.md]
+    value: 0.06
+    unit: m
+    added: 2026-11-09
+    revised: ""
+  - name: pick_min_px
+    status: active
+    source: design/gdd/interaccion-e-inspeccion.md
+    referenced_by: [design/gdd/marco-de-puzles.md]
+    value: 44
+    unit: px
+    added: 2026-11-09
+    revised: ""
+  - name: r_max_inspeccion_m
+    status: active
+    source: design/gdd/interaccion-e-inspeccion.md
+    referenced_by: [design/gdd/interaccion-e-inspeccion.md]
+    value: 0.20
+    unit: m
+    added: 2026-11-09
+    revised: ""
+  - name: lectura_min_s_A04
+    status: active
+    source: design/gdd/interaccion-e-inspeccion.md
+    referenced_by: [design/gdd/interaccion-e-inspeccion.md]
+    value: 2.0
+    unit: s
+    note: "slice A.4"
+    added: 2026-11-09
+    revised: ""
+  - name: t_vista_entrada_D01a_s
+    status: active
+    source: design/slice/slice-v0.3.md
+    referenced_by: [design/gdd/interaccion-e-inspeccion.md]
+    value: 1.0
+    unit: s
+    note: "slice B.3"
+    added: 2026-11-09
+    revised: ""
+  - name: t_vista_salida_s
+    status: active
+    source: design/gdd/jugador-en-primera-persona.md
+    referenced_by: [design/gdd/interaccion-e-inspeccion.md]
+    value: 0.5
+    unit: s
+    note: "= t_devolver del Jugador (única duración de regreso, F9 del GDD 2); no usar 0,6 s"
+    added: 2026-11-09
+    revised: ""
+  - name: close_view_after_s
+    status: active
+    source: design/gdd/marco-de-puzles.md
+    referenced_by: [design/gdd/interaccion-e-inspeccion.md]
+    value: 1.5
+    unit: s
+    note: "Sustituye a t_auto_salida_s de 7"
+    added: 2026-11-09
+    revised: ""
+  - name: delay_s_P1
+    status: active
+    source: design/slice/slice-v0.3.md
+    referenced_by: [design/gdd/marco-de-puzles.md]
+    value: 0.6
+    unit: s
+    note: "slice B.1"
+    added: 2026-11-09
+    revised: ""
+  - name: snap_radius_m_P3
+    status: active
+    source: design/slice/slice-v0.3.md
+    referenced_by: [design/gdd/marco-de-puzles.md]
+    value: 0.04
+    unit: m
+    note: "Asistido (asistencia_encaje): 0,10 m. Slice B.3"
+    added: 2026-11-09
+    revised: ""
+  - name: theta_solution_deg_P5
+    status: active
+    source: design/slice/slice-v0.3.md
+    referenced_by: [design/gdd/marco-de-puzles.md]
+    value: 40
+    unit: deg
+    note: "tol_deg 3 (asistido 6). Slice B.5"
+    added: 2026-11-09
+    revised: ""
+  - name: hold_s_P5
+    status: active
+    source: design/slice/slice-v0.3.md
+    referenced_by: [design/gdd/marco-de-puzles.md]
+    value: 0.8
+    unit: s
+    added: 2026-11-09
+    revised: ""
+  - name: reveal_fade_s_P5
+    status: active
+    source: design/slice/slice-v0.3.md
+    referenced_by: [design/gdd/marco-de-puzles.md]
+    value: 1.2
+    unit: s
+    note: "reveal_outline_s_P5 0,8; line_grace_s 2,0; suma nominal 16,0 s (F8 del GDD 9)"
+    added: 2026-11-09
+    revised: ""
+  - name: line_fallback_s_P5
+    status: active
+    source: design/slice/slice-v0.3.md
+    referenced_by: [design/gdd/marco-de-puzles.md]
+    value: 14.0
+    unit: s
+    added: 2026-11-09
+    revised: ""
+  - name: latencia_feedback_ms
+    status: active
+    source: design/gdd/marco-de-puzles.md
+    referenced_by: [design/gdd/marco-de-puzles.md]
+    value: 100
+    unit: ms
+    note: "Umbral de verificación, no knob"
+    added: 2026-11-09
+    revised: ""
+  - name: idle_s_P3_N3
+    status: active
+    source: design/slice/slice-v0.3.md
+    referenced_by: [design/gdd/marco-de-puzles.md]
+    value: 60
+    unit: s
+    note: "idle_s_P6_N1 10 s e idle_s_P6_N2 20 s (P6 solo tiene dos niveles de pista); idle_move_px_P3 40 px"
+    added: 2026-11-09
+    revised: ""
 
 # Example:
 #

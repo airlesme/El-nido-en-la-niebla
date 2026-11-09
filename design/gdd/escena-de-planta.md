@@ -37,7 +37,7 @@ Existe por dos razones. La primera es el pilar *Tensión sin castigo*: reanudar,
 
 **Cómo se pide y se arranca una carga**
 
-7. **Petición.** Una carga se pide con tres datos: `destino` (`planta` o `recepcion`), `motivo` (`partida_nueva`, `reanudar` o `recepcion`) y `control_final` (`exploracion` o `ninguno`). La piden: Pantalla de título (27) la partida nueva y la reanudación, y el Director de escenas (21) la Recepción ‡. **Precondición:** el estado (3) está en «Listo» y fuera de una restauración, y los hechos ya valen lo que deben (tras «estado restablecido» o «estado restaurado»). Si no se cumple, la petición se rechaza: en desarrollo, error visible que detiene la ejecución; en la build final, se rechaza y se registra una línea. Una petición mientras hay una carga en curso se rechaza igual.
+7. **Petición.** Una carga se pide con tres datos: `destino` (`planta` o `recepcion`), `motivo` (`partida_nueva`, `reanudar` o `recepcion`) y `control_final` (`exploracion` o `ninguno`). La piden: **Guardado (5)** la partida nueva (`partida_nueva`, desde `nueva_partida()`) y la reanudación (`reanudar`, desde `continuar()`); Pantalla de título (27) solo llama a esas dos operaciones de 5 y **no pide `planta`**; el Director de escenas (21) pide la Recepción ‡. **Precondición:** el estado (3) está en «Listo» y fuera de una restauración, y los hechos ya valen lo que deben (tras «estado restablecido» o «estado restaurado»). Si no se cumple, la petición se rechaza: en desarrollo, error visible que detiene la ejecución; en la build final, se rechaza y se registra una línea. Una petición mientras hay una carga en curso se rechaza igual.
 8. **Recarga completa.** Cada petición de `planta` descarta la instancia anterior, si la hay, y crea otra nueva; nunca se reutiliza una escena cargada, para que nada de una sesión se filtre a la siguiente.
 9. **Secuencia de arranque** (la misma para las dos escenas):
    1. La cortina (regla 11) pasa a negro, si no lo estaba ya, y **los pasos 3 y 4 no empiezan hasta que es opaca por completo**.
@@ -59,6 +59,7 @@ Existe por dos razones. La primera es el pilar *Tensión sin castigo*: reanudar,
 15. **Descarga.** Al descargar una escena todo lo que contiene desaparece: sus suscriptores dejan de recibir avisos sin darse de baja y sin errores (GDD del 3), y Entrada reinicia su pila de contextos a `sin control` (GDD de Entrada, casos límite) hasta que se le pide otro. Existe además una petición de descarga total (volver al título) que deja el sistema en «Sin escena» con la cortina en negro ‡.
 16. **El guardado no cambia.** Este sistema no guarda ni pide guardados, y entrar en Recepción no modifica el último guardado (slice D.3): si el jugador cierra durante Recepción, reanuda en el despacho con la llamada pendiente. Qué ocurre con la llamada al reanudar lo define el sistema 22.
 17. **Escena obsoleta.** Si llega «estado restablecido» o «estado restaurado» con una escena cargada y no se ha pedido una recarga, el sistema no intenta parchear los elementos: registra una advertencia (en desarrollo, error visible). Quien restaure (5) o reinicie (27) debe pedir la recarga después (regla 8).
+18. **Contrato geométrico con el Jugador (2) y la Interacción (7)** (añadido 2026-11-09; el GDD 2 es la fuente de verdad del contrato 2↔7). (a) **Paso mínimo transitable = 0,60 m** (`player_min_passage_width_m`); la cápsula del Jugador es fija, `radio_capsula` = 0,25 m (`player_capsule_radius_m`); ningún hueco, pasillo ni separación entre mobiliario transitable mide menos. (b) **Las puertas desactivan la colisión de su hoja al empezar a abrirse** (D-19 del GDD 2); preferir que abran hacia el lado contrario al paso habitual. La colisión de la hoja con el Jugador es por tanto «dura» (cerrada) y «blanda» solo en el sentido de que se retira al abrir; esto sustituye a la redacción previa contradictoria («blanda de este lado» / «Dura»). (c) **Los volúmenes `T-…` detectan el sensor esférico del Jugador** (radio 0,02 a 0,05 m), no la cápsula; `T-PAS-1` se activa cuando el centro del sensor está entre X = 8,92 y X = 9,00. (d) **El suelo lleva una etiqueta de superficie** (`default` si falta), que el Jugador usa para los pasos. (e) **La cabina del ascensor mide al menos 1,2 × 1,2 m** (restricción mínima; no cierra la Open Question 2). (f) **Interacción (7):** los anclajes de vista son perpendiculares a su plano; el collider de `B05` cubre solo la parte que asoma de la base de la lámpara C, con ≥ 0,02 m de margen respecto del de `B02`; 7 toma la retención de arranque (regla 9, paso 6) para cargar su catálogo y registrar manejadores y receptores.
 
 ### States and Transitions
 
@@ -78,11 +79,11 @@ El sistema no es una pantalla: se comunica con avisos del bus (3) y con peticion
 | 3 Estado y bus de eventos | Los avisos «carga de escena iniciada», «escena lista», «carga de escena terminada» y «zona activada» ‡; ningún hecho escrito | Estado «Listo» (precondición); avisos «estado restablecido» y «estado restaurado» (regla 17) |
 | 1 Entrada y controles | Aviso de carga (para impedir la pausa y reiniciar su pila); la petición del contexto `exploración` al terminar, si `control_final` lo pide | — |
 | 2 Jugador en primera persona | Punto de aparición y orientación; el jugador queda quieto hasta que haya control | Su instancia, para colocarla (si es persistente o se instancia por escena lo fija el ADR) |
-| 5 Guardado y carga | Escena cargada y lista tras restaurar | Petición de `planta` con motivo `reanudar` tras restaurar los hechos ‡ |
+| 5 Guardado y carga | Escena cargada y lista tras restaurar o tras restablecer | Petición de `planta` con motivo `reanudar` (tras restaurar los hechos) y con `partida_nueva` (tras restablecerlos) ‡ |
 | 8 Control de acceso · 9 a 16 · 20 | Huecos y anclas de puerta, contenedores y IDs; «escena lista» | Elementos que se configuran leyendo sus hechos y, si hace falta, retenciones (regla 9, paso 6) |
 | 21 Director de escenas | Zonas `T-…`, avisos de carga | Petición de `recepcion` y petición de fundidos propios; devolución del control si `control_final` = `ninguno` ‡ |
 | 23 Audio · 28 Atmósfera | «escena lista» y zonas | — |
-| 27 Pantalla de título | Aviso de fallo de carga | Peticiones de `planta` (nueva o reanudar) y de descarga total ‡ |
+| 27 Pantalla de título | Aviso de fallo de carga | Solo la descarga total ‡ (la carga de `planta` la pide 5 al ejecutar `continuar()` / `nueva_partida()`) |
 
 ## Formulas
 
@@ -187,21 +188,22 @@ La fórmula del tope declarado se define como:
 **Aguas arriba (de qué depende):**
 - **3 Estado y bus de eventos — dura.** Necesita el estado en «Listo» como precondición de toda carga (regla 7), el bus para emitir sus avisos y los avisos «estado restablecido» y «estado restaurado» (regla 17). Los hechos no los lee este sistema, sino los elementos de la escena (regla 6).
 - **1 Entrada y controles — blanda.** Le pide el contexto `exploración` al terminar y le declara `D_carga` (F3); además Entrada reacciona a los avisos de carga (pausa bloqueada, pila a `sin control`). Sin Entrada, la carga funciona igual pero nadie devuelve el control.
-- **2 Jugador en primera persona — blanda de este lado.** Este sistema invoca una única operación del jugador, «colocar en un ancla con orientación». La dependencia de diseño va al revés: el índice ya dice que el sistema 2 depende del 4 (anclas y escena). Sin el jugador (prototipo gris) el paso 5 se omite.
+- **2 Jugador en primera persona — blanda de este lado (4 solo invoca «colocar en un ancla»), dura desde el lado del 2 (tabla inferior) y por el contrato geométrico de la regla 18.** Este sistema invoca una única operación del jugador, «colocar en un ancla con orientación». La dependencia de diseño va al revés: el índice ya dice que el sistema 2 depende del 4 (anclas y escena). Sin el jugador (prototipo gris) el paso 5 se omite.
 - Necesita además su fichero de datos (`assets/data/scene/load_transitions.json`, definido por este GDD: tabla de F1, `T_cap`, `N_gap`, `Δ_max`) y que el motor pueda cargar, instanciar y liberar escenas. **No hay referencia de motor para el dominio Core** (`docs/engine-reference/godot/modules/` no tiene `core.md`), así que la viabilidad de la carga y la liberación de escenas no está contrastada con el motor fijado (Open Questions).
 
 **Aguas abajo (quién depende de este sistema).** Dura = no puede funcionar sin él; blanda = mejora con él pero su lógica sigue.
 
 | Sistema | Tipo | Interfaz |
 |---|---|---|
-| 2 Jugador en primera persona | Dura | Anclas de aparición y orientación; la escena donde vive |
-| 5 Guardado y carga | Dura | Pide la carga de `planta` con motivo `reanudar` tras restaurar los hechos |
+| 2 Jugador en primera persona | Dura | Anclas de aparición y orientación; la escena donde vive; contrato geométrico (regla 18) |
+| 7 Interacción e inspección | Dura | Toma la retención de arranque (regla 9, paso 6) para cargar el catálogo y registrar manejadores/receptores; anclajes de vista y colliders de objetos |
+| 5 Guardado y carga | Dura | Pide la carga de `planta` con motivo `reanudar` (tras restaurar) y `partida_nueva` (tras restablecer) |
 | 21 Director de escenas | Dura | Pide `recepcion`; escucha las zonas `T-…` y los avisos de carga; pide fundidos propios; devuelve el control si `control_final` = `ninguno` |
 | 8 Control de acceso | Dura | Huecos y anclas de puerta; se configura leyendo hechos antes de «escena lista» |
 | 9 Marco de puzles · 10 Caja · 20 Documentos | Dura (vía contenedores e IDs) | Sus elementos viven en los contenedores de la planta y se configuran en el paso 6 |
 | 1 Entrada y controles | Blanda | Avisos de carga; petición de `exploración` |
 | 23 Director de audio · 28 Atmósfera reactiva | Blanda | «Escena lista» y zonas `T-…` |
-| 27 Pantalla de título y cierre | Blanda | Pide `planta` (nueva o reanudar) y la descarga total; recibe el fallo de carga |
+| 27 Pantalla de título y cierre | Blanda | Pide la descarga total; recibe el fallo de carga (no pide `planta`: lo hace 5) |
 
 **Índice de sistemas:** la fila del sistema 4 lista solo al 3 como dependencia; las dependencias blandas con 1 y 2 no se añaden, igual que hace el GDD del 3 con Entrada. Las filas de 2, 5 y 21 ya listan al sistema 4.
 
@@ -260,7 +262,7 @@ Revisados por `qa-lead`. **Evidencia:** **L** = test unitario automático (gdUni
 - **AC-06 (R6, L)**: **GIVEN** un estado falso con `archivo_abierto` verdadero y un elemento espía que lo lee en `configurar()`, **WHEN** se carga `planta`, **THEN** `configurar()` se llama una vez, antes del aviso «escena lista» en el registro del bus, y con el valor verdadero; y el contador de escrituras del estado falso es 0.
 
 **Petición y secuencia (reglas 7 a 17)**
-- **AC-07a (R7, L)**: **GIVEN** el estado (3) en «Listo» y este sistema en «Sin escena», **WHEN** se pide `planta` con motivo `partida_nueva`, **THEN** se acepta y entra en «Cargando»; **GIVEN** el estado (3) sin cargar o en restauración, **THEN** se rechaza (en los dos modos) y este sistema no cambia de estado ni llama al cargador.
+- **AC-07a (R7, L)**: **GIVEN** el estado (3) en «Listo» y este sistema en «Sin escena», **WHEN** Guardado (5) pide `planta` con motivo `partida_nueva` (y con `reanudar`), **THEN** se acepta y entra en «Cargando»; **GIVEN** el estado (3) sin cargar o en restauración, **THEN** se rechaza (en los dos modos) y este sistema no cambia de estado ni llama al cargador.
 - **AC-07b (R7, L)**: **GIVEN** este sistema en «Lista», **WHEN** llegan dos peticiones válidas en el mismo fotograma, **THEN** se acepta la primera y se rechaza la segunda (en los dos modos); **WHEN** llega una petición durante «Cargando», **THEN** se rechaza igual.
 - **AC-08 (R8, I)**: **GIVEN** la fixture `puzzle2_moved.json` (lámpara L del puzle 2 movida a la posición 4) y los hechos en su valor inicial (`pos_L` = 2), **WHEN** se pide de nuevo `planta`, **THEN** el identificador de instancia de la escena es distinto del anterior y la lámpara L está en la posición 2.
 - **AC-09 (R9, L)**: **GIVEN** los dobles y un reloj inyectado, **WHEN** se pide `recepcion` con `control_final` = `ninguno` y `llamada_completada` verdadero, **THEN** el registro conjunto de cortina, cargador, jugador espía, elementos y bus es exactamente: «carga de escena iniciada» → descarga de la planta → instanciación de Recepción → «colocar» del jugador → `configurar()` de los elementos → «escena lista» → inicio del aclarado → «carga de escena terminada»; la descarga no empieza hasta que la cortina doble registra α = 1; y Entrada recibe 0 peticiones de contexto.
@@ -311,3 +313,7 @@ Revisados por `qa-lead`. **Evidencia:** **L** = test unitario automático (gdUni
 | 11 | **Zonas `T-…` al reanudar:** quien escucha (21) decide si repite la escena 4; no hay hecho que marque «escena 4 vista» en el catálogo de 19. | GDD del sistema 21 | GDD del sistema 21 |
 | 12 | **Valores † de F1 a F3** (`Δ_max` 0,1 s, `T_cap` 10 s, `N_gap` 2, curva suave) y el 0,8 s† de oscurecido en `partida_nueva` y `reanudar`. | Prototipo gris y playtest (slice §23.4) | Primer playtest |
 | 13 | **Registro de entidades:** registrar como constantes entre sistemas los 0,8 s de A.0, los 2,0 s de C.1 y `T_cap`. | `/design-system` (al cerrar el GDD) | Aprobación del GDD |
+
+## Historial de cambios
+
+- **2026-11-09 (lote 2/5/7/9, cambios derivados de las revisiones de 2, 5 y 7):** (a) Regla 7, tablas de interacción y dependencias y AC-07a: **Guardado (5) pide `planta` con `reanudar` y con `partida_nueva`**; Título (27) solo llama a `continuar()` / `nueva_partida()` y a la descarga total. (b) Nueva regla 18: contrato geométrico con el Jugador y con Interacción (paso mínimo 0,60 m, cápsula 0,25 m, puertas sin colisión al abrir, sensor de `T-…`, etiqueta de superficie, cabina ≥ 1,2 × 1,2 m, `B05`, anclajes de vista, retención de arranque de 7). (c) Contradicción interna sobre la dependencia con el Jugador (blanda/dura) aclarada. (d) 7 listado como dependiente. **Cambia reglas: pendiente de re-review.** Estado del documento sin cambios. Pendiente: «confirmar escena lista tras la configuración síncrona» (informe de 9) ya queda cubierto por la regla 9, pasos 6 y 7; sin cambio.
