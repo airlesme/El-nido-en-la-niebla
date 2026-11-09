@@ -1,6 +1,6 @@
 # Puzle 3 · Encaje de la foto
 
-> **Status**: Revisado (ronda de corrección 7) — pendiente de re-review
+> **Status**: Revisado (ronda de corrección 8) — pendiente de re-review
 > **Author**: game-designer (lote autónomo) + agentes
 > **Last Updated**: 2026-11-09
 > **Sistema**: 13 · Puzle 3 · Encaje de la foto (`Feature`, categoría `Gameplay`, prioridad `MVP`)
@@ -267,10 +267,11 @@ Tipos: **L** = lógica (prueba automática, `tests/unit/puzzle_3/`, reloj falso 
 
 ## Datos del puzle
 
-Entrada de `assets/data/puzzles/puzzles.json` según el esquema de la regla 4 de 9 (todo valor numérico aquí; ninguno en el controlador). `on_partial`, `availability`, `condition` e `idle_reset` ya los admite el esquema v2 de 9 (regla 13, regla 25 y F3 de 9) y aquí solo se usan. Lo nuevo que 13 aporta es: el `id` de cada `AFFORDANCE` y su catálogo, `idle_move_px` por puzle, `frame_lit_s` en `on_solved`, `row` por pieza, `tray_drop_verdict`, `view_center_m` y `solution.slots/pieces/tray_rect_m/empty` (la regla 4 de 9 deja a `solution` datos que solo interpreta el controlador). `snap_radius_m` y `view_distance_m` son knobs de 9 cuya ubicación el esquema no fija: aquí van en `solution` (‡, a confirmar con 9); `piece_return_s` es `reset_after_s` de `on_reject`.
+Entrada de `assets/data/puzzles/puzzles.json` según el esquema de la regla 4 de 9 (todo valor numérico aquí; ninguno en el controlador). `on_partial`, `availability`, `condition` e `idle_reset` ya los admite el esquema v2 de 9 (regla 13, regla 25 y F3 de 9) y aquí solo se usan. Esquema v2 de la regla 4b de 9 (D9-67 a D9-79): `schema_version: 2` (raíz del fichero, repetido en el ejemplo), campo `affordance` (D9-72; sustituye al `id` del borrador), `idle_reset`/`idle_move_px`, `frame_lit_s` en `on_solved`, `gestos_aceptados` y `map` inyectivo con `empty` (D9-78). Lo propio de 13 que 9 deja al controlador: `row` por pieza, `tray_drop_verdict`, `view_center_m` y `solution.slots/pieces/tray_rect_m/empty`. `snap_radius_m` y `view_distance_m` son knobs de 9 cuya ubicación el esquema no fija: aquí van en `solution` (‡, a confirmar con 9); `piece_return_s` es `reset_after_s` de `on_reject`.
 
 ```json
 {
+  "schema_version": 2,
   "id": "P3", "mode": "VIEW", "view": "D01a",
   "solved_flag": "caja_c1",
   "requires": { "all": [] },
@@ -304,7 +305,6 @@ Entrada de `assets/data/puzzles/puzzles.json` según el esquema de la regla 4 de
     "tray_rect_m": [0.24, -0.19, 0.48, 0.19]
   },
   "assist": { "setting": "asistencia_encaje", "snap_radius_m": 0.10 },
-  "atraccion_desactivada": false,
   "idle_reset": "GESTURE_AND_MOVE", "idle_move_px": 40,
   "on_partial": { "sfx": "SFX_SNAP", "sfx_s": 0.2 },
   "on_reject": { "sfx": "SFX_REJECT", "shake_s": 0, "reset_after_s": 0.4, "lock": "ELEMENT" },
@@ -320,16 +320,16 @@ Entrada de `assets/data/puzzles/puzzles.json` según el esquema de la regla 4 de
   "resolution": { "kind": "IMMEDIATE" },
   "hints": [
     { "level": 1, "trigger": "REQUEST", "availability": "ON_HINT",
-      "effects": [{ "type": "AFFORDANCE", "id": "SLOT_SILHOUETTES" }] },
+      "effects": [{ "type": "AFFORDANCE", "affordance": "SLOT_SILHOUETTES" }] },
     { "level": 2, "trigger": "REQUEST", "availability": "ON_HINT",
-      "effects": [{ "type": "AFFORDANCE", "id": "ROW_NUMBER_ON_HOLD" }] },
+      "effects": [{ "type": "AFFORDANCE", "affordance": "ROW_NUMBER_ON_HOLD" }] },
     { "level": 3, "trigger": "IDLE", "idle_s": 60, "condition": "HELD_PIECE", "availability": "ON_HINT",
-      "effects": [{ "type": "AFFORDANCE", "id": "CORRECT_SLOT_OUTLINE" }] }
+      "effects": [{ "type": "AFFORDANCE", "affordance": "CORRECT_SLOT_OUTLINE" }] }
   ]
 }
 ```
 
-Sin `persist` (ningún hecho intermedio), sin `needs_items` (el puzle no necesita ítems), sin `on_unlock` (nace `ACTIVO`) y sin `TEXT` en las pistas (0 claves `PISTA_*`).
+Sin `element_zones` (todos los huecos mantienen la atracción, D13-6; el `atraccion_desactivada: false` suelto del borrador se elimina) y sin zona de tolerancia (los elementos tienen la del `assist`, no R = 64 px). Sin `persist` (ningún hecho intermedio), sin `needs_items` (el puzle no necesita ítems), sin `on_unlock` (nace `ACTIVO`) y sin `TEXT` en las pistas (0 claves `PISTA_*`).
 
 ## Decisiones tomadas
 
@@ -356,6 +356,7 @@ Modo por lotes autónomo (2026-11-09): decididas con la recomendación propia; n
 | D13-17 | Pieza en vuelo de vuelta (0,4 s): tras `REJECT` está bloqueada y la animación no se interrumpe; con la variante `NONE`, un `agarrar` la interrumpe y parte de su posición actual (regla 12, edge 18) | Dejar sin definir | Una regla única, sin saltos ni piezas que desaparezcan; coherente con el bloqueo `ELEMENT` de la regla 14 de 9 |
 | D13-18 | Se recorta de 13 lo que ya define 9 (destino de la pista 3 desde pausa, `on_partial`, `availability`, `condition`, `idle_reset`, knobs de 9): 13 los referencia y solo exige que `slot_6` no sea nunca hueco libre (regla 19) | Reproducirlos en 13 | Evita la divergencia detectada (13 decía «menor número que falte», 9 «todos los huecos libres»); una sola fuente |
 | D13-19 | El número de fila de B.3 («en el borde», siempre visible) **no se aplica**; el número sigue oculto hasta el nivel 2 y se eleva como Open Question 8 | Mostrar el número siempre | Un número siempre visible vacía el nivel 2 de pista (B.3 y 18); es una incompatibilidad interna de B.3 que decide el autor del slice |
+| D13-20 | (Ronda 8) Alineado con el esquema v2 de `puzzles.json` (regla 4b de 9): `schema_version: 2`; `affordance` en lugar de `id` en las tres pistas; se elimina el `atraccion_desactivada` suelto (era el valor por defecto) | Mantener `id` y el campo suelto | Un nombre por concepto y datos validables (D9-69, D9-72); sin cambio de diseño ni de tiempos |
 
 ## Open Questions
 
@@ -374,8 +375,8 @@ Modo por lotes autónomo (2026-11-09): decididas con la recomendación propia; n
 
 No se ha editado ningún archivo existente. Lo que debe cambiar fuera:
 
-- **9 Marco de puzles** (13 se apoya en el esquema v2 de 9 y solo pide lo que falta): (a) regla 25: «huecos libres» del P3 **excluye `slot_6`** (D13-9; es el único cambio sobre la pista desde pausa, que ya define 9); (b) catálogo de `AFFORDANCE` con los tres identificadores de P3 y un campo `id`; `idle_move_px` por puzle, `frame_lit_s` en `on_solved`, `row`, `tray_drop_verdict`, `view_center_m` y `solution.slots/pieces/tray_rect_m/empty`; dónde viven `snap_radius_m` y `view_distance_m` en el esquema; indicar qué cuenta F7 (13 incluye `t_entrada` 2,6 s y `t_cierre` 2,0 s, F3); (c) regla 9/`ViewElement`: `gestos_aceptados` por elemento (Open Question 4) o un mecanismo equivalente para habilitar `mantener` con el nivel 2; (d) regla 29: validar que `solution.map` del P3 es inyectivo y que `required` no incluye ningún hueco vacío (el controlador expone una validación de datos); (e) citar a 13 como el controlador de P3 en «Interacciones» y «Dependencies»; (f) Tuning Knobs: `piece_return_s` y `snap_radius_m` ya figuran en 9; `snap_anim_s`, `t_centrar_s`, `view_center_m` y `tray_drop_verdict` son de 13 y no se piden a 9 (se corrige el borrador anterior); opcional: `assisted_snap_radius_m` como fila propia.
-- **7 Interacción e inspección:** (a) `gestos_aceptados` por elemento de vista (Open Question 4); (b) confirmar que el centrado de la pieza al agarrar (Open Question 5) es compatible con «la pieza no salta»; (c) añadir a 13 en Dependencies/Interactions como receptor de la vista `D01a` (a través de 9); (d) comprobar que la atracción de Entrada (F5b) incluye los huecos del P3 con la tolerancia asistida; (e) **verificación V2 del FOV** (F1 y F1b de este GDD dependen de ella); (f) el anclaje `ANC_D01A` y la conversión pantalla→metros de la vista `D01a` deben admitir el centro de pantalla desplazado `view_center_m` = (0,185; 0) (D13-16) y confirmar el aspecto mínimo soportado (16:10).
+- **9 Marco de puzles** (13 se apoya en el esquema v2 de 9 y solo pide lo que falta): (a) regla 25: «huecos libres» del P3 **excluye `slot_6`** (D13-9; es el único cambio sobre la pista desde pausa, que ya define 9); (b) **absorbido en 9 (esquema v2, D9-72, D9-73, regla 4b):** catálogo `AFFORDANCE` con los tres nombres de P3 y el campo `affordance` (ya no `id`), `idle_move_px`, `frame_lit_s` en `on_solved`; sigue pidiéndose (‡) lo que 4b deja al controlador: `row`, `tray_drop_verdict`, `view_center_m` y `solution.slots/pieces/tray_rect_m/empty`, y dónde viven `snap_radius_m` y `view_distance_m` en el esquema; indicar qué cuenta F7 (13 incluye `t_entrada` 2,6 s y `t_cierre` 2,0 s, F3); (c) **absorbido en 9 (esquema v2, D9-78, regla 4b-l):** `gestos_aceptados` por elemento para habilitar `mantener` con el nivel 2; (d) **absorbido en 9 (regla 4b-n, D9-78, regla 29):** `solution.map` del P3 inyectivo, `required` sin ningún hueco de `empty` y «hueco libre» sin `empty`; (e) citar a 13 como el controlador de P3 en «Interacciones» y «Dependencies»; (f) Tuning Knobs: `piece_return_s` y `snap_radius_m` ya figuran en 9; `snap_anim_s`, `t_centrar_s`, `view_center_m` y `tray_drop_verdict` son de 13 y no se piden a 9 (se corrige el borrador anterior); opcional: `assisted_snap_radius_m` como fila propia.
+- **7 Interacción e inspección:** (a) `gestos_aceptados` por elemento de vista (absorbido en 9, esquema v2, D9-78; Open Question 4 sigue abierta para 7); (b) confirmar que el centrado de la pieza al agarrar (Open Question 5) es compatible con «la pieza no salta»; (c) añadir a 13 en Dependencies/Interactions como receptor de la vista `D01a` (a través de 9); (d) comprobar que la atracción de Entrada (F5b) incluye los huecos del P3 con la tolerancia asistida; (e) **verificación V2 del FOV** (F1 y F1b de este GDD dependen de ella); (f) el anclaje `ANC_D01A` y la conversión pantalla→metros de la vista `D01a` deben admitir el centro de pantalla desplazado `view_center_m` = (0,185; 0) (D13-16) y confirmar el aspecto mínimo soportado (16:10).
 - **10 Caja y compartimentos:** (0) colocar `ANC_D01A` con ese desplazamiento lateral; (a) mencionar a 13 (Dependencies) y que `restore_solved_presentation()` del P3 coloca las cinco piezas y deja `slot_6` vacío; (b) coherencia geométrica de la bandeja y del marco con `tray_rect_m` y `slot_pitch_m` (Open Question 3); (c) `NOTA_01` visible desde el aviso de resolución hasta el cierre (F5).
 - **6 Ajustes persistentes:** aclarar que `asistencia_encaje` es **independiente** de la atracción asistida de Entrada (edge 7 de 13) y su fila de «Quién lo lee» pasa de «13 Puzle 3» a «13 vía 9».
 - **18 Base de contenido:** sin texto nuevo; confirmar la fila P3 N3 («el contorno permanece hasta que la pieza encaja», D13-8).
@@ -403,4 +404,5 @@ Formato de `design/registry/entities.yaml` (`status: active`, `added: 2026-11-09
 ## Historial
 
 - **2026-11-09:** borrador inicial (lote Feature 3, autor: game-designer, modo autónomo). Instancia el marco de puzles (9) para P3; 15 decisiones D13-1 a D13-15, 6 preguntas abiertas (1 sobre el texto del slice, 2 sobre el tono) y cambios requeridos en 9, 7, 10, 6, 18, 2 y el índice. Estado: Borrador (lote Feature 3) — pendiente de review.
-- **2026-11-09 (ronda de corrección 7, revisión independiente: 0 bloqueantes, 9 avisos):** A1 encuadre definido (`view_center_m` 0,185 m, F1b, regla 2, edge 17, AC-27, D13-16); A2 D13-4 revisada: la bandeja sigue B.3 (`REJECT`), `NONE` queda como propuesta pendiente (Open Question 7); A3 número de fila de B.3 incompatible con la pista 2, mantenido oculto y elevado (Open Question 8, D13-19); A4 Player Fantasy y Summary en términos neutros, tono de `slot_6` abierto (OQ 2, AC-25 condicionado); A6–A7–A9 recorte frente al esquema v2 de 9 (regla 18, Datos del puzle, Cambios en 9; D13-18); A8 vuelta de la pieza definida (regla 12, edge 18, AC-28, D13-17); citas de 10 corregidas (colocación de `NOTA_01` = regla 17 de 10). A5 sigue en OQ 5. Decisiones D13-16 a D13-19. Estado: Revisado (ronda de corrección 7) — pendiente de re-review.
+- **2026-11-09 (ronda de corrección 7, revisión independiente: 0 bloqueantes, 9 avisos):** A1 encuadre definido (`view_center_m` 0,185 m, F1b, regla 2, edge 17, AC-27, D13-16); A2 D13-4 revisada: la bandeja sigue B.3 (`REJECT`), `NONE` queda como propuesta pendiente (Open Question 7); A3 número de fila de B.3 incompatible con la pista 2, mantenido oculto y elevado (Open Question 8, D13-19); A4 Player Fantasy y Summary en términos neutros, tono de `slot_6` abierto (OQ 2, AC-25 condicionado); A6–A7–A9 recorte frente al esquema v2 de 9 (regla 18, Datos del puzle, Cambios en 9; D13-18); A8 vuelta de la pieza definida (regla 12, edge 18, AC-28, D13-17); citas de 10 corregidas (colocación de `NOTA_01` = regla 17 de 10). A5 sigue en OQ 5. Decisiones D13-16 a D13-19. Estado: Revisado (ronda de corrección 8) — pendiente de re-review.
+- **2026-11-09 (ronda de corrección 8):** alineación mecánica con el esquema v2 de `puzzles.json` (regla 4b de 9): `schema_version: 2`, `id` → `affordance` en las pistas, eliminado `atraccion_desactivada` suelto, peticiones a 9 absorbidas marcadas (D9-72, D9-73, D9-78); D13-20. Sin cambio de diseño. Estado: Revisado (ronda de corrección 8) — pendiente de re-review.
