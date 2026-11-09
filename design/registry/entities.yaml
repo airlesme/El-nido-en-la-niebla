@@ -389,7 +389,8 @@ constants:
     referenced_by: [design/gdd/jugador-en-primera-persona.md, design/gdd/interaccion-e-inspeccion.md]
     value: 3.0
     unit: s
-    note: "Tope F8 de Entrada; 7 mantiene el bloqueo hasta camara_devuelta/gesto_terminado con este tope"
+    range: [3.0, 5.0]
+    note: "Tope F8 de Entrada (su rango pasa de 1-5 a 3-5 s: con menos de 3 s no cabe la cadena D01a de 7, 1,6 + hasta 1,2 = 2,8 s); 7 mantiene el bloqueo hasta camara_devuelta/gesto_terminado con este tope"
     added: 2026-11-09
     revised: ""
   - name: save_files
@@ -497,13 +498,23 @@ constants:
     note: "slice B.3. Ronda 3 (C-W11): en vistas encadenadas D01a-D01d t_vista_entrada_s <= 1,2 s para que 1,6 s (BOX_Cn_OPEN) + 1,2 s = 2,8 s quepa en el tope unico de 3 s de Entrada F8"
     added: 2026-11-09
     revised: ""
+  - name: BOX_Cn_OPEN
+    status: active
+    source: design/gdd/interaccion-e-inspeccion.md
+    referenced_by: [design/gdd/entrada-y-controles.md, design/gdd/marco-de-puzles.md]
+    value: 1.6
+    unit: s
+    range: [1.2, 1.8]
+    note: "Animacion del compartimento Cn (C1-C4), duenio GDD 7 (regla 19, D7-19). Cadena D01a: BOX_Cn_OPEN + t_vista_entrada_s (<= 1,2 s) debe caber en player_camera_transition_cap_s (3 s): maximo 1,8 s con 1,2 s de camara. El rango es propuesta derivada de esa cadena; 7 Tuning Knobs no lo lista aun"
+    added: 2026-11-09
+    revised: 2026-11-09
   - name: t_vista_salida_s
     status: deprecated
     source: design/gdd/jugador-en-primera-persona.md
     referenced_by: []
     value: 0.5
     unit: s
-    note: "RETIRADA (ronda 3, C-W13): era un alias de t_devolver del Jugador (GDD 2, única duración de regreso, F9, 0,5 s). Usar t_devolver; no definir otro valor"
+    note: "Retirada; ver 2 D-36. RETIRADA (ronda 3, C-W13): era un alias de t_devolver del Jugador (GDD 2, única duración de regreso, F9, 0,5 s). Usar t_devolver; no definir otro valor"
     added: 2026-11-09
     revised: ""
   - name: close_view_after_s
@@ -736,18 +747,18 @@ constants:
     referenced_by: [design/slice/slice-v0.3.md, design/gdd/guardado-y-carga.md, design/gdd/marco-de-puzles.md, design/gdd/base-de-contenido-narrativo.md]
     value: 20
     unit: facts
-    note: "tipo / inicial / owner. correos_leidos bool falso 19; archivo_abierto bool falso 9; formulario_leido bool falso 20; tarjeta_B bool falso 20; tarjeta_D bool falso 20; memo_leido bool falso 9; pos_L/pos_C/pos_R int 1-4 inicial 2 owner 9; caja_c1..c4 bool falso 9; pendiente_revelacion bool falso 9 (reversible: se escribe al iniciar la revelación, se limpia al terminar); caja_completa bool derivado falso (3); carta_variante enum A/B/C 9; llamada_iniciada bool falso 22; respuesta_llamada enum A-D 22; llamada_completada bool falso 22; t4_decision enum returned/assigned sin fijar 9 (nuevo, D-B1 2026-11-09: 19 en el slice D.2 + 1; lo escribe el marco al resolver el puzle 4, antes de caja_c2; lo lee 22 Llamada para una variación de VO_G_14; el slice aún no lo recoge)"
+    note: "tipo / inicial / owner. correos_leidos bool falso 19; archivo_abierto bool falso 9; formulario_leido bool falso 20; tarjeta_B bool falso 20; tarjeta_D bool falso 20; memo_leido bool falso 9; pos_L/pos_C/pos_R int 1-4 inicial 2 owner 9; caja_c1..c4 bool falso 9; pendiente_revelacion bool falso 9 (reversible: se escribe al iniciar la revelación, se limpia al terminar); caja_completa bool derivado falso (3); carta_variante enum A/B/C 9; llamada_iniciada bool falso 22; respuesta_llamada enum A-D 22; llamada_completada bool falso 22; t4_decision enum returned/assigned sin fijar 9 (nuevo, D-B1 2026-11-09: 19 en el slice D.2 + 1; lo escribe el marco al resolver el puzle 4, antes de caja_c2; lo lee 22 Llamada para una variación de VO_G_14; recogido en slice v0.3.2)"
     added: 2026-11-09
     revised: ""
   - name: save_causes
     status: active
     source: design/gdd/guardado-y-carga.md
     referenced_by: [design/gdd/estado-y-bus-de-eventos.md]
-    value: "door_opened, compartment_done, card_acquired, puzzle_solved, reveal_pending, call_started, pause_opened, periodic, quit, slice_completed, dev"
+    value: "door_opened, compartment_done, card_acquired, puzzle_solved, reveal_pending, call_started, pause_opened, periodic, quit, slice_completed, notices_dropped, dev"
     unit: ""
-    note: "card_acquired (tarjeta_B/D a verdadero) y slice_completed («partida terminada»; única causa admitida con la partida sellada). Clave opcional del fichero: completed; indicador de inspección: terminada"
+    note: "card_acquired (tarjeta_B/D a verdadero) y slice_completed («partida terminada»; única causa admitida con la partida sellada), notices_dropped (avisos descartados por tope de cola, GDD 5 regla 6: 11 causas + dev). Clave opcional del fichero: completed; indicador de inspección: terminada"
     added: 2026-11-09
-    revised: ""
+    revised: 2026-11-09
   - name: hint_key_count
     status: active
     source: design/gdd/base-de-contenido-narrativo.md
@@ -943,7 +954,7 @@ constants:
     status: active
     source: design/gdd/escena-de-planta.md
     referenced_by: [design/gdd/estado-y-bus-de-eventos.md, design/gdd/entrada-y-controles.md, design/gdd/guardado-y-carga.md]
-    value: "iniciada (destino, motivo, D_carga) · escena lista (destino) · terminada · fallida (destino, motivo, causa) · partida terminada (sin datos; único emisor: 4, tras terminada de recepcion)"
+    value: "iniciada (destino, motivo, D_carga) · escena lista (destino) · terminada · fallida (destino, motivo, causa) · partida terminada (sin datos; único emisor: 4, tras terminada de recepcion) · descarga total completada (sin datos; emite 4 al volver al título; la consume 5)"
     unit: ""
     note: "Avisos de carga emitidos por Escena de planta. «Fallida» es nuevo (ronda 3); Entrada termina carga_en_curso con terminada o fallida. Lo solicita C-W2/S-B1"
     added: 2026-11-09
