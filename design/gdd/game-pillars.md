@@ -101,7 +101,7 @@
 
 #### Serving This Pillar
 - Puzle 4: la ficha «Carta a Dirección» obliga a decidir si Vera habla por otra persona.
-- Pistas de tres niveles opcionales.
+- Pistas opcionales de hasta tres niveles (dos en el puzle 6).
 
 #### Violating This Pillar
 - Tutoriales que dicen la solución.
@@ -190,7 +190,7 @@
 | Need | Which Pillar Serves It | How |
 | ---- | ---- | ---- |
 | **Autonomy** | Autonomía como progresión | Elegir qué mirar, aceptar y responder |
-| **Competence** | Tensión sin castigo | Puzles deducibles, pistas de tres niveles, fallo recuperable |
+| **Competence** | Tensión sin castigo | Puzles deducibles, pistas de hasta tres niveles (dos en el P6), fallo recuperable |
 | **Relatedness** | Ambivalencia sin moral binaria | Vínculo ambiguo con El Guardián |
 
 ---

@@ -361,6 +361,7 @@ No hay fórmula: la duración la fijan la cámara o el director de escenas. Sí 
 | 21 Director de escenas | Blanda | Peticiones de `sin control`, con su duración máxima declarada (F8) |
 | 4 Escena de planta | Blanda (aguas arriba: emite avisos y declara `D_carga`) | Avisos de carga; contexto `sin control` durante la carga; petición de `exploración` |
 | 25 Menú de pausa (pantalla de «Mando desconectado») | Pendiente | Mensaje y opción «continuar» al reconectar (regla 22): sin definir hasta el GDD del 25 |
+| 18 Base de contenido narrativo | Blanda (aguas arriba) | Rótulos `UI_…` de la pantalla de reasignación y de los avisos de Entrada |
 | 3 Estado y bus de eventos | Blanda (aguas arriba) | Recibe «dispositivo de entrada cambiado» y «contexto de entrada cambiado» |
 | 11 a 16 Puzles | Indirecta (vía 7) | Gestos de puntero |
 

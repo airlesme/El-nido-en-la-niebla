@@ -81,7 +81,7 @@ Un solo puñado de decisiones, pocas pero visibles. No hay moral binaria, ni bar
 | Need | How This Game Satisfies It | Strength |
 | ---- | ---- | ---- |
 | **Autonomy** | Decide qué mirar, aceptar y responder; ninguna opción es «la correcta» en el puzle 6 ni en la llamada | Core |
-| **Competence** | Cada puzle es deducible con información del juego y tiene tres niveles de pista | Supporting |
+| **Competence** | Cada puzle es deducible con información del juego y tiene hasta tres niveles de pista (dos en el P6) | Supporting |
 | **Relatedness** | Vínculo ambiguo con El Guardián a través de voz y documentos; nunca aparece en pantalla | Core |
 
 ### Player Type Appeal (Bartle Taxonomy)

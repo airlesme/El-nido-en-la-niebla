@@ -46,10 +46,11 @@ El sistema solo **registra y anuncia**; nunca decide qué ocurre cuando un hecho
     | **1 Entrada** | «dispositivo de entrada cambiado» (teclado/ratón o mando), «contexto de entrada cambiado» |
     | **4 Escena de planta** | «carga de escena iniciada» (destino), «escena lista» (destino), «carga de escena terminada», «zona activada» (ID `T-…`; se emite en cada entrada) |
     | **5 Guardado** | «guardado en riesgo» (tras `n_fallos_aviso` fallos seguidos de escritura), «guardado restablecido» (primera escritura con éxito después); sin datos |
-    | **7 Interacción** | «vista cercana abierta/cerrada», «lectura completada», «lectura cerrada», «interacción ejecutada» |
+    | **7 Interacción** | «vista cercana abierta/cerrada», «lectura completada», «lectura cerrada», «lectura abierta», «lectura descartada», «modos cerrados» (al vaciar la pila de modos; lo espera 21 antes de pedir `sin control`), «interacción ejecutada» |
     | **8 Control de acceso** ‡ | «puerta abierta» (identificador de la puerta) |
     | **9 Marco de puzles** | `EV_PUZZLE_SOLVED_<ID>` (uno por puzle, Anexo B; identificadores `P1` a `P6`, confirmados por el GDD 9, D9-13), «compartimento completado» (1 a 4), «puzle activado», «resolución de puzle interrumpida», «pista aplicada», «puzle inactivo», «feedback de puzle», «línea pedida» |
     | **22 Llamada** ‡ | «llamada iniciada», «llamada completada» |
+    | **4 o 22** ‡ | «partida terminada» (al llegar a Recepción; causa `slice_completed` de Guardado, GDD 5 regla 29); el emisor lo fijan 5 y 22 |
     | **23 Audio** ‡ | «línea terminada», «línea sin audio», «línea fallida» (respuestas a «línea pedida», con el identificador de la línea) |
     | **25 Menú de pausa** ‡ | `pause_opened` (sin datos) |
 
@@ -160,7 +161,7 @@ Otras interacciones:
 
 | Sistema | Tipo | Interfaz |
 |---|---|---|
-| 1 Entrada y controles | Blanda | Emite «dispositivo de entrada cambiado» y «contexto de entrada cambiado» por el bus; no lee ni escribe hechos. Funciona sin el bus salvo por esos dos avisos |
+| 1 Entrada y controles | Blanda | Emite «dispositivo de entrada cambiado» y «contexto de entrada cambiado» por el bus; **se suscribe** a «carga de escena iniciada» y «carga de escena terminada» (de 4) y recibe «ajustes aplicados» (de 6, fuera del bus). No lee ni escribe hechos. Funciona sin el bus salvo por esos avisos |
 | 4 Escena de planta | Dura | Precondición (estado «Listo») y avisos de ciclo de vida; emite «carga de escena iniciada», «escena lista», «carga de escena terminada» y «zona activada». No lee hechos: lo hacen los elementos de la escena |
 | 5 Guardado y carga | Dura | Pide instantánea, restaura, restablece (y lee el contenido restablecido), consulta `snapshot_version` y `cola_vacía()`, escucha «estado restaurado», «avisos descartados» y los avisos de causa; emite «guardado en riesgo» / «guardado restablecido» |
 | 7 Interacción e inspección | Blanda | Lee cualquier hecho para `habilitado_si` (coste constante, sin asignaciones); emite «vista cercana abierta/cerrada», «lectura completada», «lectura cerrada», «interacción ejecutada» |

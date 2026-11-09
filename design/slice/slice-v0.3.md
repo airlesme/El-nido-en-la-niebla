@@ -62,7 +62,7 @@ Comprobar, con un prototipo de calidad final en lo que se muestra, si:
 - **Movimiento:** teclado y ratón o mando. Desplazamiento a velocidad de paseo; sin sprint.
 - **Inspección:** los objetos pequeños se pueden girar en la mano. Pulsación prolongada para leer.
 - **Interacción:** una sola tecla o botón contextual.
-- **Accesibilidad:** subtítulos completos, remapeo, regulación independiente de voces y efectos, opción de reducir sobresaltos.
+- **Accesibilidad:** subtítulos completos, remapeo, regulación independiente de voces y efectos, opción de reducir sobresaltos y opción «reducir movimiento» (fundidos fijos de 100 ms y cambio estático en lugar de temblor).
 
 ## 6. Personajes
 
@@ -115,7 +115,7 @@ Esta es la cronología interna del slice. Los personajes no la explican. El juga
 
 ## 10. Puzles
 
-Los puzles 1 a 5 tienen tres niveles de pista y el puzle 6 tiene dos (Anexo B.6; decisión del usuario, 2026-11-09), accesibles desde el menú de pausa o mediante gesto de cámara. Ningún puzle bloquea la historia si el jugador falla. Cada puzle tiene una **función narrativa**: qué pregunta responde o qué elección obliga.
+Los puzles 1 a 5 tienen tres niveles de pista y el puzle 6 tiene dos (Anexo B.6; decisión del usuario, 2026-11-09), accesibles desde el menú de pausa. El nivel 1 del puzle 1 es un resaltado de la impresión: ningún evento mueve la cámara. Ningún puzle bloquea la historia si el jugador falla. Cada puzle tiene una **función narrativa**: qué pregunta responde o qué elección obliga.
 
 | Puzle | Pregunta que responde o elección que fuerza | Ubicación |
 |---|---|---|
@@ -133,7 +133,7 @@ Los puzles 1 a 5 tienen tres niveles de pista y el puzle 6 tiene dos (Anexo B.6;
 - **Fuente:** los cuatro correos de la búsqueda «transición» (ver tabla).
 - **Si falla:** los cuatro huecos vibran y las referencias vuelven a la impresión tras 1,5 s. Sin penalización. Detalle en el anexo B.1.
 - **Pistas:**
-  1. Nivel 1: gesto de cámara hacia la impresión de los cuatro correos.
+  1. Nivel 1: resaltado de la impresión de los cuatro correos (sin mover la cámara).
   2. Nivel 2: el pie de la impresión dice «Ordena por hora de envío».
   3. Nivel 3: la hora de envío aparece en letra pequeña al pie de cada correo impreso.
 - **Función:** reconstruye la línea temporal (sección 9). Confirma que la solicitud se registró después de que el formulario pareciera firmado y que Vera nunca confirmó.
@@ -345,7 +345,8 @@ Cada línea tiene un ID para que audio, localización y QA puedan referenciarla.
 
 - **Automático** al abrir cualquier puerta y al completar cada compartimento de la caja.
 - **Sin guardado manual** en el slice.
-- Si el jugador cierra el juego durante la llamada, al volver se reanuda en el despacho con la llamada pendiente.
+- Si el jugador cierra el juego durante la llamada, al volver se reanuda en el despacho con la llamada pendiente: la llamada se repite desde el principio hasta que esté completada y guardada.
+- **Partida sellada:** al llegar a Recepción la partida queda sellada (`completed`). Desde ese momento la pantalla de título ofrece solo «Nueva partida» (sin «Continuar» ni confirmación).
 
 ### 13.3 Casos límite (sin softlock)
 
@@ -362,7 +363,7 @@ Cada línea tiene un ID para que audio, localización y QA puedan referenciarla.
 - **Sonidos de puzle:** clics mecánicos para el panel de cronología, zumbido para lámparas, vibración para fichas, sonido de madera para la caja, sonido de metal para el encaje.
 - **Silencios:** los puzles tienen silencio parcial para que el jugador escuche pistas.
 - **Efectos:** pasos de Vera, sillas rodando, tecleo lejano, puerta que se cierra (dentro de la grabación de `VO_G_07`).
-- **Accesibilidad:** regulación independiente de voces, efectos y música. Opción de reducir sobresaltos.
+- **Accesibilidad:** regulación independiente de voces, efectos y música. Opción de reducir sobresaltos. Opción «reducir movimiento» (clave `reducir_movimiento`: fundido fijo de 100 ms y cambio estático en lugar de temblor en el feedback de error y en la cortina de carga).
 
 ## 15. Arte y assets
 
@@ -402,7 +403,7 @@ Cada línea tiene un ID para que audio, localización y QA puedan referenciarla.
 - **Sin game over.**
 - Los puzles muestran feedback visual y sonoro en cada acción, correcta o no.
 - La interacción aparece como un icono discreto cuando el objeto es interactuable.
-- El menú de pausa incluye: pistas (tres niveles por puzle; dos en el puzle 6), subtítulos, controles y opciones de accesibilidad.
+- El menú de pausa incluye: pistas (tres niveles por puzle; dos en el puzle 6), subtítulos, controles y opciones de accesibilidad (incluida «reducir movimiento»).
 - Los **correos y documentos** se guardan automáticamente. Se pueden consultar desde el ordenador en cualquier momento.
 
 ## 17. Contenido sensible y clasificación
@@ -721,7 +722,7 @@ El orden de impresión es 3, 1, 4, 2, con los dos correos sin numerar intercalad
 
 **Pistas**
 
-1. Nivel 1: gesto de cámara hacia la impresión, 3 s.
+1. Nivel 1: resaltado de la impresión (`HIGHLIGHT`), 3 s, sin mover la cámara.
 2. Nivel 2: el pie de la impresión muestra «Ordena por hora de envío».
 3. Nivel 3: la hora de envío aparece en letra pequeña al pie de cada correo.
 
@@ -1012,7 +1013,7 @@ S6 queda vacío.
 | Al pasar página | `ANIM_PAGE_TURN`. Muestra la página 2. |
 | +3,0 tras leer | Línea de Vera según `respuesta_llamada` (`VO_V_12A` a `VO_V_12D`). |
 | +3,0 | `VO_V_12E`: «La V no me convence». |
-| +2,0 | Fundido a negro. Título (3 s). Rótulo «Continuará». |
+| +2,0 | Fundido a negro. Título (3 s). Rótulo «Continuará». La partida ya está sellada desde la llegada a Recepción (t = 0, D.3). |
 
 ---
 
@@ -1035,6 +1036,8 @@ Vera lleva los ítems en un bolsillo visual. No hay menú de inventario en el sl
 
 ### D.2 Banderas
 
+Son 19 hechos en total (los de la tabla, contando `pos_L`, `pos_C` y `pos_R` por separado).
+
 | Flag | Tipo | Inicial | Se activa en | Se usa en |
 |---|---|---|---|---|
 | `correos_leidos` | bool | falso | Escena 2 | V08, puzle 1 |
@@ -1048,10 +1051,10 @@ Vera lleva los ítems en un bolsillo visual. No hay menú de inventario en el sl
 | `caja_c2` | bool | falso | Puzle 4 | Dependencia de c4 |
 | `caja_c3` | bool | falso | Puzle 5 | Dependencia de c4 |
 | `caja_c4` | bool | falso | Puzle 6 | `caja_completa` |
-| `pendiente_revelacion` | bool | falso | Puzle 5 (si se interrumpe) | Puzle 5 |
+| `pendiente_revelacion` | bool | falso | Puzle 5 (al iniciar la revelación; se limpia al terminarla) | Puzle 5 |
 | `caja_completa` | bool | falso | Puzle 6 | Apagón y llamada |
 | `carta_variante` | enum (A, B, C) | — | Puzle 6 | Escena 7 |
-| `llamada_iniciada` | bool | falso | Escena 7 | Evita repetir la llamada |
+| `llamada_iniciada` | bool | falso | Escena 7 (se escribe justo antes de «llamada iniciada») | Marca el sellado del guardado; **no** evita repetir la llamada (se repite hasta `llamada_completada` y guardada) |
 | `respuesta_llamada` | enum (A, B, C, D) | — | Escena 7 | Escena 8 |
 | `llamada_completada` | bool | falso | Escena 7 | C08 (ascensor) |
 
@@ -1059,7 +1062,9 @@ Vera lleva los ítems en un bolsillo visual. No hay menú de inventario en el sl
 
 - Automático al abrir cualquier puerta, al completar cada compartimento y al iniciar la llamada.
 - Al cerrar durante la llamada, se reanuda en el despacho con la llamada pendiente (`llamada_iniciada` verdadero, `llamada_completada` falso).
-- Al cerrar durante la revelación del puzle 5, se reanuda con `pendiente_revelacion` verdadero.
+- Al cerrar durante la revelación del puzle 5, se reanuda con `pendiente_revelacion` verdadero (se escribe al iniciar la revelación y se limpia al terminarla).
+- La llamada se repite desde el principio hasta que `llamada_completada` esté guardada; `respuesta_llamada` y `llamada_completada` no se guardan en el sellado de la llamada.
+- Al llegar a Recepción (escena 8) la partida queda sellada: se escribe una vez `completed` y el título ofrece solo «Nueva partida».
 
 ### D.4 Índice de IDs
 
@@ -1082,6 +1087,7 @@ Vera lleva los ítems en un bolsillo visual. No hay menú de inventario en el sl
 
 | Versión | Fecha | Cambio |
 |---|---|---|
+| 0.3.1 | 2026-11-09 | Ajustes autorizados por el usuario sobre v0.3 (sin cambiar de versión): P1 nivel 1 pasa de gesto de cámara a resaltado; D.2 `llamada_iniciada` no evita repetir la llamada y `pendiente_revelacion` se escribe al iniciar la revelación; tras llegar a Recepción la partida queda sellada y el título ofrece solo «Nueva partida»; «reducir movimiento» entra en la accesibilidad del MVP. |
 | 0.3 | 2026-11-08 | Añadidos los anexos A (espacios), B (puzles), C (eventos y tiempos) y D (inventario, banderas e índice). Ajustes en v0.2: la impresión de correos sustituye a la búsqueda como fuente de referencias; el silencio en la llamada pasa a ser el botón «No responder» y no hay elección automática a los 20 s; se elimina el temporizador de la ficha «Carta a Dirección». Decisiones D-14 a D-16. |
 | 0.1 | 2026-11-08 | Creación del documento a partir del guion del turno de noche. |
 | 0.2 | 2026-11-08 | Eliminada la Sala de Juegos (E). Eliminado el despacho de Dirección como sala. El memorando pasa al cristal de la Sala de Reuniones. Puzle 1 cambiado a cronología con cuatro correos y solución `2·1·3·4`. Puzle 2 con lámparas ligadas a fragmentos del memorando. Puzle 3 cambiado a encaje de foto con hueco vacío. Puzle 4 con fichas que se deducen de su descripción. Puzle 5 con espejo que revela la diferencia en la foto. Puzle 6 con variantes que cambian la llamada. Llamada con primera línea según la carta y última línea de Vera según la respuesta. Añadida la línea temporal (sección 9). Actualizados flags, assets, criterios y decisiones. |

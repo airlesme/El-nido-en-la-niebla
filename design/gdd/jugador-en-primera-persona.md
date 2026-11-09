@@ -273,6 +273,7 @@ Ver Tuning Knobs.
 - **1 Entrada y controles — dura.** Entrega `mover`, `mirar` y los avisos de contexto. Sin Entrada el Jugador no se mueve.
 - **4 Escena de planta y carga de Recepción — dura.** Aporta suelo, colisión, anclas de aparición, etiquetas de superficie y los volúmenes de zona; invoca `colocar`. Sin escena no hay mundo.
 - **6 Ajustes persistentes — blanda.** Lee `balanceo_camara` y `campo_vision`. Sin Ajustes usa los valores iniciales del catálogo (regla 4 de ese GDD).
+- **18 Base de contenido narrativo — blanda.** Rótulos `UI_…` de la interfaz del Jugador (sin retícula).
 - **Motor:** física de personaje con Jolt y cámara (plan técnico §1, §2.2); verificar contra `docs/engine-reference/godot` antes de implementar.
 
 **Aguas abajo (quién depende de este sistema):**

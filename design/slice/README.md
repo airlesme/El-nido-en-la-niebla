@@ -23,6 +23,8 @@ Fuente de verdad: [`slice-v0.3.md`](slice-v0.3.md). **No se edita en caliente**:
 **Cerradas por el equipo en esta sesión**
 - **D-05 · Motor:** Godot 4 (versión de referencia pinneada en `docs/engine-reference/godot/`: 4.7). Pendiente confirmar versión instalada y lenguaje con `/setup-engine` (propuesta: GDScript).
 
+**Ajustes autorizados sobre v0.3 (2026-11-09, ver §24, entrada 0.3.1):** P1 nivel 1 = resaltado; D.2 `llamada_iniciada` no evita repetir la llamada y `pendiente_revelacion` se escribe al iniciar la revelación; partida sellada al llegar a Recepción (el título ofrece solo «Nueva partida»); «reducir movimiento» en la accesibilidad. **Pendientes de v0.4** (pedidos por las re-reviews de la ronda 2 y no aplicados): ver la lista entregada al cerrar el lote (A.0 «escena 7»→«llamada completada (escena 8)», D.3 puertas B/D cerradas al reanudar y causa de guardado al recoger tarjetas, orden de presentación de correos, §8/§13.3 frente al Anexo B, I-01 no persistente, columna «Interacción», secuencia de D01a).
+
 **Abiertas en el documento (siguen abiertas):** D-04, D-06, D-07, D-08, D-10, D-13, D-14, D-15, D-16. Las que bloquean antes de implementar: **D-16** (orden de la caja), **D-14/D-15** (comportamiento de carta y silencio) y **D-10** (preparar claves de traducción desde ya; recomendación: sí, es casi gratis ahora).
 
 ## Incoherencias detectadas al procesar el documento
@@ -34,4 +36,4 @@ Para resolver en v0.4 (o aclarar al implementar). Entre paréntesis, la lectura 
 3. **Flags incompletos en §13.1.** Faltan `formulario_leido`, `pos_L/C/R`, `pendiente_revelacion` y `llamada_iniciada`, que sí están en D.2. *(D.2 es canónico.)*
 4. **Geometría.** El escritorio A05 (centro X 9,0; ancho 1,20) llega a X 9,6, 10 cm fuera del muro este del Archivo (X 9,5). *(Ajustar al construir el blocking.)*
 5. **Equipo de referencia** (§21) sin definir, pero el criterio de aceptación 9 (§19) depende de él. *(Definir antes del primer playtest; ver plan técnico.)*
-6. **Sin pista para el puzle 1 salvo la impresión.** Nivel 1 («gesto de cámara a la impresión») presupone que el jugador ya la tiene; si no ha buscado «transición», no hay pista que le guíe hacia el ordenador. *(Añadir una pista de «objetivo» previa; cuestión de diseño, no de motor.)*
+6. **Sin pista para el puzle 1 salvo la impresión.** Nivel 1 («resaltado de la impresión»; antes «gesto de cámara», sustituido por decisión del usuario 2026-11-09: ningún evento mueve la cámara) presupone que el jugador ya la tiene; si no ha buscado «transición», no hay pista que le guíe hacia el ordenador. *(Añadir una pista de «objetivo» previa; cuestión de diseño, no de motor.)*

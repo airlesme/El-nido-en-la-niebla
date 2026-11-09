@@ -140,15 +140,15 @@ formulas:
     source: design/gdd/escena-de-planta.md
     referenced_by:
       - design/gdd/escena-de-planta.md
-      - design/gdd/entrada-y-controles.md   # F8: el tope de sin control de una carga es esta duración más un margen (cambio pendiente en ese GDD)
+      - design/gdd/entrada-y-controles.md   # F8: el tope de sin control de una carga es esta duración más un margen (resuelto en Entrada, ronda 2)
     variables:
       - d_out
       - scene_load_timeout
       - N_gap
       - d_in
-    output_range: [3, 40.4]
+    output_range: [3, 40.34]
     expression: "D_carga = d_out + T_cap + N_gap * dt_ref + d_in"
-    notes: "Duración máxima declarada a Entrada para el sin control de una carga de escena. Con los valores propuestos (recepcion) ≈ 11,67 s."
+    notes: "Duración máxima declarada a Entrada para el sin control de una carga de escena. Con los valores propuestos (recepcion) ≈ 11,67 s. Lo abre Escena de planta al emitir «carga de escena iniciada»; T_cap (scene_load_timeout) se cuenta desde cortina opaca (ronda 2)."
     added: 2026-11-08
     revised: ""
   # --- Lote 2026-11-09 ---
@@ -169,7 +169,7 @@ formulas:
     variables: [fov_v, aspect, fov_h_max]
     output_range: [51.9, 90]
     expression: "h = 2*atan(tan(fov_v/2)*aspect); if h > 120deg then fov_v = 2*atan(tan(60deg)/aspect)"
-    notes: "El fov_destino de una cesión de cámara también pasa por fov_h_max; 7 lo lee con fov_vigente()"
+    notes: "El fov_destino de una cesión de cámara también pasa por fov_h_max; 7 lo lee con fov_actual() (nombre único, GDD 2 D-31; fov_vigente() no existe)"
     added: 2026-11-09
     revised: ""
   - name: player_camera_bob_offset
@@ -321,7 +321,7 @@ constants:
   - name: lock_max_s
     status: active
     source: design/gdd/marco-de-puzles.md
-    referenced_by: []
+    referenced_by: [design/gdd/marco-de-puzles.md, design/gdd/interaccion-e-inspeccion.md, design/gdd/escena-de-planta.md]
     value: 2.0
     unit: s
     range: [1.0, 2.0]
@@ -334,7 +334,7 @@ constants:
     referenced_by: [design/gdd/guardado-y-carga.md]
     value: 1
     unit: ""
-    note: "ajustes-persistentes.md no lo usa (fichero propio); corregido 2026-11-09"
+    note: "Describe la primera línea v<N> del fichero, no un campo del cuerpo. ajustes-persistentes.md no lo usa (fichero propio); corregido 2026-11-09"
     added: 2026-11-09
     revised: 2026-11-09
   - name: save_periodic_interval_s
@@ -502,7 +502,7 @@ constants:
     referenced_by: [design/gdd/interaccion-e-inspeccion.md]
     value: 0.5
     unit: s
-    note: "= t_devolver del Jugador (única duración de regreso, F9 del GDD 2); no usar 0,6 s"
+    note: "Alias de t_devolver del Jugador (propietario: GDD 2, única duración de regreso, F9); no usar 0,6 s. Puede retirarse en favor de t_devolver"
     added: 2026-11-09
     revised: ""
   - name: close_view_after_s
@@ -582,6 +582,350 @@ constants:
     value: 60
     unit: s
     note: "idle_s_P6_N1 10 s e idle_s_P6_N2 20 s (P6 solo tiene dos niveles de pista); idle_move_px_P3 40 px"
+    added: 2026-11-09
+    revised: ""
+
+  # --- Ronda 2 (2026-11-09): consolidación de las re-reviews de los GDDs 1 a 7, 9 y 18 ---
+  - name: scene_fade_in_new_game_s
+    status: active
+    source: design/gdd/escena-de-planta.md
+    referenced_by: [design/slice/slice-v0.3.md]
+    value: 2.0
+    unit: s
+    note: "Fundido de entrada de partida_nueva (slice C.1); distinto de scene_fade_duration (0,8 s, A.0)"
+    added: 2026-11-09
+    revised: ""
+  - name: scene_load_gap_frames
+    status: active
+    source: design/gdd/escena-de-planta.md
+    referenced_by: []
+    value: 2
+    unit: frames
+    range: [0, 10]
+    note: "N_gap: fotogramas de gracia entre «escena lista» y el aclarado"
+    added: 2026-11-09
+    revised: ""
+  - name: scene_fade_dt_max_s
+    status: active
+    source: design/gdd/escena-de-planta.md
+    referenced_by: []
+    value: 0.1
+    unit: s
+    range: [0.05, 0.1]
+    note: "Δ_max: recorte del tiempo por fotograma en el fundido"
+    added: 2026-11-09
+    revised: ""
+  - name: scene_dt_ref_s
+    status: active
+    source: design/gdd/escena-de-planta.md
+    referenced_by: []
+    value: 0.0333
+    unit: s
+    range: [0.00694, 0.0333]
+    note: "Δ_ref = 1/30 s; solo dimensiona D_carga"
+    added: 2026-11-09
+    revised: ""
+  - name: reduce_motion_fade_s
+    status: active
+    source: design/gdd/ajustes-persistentes.md
+    referenced_by: [design/gdd/escena-de-planta.md, design/gdd/marco-de-puzles.md]
+    value: 0.1
+    unit: s
+    note: "Con la clave reducir_movimiento: fundido fijo de 100 ms y cambio estático en lugar de temblor (art bible §7.4)"
+    added: 2026-11-09
+    revised: ""
+  - name: volume_steps
+    status: active
+    source: design/gdd/ajustes-persistentes.md
+    referenced_by: [design/gdd/ajustes-persistentes.md]
+    value: 20
+    unit: steps
+    range: [10, 40]
+    note: "N_pasos"
+    added: 2026-11-09
+    revised: ""
+  - name: volume_db_min
+    status: active
+    source: design/gdd/ajustes-persistentes.md
+    referenced_by: [design/gdd/ajustes-persistentes.md]
+    value: -40
+    unit: dB
+    range: [-60, -30]
+    note: "Extremo bajo de la curva F2: vol_db = db_min × (1 − v); silencio si n = 0"
+    added: 2026-11-09
+    revised: ""
+  - name: settings_save_debounce_s
+    status: active
+    source: design/gdd/ajustes-persistentes.md
+    referenced_by: [design/gdd/ajustes-persistentes.md]
+    value: 0.5
+    unit: s
+    range: [0.2, 2.0]
+    note: "t_guardado"
+    added: 2026-11-09
+    revised: ""
+  - name: settings_save_max_wait_s
+    status: active
+    source: design/gdd/ajustes-persistentes.md
+    referenced_by: [design/gdd/ajustes-persistentes.md]
+    value: 5.0
+    unit: s
+    range: [2.0, 30.0]
+    note: "t_guardado_max; debe ser >= 2 x settings_save_debounce_s"
+    added: 2026-11-09
+    revised: ""
+  - name: fov_step_deg
+    status: active
+    source: design/gdd/ajustes-persistentes.md
+    referenced_by: [design/gdd/jugador-en-primera-persona.md]
+    value: 5
+    unit: deg
+    range: [60, 90]
+    note: "Paso del ajuste campo_vision (defecto 70 = player_fov_vertical_default_deg); 72 se cuantiza a 70"
+    added: 2026-11-09
+    revised: ""
+  - name: asistencia_rotacion_deg
+    status: active
+    source: design/gdd/ajustes-persistentes.md
+    referenced_by: [design/gdd/marco-de-puzles.md]
+    value: 6
+    unit: deg
+    note: "Provisional (±6°, ajuste asistencia_rotacion); tolerancia normal tol_deg = 3° (GDD 9)"
+    added: 2026-11-09
+    revised: ""
+  - name: tol_deg_P5
+    status: active
+    source: design/gdd/marco-de-puzles.md
+    referenced_by: [design/gdd/ajustes-persistentes.md]
+    value: 3
+    unit: deg
+    note: "Tolerancia normal del puzle 5 (asistido 6°)"
+    added: 2026-11-09
+    revised: ""
+  - name: settings_defaults
+    status: active
+    source: design/gdd/ajustes-persistentes.md
+    referenced_by: [design/gdd/jugador-en-primera-persona.md, design/gdd/escena-de-planta.md, design/gdd/marco-de-puzles.md]
+    value: "vol_voces 1.0, vol_efectos 1.0, vol_musica 1.0, subtitulos_activos true, reducir_sobresaltos false, asistencia_encaje false, asistencia_rotacion false, balanceo_camara reducido, campo_vision 70, reducir_movimiento false, modo_ventana pantalla_completa (controles: bloque ausente)"
+    unit: ""
+    note: "Valores iniciales de la regla 1 del GDD 6 (provisionales); consumen 2, 4, 9, 23, 25, 30. Las pistas no son ajustes"
+    added: 2026-11-09
+    revised: ""
+  - name: snapshot_version
+    status: active
+    source: design/gdd/estado-y-bus-de-eventos.md
+    referenced_by: [design/gdd/guardado-y-carga.md]
+    value: 1
+    unit: ""
+    added: 2026-11-09
+    revised: ""
+  - name: max_chained_notices
+    status: active
+    source: design/gdd/estado-y-bus-de-eventos.md
+    referenced_by: [design/gdd/ajustes-persistentes.md]
+    value: 64
+    unit: notices
+    range: [8, 256]
+    note: "Propuesta; se fija en el ADR de avisos (el mecanismo de Ajustes comparte el tope)"
+    added: 2026-11-09
+    revised: ""
+  - name: game_state_facts
+    status: active
+    source: design/gdd/estado-y-bus-de-eventos.md
+    referenced_by: [design/slice/slice-v0.3.md, design/gdd/guardado-y-carga.md]
+    value: 19
+    unit: facts
+    note: "tipo / inicial / owner. correos_leidos bool falso 19; archivo_abierto bool falso 9; formulario_leido bool falso 20; tarjeta_B bool falso 20; tarjeta_D bool falso 20; memo_leido bool falso 9; pos_L/pos_C/pos_R int 1-4 inicial 2 owner 9; caja_c1..c4 bool falso 9; pendiente_revelacion bool falso 9 (reversible: se escribe al iniciar la revelación, se limpia al terminar); caja_completa bool derivado falso (3); carta_variante enum A/B/C 9; llamada_iniciada bool falso 22; respuesta_llamada enum A-D 22; llamada_completada bool falso 22"
+    added: 2026-11-09
+    revised: ""
+  - name: save_causes
+    status: active
+    source: design/gdd/guardado-y-carga.md
+    referenced_by: [design/gdd/estado-y-bus-de-eventos.md]
+    value: "door_opened, compartment_done, card_acquired, puzzle_solved, reveal_pending, call_started, pause_opened, periodic, quit, slice_completed, dev"
+    unit: ""
+    note: "card_acquired (tarjeta_B/D a verdadero) y slice_completed («partida terminada»; única causa admitida con la partida sellada). Clave opcional del fichero: completed; indicador de inspección: terminada"
+    added: 2026-11-09
+    revised: ""
+  - name: hint_key_count
+    status: active
+    source: design/gdd/base-de-contenido-narrativo.md
+    referenced_by: [design/gdd/marco-de-puzles.md]
+    value: 8
+    unit: keys
+    note: "Claves PISTA_* con texto: P1_N2, P2_N1, P4_N1, P4_N3, P5_N1, P5_N2, P6_N1, P6_N2. Las pistas no textuales no llevan clave"
+    added: 2026-11-09
+    revised: ""
+  - name: mail_presentation_order
+    status: active
+    source: design/gdd/base-de-contenido-narrativo.md
+    referenced_by: [design/gdd/marco-de-puzles.md]
+    value: "3, X1, 1, 4, X2, 2"
+    unit: ""
+    note: "Orden de pantalla e impresión; X1/X2 solo en datos (no cambian el slice). Orden numerado 3-1-4-2"
+    added: 2026-11-09
+    revised: ""
+  - name: mail_send_times
+    status: active
+    source: design/gdd/base-de-contenido-narrativo.md
+    referenced_by: [design/slice/slice-v0.3.md, design/gdd/marco-de-puzles.md]
+    value: "correo 2 lunes 09:14; correo 1 lunes 11:40; correo 3 lunes 16:02; correo 4 martes 08:55; X1 lunes 10:30; X2 martes 14:00"
+    unit: ""
+    note: "Un dato, un registro (regla 11)"
+    added: 2026-11-09
+    revised: ""
+  - name: dz_in
+    status: active
+    source: design/gdd/entrada-y-controles.md
+    referenced_by: []
+    value: 0.15
+    unit: ""
+    range: [0.05, 0.5]
+    note: "Zona muerta de entrada (F1). Verificar el valor por defecto en el GDD 1 antes de usarlo"
+    added: 2026-11-09
+    revised: ""
+  - name: R_max_elem_px
+    status: active
+    source: design/gdd/entrada-y-controles.md
+    referenced_by: [design/gdd/interaccion-e-inspeccion.md]
+    value: 128
+    unit: px
+    note: "Provisional (†); tolerancia máxima por elemento de la vista (F5b)"
+    added: 2026-11-09
+    revised: ""
+  - name: radio_pegajoso_m
+    status: active
+    source: design/gdd/interaccion-e-inspeccion.md
+    referenced_by: []
+    value: 0.15
+    unit: m
+    range: [0, 0.30]
+    added: 2026-11-09
+    revised: ""
+  - name: t_gracia_foco_s
+    status: active
+    source: design/gdd/interaccion-e-inspeccion.md
+    referenced_by: []
+    value: 0.12
+    unit: s
+    range: [0, 0.3]
+    added: 2026-11-09
+    revised: ""
+  - name: desempate_prof_m
+    status: active
+    source: design/gdd/interaccion-e-inspeccion.md
+    referenced_by: []
+    value: 0.03
+    unit: m
+    range: [0.01, 0.08]
+    added: 2026-11-09
+    revised: ""
+  - name: texto_max_caracteres
+    status: active
+    source: design/gdd/interaccion-e-inspeccion.md
+    referenced_by: [design/gdd/base-de-contenido-narrativo.md]
+    value: 90
+    unit: chars
+    range: [60, 140]
+    note: "Frontera entre pie de texto y documento (español)"
+    added: 2026-11-09
+    revised: ""
+  - name: theta_fill_deg
+    status: active
+    source: design/gdd/interaccion-e-inspeccion.md
+    referenced_by: [design/gdd/jugador-en-primera-persona.md]
+    value: 25
+    unit: deg
+    range: [15, 40]
+    added: 2026-11-09
+    revised: ""
+  - name: d_ins_min_m
+    status: active
+    source: design/gdd/interaccion-e-inspeccion.md
+    referenced_by: []
+    value: 0.25
+    unit: m
+    range: [0.25, 0.40]
+    added: 2026-11-09
+    revised: ""
+  - name: d_ins_max_m
+    status: active
+    source: design/gdd/interaccion-e-inspeccion.md
+    referenced_by: []
+    value: 0.60
+    unit: m
+    range: [0.40, 0.80]
+    added: 2026-11-09
+    revised: ""
+  - name: t_mano_s
+    status: active
+    source: design/gdd/interaccion-e-inspeccion.md
+    referenced_by: [design/gdd/jugador-en-primera-persona.md]
+    value: 0.4
+    unit: s
+    range: [0.2, 0.8]
+    note: "CONFLICTO ABIERTO: el GDD 2 (D-34) pide eliminarlo (la duración del fundido es t_item_dentro/fuera, 0,3 s); el GDD 7 lo conserva (D7-30). Decidir antes del siguiente lote"
+    added: 2026-11-09
+    revised: ""
+  - name: cobertura_anexo_a_file
+    status: active
+    source: design/gdd/interaccion-e-inspeccion.md
+    referenced_by: [design/slice/slice-v0.3.md]
+    value: "cobertura_anexo_a.json"
+    unit: ""
+    note: "Una fila por ID del Anexo A con interactuable y motivo (D7-40); la cobertura del catálogo se comprueba contra este fichero"
+    added: 2026-11-09
+    revised: ""
+  - name: reveal_outline_s_P5
+    status: active
+    source: design/slice/slice-v0.3.md
+    referenced_by: [design/gdd/marco-de-puzles.md]
+    value: 0.8
+    unit: s
+    added: 2026-11-09
+    revised: ""
+  - name: line_grace_s
+    status: active
+    source: design/gdd/marco-de-puzles.md
+    referenced_by: []
+    value: 2.0
+    unit: s
+    added: 2026-11-09
+    revised: ""
+  - name: idle_s_P6_N1
+    status: active
+    source: design/gdd/marco-de-puzles.md
+    referenced_by: []
+    value: 10
+    unit: s
+    note: "idle_s_P6_N2 = 20 s (el P6 solo tiene dos niveles)"
+    added: 2026-11-09
+    revised: ""
+  - name: idle_move_px_P3
+    status: active
+    source: design/gdd/marco-de-puzles.md
+    referenced_by: []
+    value: 40
+    unit: px
+    added: 2026-11-09
+    revised: ""
+  - name: assisted_snap_radius_m_P3
+    status: active
+    source: design/gdd/marco-de-puzles.md
+    referenced_by: [design/gdd/ajustes-persistentes.md]
+    value: 0.10
+    unit: m
+    note: "Con asistencia_encaje (normal: snap_radius_m_P3 = 0,04 m)"
+    added: 2026-11-09
+    revised: ""
+  - name: highlight_s_P1
+    status: active
+    source: design/gdd/marco-de-puzles.md
+    referenced_by: [design/slice/slice-v0.3.md]
+    value: 3.0
+    unit: s
+    range: [1.5, 5.0]
+    note: "Pista P1 nivel 1 = resaltado HIGHLIGHT sin mover la cámara (decisión del usuario, 2026-11-09); antes camera_nudge_s"
     added: 2026-11-09
     revised: ""
 

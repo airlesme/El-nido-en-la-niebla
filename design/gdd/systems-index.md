@@ -22,15 +22,15 @@ Se excluyen a propósito combate, IA de enemigos, economía, progresión, red y 
 
 | # | System Name | Category | Priority | Status | Design Doc | Depends On |
 |---|-------------|----------|----------|--------|------------|------------|
-| 1 | Entrada y controles | Core | MVP | In Review | design/gdd/entrada-y-controles.md | — |
-| 2 | Jugador en primera persona (movimiento, cámara, manos) | Core | MVP | Revisado (pend. re-review) | design/gdd/jugador-en-primera-persona.md | 1, 4 (blanda: 6) |
-| 3 | Estado del juego y bus de eventos | Core | MVP | In Review | design/gdd/estado-y-bus-de-eventos.md | — |
-| 4 | Escena de planta y carga de Recepción | Core | MVP | Designed | design/gdd/escena-de-planta.md | 3 |
-| 5 | Guardado y carga | Persistence | MVP | Revisado (pend. re-review) | design/gdd/guardado-y-carga.md | 3, 4 |
-| 6 | Ajustes persistentes (inferred) | Persistence | MVP | In Review | design/gdd/ajustes-persistentes.md | 1 |
-| 7 | Interacción e inspección | Gameplay | MVP | Revisado (pend. re-review) | design/gdd/interaccion-e-inspeccion.md | 1, 2, 4, 18 (blanda: 3) |
+| 1 | Entrada y controles | Core | MVP | Revisado (ronda 2) — pend. re-review | design/gdd/entrada-y-controles.md | — (blandas: 3, 4, 18) |
+| 2 | Jugador en primera persona (movimiento, cámara, manos) | Core | MVP | Revisado (ronda 2) — pend. re-review | design/gdd/jugador-en-primera-persona.md | 1, 4 (blandas: 6, 18) |
+| 3 | Estado del juego y bus de eventos | Core | MVP | Revisado (ronda 2) — pend. re-review | design/gdd/estado-y-bus-de-eventos.md | — |
+| 4 | Escena de planta y carga de Recepción | Core | MVP | Revisado (ronda 2) — pend. re-review | design/gdd/escena-de-planta.md | 3 (blandas: 1, 6, 18) |
+| 5 | Guardado y carga | Persistence | MVP | Revisado (ronda 2) — pend. re-review | design/gdd/guardado-y-carga.md | 3, 4 (blanda: 18) |
+| 6 | Ajustes persistentes (inferred) | Persistence | MVP | Revisado (ronda 2) — pend. re-review | design/gdd/ajustes-persistentes.md | 1 (blanda: 18) |
+| 7 | Interacción e inspección | Gameplay | MVP | Revisado (ronda 2) — pend. re-review | design/gdd/interaccion-e-inspeccion.md | 1, 2, 4, 18 (blanda: 3) |
 | 8 | Control de acceso (puertas, tarjetas, lectores) | Gameplay | MVP | Not Started | — | 3, 7, 18 |
-| 9 | Marco de puzles (inferred) | Gameplay | MVP | Revisado (pend. re-review) | design/gdd/marco-de-puzles.md | 3, 4, 7 (blandas: 6, 18, 20, 23) |
+| 9 | Marco de puzles (inferred) | Gameplay | MVP | Revisado (ronda 2) — pend. re-review | design/gdd/marco-de-puzles.md | 3, 4, 7, 18 (dura en validación) · blandas 2, 6, 20, 23, 25, 26 |
 | 10 | Caja y compartimentos | Gameplay | MVP | Not Started | — | 3, 7, 9 |
 | 11 | Puzle 1 · Cronología | Gameplay | MVP | Not Started | — | 9, 18, 19, 20 |
 | 12 | Puzle 2 · Memorando en el cristal | Gameplay | MVP | Not Started | — | 7, 9, 18 |
@@ -38,15 +38,15 @@ Se excluyen a propósito combate, IA de enemigos, economía, progresión, red y 
 | 14 | Puzle 4 · Tablero de tareas | Gameplay | MVP | Not Started | — | 9, 10, 18 |
 | 15 | Puzle 5 · Espejo de la diferencia | Gameplay | MVP | Not Started | — | 6, 9, 10, 13 |
 | 16 | Puzle 6 · Decisión | Gameplay | MVP | Not Started | — | 9, 10, 18 |
-| 17 | Sistema de pistas (3 niveles) | Gameplay | Vertical Slice | Not Started | — | 3, 9, 18 |
-| 18 | Base de contenido narrativo (líneas, documentos, claves de traducción) | Narrative | MVP | In Review | design/gdd/base-de-contenido-narrativo.md | — |
-| 19 | Ordenador, correo e impresora | Narrative | MVP | Not Started | — | 1, 3, 7, 18, 20 |
-| 20 | Documentos y bolsillo visual | Narrative | MVP | Not Started | — | 3, 7, 18 |
-| 21 | Director de escenas (escenas 1–8, disparadores, eventos temporizados) | Narrative | MVP | Not Started | — | 1, 3, 4, 18 |
-| 22 | Llamada telefónica | Narrative | MVP | Not Started | — | 1, 3, 7, 18 |
-| 23 | Director de audio | Audio | Vertical Slice | Not Started | — | 3, 6, 18 |
+| 17 | Sistema de pistas (hasta 3 niveles; 2 en el puzle 6) | Gameplay | Vertical Slice | Not Started | — | 3, 9, 18 |
+| 18 | Base de contenido narrativo (líneas, documentos, claves de traducción) | Narrative | MVP | Revisado (ronda 2) — pend. re-review | design/gdd/base-de-contenido-narrativo.md | — |
+| 19 | Ordenador, correo e impresora | Narrative | MVP | Not Started | — | 1, 3, 7, 18, 20 (blanda: 2) |
+| 20 | Documentos y bolsillo visual | Narrative | MVP | Not Started | — | 3, 7, 18 (blanda: 2) |
+| 21 | Director de escenas (escenas 1–8, disparadores, eventos temporizados) | Narrative | MVP | Not Started | — | 1, 3, 4, 18 (blanda: 5) |
+| 22 | Llamada telefónica | Narrative | MVP | Not Started | — | 1, 3, 5, 7, 18 (blanda: 2) |
+| 23 | Director de audio | Audio | Vertical Slice | Not Started | — | 3, 6, 18 (blanda: 2) |
 | 24 | Prompt de interacción y feedback | UI | MVP | Not Started | — | 1, 7, 18 |
-| 25 | Menú de pausa | UI | MVP | Not Started | — | 1, 6, 18 |
+| 25 | Menú de pausa | UI | MVP | Not Started | — | 1, 6, 18 (blanda: 5) |
 | 26 | Subtítulos | UI | Vertical Slice | Not Started | — | 6, 18, 23 |
 | 27 | Pantalla de título, advertencias y cierre | UI | Vertical Slice | Not Started | — | 1, 3, 5, 6, 18 |
 | 28 | Atmósfera reactiva (luces, apagón, reflejo retardado, lluvia) | Presentation | Vertical Slice | Not Started | — | 2, 3, 6, 21 |
@@ -58,7 +58,8 @@ Notas de dependencia:
 - **Pausa (25) y pistas (17):** el menú de pausa es MVP y no depende de las pistas; el sistema 17 se enchufa a su menú después.
 - **Shaders (29)** tienen versión provisional en los puzles 12 y 15 durante el MVP (texto/mezcla sin shader final).
 - **Dependientes del Jugador (2):** 7, 19, 20, 22, 23 y 28 (informe de revisión del GDD 2). **Contrato 2↔7:** el GDD 2 es la fuente de verdad.
-- **Marco de puzles (9):** el dueño (10) consulta `get_view_gate(view_id)` antes de abrir la vista; 20 debe ofrecer `has_item(item_id)`.
+- **Marco de puzles (9):** el dueño (10) consulta `get_view_gate(view_id)` antes de abrir la vista (API de 7/10); 20 debe ofrecer `has_item(item_id)`.
+- **Sistema 17:** hasta tres niveles de pista por puzle; el puzle 6 tiene dos. Solo existen 8 claves `PISTA_*` con texto (GDD 18 regla 20); los efectos sin texto (p. ej. el resaltado `HIGHLIGHT` de P1 nivel 1) viven en los datos del puzle.
 - **Fuera de este índice:** el registro de herramientas de IA para Steam (slice §18) es una tarea de documentación, no un sistema de juego.
 
 ---
@@ -103,29 +104,29 @@ Reparto: **23 MVP · 7 Vertical Slice · 0 Alpha · 0 Full Vision** (30 en total
 
 ### Core Layer (depends on foundation)
 
-1. **Ajustes persistentes (6)** — depends on: 1 (guarda el bloque de asignaciones y ajustes de manejo; volúmenes y subtítulos que otros sistemas leen).
-2. **Escena de planta (4)** — depends on: 3.
-3. **Jugador en primera persona (2)** — depends on: 1, 4 (blanda: 6: `balanceo_camara`, `campo_vision`).
-4. **Guardado y carga (5)** — depends on: 3, 4 (no depende de 6: ficheros independientes, GDD 5 regla 4). **Bloqueo cruzado con el 3:** necesita `snapshot_version` y los avisos «guardado en riesgo» / «guardado restablecido» (añadidos al GDD 3 el 2026-11-09; falta re-review del 3).
-5. **Director de audio (23)** — depends on: 3, 6, 18. *(Capa Core, prioridad Vertical Slice.)*
+1. **Ajustes persistentes (6)** — depends on: 1 (blanda: 18) (guarda el bloque de asignaciones y ajustes de manejo; volúmenes y subtítulos que otros sistemas leen).
+2. **Escena de planta (4)** — depends on: 3 (blandas: 1, 6, 18).
+3. **Jugador en primera persona (2)** — depends on: 1, 4 (blandas: 6: `balanceo_camara`, `campo_vision`; 18).
+4. **Guardado y carga (5)** — depends on: 3, 4 (blanda: 18; no depende de 6: ficheros independientes, GDD 5 regla 4). **Bloqueo cruzado con el 3:** necesita `snapshot_version` y los avisos «guardado en riesgo» / «guardado restablecido» (añadidos al GDD 3 el 2026-11-09; falta re-review del 3).
+5. **Director de audio (23)** — depends on: 3, 6, 18 (blanda: 2). *(Capa Core, prioridad Vertical Slice.)*
 
 ### Feature Layer (depends on core)
 
 1. **Interacción e inspección (7)** — depends on: 1, 2, 4, 18 (blanda: 3).
-2. **Marco de puzles (9)** — depends on: 3, 4, 7 (blandas: 6, 18, 20, 23).
+2. **Marco de puzles (9)** — depends on: 3, 4, 7, 18 (dura en validación) · blandas 2, 6, 20, 23, 25, 26.
 3. **Control de acceso (8)** — depends on: 3, 7, 18.
-4. **Documentos y bolsillo (20)** — depends on: 3, 7, 18.
-5. **Ordenador, correo e impresora (19)** — depends on: 1, 3, 7, 18, 20.
+4. **Documentos y bolsillo (20)** — depends on: 3, 7, 18 (blanda: 2).
+5. **Ordenador, correo e impresora (19)** — depends on: 1, 3, 7, 18, 20 (blanda: 2).
 6. **Caja y compartimentos (10)** — depends on: 3, 7, 9.
 7. **Puzles 1–6 (11–16)** — depend on: 9 (más 10 los de la caja, 18 los de texto, 19 y 20 el puzle 1, 13 el puzle 5).
-8. **Director de escenas (21)** — depends on: 1, 3, 4, 18.
-9. **Llamada telefónica (22)** — depends on: 1, 3, 7, 18.
+8. **Director de escenas (21)** — depends on: 1, 3, 4, 18 (blanda: 5).
+9. **Llamada telefónica (22)** — depends on: 1, 3, 5, 7, 18 (blanda: 2).
 10. **Sistema de pistas (17)** — depends on: 3, 9, 18.
 
 ### Presentation Layer (depends on features)
 
 1. **Prompt de interacción (24)** — depends on: 1, 7, 18.
-2. **Menú de pausa (25)** — depends on: 1, 6, 18.
+2. **Menú de pausa (25)** — depends on: 1, 6, 18 (blanda: 5).
 3. **Subtítulos (26)** — depends on: 6, 18, 23.
 4. **Pantalla de título y cierre (27)** — depends on: 1, 3, 5, 6, 18.
 5. **Atmósfera reactiva (28)** — depends on: 2, 3, 21.
@@ -205,7 +206,7 @@ Esfuerzo: S = 1 sesión, M = 2–3, L = 4+. El puzle 2 va después de la caja po
 |--------|-------|
 | Total systems identified | 30 |
 | Design docs started | 9 |
-| Design docs reviewed | 4 (2, 5, 7, 9: revisados y corregidos el 2026-11-09, pendientes de re-review) |
+| Design docs reviewed | 9 (1 a 7, 9 y 18: ronda 2 aplicada el 2026-11-09 tras sus re-reviews, `design/gdd/reviews/*-re-review.md`; pendientes de re-review) |
 | Design docs approved | 0 |
 | MVP systems designed | 9/23 |
 | Vertical Slice systems designed | 0/7 |
@@ -235,6 +236,28 @@ Cambios que los informes de revisión piden a sistemas **sin GDD todavía**; cad
 
 - **20 Documentos:** operación `has_item(item_id)` (informe de 9); sostiene `A03` y las tarjetas con `sostener` (informe de 7).
 - **22 Llamada:** restricción de emisión de `llamada_iniciada` («antes de cualquier elemento no reconstruible y como máximo al descolgar») y nota de reinterpretación de D.2 (informe de 5); registrar manejadores con `can_interact`/`interact`/`etiqueta` (informe de 7).
-- **27 Pantalla de título:** consulta el resultado de la **última** inspección (con `con_futura`); muestra el aviso de versión más nueva con partida cargable; **no pide `planta`** (lo hace 5); Open Question: ¿qué ofrece tras completar el slice? (Open Question 10 de Guardado).
+- **27 Pantalla de título:** consulta el resultado de la **última** inspección (con `con_futura`); muestra el aviso de versión más nueva con partida cargable; **no pide `planta`** (lo hace 5); tras completar el slice ofrece solo «Nueva partida» (decidido por el usuario; Open Question 10 de Guardado cerrada).
 - **8, 10, 19:** registrar manejadores con `can_interact`/`interact`/`etiqueta`; 10 llama a `abrir_vista` tras animar el compartimento y responde `SIN_EFECTO` según `get_view_gate`.
 - **Revisión pendiente (re-review) de los vecinos tocados:** 1, 3, 4, 6 y 18 (cambian reglas; sus estados no se han modificado).
+
+
+---
+
+## Notas pendientes de la ronda 2 (2026-11-09): qué debe recoger cada sistema sin GDD
+
+Consolidado de `design/gdd/reviews/*-re-review.md`. No se han creado GDDs; cada uno debe recoger esto al redactarse.
+
+- **8 Control de acceso:** emite «puerta abierta»; reconstruye las puertas B y D **cerradas** al reanudar (solo `tarjeta_B/D` se guardan; la tarjeta se vuelve a usar sin penalización); manejadores `can_interact`/`interact`/`etiqueta`; lista al 3 como dependencia.
+- **10 Caja y compartimentos:** `interact()` de `D01a`-`D01d` llama a `bloquear_contexto("D01x")` (token), anima `BOX_Cn_OPEN` (1,6 s) y llama a `abrir_vista(id, desde_token)`; libera el token si no se abre la vista; peor caso 2,6 s ininterrumpidos; consulta `get_view_gate(view_id)` del marco antes de abrir y responde `SIN_EFECTO` también con el puzle resuelto.
+- **19 Ordenador/correo/impresora:** receptor de `V01` con `ViewReceiver` (recibe `on_close(sistema)` al cerrar el director); respeta la regla 20 de Entrada (campo enfocado consume texto, `Retroceso` no cierra, `Esc` = pausa); imprime en `V08` de forma repetible e ilimitada, e `I-01` no se conserva entre sesiones (`has_item('I-01')` falso tras cargar); 6 correos con orden de presentación 3, X1, 1, 4, X2, 2 (X1/X2 solo en datos).
+- **20 Documentos y bolsillo:** `has_item(item_id)`; sostiene `A03` y las tarjetas como ítems (`sostener`); `abrir_lectura` para releer desde el bolsillo, manejando `APLAZADA`/`RECHAZADA`; `I-01` no persistente.
+- **21 Director de escenas:** lee `llamada_iniciada` (reanudación `caja_completa ∧ ¬llamada_iniciada`); `cerrar_modos()` incluye `ordenador`, no `llamada`, y espera «modos cerrados» antes de `sin control`; toma el `sin control` en el mismo fotograma de «terminada» con `control_final` = `ninguno` y decide qué responde el ascensor (`door_slot_elevator`); confirma o retira la lectura de `memo_leido`; devuelve `exploración` tras una carga solo si abrió el `sin control` (Entrada acepta a quien lo abrió).
+- **22 Llamada:** escribe `llamada_iniciada` inmediatamente antes de emitir «llamada iniciada» (como máximo al descolgar); la llamada se repite hasta completada y guardada (decisión del usuario; el hecho solo marca el sellado); candidato a emitir «partida terminada» al llegar a Recepción (con 4); lista al 3 con los nombres de la tabla.
+- **23 Director de audio:** emite «línea terminada»/«línea sin audio»/«línea fallida»; consume los volúmenes por pasos de Ajustes; lista al 3 y al 2 (blanda).
+- **24 Prompt:** muestra `atrás` sin `Retroceso`.
+- **25 Menú de pausa:** emite `pause_opened`; pantalla de reasignación (sin los gestos derivados `leer`/`agarrar`/`rotar`/`mantener`; aviso al asignar `atrás` a una tecla imprimible; rechazo de dejar `atrás` solo con una tecla imprimible); «Mando desconectado» con «continuar»; ofrece `reducir_movimiento`; las pistas no se colocan en ajustes; lista al 5 (blanda).
+- **26, 28:** listan al 3 con los avisos que consumen.
+- **27 Pantalla de título:** consulta `terminada` (con ella solo «Nueva partida», sin confirmación) y `con_futura`; `nueva_partida()` entra en «Cargando partida» y 27 no pide `planta`; muestra el fallo de carga.
+- **30 Accesibilidad:** ofrece `reducir_movimiento` como conmutador (el sistema 6 ya lo tiene en su catálogo).
+- **11 a 16 Puzles:** declaran `gestos_aceptados` por elemento y su tolerancia en px (P5 acepta `rotar` y funciona con «alternar en lugar de mantener»); datos de pista con las 8 claves `PISTA_*`.
+- **Preguntas abiertas para el usuario** (el GDD 9 sigue la recomendación): D9-34 (icono en compartimentos bloqueados), D9-35 / D-16 (orden de la caja) y D7-32 (la carta del P6 se abre igualmente si el jugador salió antes).
