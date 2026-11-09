@@ -1685,7 +1685,7 @@ constants:
     referenced_by: [design/gdd/marco-de-puzles.md]
     value: 0.3
     unit: "s"
-    range: [0, 0.5]
+    range: [0.1, 0.6]
     note: "† (interrupcion de la señal al elegir, regla 15 de 22; contrato ‡ de 23)"
     added: 2026-11-09
     revised: ""
