@@ -1,6 +1,6 @@
 # Ajustes persistentes
 
-> **Status**: Revisado (ronda de propagación 1) — pendiente de re-review (la ronda de propagación 1 añade a 19 y 21 como consumidores de `reducir_movimiento`; ronda 6 aplica G-2 e INFO de `gdd-cross-review-2026-11-09-r4.md`; ronda 5 aplica C-W6 y F-3 de `gdd-cross-review-2026-11-09-r3.md`; ronda 2: re-review)
+> **Status**: Revisado (ronda de corrección 2) — pendiente de re-review (ronda de corrección 2: W-9 `fov_step_deg`; la ronda de propagación 1 añade a 19 y 21 como consumidores de `reducir_movimiento`; ronda 6 aplica G-2 e INFO de `gdd-cross-review-2026-11-09-r4.md`; ronda 5 aplica C-W6 y F-3 de `gdd-cross-review-2026-11-09-r3.md`; ronda 2: re-review)
 > **Author**: Álvaro + agentes
 > **Last Updated**: 2026-11-09
 > **Last Verified**: 2026-11-09
@@ -231,7 +231,7 @@ La fórmula de guardado diferido se define como:
 
 **Índice de sistemas:** los puzles 13 y 15 y la atmósfera 28 ya listan al sistema 6 como dependencia; la dependencia del sistema 5 está retirada (el índice ya no la lista).
 
-**Bidireccionalidad.** El par con el sistema 1 está cerrado: Entrada ya lista a Ajustes como dependiente (su tabla de Dependencies y su regla 19). El GDD del 3 ya declara que los ajustes quedan fuera del estado (regla 14), y su tabla de interacciones dice «Nada». Los GDDs que ya existen y se relacionan con este sistema son: 1 Entrada y controles (bloque `controles`, dura de su lado), 2 Jugador (`balanceo_camara`, `campo_vision`), 4 Escena de planta (`reducir_movimiento`, supervivencia del nodo), 7 Interacción (`multiplicador_pie`, `pie_persistente`), 9 Marco de puzles (asistencias y `reducir_movimiento`) y 18 Base de contenido (textos `UI_…`); el 3 los deja fuera del estado y el 5 no tiene relación. Los demás sistemas de la tabla (23, 24, 25, 26, 27, 28, 30) aún no tienen GDD: cada uno debe, al redactarse, listar a Ajustes como dependencia y usar las claves del catálogo de la regla 1.
+**Bidireccionalidad.** El par con el sistema 1 está cerrado: Entrada ya lista a Ajustes como dependiente (su tabla de Dependencies y su regla 19). El GDD del 3 ya declara que los ajustes quedan fuera del estado (regla 14), y su tabla de interacciones dice «Nada». Los GDDs que ya existen y se relacionan con este sistema son: 1 Entrada y controles (bloque `controles`, dura de su lado), 2 Jugador (`balanceo_camara`, `campo_vision`), 4 Escena de planta (`reducir_movimiento`, supervivencia del nodo), 7 Interacción (`multiplicador_pie`, `pie_persistente`), 9 Marco de puzles (asistencias y `reducir_movimiento`), 18 Base de contenido (textos `UI_…`), 19 Ordenador y 21 Director de escenas (`reducir_movimiento`); el 3 los deja fuera del estado y el 5 no tiene relación. Los demás sistemas de la tabla (23, 24, 25, 26, 27, 28, 30) aún no tienen GDD: cada uno debe, al redactarse, listar a Ajustes como dependencia y usar las claves del catálogo de la regla 1.
 
 ## Tuning Knobs
 
@@ -242,6 +242,7 @@ La fórmula de guardado diferido se define como:
 | `t_guardado` | 0,5 s | 0,2–2,0 s | Silencio necesario antes de escribir el fichero |
 | `t_guardado_max` | 5,0 s | 2,0–30,0 s (≥ 2 × `t_guardado`) | Pérdida máxima ante cierre forzado y frecuencia de escrituras |
 | `multiplicador_pie` | 1,0 | 1,0–3,0, paso 0,25 | Cuánto se alarga el pie de texto para quien no llega a leerlo (regla 1; lo consume F5 de 7) |
+| `fov_step_deg` (paso de `campo_vision`) | 5° | 1–15† | Rejilla del campo de visión (`fov = 60 + 5n`, F1 generalizada). El rango 60–90 es el de la clave `campo_vision`, **no** el del paso; el registro tiene `fov_step_deg` con su rango propio (W-9) |
 | `pie_persistente` | falso | bool | Si el pie dura hasta que cambie el objetivo (regla 1) |
 | Valores iniciales y rangos del catálogo | regla 1 | los de cada clave | Primera experiencia del jugador; en `defaults.json` |
 
@@ -396,8 +397,12 @@ Sin criterio hasta que exista el ADR: el tope del bucle de avisos encadenados, l
 - **19 y 21 pasan a consumidores de `reducir_movimiento`** (ronda de propagación 1; piden 19 y 21 regla 23): ya existe la clave, solo se amplía la tabla de consumidores, las interacciones, las dependencias (blandas) y AC-18b. Descartado: crear una clave por consumidor o que 19/21 la lean solo al arrancar; motivo: la lectura en cada disparo da el mismo resultado sin avisos nuevos, y una clave única es lo que el art bible §7.4 define.
 - **19 no consume `reducir_sobresaltos`** (19 D19-12) y **`escala_texto_ui` queda como pregunta abierta** (PA-3 de 19, OQ 15). Descartado: añadir `escala_texto_ui` ahora; motivo: es alcance del MVP de accesibilidad, no se decide por propagación.
 - **18 figura como dependencia blanda** en Dependencies (solo aloja los `UI_…`), alineado con el índice. Descartado: no listarlo, que dejaba el par incoherente con el índice.
+- **Rango de `fov_step_deg` propio** (ronda de corrección 2, W-9, 2026-11-09): el registro lo tenía con el rango 60–90 del FOV; se separa en un rango de paso 1–15† (propuesta, el slice solo fija 5). Descartado: dejar el rango de la clave, porque un validador de datos aceptaría un paso de 60°.
+- **Lista de GDDs existentes de Bidireccionalidad ampliada** (W-7/E): añade 19 y 21, que ya leen `reducir_movimiento` y figuran en la tabla.
 
 ## Historial de cambios
+
+- **2026-11-09 (ronda de corrección 2, W-9 de `gdd-cross-review-2026-11-09-r5.md`):** knob `fov_step_deg` con rango propio; Bidireccionalidad al día. Sin cambios de reglas. Estado: Revisado (ronda de corrección 2) — pendiente de re-review.
 
 - **2026-11-09 (ronda de decisiones 1):** sin cambios de reglas: `escala_texto_ui` (PA-3 de 19, pregunta 15) y `reducir_movimiento` sobre la caja (pregunta 5 de 10, pregunta 16) siguen abiertas; el catálogo se mantiene en 11 claves.
 
