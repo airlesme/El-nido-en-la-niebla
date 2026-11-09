@@ -1,0 +1,334 @@
+# Director de escenas
+
+> **Status**: Borrador (lote Feature 1) — pendiente de review
+> **Author**: Álvaro + agentes (narrative-director)
+> **Last Updated**: 2026-11-09
+> **Last Verified**: 2026-11-09
+> **Implements Pillar**: Tensión sin castigo (ninguna escena atrapa al jugador ni se pierde por cerrar) · El espacio expresa la emoción (luz, sonido y silencio, sin explicar) · Información incompleta (el director muestra, nunca confirma intenciones)
+
+## Summary
+
+El Director de escenas (21) es el sistema que da tiempo y orden a los momentos escritos del slice: la llegada de la escena 1, el pasillo de la escena 4, el apagón de la escena 7 y la Recepción de la escena 8. Escucha hechos y avisos del bus, decide cuándo toca cada momento y emite órdenes (líneas de voz, efectos de luz y lluvia, fundidos) a quienes las ejecutan; no dibuja, no suena y no resuelve puzles. Solo en tres tramos quita el control al jugador (la apertura de la escena 1, el trayecto del ascensor y el cierre tras el libro de visitas), con duración declarada y tope; todo lo demás es un momento que ocurre alrededor del jugador sin detenerlo. No escribe ningún hecho.
+
+> **Quick reference** — Layer: `Feature` · Priority: `MVP` · Key deps: `1 Entrada y controles` (dura) · `3 Estado y bus de eventos` (dura) · `4 Escena de planta` (dura) · `18 Base de contenido narrativo` (dura) · `5 Guardado y carga`, `7 Interacción e inspección` (blandas)
+
+## Overview
+
+El Director de escenas es el sistema que sabe **cuándo** ocurre cada momento escrito del slice y **en qué orden**; no sabe cómo se ve ni cómo suena. Los puzles (9 a 16) resuelven lo que el jugador decide; la llamada (22) lleva el diálogo de la escena 7; el audio (23) y la atmósfera (28) ejecutan; Entrada (1) concede o quita el control. El director queda entre todos ellos: lee hechos y avisos del bus (3), mantiene una **línea de tiempo** por escena (reloj de juego, que la pausa detiene) y emite **órdenes** a quien las ejecuta. Es un sistema **persistente**, como Entrada, Estado, Ajustes y Audio: sobrevive al cambio de `planta` a `recepcion` porque la escena 8 empieza en una escena y termina en otra.
+
+Hay dos clases de escena. Un **momento** ocurre alrededor del jugador sin quitarle el control: el mensaje del teléfono, la voz tras leer el formulario, el pasillo con su megafonía, su parpadeo y su reflejo tardío, la voz tras el memorando, el apagón y el timbre, el aviso de «ahorro energético» del ascensor. Una **escena dirigida** toma el contexto `sin control` con **duración declarada y tope** (Entrada, regla 6 y F8): son solo tres tramos, la apertura de la escena 1 (la lluvia, la voz y la megafonía antes de que el jugador pueda moverse), el trayecto del ascensor a Recepción y el cierre tras el libro de visitas (últimas líneas de Vera, fundido, título y «Continuará»). Todo lo demás, incluido el apagón, **respeta la autonomía del jugador** (pilar *Autonomía como progresión*): el teléfono suena cuando él entra en el despacho, o a los 60 s, pero nadie lo arrastra hasta allí.
+
+El director **no escribe ningún hecho** y no tiene estado que sobreviva al cierre del juego: lo que ya ocurrió se deduce siempre de los hechos (Estado, regla 3), y lo que depende de la sesión (¿ya sonó la megafonía del pasillo?) se pierde al cerrar a propósito, porque repetir un momento ambiental una vez es barato y un hecho nuevo no lo es (Decisiones tomadas, DT-3). Tampoco explica: **no genera texto, no pone marcadores, diarios ni resúmenes**; solo pide líneas que ya existen en el catálogo de contenido (18) y efectos de luz, lluvia y sonido. Un fallo de carga, una pausa o un cierre nunca dejan una escena a medias ni atrapan al jugador: toda escena dirigida termina por tiempo, y si algo falla se degrada a «momento» o se cancela sin dejar rastro.
+
+## Player Fantasy
+
+El jugador no ve «un director»: ve una noche que **se comporta**. Al empezar, la lluvia, un ventilador y la voz de Vera le dicen dónde está antes de dejarle andar; un teléfono vibra con un mensaje que no se entiende bien («Este número ya no está disponible»). En el pasillo, la megafonía llama a una reunión en una sala vacía, las luces fallan y el cristal le devuelve un reflejo que llega tarde; al girar la cabeza, todo vuelve a la normalidad. Cuando por fin abre la caja del Guardián y sale del despacho, la planta se apaga, ruedan sillas por un pasillo vacío, alguien teclea lejos, y un teléfono suena en **su** extensión. Al final, el ascensor baja despacio, la lluvia cesa, y lee el libro de visitas con la letra idéntica y la V cerrada hacia dentro. Nadie le dice qué pensar: la última frase de Vera cambia según lo que respondió, y la noche termina en negro con una sola palabra.
+
+Lo que debe sentir: **soledad vigilada** («algo pasa, y no me exige nada»), **inquietud sin amenaza** (los avisos son sensoriales y reversibles, pilares *El espacio expresa la emoción* y *Tensión sin castigo*) y **cierre abierto** (*Información incompleta*: ni el director ni Vera confirman quién firmó). Test de diseño del sistema: si dudamos entre una frase que explique el momento y un silencio con una luz, elegimos el silencio con la luz.
+
+## Detailed Rules
+
+‡ = propuesta que debe confirmar el GDD del sistema afectado; † = valor propuesto, a validar en playtest. Los IDs del slice (`C03`, `V02`, `MEGA_01`, `T-PAS-1`…) se conservan tal cual; los nombres de escena y de órdenes son identificadores de datos.
+
+**Qué es y qué no es**
+
+1. **Naturaleza.** El director es un sistema **persistente** (no pertenece a `planta` ni a `recepcion`): sobrevive a los cambios de escena, a diferencia de 22, que vive en la planta (Escena de planta, regla 16). Se suscribe al bus al arrancar el juego y no se da de baja. ‡ Escena de planta, regla 1, debe añadirlo a los sistemas que sobreviven.
+2. **Qué no hace.** No dibuja, no reproduce sonido (pide), no mueve ni coloca al jugador (Jugador, regla 21: solo 4 lo coloca), no cede la cámara (`ceder_camara` es solo de 7, Jugador regla 18), no abre contextos de Interacción ni de la llamada, no resuelve ni comenta puzles, no escribe hechos (regla 5) y **no genera texto propio**: solo pide líneas y claves del catálogo de contenido (18). No hay marcadores, objetivos, resúmenes ni indicadores de «escena vista» (anti-pilar «una historia explicada»; pilares 1, 3 y 5).
+3. **Datos, no código.** Las escenas viven en un fichero de datos (`assets/data/scenes/scenes.json`, formato fijado por el ADR de eventos temporizados, risk del índice): cada una declara `id`, `tipo` (`momento` | `dirigida`), `disparador`, `condiciones` (sobre hechos), `linea_de_tiempo` (pares `t_rel` → orden) y, si es dirigida, `t_fin` y `duracion_declarada` (F2). Una escena con datos inválidos (ID repetido, orden desconocida, `t_rel` decreciente) se rechaza al arrancar: en desarrollo, error visible; en la build final, se descarta esa escena y se registra una línea (el resto funciona).
+4. **Catálogo de escenas del slice** (cerrado). `†` marca valores propuestos; los demás son del slice (§11 y Anexo C):
+
+   | ID | Tipo | Disparador | Condición | Línea de tiempo (t desde el origen) |
+   |---|---|---|---|---|
+   | `ESC1_LLEGADA` | dirigida | «escena lista» de `planta` con `motivo` = `partida_nueva` (origen = ese aviso) | — | 1,5 `VO_V_01` · 6,0 `MEGA_01` (fuente `C01`) · 12,0 teléfono `V02` vibra (3 pulsos de 1,0 s) y muestra «¿Jugamos esta noche?» · 14,0 fin: pide `exploración` y deja la opción «Ahora no» en `V02` (`t_fin` = 14,0) |
+   | `ESC1_MENSAJE` | momento | «interacción ejecutada» sobre `V02` con `ESC1_LLEGADA` terminada y mensaje pendiente | — | 0,0 mensaje «Ahora no» · +1,0 «Este número ya no está disponible» · `V02` vuelve a `reposo` |
+   | `ESC3_FORMULARIO` | momento | cambio de `formulario_leido` a verdadero (avisos de cambio, Estado regla 9) | — | 0,0 efecto `LLUVIA_REALCE` (8,0 s†) · +1,0† `VO_V_04` |
+   | `ESC4_PASILLO_MEGA` | momento | «zona activada» `T-PAS-1` | ¬`caja_completa`; no ocurrida ya desde la última carga (regla 12) | 0,0 `MEGA_02` (fuente `C01`) · +2,0 efecto `LUCES_PARPADEO` sobre `C03` (3 veces, 0,15 s) |
+   | `ESC4_PASILLO_REFLEJO` | momento | «zona activada» `T-PAS-2` | ¬`caja_completa`; no ocurrida ya | 0,0 efecto `REFLEJO_RETARDADO` sobre `C02` (retardo 0,6 s, 3,0 s) |
+   | `ESC5_MEMORANDO` | momento | `EV_PUZZLE_SOLVED_P2` | — | +3,0† `VO_V_08` (2,0 s de `SFX_GLASS_HUM` del puzle + 1,0 s, slice C.5) |
+   | `ESC7_APAGON` | momento | «zona activada» `T-D-OUT` ‡ | `caja_completa` ∧ ¬`apagon_activo` (regla 13) | 0,0 efecto `LUCES_APAGON` (C03 en pasillo y D, 0,4 s; `V06` sigue encendida) · 1,0 a 4,0 efecto `SILLAS_RODANDO` (3,0 s, del Archivo al pasillo) · 4,5 efecto `TECLEO_LEJANO` (3,0 s) · 60,0† `TELEFONO_SUENA` si no ha sonado ya |
+   | `ESC7_TIMBRE` | momento | «zona activada» `T-OFI-IN` ‡ | `apagon_activo` ∧ ¬`llamada_iniciada` | 0,0 `V02` pasa a `vibrando` (`SFX_PHONE_BUZZ` en bucle) hasta que el jugador descuelga |
+   | `ESC7_RESTAURAR` | momento | cambio de `llamada_completada` a verdadero | — | +2,0 efecto `LUCES_RESTAURAR` (2,0 s) y `LLUVIA_VUELVE` · +2,0 `ascensor_activo` (regla 17) |
+   | `ESC8_AHORRO` | momento | «interacción ejecutada» sobre `C08` | ¬`ascensor_activo` | 0,0 `MEGA_03` ‡ «Planta en modo de ahorro energético» (fuente `C01`) |
+   | `ESC8_ASCENSOR` | dirigida | «escena lista» de `recepcion` (origen = ese aviso) | — | 0,0 efecto `LLUVIA_CESA` (6,0 s) · 6,0 fin: efecto `PUERTAS_ASCENSOR_ABREN` y pide `exploración` (`t_fin` = 6,0) |
+   | `ESC8_CIERRE` | dirigida | «lectura completada» de `R01` ‡ (regla 21) | `llamada_completada` | ver regla 22 (`t_fin` ≤ F3) |
+
+   Las escenas 2 y 6 (correo y despacho del Guardián) **no son del director**: el correo es de Ordenador (19) y Marco de puzles (9), y la grabación `VO_G_07`, las recompensas y `BOX_Cn_OPEN` son de 9 y 10. El director no se interpone entre el jugador y un hallazgo (pilar *Autonomía como progresión*).
+
+**Órdenes y lectura del mundo**
+
+5. **Hechos: lee, nunca escribe.** El director lee `formulario_leido`, `caja_completa`, `llamada_iniciada`, `llamada_completada` y `respuesta_llamada`, y **no escribe ninguno** (en el catálogo, cada uno tiene dueño: 20, derivado de 3 y 22, GDD 3 regla 2). No lee `memo_leido` (se retira la lectura opcional, DT-5), `carta_variante` ni `t4_decision` (la variante de la primera línea y la de `VO_G_14_*` son de 22, DT-6). Las escenas **reaccionan al cambio** del hecho (aviso automático, Estado regla 9) y nunca a su valor al cargar, salvo la reanudación de la regla 14. Un aviso perdido no se repara: el estado manda (Estado, regla 8).
+6. **Órdenes que emite.** Son avisos del bus (3) o peticiones directas: (a) «**línea pedida**» (ID de línea y fuente opcional, p. ej. `C01`): el mismo aviso que ya emite 9 (Marco de puzles, regla 20); 23 responde «línea terminada», «línea sin audio» o «línea fallida», y los subtítulos los pone 26 a partir de 18; (b) «**efecto de escena pedido**» ‡ (`id_efecto`, objetivo, duración, parámetros): lo ejecutan 28 (luces, lluvia, reflejo) y 23 (sonidos como `SILLAS_RODANDO`); (c) «**estado de objeto pedido**» ‡ (objeto, estado): `V02` → `vibrando` o `reposo`, y las puertas del ascensor de Recepción; (d) peticiones directas a Entrada (regla 8), a Escena de planta (`recepcion`, fundido propio, descarga total) y a Interacción (`cerrar_modos()`); (e) «**tarjeta final pedida**» ‡ (claves de 18) para 27. El director **no espera** a quien ejecuta, salvo en dos casos: las líneas del cierre (regla 22) y «modos cerrados» (regla 20).
+7. **Líneas de voz.** El director solo pide líneas de megafonía y de Vera (`MEGA_*`, `VO_V_*`, base de contenido regla 17 y fila 21 de su tabla). No pide líneas de El Guardián (`VO_G_*`, de 9 y 22). Si ya suena otra línea del mismo canal (voz de Vera o megafonía) cuando toca pedir una, el director **aplaza** la nueva hasta «línea terminada», con un tope de `t_espera_voz_s` (F4): pasado el tope la descarta y registra (nunca superpone dos voces de Vera). Una línea `fallida` o `sin audio` no se reintenta: sigue la línea de tiempo con subtítulo (Contenido, AC-19).
+8. **Control: tomar y soltar `sin control`.** (a) El director **no abre** `sin control` tras una carga: **lo traspasa**. En el fotograma de «carga de escena terminada» con `control_final` = `ninguno` emite «traspasar `sin control`» (nuevo dueño = 21, duración declarada de la escena, F2) y, si `t_rel` ya ha alcanzado `t_fin`, pide `exploración` en ese mismo fotograma (nunca hay un fotograma sin dueño ni con la pila vacía; Escena de planta, regla 9 y su tabla de pila). (b) Al llegar `t_fin` pide `exploración` (**no** «cerrar»: sobre [`menú`, `sin control`] restauraría el título, Entrada regla 6). (c) Solo el cierre de la escena 8 **abre** un `sin control` propio (el jugador está en `exploración`), con su duración declarada. (d) Toda escena dirigida declara duración y la declara **con holgura** `h_decl_s` (F2); Entrada añade su margen de 2,0 s†. (e) **Si el traspaso es rechazado** (Entrada ya liberó el control por tope, o el contexto superior no es `sin control`): el director **no recupera el control**; la escena pasa a ser un momento (se ejecutan sus órdenes, pero ya no hay control que soltar) y se registra. Nunca se vuelve a quitar el control a quien ya lo tiene.
+9. **Pausa, foco y mando.** El reloj de las líneas de tiempo es **tiempo de juego**: la pausa (`menú`), la pérdida de foco y el mando desconectado (Entrada, reglas 7, 21 y 22) lo detienen, igual que detienen el tope de `sin control` (Entrada F8). La pausa no cancela nada ni salta ninguna orden. Las órdenes ya emitidas siguen o se pausan según 23 y 28 (‡ deben pausarse con `pause_opened`, que 25 emite). Durante una escena dirigida el jugador **sí** puede abrir la pausa (Entrada permite `pausa` en `sin control`): es un derecho de accesibilidad, no un hueco.
+10. **Cierre del juego.** El director no guarda ni restaura su reloj. Al cerrar, nada de la línea de tiempo en curso sobrevive; al volver, la escena se **reconstruye de los hechos** (regla 14) y los momentos ambientales ya vistos pueden repetirse una vez (DT-3). El guardado no lo toca el director (Guardado, regla 11 y 28: el sellado lo gobierna 22).
+11. **Fallo de carga y descargas.** (a) «Carga de escena fallida» (Escena de planta, regla 14): el director **cancela** toda escena armada o en curso (`ESC1_LLEGADA`, `ESC8_*`) sin emitir órdenes ni escribir nada; no libera `sin control` (aún es del 4, que repone `menú`). (b) «Carga de escena iniciada» que el director **no ha pedido** (Nueva partida desde la pausa, `reanudar` tras el título): cancela toda línea de tiempo en curso y, si es dueño de un `sin control`, lo **cierra** (Entrada regla 6: solo cierra su dueño). (c) «Descarga total completada», «estado restablecido» y «estado restaurado»: borran el estado volátil de la regla 12 y cancelan todo. (d) En una descarga normal (planta → Recepción, pedida por él) cancela solo las líneas de tiempo de la planta y arma `ESC8_ASCENSOR`.
+
+**Estado volátil y reanudación**
+
+12. **Memoria de sesión (no son hechos).** El director guarda en memoria, sin escribirla en el estado ni en el guardado: `esc4_mega_hecha`, `esc4_reflejo_hecho` (cada zona del pasillo dispara su momento **una vez por carga de `planta`**), `apagon_activo`, `ascensor_activo`, `ascensor_ahorro_en_espera`, `mensaje_telefono_pendiente` y `cierre_iniciado`. Se borran como dice la regla 11. No hay hecho «escena 4 vista» (catálogo cerrado de 20 hechos, slice D.2): lo que cuesta repetir una megafonía una vez es menos que ampliar el catálogo (DT-3; cierra la pregunta 11 de Escena de planta).
+13. **Apagón.** `ESC7_APAGON` se dispara al cruzar `T-D-OUT` ‡ (volumen en el pasillo, ante la puerta de D) con `caja_completa` verdadera, y pone `apagon_activo`. Con `apagon_activo` el volumen no vuelve a disparar la escena (el jugador puede entrar y salir de D cuantas veces quiera). El apagón **no toma `sin control`** (DT-2): la caminata hasta el despacho de Vera es del jugador. `V06` (lámpara del despacho de Vera) sigue encendida (slice C.7).
+14. **Reanudación (cierra la pregunta 5 de Guardado).** Tras «escena lista» de una carga con `motivo` = `reanudar`, si `caja_completa` ∧ ¬`llamada_completada` (cubre `caja_completa` ∧ ¬`llamada_iniciada` y la llamada pendiente, GDD 5 reglas 12 y 28), el director aplica el **apagón reducido** sin esperar a que el jugador salga de D: pone `apagon_activo`, emite `LUCES_APAGON` con duración 0 (oculto por la cortina, no se repiten las sillas ni el tecleo) y, **al volver `exploración`**, si ¬`llamada_iniciada` ejecuta `ESC7_TIMBRE`: `V02` vibra desde el primer momento, porque el jugador aparece en el despacho (`spawn_office`). Si `llamada_iniciada` es verdadero, el teléfono sonando lo pone **22** (Guardado, regla 12: contrato de 22 con la llamada pendiente) y el director solo aplica el apagón reducido, de modo que el timbre tiene un único dueño por caso. Qué ocurre al descolgar (la llamada se repite desde el principio) lo define 22. Con ¬`caja_completa` la reanudación no dispara nada: la escena 1 **nunca** se repite al reanudar. Si llegara `llamada_completada` verdadero (dato inválido: el sellado no lo guarda), se aplican `ESC7_RESTAURAR` sin retardo y `ascensor_activo` y se registra.
+15. **Teléfono y llamada: el límite con 22.** El director pone `V02` en `vibrando` y lo calla en el primero de «interacción ejecutada» sobre `V02` o «llamada iniciada»; **no inicia la llamada** (la inicia 22 al descolgar), no lee el contenido de la llamada y no espera a su fin. Su única reacción a la llamada es el hecho `llamada_completada` (`ESC7_RESTAURAR`). Así no hay ciclo 21 ↔ 22 (índice, nota de ciclos).
+16. **Escena 1 en dos tramos.** `ESC1_LLEGADA` toma el control para la apertura (lluvia, voz, megafonía, vibración) y lo suelta en `t_fin` = 14,0 s. Luego el jugador se mueve; `V02` ofrece el verbo «Responder» (slice A, V02) con el mensaje `mensaje_telefono_pendiente`. Si el jugador lo pulsa, `ESC1_MENSAJE` muestra «Ahora no» y, 1,0 s después, «Este número ya no está disponible» (slice C.1). Si no lo pulsa nunca, no pasa nada: ningún hecho ni puzle depende de ello (pilar *Tensión sin castigo*), y `ESC7_APAGON` cancela el mensaje pendiente (el timbre real lo sustituye). El mensaje lo muestra el propio teléfono (diegético); no se abre ningún contexto nuevo (DT-1).
+17. **Ascensor.** Hasta `ascensor_activo`, pulsar `C08` («Entrar») dispara `ESC8_AHORRO` (con enfriamiento `t_ahorro_cooldown_s`, F4). `ascensor_activo` es verdadero cuando han pasado 2,0 s desde `llamada_completada` o, al reanudar con el hecho ya verdadero, desde «escena lista». Con `ascensor_activo`, pulsar `C08` hace que el director pida a Escena de planta la carga `recepcion` con `control_final` = `ninguno` (Escena de planta, reglas 7 y 13). Si 4 rechaza la petición (carga en curso, estado no «Listo»), el director no la reintenta: el jugador puede volver a pulsar. El director **no** guarda ni pide guardados.
+18. **Escena 8 · trayecto (`ESC8_ASCENSOR`).** Origen: «escena lista» de `recepcion`. En «carga de escena terminada» traspasa el `sin control` (regla 8a) con `duracion_declarada` de F2. A los 6,0 s pide las puertas abiertas, pide `exploración` y `R01` queda disponible. Se escribe en sentido literal: la lluvia cesa **durante** el trayecto (`LLUVIA_CESA`, 6,0 s), no antes.
+19. **Escena 8 · el libro.** Entre el trayecto y el cierre el jugador está en `exploración`: lee `R01` cuando quiere, sin límite de tiempo (si no lo lee, se queda en Recepción; no hay softlock porque no hay nada que cumplir).
+20. **Cerrar modos antes de tomar el control.** Cuando una escena dirigida debe empezar con el jugador en un modo de Interacción abierto (el cierre de la escena 8, con `lectura` abierta), el director pide `cerrar_modos()` y **espera «modos cerrados»** antes de abrir `sin control` (Interacción, regla 27a). Tope de espera `t_modos_max_s` (F4); si no llega, abre igualmente `sin control` y registra (el contexto bloqueante de 7 acaba por su tope de 3 s, Entrada F8). `cerrar_modos()` incluye `ordenador` y no `llamada`: el director **nunca** inicia una escena dirigida con la llamada activa (en Recepción no hay llamada).
+21. **Disparador del cierre.** `ESC8_CIERRE` se arma en «carga de escena terminada» de `recepcion` y se dispara con el **primer** «lectura completada» de `R01` ‡ (7 y 20 deben declarar que `R01` emite el aviso al completar la página 2 y no la página 1; ver Cambios requeridos). Aplica `cierre_iniciado` para ignorar avisos posteriores. El director **no fuerza** el cierre del libro: espera `g_post_lectura_s` (3,0 s, slice C.8) desde el aviso; el jugador puede cerrar el libro antes; si sigue abierto, el director lo cierra (regla 20).
+22. **Escena 8 · cierre (`ESC8_CIERRE`).** Tras `g_post_lectura_s` y la regla 20: (1) abre `sin control` (dueño 21, `duracion_declarada` de F3); (2) pide `VO_V_12A` a `VO_V_12D` según `respuesta_llamada` (si no está fijada: omite la línea y registra; hecho de un solo sentido, Estado regla 4); (3) espera el fin de la línea (aviso, o `t_linea_max_s` si no llega) y `g_entre_lineas_s` (3,0 s); (4) pide `VO_V_12E` («La V no me convence»); (5) espera su fin y `g_pre_fundido_s` (2,0 s); (6) pide a Escena de planta un **fundido a negro propio** (`d_cierre`) ‡; (7) pide a 27 la **tarjeta final** (título + rótulo «Continuará», `t_tarjeta_s` = 3,0 s) y espera ese tiempo; (8) pide a 4 la **descarga total** (vuelta al título, Escena de planta regla 15); no cierra su `sin control`: lo cierra Entrada al reponer `menú` (Entrada regla 6). La partida ya está sellada desde «partida terminada» (Escena de planta regla 16; el director no interviene). Un tope duro `D_cierre − h_decl_s` salta a (8) si la cadena se alarga (F3), de modo que la secuencia termina siempre antes que el tope de Entrada.
+23. **Accesibilidad y reducción de movimiento.** Con `reducir_movimiento` (clave de Ajustes 6, la que ya lee 4) verdadero, el director sustituye `LUCES_PARPADEO` (tres destellos de 0,15 s, ≈ 3,3 por segundo) por **una sola atenuación suave** de 0,6 s†, y no emite `REFLEJO_RETARDADO` con interpolación brusca (28 lo ejecuta como aparición gradual). La clave se lee **en cada disparo**, no al arrancar (puede cambiar en el menú de pausa). El volumen de los efectos de susto (`SILLAS_RODANDO`, `TECLEO_LEJANO`) depende de la regulación de efectos de 6 y 23; el director no la altera.
+24. **Tono: lo que el director no hace.** No explica intenciones (no hay línea que diga por qué firmó nadie, pilar 5), no premia ni castiga la respuesta de la llamada (no hay variación de la escena 8 salvo la línea de Vera, pilar 1), no acerca presencias a distancia de reacción (sillas, tecleo y timbre son siempre sonido sin imagen, pilar 4), y no repite una escena para «recuperar» al jugador que no la vio.
+
+## Formulas
+
+Los valores marcados † son propuestos (ver Tuning Knobs). «Slice» marca los que fija `design/slice/slice-v0.3.md`. El director no define presupuesto de rendimiento.
+
+### F1 · Reloj de una línea de tiempo
+
+`t_rel(n) = t_rel(n−1) + Δ_juego(n)` · una orden `i` se emite en el primer fotograma con `t_rel ≥ t_i` · si en un fotograma vencen varias, salen **en el orden de la tabla**, una vez cada una.
+
+| Variable | Tipo | Rango | Fuente | Descripción |
+|---|---|---|---|---|
+| `t_rel` | float (s) | 0 en adelante | calculado | Tiempo de juego desde el origen de la escena (regla 4: «escena lista» o el aviso disparador) |
+| `Δ_juego` | float (s) | ≥ 0 | calculado | Tiempo del fotograma **con la escala de tiempo del juego**; vale 0 con la pausa abierta, sin foco o sin mando (regla 9) |
+| `t_i` | float (s) | 0 a `t_fin` | datos (`scenes.json`) | Instante de la orden `i`; no decrece en la tabla |
+
+**Rango de salida:** `t_rel` solo crece. Un tirón de fotograma no salta ninguna orden: las dispara todas, en orden, en ese fotograma. La línea de tiempo de la escena 1 y la del trayecto se miden **desde «escena lista»**, no desde el final del aclarado de la cortina, para que `VO_V_01` (1,5 s) suene durante el aclarado de 2,0 s, como dice el slice (C.1).
+**Ejemplo:** fotograma largo que lleva `t_rel` de 5,9 a 6,4 en `ESC1_LLEGADA`: `MEGA_01` (6,0) sale en ese fotograma; la vibración de `V02` (12,0) no.
+
+### F2 · Duración declarada de una escena dirigida
+
+`duracion_declarada = t_fin + h_decl_s` · `tope_Entrada = duracion_declarada + margen_E` (Entrada F8, `margen_E` = 2,0 s†) · el tope se mide **desde el traspaso o desde la apertura**.
+
+| Variable | Tipo | Rango | Fuente | Descripción |
+|---|---|---|---|---|
+| `t_fin` | float (s) | 1 a 30 | datos | Instante en que la escena pide `exploración`, medido desde su origen |
+| `h_decl_s` | float (s) | 0,5–3,0 | constante, 1,0† | Holgura por encima de `t_fin`: absorbe que el traspaso ocurra después del origen |
+| `margen_E` | float (s) | — | Entrada F8 | Margen del tope de `sin control` (no es del director) |
+
+**Rango de salida:** `duracion_declarada` es una **cota superior** del tiempo que el director retiene el control, porque el traspaso ocurre en `t_rel ≥ 0` y la liberación en `t_rel = t_fin`. Nunca hay una escena sin duración (Entrada regla 6: sin declarar se aplicaría 3 s y se registraría la omisión; sería un defecto).
+**Ejemplos:** `ESC1_LLEGADA`: `t_fin` = 14,0 → declara 15,0 s, tope de Entrada 17,0 s; con la carga instantánea el traspaso cae en `t_rel` ≈ 2,03 s (aclarado de 2,0 s + 2 fotogramas a 60 fps) y el control se devuelve ≈ 11,97 s después. `ESC8_ASCENSOR`: `t_fin` = 6,0 → declara 7,0 s, tope 9,0 s; traspaso en `t_rel` ≈ 0,83 s, liberación 5,17 s después. Con `reducir_movimiento` el aclarado dura 0,1 s: el traspaso llega antes y el control se retiene más tiempo, siempre dentro de la cota.
+
+### F3 · Cierre de la escena 8
+
+`D_cierre = t_linea_max_s + g_entre_lineas_s + t_linea_max_s + g_pre_fundido_s + d_cierre + t_tarjeta_s + h_decl_s` · `t_duro = D_cierre − h_decl_s` · la secuencia pasa a la descarga total (regla 22, paso 8) cuando termina el último paso **o** cuando `t_sc ≥ t_duro`, lo que ocurra antes.
+
+| Variable | Tipo | Rango | Fuente | Descripción |
+|---|---|---|---|---|
+| `t_linea_max_s` | float (s) | 4–15 | constante, 8,0† | Tope de espera del fin de una línea de Vera (si 23 no avisa) |
+| `g_entre_lineas_s` | float (s) | 1–6 | slice (C.8), 3,0 | Pausa entre la línea según `respuesta_llamada` y `VO_V_12E` |
+| `g_pre_fundido_s` | float (s) | 1–4 | slice (C.8), 2,0 | Pausa entre `VO_V_12E` y el fundido a negro |
+| `d_cierre` | float (s) | 0,1–2,0 | constante, 0,8† | Fundido a negro propio (valor de `recepcion` de Escena de planta F1; 0,1 con `reducir_movimiento`) |
+| `t_tarjeta_s` | float (s) | 2–5 | slice (C.8), 3,0 | Duración de la tarjeta final |
+| `t_sc` | float (s) | 0 en adelante | calculado | Tiempo de juego desde que el director abrió su `sin control` |
+
+**Rango de salida:** `D_cierre` = 8,0 + 3,0 + 8,0 + 2,0 + 0,8 + 3,0 + 1,0 = **25,8 s**; tope de Entrada 27,8 s; `t_duro` = 24,8 s. En el peor caso de esperas (todos los avisos de fin de línea faltan) la secuencia suma exactamente 24,8 s, así que el tope duro solo actúa ante una anomalía del fundido o de la tarjeta, y **el control nunca se libera a media secuencia**.
+**Ejemplo nominal:** `VO_V_12A` ≈ 4 s, `VO_V_12E` ≈ 2 s: 4 + 3 + 2 + 2 + 0,8 + 3 = 14,8 s de `sin control`.
+
+### F4 · Esperas con tope
+
+`espera = min(evento, tope)`: cada espera termina con su evento o con su tope, el que llegue antes. Todas en tiempo de juego.
+
+| Espera | Evento | Tope | Valor |
+|---|---|---|---|
+| Fin de línea de Vera / megafonía | «línea terminada» (o «línea sin audio» / «línea fallida», que cuentan como fin tras la duración de su subtítulo) | `t_linea_max_s` | 8,0† |
+| Cola de voz (regla 7) | «línea terminada» de la línea en curso | `t_espera_voz_s` | 8,0† |
+| Cierre de modos (regla 20) | «modos cerrados» | `t_modos_max_s` | 2,0† (≥ `t_devolver` 0,5 s de Interacción + margen) |
+| Enfriamiento de `ESC8_AHORRO` | tiempo desde la última emisión | `t_ahorro_cooldown_s` | 10,0† |
+
+### F5 · Margen del traspaso sobre `D_carga`
+
+`M_traspaso = (D_carga + margen_E) − t_terminada` · el traspaso es posible mientras `M_traspaso ≥ 0` (Entrada F8: el tope de la carga se mide desde «iniciada»).
+
+| Variable | Tipo | Rango | Fuente | Descripción |
+|---|---|---|---|---|
+| `D_carga` | float (s) | 3–40,34 | Escena de planta F3 | Duración declarada de la carga por Escena de planta |
+| `margen_E` | float (s) | — | Entrada F8 | 2,0† |
+| `t_terminada` | float (s) | ≥ 0 | calculado | Instante de «carga de escena terminada», desde «iniciada» |
+
+**Rango de salida:** con la carga nominal, `t_terminada = d_out + N_gap·Δ_ref(real) + d_in` y `M_traspaso = T_cap + margen_E` = **12,0 s** (T_cap = 10 s†, Escena de planta F2): `recepcion` (`D_carga` ≈ 11,67): 13,67 − 1,63 = 12,04 s; `partida_nueva` desde el título (`D_carga` ≈ 0,8 + 10 + 0,07 + 2,0 = 12,87): 14,87 − 2,83 = 12,04 s. El director traspasa en el **mismo fotograma** de «terminada» (regla 8a), así que el margen solo se consume si el aviso llega tarde por tirones sostenidos (limitación asumida de Escena de planta F3); si `M_traspaso < 0`, el traspaso se rechaza y se aplica la regla 8e.
+
+## Edge Cases
+
+- **If la pausa se abre durante una escena dirigida:** el reloj, el tope de Entrada y el de 3 s de Interacción se detienen; al cerrar el menú, la escena continúa desde el mismo `t_rel`. No se pierde ni se repite ninguna orden (regla 9).
+- **If la ventana pierde el foco o el mando se desconecta durante una escena:** Entrada abre la pausa (Entrada, reglas 21 y 22); mismo efecto que arriba. Durante una carga se abre al terminar; el director no hace nada especial.
+- **If el jugador cierra el juego durante `ESC1_LLEGADA`:** no hay nada que guardar (el primer guardado ocurre al abrir una puerta). Al volver, «Continuar» reconstruye desde el último guardado y la escena 1 **no** se repite (regla 14). Si no hay guardado, el título ofrece «Nueva partida» y la escena 1 se ejecuta entera.
+- **If el jugador cierra el juego durante el apagón o la llamada:** al reanudar, `caja_completa` ∧ ¬`llamada_completada` ⇒ apagón reducido y timbre inmediato (regla 14). No se repiten sillas ni tecleo. El jugador no tiene que volver a D.
+- **If el jugador cierra durante el trayecto del ascensor, el libro o el cierre:** la partida ya está sellada (`partida terminada`, Escena de planta regla 16); al volver el título ofrece solo «Nueva partida». Si cerró antes de que se escribiera `slice_completed`, reanuda en el despacho con la llamada pendiente (Guardado, consecuencia aceptada de la regla 11).
+- **If «carga de escena fallida» llega con `ESC1_LLEGADA` o `ESC8_*` armadas:** se cancelan sin órdenes ni cambios (regla 11a). Tras un fallo de Recepción, «Continuar» reanuda en el despacho con apagón reducido (Escena de planta regla 14; regla 14 de este GDD): no hay bucle de fallos.
+- **If llega «carga de escena iniciada» no pedida por el director mientras éste es dueño de un `sin control` (Nueva partida desde la pausa durante `ESC1_LLEGADA` o el cierre):** el director cancela todo y cierra su `sin control` (regla 11b). La pila en ese caso es [`sin control`(21), `menú`] y no figura en las tablas de pila de Escena de planta regla 9 ni de Entrada regla 6 (pregunta abierta PA-2).
+- **If el traspaso de `sin control` es rechazado:** regla 8e: la escena continúa como momento, se registra y el director no vuelve a quitar el control.
+- **If el jugador cruza `T-D-OUT` con `caja_completa` más de una vez:** solo la primera dispara `ESC7_APAGON` (`apagon_activo`, regla 13).
+- **If el jugador cruza `T-D-OUT` o `T-OFI-IN` sin `caja_completa` o sin apagón:** no ocurre nada; `T-OFI-IN` exige `apagon_activo` ∧ ¬`llamada_iniciada`.
+- **If el jugador cruza `T-PAS-2` antes que `T-PAS-1`, o repite cualquiera:** cada zona del pasillo dispara su momento como máximo una vez por carga de `planta` y solo con ¬`caja_completa` (regla 12). Un jugador que ya completó la caja no oye `MEGA_02`.
+- **If el jugador no entra en el despacho de Vera:** a los 60,0 s† del apagón `V02` suena desde el pasillo (`ESC7_APAGON`, 60,0). El juego espera: no hay temporizador que decida (pilar *Tensión sin castigo*).
+- **If el jugador descuelga `V02` sin `apagon_activo`** (p. ej., fuera de la escena): no hay llamada; `V02` solo vibra en `ESC1_LLEGADA` y en `ESC7_*`, y su verbo «Responder» exige `mensaje_telefono_pendiente`. Lo decide 7 (catálogo, `habilitado_si`).
+- **If «lectura completada» de `R01` llega con el libro ya cerrado o dos veces:** la primera dispara `ESC8_CIERRE`; las demás se ignoran (`cierre_iniciado`).
+- **If «modos cerrados» no llega en `t_modos_max_s`:** abre `sin control` igualmente, registra, y el cierre sigue (regla 20).
+- **If `respuesta_llamada` está sin fijar al llegar a `ESC8_CIERRE`:** omite `VO_V_12A–D`, registra y sigue con `VO_V_12E`. Es inalcanzable con el flujo normal (el hecho se fija antes de `llamada_completada`, slice D.2).
+- **If una línea pedida devuelve «línea sin audio» o «línea fallida»:** se muestra el subtítulo (Contenido, AC-19) y la línea de tiempo sigue; no se reintenta (regla 7).
+- **If se piden dos voces a la vez (p. ej. `VO_V_04` y `MEGA_02`):** la segunda se aplaza hasta «línea terminada» con tope `t_espera_voz_s`; pasado el tope se descarta y se registra (regla 7).
+- **If `C08` se pulsa durante la espera de 2,0 s tras `llamada_completada`:** se trata como `ESC8_AHORRO` (aún no hay `ascensor_activo`). Con enfriamiento activo no suena de nuevo.
+- **If `C08` se pulsa y 4 rechaza `recepcion`:** no se reintenta, no se muestra error al jugador (regla 17).
+- **If llega «estado restablecido» o «estado restaurado» con una línea de tiempo en curso:** se cancela todo y se borra el estado volátil (regla 11c).
+- **If el jugador vuelve al título desde la pausa en mitad de una escena:** 4 repone `menú` y cierra el `sin control` si lo hay (Escena de planta regla 15); el director cancela y borra su estado al recibir «descarga total completada».
+- **If un dato de `scenes.json` es inválido:** se descarta esa escena y se registra; en desarrollo, error visible (regla 3).
+- **If `reducir_movimiento` cambia mientras `ESC4` ya ha empezado:** la orden en curso termina como se emitió; la siguiente (reflejo) lee el valor nuevo (regla 23).
+- **If el slice termina (tarjeta final):** el director pide la descarga total y el título lo gestiona 27; el director no vuelve a armarse hasta una nueva «escena lista» de `planta`.
+
+## Dependencies
+
+Dependencias del índice: 1, 3, 4, 18 (duras) y 5 (blanda). Este GDD añade 7 (blanda, ya listada en el GDD 7) y propone reflejarlo en el índice. «Contraparte» indica la regla del otro GDD que ya cubre el contrato; ‡ = a añadir allí (ver Cambios requeridos).
+
+| Sistema | Tipo | Qué recibe el director | Qué entrega el director | Contraparte / regla propia |
+|---|---|---|---|---|
+| 1 Entrada y controles | Dura | Estado del contexto; `sin control` con dueño, duración y tope (F8) | Traspaso, `exploración` al terminar, apertura y cierre de su `sin control` con duración declarada (F2, F3) | Entrada reglas 6 y 7, F8, tabla de pila (filas «Título/Planta, `ninguno`»); este GDD reglas 8, 9, 11, 22 |
+| 3 Estado y bus de eventos | Dura | Hechos (`formulario_leido`, `caja_completa`, `llamada_iniciada`, `llamada_completada`, `respuesta_llamada`), avisos de cambio y los avisos de 1, 4, 7, 9, 22, 23 | «línea pedida», «efecto de escena pedido» ‡, «estado de objeto pedido» ‡, «tarjeta final pedida» ‡; **ningún hecho** | Estado reglas 2, 4, 9, 10; tabla de interacciones fila 21; este GDD reglas 5, 6 |
+| 4 Escena de planta | Dura | «Zona activada» (`T-PAS-1`, `T-PAS-2`, `T-D-OUT` ‡, `T-OFI-IN` ‡), «carga de escena iniciada / lista / terminada / fallida», «descarga total completada», «partida terminada» (no la usa) | Petición de `recepcion` con `control_final` = `ninguno`; traspaso del `sin control` de la carga; fundido propio ‡; descarga total | Escena de planta reglas 5, 7, 9, 11, 13, 14, 15, 16, fila 21 de Interacciones; este GDD reglas 8, 11, 17, 18, 22 |
+| 18 Base de contenido narrativo | Dura | Líneas `MEGA_*`, `VO_V_*`, mensajes del teléfono de la escena 1, rótulo «Continuará» | — (solo pide por ID) | Contenido, fila 21 de su tabla de consumidores y regla 17 (líneas sin audio); este GDD regla 7 |
+| 5 Guardado y carga | Blanda | `caja_completa` ∧ ¬`llamada_completada` al reanudar (no depende de 5: lo lee del 3) | Nada: el director no guarda ni pide guardados | Guardado reglas 11, 12, 28 y 29; Open Questions 5 (cerrada aquí, regla 14) |
+| 7 Interacción e inspección | Blanda | «Interacción ejecutada» (`V02`, `C08`), «lectura completada» (`R01` ‡), «modos cerrados» | `cerrar_modos()` | Interacción regla 27a, fila 21; este GDD reglas 20, 21 |
+| 2 Jugador en primera persona | Indirecta | Congelado vía `sin control` | Nada (no mueve, no cede cámara) | Jugador reglas 18 y 21, fila 21 de Dependencies; este GDD regla 2 |
+| 22 Llamada | Sin dependencia directa (por el bus) | `llamada_iniciada`, `llamada_completada`, `respuesta_llamada` (vía 3) | `V02` en `vibrando`; ninguna orden a 22 | Este GDD reglas 15, 16; el GDD 22 debe describir que 21 pone `vibrando` y que 22 pone `en_llamada` ‡ |
+| 23 Audio · 28 Atmósfera | Sin dependencia directa (por el bus) | — | «línea pedida», «efecto de escena pedido» | Este GDD regla 6; ‡ deben pausarse con la pausa (regla 9) |
+| 26 Subtítulos | Sin dependencia directa | — | — (26 reacciona a «línea pedida», no a 21) | Índice, sección de eventos |
+| 27 Pantalla de título | Sin dependencia directa (por el bus) | — | «tarjeta final pedida» ‡ y, al final, la vuelta al título vía 4 | Este GDD regla 22 |
+| 8 Control de acceso | Sin dependencia directa | — | Decide qué responde `C08` (regla 17); 8 pone el hueco y la puerta | Escena de planta regla 3 |
+| 6 Ajustes | Blanda | `reducir_movimiento` | — | Regla 23 |
+| 9 Marco de puzles · 19 · 20 | Sin dependencia | `EV_PUZZLE_SOLVED_P2` (9), `formulario_leido` (20) | — | Marco regla 20 (modelo de «línea pedida»); este GDD reglas 4, 5 |
+
+**Sin dependencia circular:** 21 no depende de 22, 23, 26, 27 ni 28 (índice, nota de ciclos): se comunican por el bus y por hechos. La única escritura de 22 que el director lee es `llamada_completada` (y `respuesta_llamada` al cierre).
+
+## Tuning Knobs
+
+Todos viven en `assets/data/scenes/scenes.json` o en `assets/data/scenes/scene-config.json` (no en código). † = a validar en playtest.
+
+| Parámetro | Defecto | Rango seguro | Qué afecta | Fuente |
+|---|---|---|---|---|
+| `h_decl_s` | 1,0† | 0,5–3,0 | Holgura de la duración declarada (F2). Menos: el tope puede liberar el control con el traspaso tardío; más: el control se retiene más ante un fallo | F2 |
+| `t_linea_max_s` | 8,0† | 4–15 | Espera del fin de una línea de Vera; fija `D_cierre` (F3) | F3, F4 |
+| `t_espera_voz_s` | 8,0† | 2–15 | Cuánto se aplaza una voz mientras suena otra | F4 |
+| `t_modos_max_s` | 2,0† | 1,0–3,0 | Espera de «modos cerrados» antes del cierre (≥ `t_devolver` + margen) | F4 |
+| `t_ahorro_cooldown_s` | 10,0† | 3–30 | Frecuencia de `MEGA_03` al pulsar `C08` antes de tiempo | F4 |
+| `g_post_lectura_s` | 3,0 (slice) | 1–6 | Pausa entre «lectura completada» y la línea final | F3 |
+| `g_entre_lineas_s` | 3,0 (slice) | 1–6 | Pausa entre la línea de la respuesta y `VO_V_12E` | F3 |
+| `g_pre_fundido_s` | 2,0 (slice) | 1–4 | Pausa antes del fundido a negro | F3 |
+| `d_cierre` | 0,8† | 0,1–2,0 | Fundido a negro propio (0,1 con `reducir_movimiento`) | F3 |
+| `t_tarjeta_s` | 3,0 (slice) | 2–5 | Duración de la tarjeta final | F3 |
+| `t_timbre_pasillo_s` | 60,0 (slice) | 30–120 | Cuándo suena `V02` desde el pasillo sin que el jugador haya entrado | Regla 13 |
+| `retardo_ascensor_s` | 2,0 (slice) | 0–5 | Retardo entre `llamada_completada` y `ascensor_activo` | Regla 17 |
+| `d_vo04_s` | 1,0† | 0–3 | Retardo de `VO_V_04` tras `formulario_leido` | ESC3 |
+| `d_vo08_s` | 3,0† | 1–5 | Retardo de `VO_V_08` tras `EV_PUZZLE_SOLVED_P2` (2,0 de `SFX_GLASS_HUM` + 1,0) | ESC5 |
+| `d_realce_lluvia_s` | 8,0† | 3–20 | Duración de `LLUVIA_REALCE` | ESC3 |
+| `atenuacion_reducida_s` | 0,6† | 0,3–1,5 | Duración de la atenuación única que sustituye al parpadeo con `reducir_movimiento` | Regla 23 |
+| Parámetros del slice por escena | ver regla 4 | — | Tiempos de las líneas de tiempo (`t_i`) y parámetros de `LUCES_PARPADEO` (3 × 0,15 s) y `REFLEJO_RETARDADO` (0,6 s, 3,0 s) | Slice C.1, C.4, C.7, C.8 |
+
+**Interacciones entre parámetros:** `t_linea_max_s` alarga `D_cierre` (F3) en 2 × el cambio; `h_decl_s` y `margen_E` (Entrada) suman al tope; `t_modos_max_s` debe cubrir `t_devolver` (0,5 s, Interacción regla 27a) o el cierre se hará con la cámara aún devolviéndose.
+
+## Acceptance Criteria
+
+Tipos: **L** (lógica, prueba automática en `tests/unit/director_de_escenas/`), **I** (integración, `tests/integration/director_de_escenas/`), **PV** (playtest o evidencia visual en `production/qa/evidence/`).
+
+- **AC-21-01 (L, regla 3):** **GIVEN** un `scenes.json` con un ID repetido, una orden desconocida o `t_rel` decreciente, **WHEN** arranca el director, **THEN** esa escena se descarta, se registra una línea (en desarrollo, error visible) y las demás se cargan.
+- **AC-21-02 (L, reglas 5 y 24):** **GIVEN** una partida completa simulada de la escena 1 a la 8, **WHEN** se recogen las escrituras de hechos del director, **THEN** no hay ninguna.
+- **AC-21-03 (L, F1):** **GIVEN** `ESC1_LLEGADA` armada, **WHEN** `t_rel` pasa de 5,9 a 6,4 en un fotograma, **THEN** `MEGA_01` sale en él y la vibración de `V02` (12,0 s) no; **WHEN** la pausa está abierta, **THEN** `t_rel` no avanza.
+- **AC-21-04 (I, reglas 8a y 16, F5):** **GIVEN** «Nueva partida» desde el título, **WHEN** llega «carga de escena terminada», **THEN** en ese fotograma el director traspasa el `sin control` (dueño 21, duración 15,0 s) sin que la pila pase por `exploración` ni quede vacía, y el tope de Entrada pasa a 17,0 s desde el traspaso.
+- **AC-21-05 (I, regla 16, `ESC1_LLEGADA`):** **GIVEN** la misma carga, **WHEN** `t_rel` = 14,0, **THEN** el director pide `exploración` (la pila queda [`exploración`] sin `menú`), el jugador puede mover, `V02` ofrece «Responder» y `VO_V_01` sonó a 1,5 s y `MEGA_01` a 6,0 s.
+- **AC-21-06 (I, regla 16):** **GIVEN** el mensaje pendiente, **WHEN** el jugador pulsa «Responder», **THEN** aparece «Ahora no» y, 1,0 s después, «Este número ya no está disponible»; **GIVEN** que nunca lo pulsa, **THEN** ningún puzle ni acceso queda bloqueado.
+- **AC-21-07 (I, regla 8a y 16):** **GIVEN** «Continuar», **WHEN** la planta está lista, **THEN** `ESC1_LLEGADA` no se ejecuta y el jugador recibe `exploración` de 4 (`control_final` = `exploracion`).
+- **AC-21-08 (I, regla 5):** **GIVEN** `formulario_leido` cambia a verdadero, **WHEN** pasa `d_vo04_s`, **THEN** se emite `LLUVIA_REALCE` y se pide `VO_V_04` una vez; **GIVEN** «Continuar» con `formulario_leido` ya verdadero, **THEN** no se emite ninguna.
+- **AC-21-09 (I, regla 12):** **GIVEN** ¬`caja_completa`, **WHEN** el sensor del jugador entra en `T-PAS-1`, **THEN** se pide `MEGA_02` y, a +2,0 s, tres destellos de 0,15 s en `C03`; **WHEN** vuelve a entrar, **THEN** no se repite; **WHEN** entra en `T-PAS-2` sin haber pasado por `T-PAS-1`, **THEN** se pide el reflejo (0,6 s, 3,0 s) una vez.
+- **AC-21-10 (L, regla 12):** **GIVEN** `caja_completa` verdadero, **WHEN** se activan `T-PAS-1` o `T-PAS-2`, **THEN** no se emite ninguna orden.
+- **AC-21-11 (L, regla 23):** **GIVEN** `reducir_movimiento` verdadero, **WHEN** se dispara `ESC4_PASILLO_MEGA`, **THEN** el efecto es una atenuación única de 0,6 s y no tres destellos; **WHEN** el valor cambia en el menú de pausa, **THEN** el siguiente disparo lo usa.
+- **AC-21-12 (L, `ESC5_MEMORANDO`):** **GIVEN** `EV_PUZZLE_SOLVED_P2`, **WHEN** pasan 3,0 s†, **THEN** se pide `VO_V_08` una vez; **GIVEN** «Continuar» con P2 resuelto, **THEN** no se pide.
+- **AC-21-13 (I, reglas 13 y 15):** **GIVEN** `caja_completa`, **WHEN** el jugador cruza `T-D-OUT`, **THEN** C03 se atenúa en 0,4 s, suenan sillas (1,0–4,0 s) y tecleo (4,5 s), **ningún** `sin control` se abre y el jugador puede moverse; **WHEN** cruza de nuevo, **THEN** no se repite.
+- **AC-21-14 (I, `ESC7_TIMBRE`):** **GIVEN** `apagon_activo` ∧ ¬`llamada_iniciada`, **WHEN** el jugador cruza `T-OFI-IN`, **THEN** `V02` pasa a `vibrando`; **GIVEN** que no entra, **WHEN** pasan 60,0 s† (en tiempo de juego, sin pausa), **THEN** suena desde el pasillo y nada cambia en el control.
+- **AC-21-15 (I, regla 15):** **GIVEN** `V02` en `vibrando`, **WHEN** llega «interacción ejecutada» sobre `V02` o «llamada iniciada», **THEN** `V02` deja de vibrar y el director no emite ninguna otra orden a la llamada.
+- **AC-21-16 (I, regla 14):** **GIVEN** «Continuar» con `caja_completa` ∧ ¬`llamada_iniciada`, y otro con `llamada_iniciada` ∧ ¬`llamada_completada`, **WHEN** vuelve `exploración`, **THEN** C03 está apagada sin animación de sillas ni tecleo, el jugador está en `spawn_office` y `V02` vibra (en el primer caso la pone el director; en el segundo, 22, Guardado regla 12; nunca dos dueños a la vez).
+- **AC-21-17 (L, `ESC7_RESTAURAR` y regla 17):** **GIVEN** `llamada_completada` falso→verdadero, **WHEN** pasan 2,0 s, **THEN** se emiten `LUCES_RESTAURAR` (2,0 s) y `LLUVIA_VUELVE` y `ascensor_activo` pasa a verdadero; **WHEN** el jugador pulsa `C08` antes, **THEN** suena `MEGA_03` una vez por cada 10,0 s†.
+- **AC-21-18 (I, regla 17):** **GIVEN** `ascensor_activo`, **WHEN** se pulsa `C08`, **THEN** el director pide `recepcion` (`control_final` = `ninguno`); **WHEN** 4 la rechaza, **THEN** no hay reintento ni error visible.
+- **AC-21-19 (I, regla 18, F2):** **GIVEN** la carga de `recepcion` terminada, **WHEN** llega «terminada», **THEN** el director traspasa el `sin control` (7,0 s declarados) en ese fotograma; a los 6,0 s desde «escena lista» emite `PUERTAS_ASCENSOR_ABREN`, pide `exploración` y `R01` es interactuable.
+- **AC-21-20 (I, reglas 20 a 22):** **GIVEN** el jugador con `R01` abierto, **WHEN** llega «lectura completada», **THEN** a los 3,0 s el director pide `cerrar_modos()`, espera «modos cerrados», abre `sin control` (25,8 s declarados), pide `VO_V_12x` según `respuesta_llamada`, y tras 3,0 s `VO_V_12E`, 2,0 s después el fundido a negro de 0,8 s†, 3,0 s de tarjeta y la descarga total.
+- **AC-21-21 (L, F3):** **GIVEN** que 23 no emite ningún aviso de fin de línea, **WHEN** corre el cierre, **THEN** termina en ≤ 24,8 s y el `sin control` nunca llega al tope de Entrada.
+- **AC-21-22 (I, reglas 8e y 11):** **GIVEN** un traspaso rechazado, **WHEN** llega «terminada», **THEN** el director no abre otro `sin control`, la escena sigue como momento y se registra. **GIVEN** «carga de escena fallida», **THEN** se cancelan todas las líneas de tiempo sin órdenes.
+- **AC-21-23 (I, regla 11b):** **GIVEN** `ESC1_LLEGADA` en curso y la pila [`sin control`(21), `menú`], **WHEN** el jugador pide «Nueva partida» desde la pausa, **THEN** el director cancela todo y cierra su `sin control` en cuanto llega «carga de escena iniciada» (bloqueado hasta resolver PA-2).
+- **AC-21-24 (PV, pilares 2 y 4):** **GIVEN** una partida completa a velocidad normal, **WHEN** un evaluador no informado juega el pasillo y el apagón, **THEN** en el cuestionario ninguno señala una línea que «explique» la escena y nadie puede decir qué hace el reflejo «en intención»; el 100 % puede mover y mirar durante el apagón; evidencia: grabación en `production/qa/evidence/`.
+- **AC-21-25 (PV, regla 22):** **GIVEN** las cuatro respuestas de la llamada, **WHEN** se llega a Recepción con cada una, **THEN** solo cambia `VO_V_12x`; luz, tiempos y tarjeta son idénticos.
+- **AC-21-26 (L, reglas 7 y 23):** **GIVEN** dos voces pedidas con menos de `t_espera_voz_s` entre ellas, **THEN** la segunda se aplaza hasta «línea terminada»; superado el tope se descarta y se registra.
+
+## Decisiones tomadas
+
+Modo por lotes autónomo (decisión del usuario, 2026-11-09): se decide con la recomendación propia y se registra aquí. Ninguna cambia pilares, tono ni alcance del slice; lo que toca el slice como fuente de verdad está en Preguntas abiertas.
+
+| ID | Decisión | Alternativa descartada | Motivo |
+|---|---|---|---|
+| DT-1 | El mensaje del teléfono de la escena 1 lo muestra el propio teléfono (`V02`) y se responde con `interactuar` («Responder») en `exploración`, sin contexto nuevo | Abrir un contexto `llamada`/`menú` con la opción «Ahora no» y `ui_aceptar` | Evita pedir a Entrada un contexto nuevo y a 22 un papel que no tiene; mantiene la escena 1 diegética (pilar *El espacio expresa la emoción*) y deja al jugador libre de ignorarlo (pilar *Tensión sin castigo*) |
+| DT-2 | El apagón **no** toma `sin control` | Congelar al jugador durante las sillas y el tecleo (0,0 a 7,5 s) | El slice espera en el despacho y no describe ninguna caminata dirigida; quitar el control en el momento de mayor tensión lo convertiría en cinemática (pilar *Autonomía como progresión*, anti-pilar «una historia explicada»). El miedo es sonido sin imagen que el jugador escucha mientras anda |
+| DT-3 | La memoria de «ya ocurrió» del pasillo es **volátil por carga de planta**; el director no escribe ningún hecho | Nuevo hecho `escena4_vista` (dueño 21) | El catálogo de 20 hechos es del slice (D.2) y cada hecho nuevo exige dueño, snapshot, restauración y pruebas; repetir una megafonía una vez tras «Continuar» cuesta menos. Cierra la pregunta 11 de Escena de planta |
+| DT-4 | La tarjeta final (título + «Continuará») la pinta 27; el director solo la **pide** y espera `t_tarjeta_s` | Que el director dibuje la tarjeta por encima de la cortina de 4 | La cortina de 4 es el elemento más alto y 4 no admite otro por encima (Escena de planta regla 11); 21 no dibuja (regla 2). Degrada bien: si nadie la pinta, el jugador ve negro 3 s |
+| DT-5 | El director **no** lee `memo_leido` | Lectura opcional en Recepción para pistas (GDD 3, pregunta 6) | En Recepción no hay puzle ni pistas (17); la lectura sería código muerto y una dependencia gratuita con 9. Retira lo provisional |
+| DT-6 | La línea `VO_G_14_RET` / `VO_G_14_ASG` y la primera línea según `carta_variante` las reproduce 22; el director no lee `t4_decision` ni `carta_variante` | Que 21 reproduzca la línea posterior al puzle 4 | `VO_G_14_*` es una línea de la llamada (slice §11); partir la llamada en dos dueños obligaría a sincronizar dos sistemas. Cierra el punto del índice (comentarios de 21 y 22) |
+| DT-7 | La reanudación con `caja_completa` ∧ ¬`llamada_completada` aplica un **apagón reducido** y timbre inmediato en el despacho | Obligar al jugador a ir a D y salir de nuevo; o repetir el apagón entero | Reaparecer en el despacho con la planta encendida y la llamada pendiente deja el mundo incoherente con el hecho (pilar *Información incompleta*: los hechos manden). No repite sillas ni tecleo (efecto ya visto, pilar 4). Cierra Guardado, Open Questions 5 |
+| DT-8 | Si el traspaso de `sin control` falla, la escena degrada a momento y no se recupera el control | Abrir un `sin control` nuevo para completar la escena | Quitar el control a quien ya lo tiene viola *Tensión sin castigo*; una escena de apertura a medias es mejor que una de segunda mano |
+| DT-9 | Una sola voz de Vera/megafonía a la vez: la nueva se aplaza con tope y se descarta si vence | Superponerlas; o cancelar la primera | Dos voces de Vera superpuestas son ruido narrativo y se perdería una línea con peso; descartar la nueva (que es ambiental) es el mal menor |
+| DT-10 | El cierre de la escena 8 espera 3,0 s tras «lectura completada» sin forzar el cierre del libro | Cerrar el libro en cuanto se complete la lectura | Respeta al jugador que sigue mirando la V; si el libro sigue abierto, el director lo cierra con `cerrar_modos()` esperando «modos cerrados» (contrato de Interacción 27a) |
+| DT-11 | Las líneas de tiempo de las escenas 1 y 8 se miden desde «escena lista», no desde «terminada» | Medirlas desde el final del aclarado | `VO_V_01` a 1,5 s debe sonar durante el aclarado de 2,0 s (slice C.1); desde «terminada» sonaría 3,5 s tras el inicio. El control se toma en «terminada» por el contrato 1 ↔ 4 |
+| DT-12 | `reducir_movimiento` sustituye los tres destellos por una atenuación suave y se lee en cada disparo | Ignorarlo; o leerlo solo al arrancar | Tres destellos en 0,9 s (≈ 3,3/s) rozan el umbral de fotosensibilidad; la clave es del usuario (2026-11-09, «reducir movimiento entra en la accesibilidad del MVP») y puede cambiar en la pausa |
+| DT-13 | El apagón y el timbre se disparan con dos volúmenes nuevos (`T-D-OUT`, `T-OFI-IN`) | Leer la posición del jugador; o usar «puerta abierta» de D | 4 prohíbe lógica en las zonas y 21 no debe leer posición; «puerta abierta» no dice cuándo se **sale** de D. Dos detectores puros mantienen el patrón de Escena de planta regla 5 |
+| DT-14 | El aviso «Planta en modo de ahorro energético» (slice §13.3) se pide como línea de megafonía nueva `MEGA_03` | Texto de interfaz o línea sin ID | El slice §13.3 ya fija su texto como megafonía; necesita ID para localización y QA |
+| DT-15 | Las esperas de fin de línea tienen tope propio (`t_linea_max_s`) y el cierre tiene tope duro por debajo del de Entrada | Esperar «línea terminada» sin tope | Un aviso perdido dejaría la partida colgada en negro con el control cedido; el tope garantiza que la secuencia acaba (pilar *Tensión sin castigo*, sin softlock) |
+| DT-16 | El cierre de la escena 8 pide la descarga total a 4 y deja que Entrada cierre el `sin control` | Que 21 cierre su `sin control` antes | Cerrar sobre [`sin control`(21)] sin `menú` quedaría en `exploración`; Entrada regla 6 y Escena de planta regla 15 ya fijan que el título lo repone 4 |
+
+## Preguntas abiertas
+
+| ID | Pregunta | Quién | Efecto si no se resuelve |
+|---|---|---|---|
+| PA-1 | **Zonas nuevas `T-D-OUT` y `T-OFI-IN`** (DT-13): el slice solo define `T-PAS-1` y `T-PAS-2` (A.3, D.4). ¿Se añaden al Anexo A/D.4? No cambia pilares ni alcance, pero amplía una tabla de la fuente de verdad | Usuario / autor del slice | Sin ellas, la escena 7 no tiene disparador definido: se usaría una alternativa (aviso «puerta abierta» de D + temporizador) peor |
+| PA-2 | **Pila [`sin control`(21), `menú`]**: si el jugador abre la pausa durante una escena dirigida y pide «Nueva partida» o «Volver al título», ninguna tabla de pila (Entrada regla 6, Escena de planta regla 9) cubre el caso | GDD 1 y GDD 4 | El comportamiento queda al criterio del código; este GDD asume que 21 cierra su `sin control` en «iniciada» (regla 11b) |
+| PA-3 | **`R01` y «lectura completada»**: ¿qué página emite el aviso y con qué `lectura_min_s`? El slice solo dice «tras leer» (C.8) | GDD 7 y GDD 20 | `ESC8_CIERRE` no puede dispararse |
+| PA-4 | **Tarjeta final**: ¿«Título (3 s). Rótulo «Continuará»» son 3 s en total o título 3 s y luego rótulo? Este GDD asume 3,0 s en total con el rótulo en los últimos 2,0 s† | Usuario / GDD 27 | Afecta a `t_tarjeta_s` y a F3 (+≤ 3 s) |
+| PA-5 | **Intervalos «+3,0» de C.8**: se interpretan como el tiempo desde que **termina** el evento anterior (el slice no da la duración de las líneas); si fueran «desde el inicio», se solaparían las voces | Usuario / autor del slice | Cambia `g_entre_lineas_s` y `g_pre_fundido_s` |
+| PA-6 | **`MEGA_03`** («Planta en modo de ahorro energético»): ¿se añade a §12 como línea nueva con ID? | Usuario / GDD 18 | Sin ID no hay localización ni QA de esa línea |
+| PA-7 | **Quién ejecuta los estados de objeto** (`V02` en `vibrando`, puertas del ascensor de Recepción): propuesta «estado de objeto pedido» ‡ que ejecuta el dueño del elemento (22 para `V02`, 8 o 4 para las puertas) | GDD 22 y GDD 8 | Sin dueño, nadie pinta el estado |
+| PA-8 | **Formato de `scenes.json`** y mecanismo de líneas de tiempo (ADR de eventos temporizados, ya pedido en el índice) | technical-director / lead-programmer | El formato de los datos de esta tabla es provisional |
+| PA-9 | **«Ahora no»**: ¿es válido que el único verbo del mensaje sea «Responder» sobre `V02` y no un botón en pantalla? (DT-1) | Usuario / GDD 7 | Si el usuario prefiere una opción en pantalla, hay que añadir un contexto a Entrada |
+
+## Cambios requeridos en otros GDDs
+
+No se edita ningún archivo existente en este lote; la propagación la coordina `producer`.
+
+| GDD | Cambio |
+|---|---|
+| **1 Entrada y controles** | (a) Cerrar Open Question 12: duraciones declaradas de las escenas dirigidas (F2/F3: `ESC1_LLEGADA` 15,0 s, `ESC8_ASCENSOR` 7,0 s, `ESC8_CIERRE` 25,8 s). (b) Añadir a la tabla de pila de la regla 6 la fila [`sin control`(21), `menú`] (PA-2). (c) En la fila 21 de Dependencies añadir la apertura de un `sin control` propio (cierre de la escena 8) además del traspaso. |
+| **3 Estado y bus de eventos** | (a) Regla 10: añadir al emisor 21 los avisos «efecto de escena pedido», «estado de objeto pedido» y «tarjeta final pedida», y «línea pedida» también para 21. (b) Tabla de hechos: 21 lee `formulario_leido`, `caja_completa`, `llamada_iniciada`, `llamada_completada` y `respuesta_llamada`; **retirar** 21 de los lectores de `memo_leido` y `t4_decision` (DT-5, DT-6). (c) Cerrar Open Questions 6. |
+| **4 Escena de planta** | (a) Regla 1: añadir 21 a los sistemas que sobreviven a los cambios de escena. (b) Anexo A.3 / regla 5: dos volúmenes `T-D-OUT` (pasillo, ante la puerta de D) y `T-OFI-IN` (umbral del despacho de Vera). (c) Regla 11 y F1: motivo `cierre` con `d_out` = 0,8 s† (0,1 con `reducir_movimiento`) para el fundido propio del 21. (d) Cerrar Open Questions 11 (DT-3). (e) Regla 9: fila de pila de PA-2. |
+| **5 Guardado y carga** | Cerrar Open Questions 5 con la regla 14 de este GDD (apagón reducido en la reanudación); fila 21 de Dependencies. |
+| **7 Interacción e inspección** | Catálogo: `V02` con el verbo «Responder» (`habilitado_si` = `mensaje_telefono_pendiente` del 21, o estado del objeto); `C08` «Entrar» siempre interactuable (21 decide la respuesta); `R01` con `lectura_min_s` solo en la página 2 y aviso «lectura completada» con ID `R01`. «Interacción ejecutada» debe llevar el ID. |
+| **18 Base de contenido narrativo** | Claves nuevas: `MEGA_03`; mensajes del teléfono de la escena 1 («¿Jugamos esta noche?», «Ahora no», «Este número ya no está disponible»); rótulo «Continuará». |
+| **20 Documentos y bolsillo** | `formulario_leido` lo escribe 20 y 21 lo lee; coordinar con 7 la medición de `R01`. |
+| **22 Llamada (por redactar)** | `V02`: 21 pone `vibrando`, 22 pone `en_llamada`; 22 reproduce `VO_G_14_*` y la variante de la primera línea (DT-6); 22 lleva la reanudación de la llamada. |
+| **23 Audio · 28 Atmósfera · 27 Título · 25 Menú (por redactar)** | Responder a «línea pedida» y «efecto de escena pedido» (23, 28), pausarse con la pausa (23, 28), pintar la tarjeta final (27). |
+| **systems-index.md** | Fila 21: añadir 7 (blanda) y 6 (blanda); estado «Borrador»; comentarios de 21 y 22 sobre `t4_decision`: lo lee 22. |
+| **slice-v0.3.md** | Si el usuario aprueba PA-1 y PA-6: zonas en A.3/D.4 y línea `MEGA_03` en §12. |
+
+## Entradas para el registro
+
+Para `design/registry/entities.yaml` (no se edita aquí). Las constantes son datos de `scene-config.json`.
+
+- **Sistema:** `director_de_escenas` (21), persistente, sin hechos propios.
+- **Escenas** (`scenes.json`): `ESC1_LLEGADA` (dirigida), `ESC1_MENSAJE`, `ESC3_FORMULARIO`, `ESC4_PASILLO_MEGA`, `ESC4_PASILLO_REFLEJO`, `ESC5_MEMORANDO`, `ESC7_APAGON`, `ESC7_TIMBRE`, `ESC7_RESTAURAR`, `ESC8_AHORRO`, `ESC8_ASCENSOR` (dirigida), `ESC8_CIERRE` (dirigida).
+- **Avisos nuevos** (emisor 21): «efecto de escena pedido», «estado de objeto pedido», «tarjeta final pedida»; «línea pedida» gana un segundo emisor.
+- **Efectos** (`id_efecto`): `LLUVIA_REALCE`, `LLUVIA_CESA`, `LLUVIA_VUELVE`, `LUCES_PARPADEO`, `LUCES_APAGON`, `LUCES_RESTAURAR`, `REFLEJO_RETARDADO`, `SILLAS_RODANDO`, `TECLEO_LEJANO`, `TELEFONO_SUENA`, `PUERTAS_ASCENSOR_ABREN`.
+- **Zonas propuestas:** `T-D-OUT`, `T-OFI-IN`.
+- **Línea nueva:** `MEGA_03`.
+- **Memoria volátil (no son hechos):** `apagon_activo`, `ascensor_activo`, `esc4_mega_hecha`, `esc4_reflejo_hecho`, `mensaje_telefono_pendiente`, `cierre_iniciado`.
+- **Constantes:** `h_decl_s` 1,0 · `t_linea_max_s` 8,0 · `t_espera_voz_s` 8,0 · `t_modos_max_s` 2,0 · `t_ahorro_cooldown_s` 10,0 · `g_post_lectura_s` 3,0 · `g_entre_lineas_s` 3,0 · `g_pre_fundido_s` 2,0 · `d_cierre` 0,8 · `t_tarjeta_s` 3,0 · `t_timbre_pasillo_s` 60,0 · `retardo_ascensor_s` 2,0 · `d_vo04_s` 1,0 · `d_vo08_s` 3,0 · `d_realce_lluvia_s` 8,0 · `atenuacion_reducida_s` 0,6.
+- **Duraciones declaradas a Entrada:** `ESC1_LLEGADA` 15,0 s · `ESC8_ASCENSOR` 7,0 s · `ESC8_CIERRE` 25,8 s.
+- **Ficheros:** `assets/data/scenes/scenes.json`, `assets/data/scenes/scene-config.json`.
+
+## Historial de cambios
+
+| Fecha | Cambio |
+|---|---|
+| 2026-11-09 | Primer borrador (lote Feature 1). |
