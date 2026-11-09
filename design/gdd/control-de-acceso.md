@@ -1,6 +1,6 @@
 # Control de acceso (puertas, tarjetas, lectores)
 
-> **Status**: Revisado (ronda de corrección 2) — pendiente de re-review (ronda 5: W-4, W-7, W-8, N1-1; antes, ronda de decisiones 1 y ronda de corrección 1)
+> **Status**: Revisado (ronda de corrección 3) — pendiente de re-review (ronda 6: R6-1, R6-7; antes ronda 5: W-4, W-7, W-8, N1-1; antes, ronda de decisiones 1 y ronda de corrección 1)
 > **Author**: level-designer (lote autónomo) + Álvaro
 > **Last Updated**: 2026-11-09
 > **Last Verified**: 2026-11-09
@@ -288,6 +288,7 @@ Tipos: **L** = lógica (prueba automatizada en `tests/unit/access/`), **I** = in
 | D8-23 | **(Ronda de decisiones 1, D-D, aprobada por el usuario, 2026-11-09)** `MEGA_03` («Planta en modo de ahorro energético») es una línea nueva con ID, aprobada en el slice v0.4 (28 entradas). La lógica de la regla 15 y F4 no cambia; conserva `enfriamiento_linea_s` = 8 s† (único; 21 cierra su PA-6 con el mismo criterio: la megafonía es de 8) | Texto de interfaz sin ID; dejar la línea fuera del slice | Decisión de alcance del usuario; §13.3 ya fija el texto como megafonía y necesita ID para localización y QA |
 | D8-24 | **(Ronda de corrección 2, N1-1)** La presentación de tarjetas de 20 (2,6 s† en mano) empieza después de `HAND_DRAWER` y la tarjeta se guarda al cerrar su turno; si el jugador llega a un lector durante ella, `sostener_item` es `RECHAZADA(presentacion_en_curso)` y 8 pasa la tarjeta sin gesto. | Cortar la presentación al llegar a un lector; permitir los dos gestos a la vez. | Cortar complicaría la apertura (D8-16: no depende del gesto); dos gestos dibujarían dos tarjetas (‡ 2). 20 coincide (D20-20). Decisión por defecto. |
 | D8-25 | **(Ronda de corrección 2, W-4, W-7, W-8)** Quitados los «a corregir»/«sin GDD» obsoletos sobre 21, 3, 4, 7, 9 y 2; la regla 14 ya no habla de un hueco de un fotograma (4 tiene el `sin control` desde «carga iniciada») y cita 21 F5. Dureza de 8 contrastada con 3, 4, 5, 7, 9, 2, 18, 20 y 21: coincide; 21 lista a 8 como Blanda. | — | Textos desfasados detectados por la revisión cruzada de la ronda 5. |
+| D8-26 | **(Ronda de corrección 3, R6-1, R6-7)** Regla común de dureza: la declara el GDD dependiente y el proveedor repite la misma. En 8: 20 **Dura (de 8 hacia 20)**, la declara 8 porque consume `otorgar`/`sostener_item`/`guardar_item`, y 20 la repite igual (ya no «recíproca»); las demás filas (3, 7, 4, 18 duras; 5, 9, 2, 21 blandas) coinciden con lo que declaran 3, 7, 4, 18, 5, 9, 2 y 21. Los valores `card_read_delay_s`, `drawer_a05_open_s`, `door_open_angle_deg`, `elevator_in_use_timeout_s` y `elevator_deny_line_cooldown_s` llevan † en el registro; el último cita su fuente (enfriamiento de `MEGA_03`, F4, parte del «propuesta: 8 s» del slice). | Dejarlos sin marca en las Entradas para el registro. | Los valores sin fuente firme deben declararse propuestos para que `entities.yaml` no los trate como cerrados. |
 
 ## Open Questions
 
@@ -326,12 +327,12 @@ Formato de `design/registry/entities.yaml` (todas con `source: design/gdd/contro
 | Nombre | Valor | Unidad | Referenciada por | Nota |
 |---|---|---|---|---|
 | `door_open_duration_s` | 1,2 | s | 9, 4 | Duración de `ANIM_DOOR_OPEN`; slice A.0; F2 |
-| `card_read_delay_s` | 0,5 | s | — | Pausa entre pasar la tarjeta y la hoja (propuesta) |
+| `card_read_delay_s` | 0,5† | s | — | Pausa entre pasar la tarjeta y la hoja (propuesta †; sin fuente en el slice; = `t_lectura_s`) |
 | `elevator_activation_delay_s` | 2,0 | s | 21 | Slice C.7 |
-| `elevator_deny_line_cooldown_s` | 8 | s | 23, 21 | Único enfriamiento de `MEGA_03` (sustituye al 10,0† de 21) |
-| `elevator_in_use_timeout_s` | 20,0 | s | 21 | Salida de `EN_USO`; > traspaso de 12,0 s† |
-| `drawer_a05_open_s` | 1,0 | s | 2 | Animación del cajón `A05` (propuesta) |
-| `door_open_angle_deg` | 90 | ° | 4 | Giro al interior |
+| `elevator_deny_line_cooldown_s` | 8† | s | 23, 21 | Único enfriamiento de `MEGA_03` (sustituye al 10,0† de 21). Fuente: cooldown de `MEGA_03` de este GDD (`enfriamiento_linea_s`, F4, regla 15), que parte de la «propuesta: 8 s» del slice (nota sobre `MEGA_03`, v0.4) |
+| `elevator_in_use_timeout_s` | 20,0† | s | 21 | Salida de `EN_USO`; > traspaso de 12,0 s†. Propuesta † (= `t_en_uso_tope_s`, F4, regla 14); sin fuente en el slice |
+| `drawer_a05_open_s` | 1,0† | s | 2 | Animación del cajón `A05` (propuesta †; = `t_cajon_s`, regla 22; sin fuente en el slice) |
+| `door_open_angle_deg` | 90† | ° | 4 | Giro al interior (propuesta †; = `angulo_apertura_deg`, regla 9; el slice no fija el ángulo) |
 | `door_state` | `CERRADA`/`LEYENDO`/`ABRIÉNDOSE`/`ABIERTA` | enum | 5 | No se guarda (D-24 de 5) |
 | `elevator_state` | `INACTIVO`/`EN_APAGON`/`ESPERA`/`LISTO`/`EN_USO` | enum | 21 | No se guarda |
 | `drawer_state` | `CERRADO`/`ABRIENDO`/`ABIERTO` | enum | 20 | No se guarda |
@@ -350,3 +351,4 @@ Formato de `design/registry/entities.yaml` (todas con `source: design/gdd/contro
 | 0.2 | 2026-11-09 | Ronda de corrección 1 (revisión independiente: 3 bloqueantes, 13 avisos): 8 posee `A05` (reglas 21–23) y `C08` completo (D8-13, EN_USO recuperable, `EN_APAGON`); gesto de tarjeta vía 20 (`sostener_item`/`guardar_item`, D8-16); `LEYENDO` pasa a estado de la puerta; Pilar 4; 20 hechos; F1 con `v_paseo`; F2 con cámara; esquema de datos completo; † en valores sin fuente; ACs 17–20 y retipado. 23 reglas, 4 fórmulas, 20 AC, 22 decisiones, 8 preguntas abiertas. Pendiente de re-review. |
 | 0.3 | 2026-11-09 | Ronda de decisiones 1 (lote Feature 1): cierra la Pregunta 1 (`MEGA_03` aprobada como línea nueva del slice v0.4, sin cambio de lógica; D8-23); se quita la marca ‡ a `MEGA_03` y conserva el enfriamiento de 8 s†. Estado: Revisado (ronda de decisiones 1) — pendiente de re-review. |
 | 0.4 | 2026-11-09 | Ronda de corrección 2 (informe cruzado ronda 5: W-4, W-7, W-8, N1-1): textos obsoletos sobre 21, 3, 4, 7, 9 y 2 corregidos, regla 14 sin hueco de un fotograma y cita a 21 F5, orden presentación-gesto con 20 (regla 8, regla 22, AC-21, D8-24), D8-25. Estado: Revisado (ronda de corrección 2) — pendiente de re-review. |
+| 0.5 | 2026-11-09 | Ronda de corrección 3 (informe cruzado ronda 6: R6-1, R6-7): dureza de 20 declarada «Dura (de 8 hacia 20)» y repetida por 20, filas alineadas con las de los demás GDDs, valores del registro con † y fuente (D8-26). Estado: Revisado (ronda de corrección 3) — pendiente de re-review. |
