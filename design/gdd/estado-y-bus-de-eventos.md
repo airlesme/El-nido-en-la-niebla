@@ -1,6 +1,6 @@
 # Estado del juego y bus de eventos
 
-> **Status**: Revisado (ronda 4) — pendiente de re-review
+> **Status**: Revisado (ronda de propagación 1) — pendiente de re-review
 > **Author**: Álvaro + agentes
 > **Last Updated**: 2026-11-09
 > **Last Verified**: 2026-11-08
@@ -47,10 +47,11 @@ El sistema solo **registra y anuncia**; nunca decide qué ocurre cuando un hecho
     | **4 Escena de planta** | «carga de escena iniciada» (destino, `motivo`, `D_carga`; Entrada necesita `D_carga` para el tope del `sin control`), «escena lista» (destino), «carga de escena terminada» (sin datos), «descarga total completada» (sin datos; la emite 4 al terminar la descarga de la escena al volver al título; la consume 5 para su re-inspección, regla 17 de 5), «carga de escena fallida» (destino, `motivo`, causa), «zona activada» (ID `T-…`; se emite en cada entrada), «partida terminada» (sin datos; **único emisor**, en el fotograma de «carga de escena terminada» de `recepcion`, nunca en «iniciada»; GDD 4 regla 16) |
     | **5 Guardado** | «guardado en riesgo» (tras `n_fallos_aviso` fallos seguidos de escritura), «guardado restablecido» (primera escritura con éxito después); sin datos |
     | **7 Interacción** | «vista cercana abierta/cerrada», «lectura completada», «lectura cerrada», «lectura abierta», «lectura descartada», «modos cerrados» (al vaciar la pila de modos; lo espera 21 antes de pedir `sin control`), «interacción ejecutada» |
-    | **8 Control de acceso** ‡ | «puerta abierta» (identificador de la puerta) |
-    | **9 Marco de puzles** | `EV_PUZZLE_SOLVED_<ID>` (uno por puzle, Anexo B; identificadores `P1` a `P6`, confirmados por el GDD 9, D9-13), «compartimento completado» (1 a 4), «puzle activado», «resolución de puzle interrumpida», «pista aplicada», «puzle inactivo», «feedback de puzle», «línea pedida» |
+    | **8 Control de acceso** | «puerta abierta» (identificador `A`, `B` o `D`; una vez por apertura real, al empezar `ABRIÉNDOSE`; GDD 8 regla 11), «ascensor llamado» (sin datos; una por aceptación de `interact(Entrar)`; **receptor 21**), «línea pedida» (`MEGA_03`, con el mismo contrato que 9). **8 no escribe ningún hecho** |
+    | **21 Director de escenas** | «efecto de escena pedido», «estado de objeto pedido», «tarjeta final pedida», «línea pedida» (como 9 y 8), «ascensor rechazado» (sin datos; la emite cuando 4 rechaza `recepcion` tras «ascensor llamado»; **receptor 8**, que devuelve `C08` a `LISTO`; GDD 21 regla 17) |
+    | **9 Marco de puzles** | `EV_PUZZLE_SOLVED_<ID>` (uno por puzle, Anexo B; identificadores `P1` a `P6`, confirmados por el GDD 9, D9-13), «compartimento completado» (1 a 4), «puzle activado», «resolución de puzle interrumpida», «pista aplicada», «puzle inactivo», «feedback de puzle», «línea pedida» (también la emiten 8 y 21) |
     | **22 Llamada** ‡ | «llamada iniciada», «llamada completada» |
-        | **23 Audio** ‡ | «línea terminada», «línea sin audio», «línea fallida» (respuestas a «línea pedida», con el identificador de la línea) |
+    | **23 Audio** ‡ | «línea terminada», «línea sin audio», «línea fallida» (respuestas a «línea pedida», con el identificador de la línea) |
     | **25 Menú de pausa** ‡ | `pause_opened` (sin datos) |
 
     **Fuera del bus.** Ajustes (6) tiene un mecanismo de aviso propio con las mismas reglas de entrega (su regla 7) que **no pasa por este bus** y no figura en la tabla; el ADR de avisos debe cubrir ambos con un único mecanismo. El Jugador (2) no usa el bus (sus pasos y gestos son señales directas).
@@ -84,28 +85,28 @@ El sistema tiene tres estados de ciclo de vida; cada hecho tiene además su prop
 
 ### Interactions with Other Systems
 
-La tabla recoge los 20 hechos del Anexo D.2 (el 20.º, `t4_decision`, decisión del usuario 2026-11-09, D-B1, recogido en slice v0.3.2). «Escribe» y «Lee» son propuestas coherentes con la columna «Se activa en / Se usa en» del slice y se confirmarán cuando se redacte el GDD de cada sistema (marcado ‡ donde el sistema aún no tiene GDD).
+La tabla recoge los 20 hechos del Anexo D.2 (el 20.º, `t4_decision`, decisión del usuario 2026-11-09, D-B1, recogido en slice v0.3.2). «Escribe» y «Lee» están **confirmados** por los GDD de 1, 4, 5, 7, 8, 9, 10, 19, 20 y 21 (lote Feature 1; pendientes de su re-review) y siguen como propuesta (‡) donde el sistema aún no tiene GDD (17, 22 a 28). **Dueños únicos:** `correos_leidos` 19; `formulario_leido`, `tarjeta_B` y `tarjeta_D` 20 (8 solo lee las tarjetas).
 
 | Hecho | Tipo · inicial | Escribe | Lee |
 |---|---|---|---|
-| `correos_leidos` | bool · falso | 19 Ordenador ‡ | 19 (habilita imprimir) · 9 (puzle 1, `requires`) |
-| `archivo_abierto` | bool · falso | 9 Marco de puzles (a petición del puzle 1) | 8 Acceso (puerta A) · 7 (`habilitado_si`) |
-| `formulario_leido` | bool · falso | 20 Documentos ‡ | 17 Pistas · 7 (`habilitado_si`) |
-| `tarjeta_B` | bool · falso | 20 Documentos ‡ | 8 Acceso (lector C06) |
-| `tarjeta_D` | bool · falso | 20 Documentos ‡ | 8 Acceso (lector C07) |
-| `memo_leido` | bool · falso | 9 Marco de puzles (a petición del puzle 2) | 17 Pistas · 21 Director de escenas (lectura opcional en Recepción, slice D.2; pendiente de confirmar en el GDD 21) |
+| `correos_leidos` | bool · falso | 19 Ordenador | 19 (habilita «Imprimir»; GDD 19 R15, R21). **9 no lo lee** (el `requires` del puzle 1 es `all: []`) |
+| `archivo_abierto` | bool · falso | 9 Marco de puzles (a petición del puzle 1) | 8 Acceso (puerta A; suscripción por hecho) · 7 (`habilitado_si`) |
+| `formulario_leido` | bool · falso | 20 Documentos | 17 Pistas ‡ · 21 Director de escenas (`ESC3_FORMULARIO`) · 7 (`habilitado_si`) |
+| `tarjeta_B` | bool · falso | 20 Documentos | 8 Acceso (lector `C06`; monótono) |
+| `tarjeta_D` | bool · falso | 20 Documentos | 8 Acceso (lector `C07` y `D06`; monótono) |
+| `memo_leido` | bool · falso | 9 Marco de puzles (a petición del puzle 2) | 17 Pistas ‡ (el 21 **no** lo lee: se retira la lectura opcional, DT-5 de 21) |
 | `pos_L`, `pos_C`, `pos_R` | int 1 a 4 · 2 | 9 Marco de puzles (a petición del puzle 2) | 9 (puzle 2, restauración) · 5 Guardado |
 | `caja_c1` | bool · falso | 9 Marco de puzles (a petición del puzle 3) | 10 Caja · 9 (puzle 5) |
 | `caja_c2` | bool · falso | 9 Marco de puzles (a petición del puzle 4) | 10 Caja · 9 (puzle 6) |
 | `caja_c3` | bool · falso | 9 Marco de puzles (a petición del puzle 5) | 10 Caja · 9 (puzle 6) |
 | `caja_c4` | bool · falso | 9 Marco de puzles (a petición del puzle 6) | 10 Caja |
 | `pendiente_revelacion` | bool · falso | 9 Marco de puzles (a petición del puzle 5) | 9 (puzle 5, reanudación) · 5 Guardado |
-| `caja_completa` | bool derivado · falso | este sistema (regla 7) | 21 Director de escenas (dispara el apagón y la llamada; con `¬llamada_iniciada` decide la reanudación, GDD 5 regla 28) · 7 (`habilitado_si`) |
+| `caja_completa` | bool derivado · falso | este sistema (regla 7) | 21 Director de escenas (dispara el apagón y el timbre de `V02`, que pasa a `vibrando`; **la llamada la inicia 22 al descolgar**, GDD 21 regla 15; con `¬llamada_completada` decide la reanudación, GDD 5 regla 28) · 8 Acceso (`C08` en `EN_APAGON`) · 7 (`habilitado_si`) |
 | `carta_variante` | enum A, B, C · sin fijar | 9 Marco de puzles (a petición del puzle 6) | 22 Llamada |
-| `t4_decision` | enum `returned`, `assigned` · sin fijar | 9 Marco de puzles (a petición del puzle 4; se escribe al resolverlo, antes de `caja_c2`, GDD 9 regla 12c) | 22 Llamada ‡ y 21 Director de escenas ‡ (variación de una línea del Guardián, propuesta en GDD 18; quién la reproduce se confirma en su GDD) |
+| `t4_decision` | enum `returned`, `assigned` · sin fijar | 9 Marco de puzles (a petición del puzle 4; se escribe al resolverlo, antes de `caja_c2`, GDD 9 regla 12c) | 22 Llamada ‡ (variación de una línea del Guardián, propuesta en GDD 18). **21 no lo lee** (DT-6 de 21) |
 | `llamada_iniciada` | bool · falso | 22 Llamada ‡ | 22 Llamada · 5 Guardado (marca de **sellado**: tras escribirse, la partida no vuelve a guardarse) · 21 Director de escenas |
 | `respuesta_llamada` | enum A, B, C, D · sin fijar | 22 Llamada ‡ | 21 Director de escenas (última línea de Vera) · 7 (`habilitado_si`) |
-| `llamada_completada` | bool · falso | 22 Llamada ‡ | 21 Director de escenas (activa el ascensor) |
+| `llamada_completada` | bool · falso | 22 Llamada ‡ | 21 Director de escenas (`ESC7_RESTAURAR`, `ESC8_CIERRE`, reanudación) · 8 Acceso (activa `C08` 2,0 s después) · 4 (precondición de `recepcion`) |
 
 **Nota sobre `llamada_iniciada`.** El GDD 5 (regla 12) reinterpreta D.2: el hecho **no evita repetir la llamada**; marca el sellado del guardado, y la llamada se repite hasta quedar completada y guardada (decisión del usuario, ronda 2, anotada en el slice D.2). Restricción para el GDD 22: escribirlo **inmediatamente antes** de emitir «llamada iniciada» y antes de cualquier otra escritura de la llamada. Este sistema no cambia de reglas por ello (las reglas 4 y 13 siguen valiendo).
 
@@ -117,6 +118,7 @@ Otras interacciones:
 |---|---|---|
 | 5 Guardado y carga | Instantánea de todos los hechos; aviso «estado restaurado»; «avisos descartados» (causa `notices_dropped`) | Una instantánea que restaurar |
 | 4 Escena de planta | Precondición: estado en «Listo»; avisos «estado restablecido» y «estado restaurado». **Solo lee `llamada_completada`** (precondición de `recepcion`, GDD 4 regla 13); los demás hechos los leen los elementos de la escena al configurarse (GDD 4, regla 6) | Los avisos de la regla 10 (4), incluidos «carga de escena fallida» y «partida terminada» |
+| 8 Control de acceso, 21 Director de escenas | Avisos de cambio de hecho; 8 recibe «ascensor rechazado» y 21 recibe «ascensor llamado» | 8: «puerta abierta», «ascensor llamado», «línea pedida». 21: «efecto de escena pedido», «estado de objeto pedido», «tarjeta final pedida», «línea pedida», «ascensor rechazado». Ninguno escribe hechos |
 | 23 Audio, 28 Atmósfera, 26 Subtítulos, 27 Título | Avisos de cambio y de eventos con nombre a los que se suscriben | 23: «línea terminada», «línea sin audio», «línea fallida» |
 | 25 Menú de pausa | Avisos de cambio; «guardado en riesgo» para su indicador | `pause_opened` |
 | 2 Jugador, 18 Base de contenido narrativo | Nada (no usan el bus; 18 es contenido que los consumidores eligen leyendo `carta_variante` y `respuesta_llamada`) | — |
@@ -168,23 +170,23 @@ Otras interacciones:
 | 5 Guardado y carga | Dura | Pide instantánea, restaura, restablece (y lee el contenido restablecido), consulta `snapshot_version` y `cola_vacía()`, escucha «estado restaurado», «avisos descartados» (causa `notices_dropped`), «partida terminada» (de 4) y los avisos de causa; emite «guardado en riesgo» / «guardado restablecido» |
 | 7 Interacción e inspección | Blanda | Lee cualquier hecho para `habilitado_si` (coste constante, sin asignaciones); emite «vista cercana abierta/cerrada», «lectura completada», «lectura cerrada», «interacción ejecutada» |
 | 6 Ajustes persistentes | Ninguna | No usa el bus: aviso de cambio propio con las mismas reglas (su regla 7); el ADR debe unificar el mecanismo |
-| 8 Control de acceso | Dura | Lee `archivo_abierto`, `tarjeta_B`, `tarjeta_D`, `llamada_completada`; emite «puerta abierta» |
+| 8 Control de acceso | Dura | Lee `archivo_abierto` (suscripción por hecho), `tarjeta_B`, `tarjeta_D`, `caja_completa` y `llamada_completada`; **no escribe hechos**; emite «puerta abierta», «ascensor llamado» y «línea pedida»; recibe «ascensor rechazado» |
 | 9 Marco de puzles | Dura | Es `owner` de los hechos de puzle y único escritor; se suscribe por hecho a los de `requires.all`; emite `EV_PUZZLE_SOLVED_<ID>`, «compartimento completado» y los demás avisos de puzle; escribe `pendiente_revelacion` al iniciar la revelación y lo limpia **con la escritura silenciosa** (regla 16) al configurarse tras una carga |
 | 10 Caja y compartimentos | Dura | Lee `caja_c1` a `caja_c4` para las dependencias entre compartimentos |
-| 19 Ordenador, correo e impresora | Dura | Escribe `correos_leidos` |
-| 20 Documentos y bolsillo | Dura | Escribe `formulario_leido`, `tarjeta_B`, `tarjeta_D` |
-| 21 Director de escenas | Dura | Lee `caja_completa`, `llamada_iniciada` (reanudación: `caja_completa ∧ ¬llamada_iniciada`), `respuesta_llamada`, `llamada_completada`; `memo_leido` solo opcional (Recepción) |
+| 19 Ordenador, correo e impresora | Dura | Escribe `correos_leidos` y es su único lector (habilita «Imprimir»); no emite avisos con nombre |
+| 20 Documentos y bolsillo | Dura | Escribe `formulario_leido`, `tarjeta_B`, `tarjeta_D` (`tarjeta_*` a petición de 8 vía `otorgar("A05")`); lee `caja_c1`, `caja_c2`, `caja_c4` y `carta_variante` para derivar ítems; no emite avisos nuevos (D20-10) |
+| 21 Director de escenas | Dura | Lee `formulario_leido`, `caja_completa`, `llamada_iniciada`, `llamada_completada` (reanudación: `caja_completa ∧ ¬llamada_completada`) y `respuesta_llamada`; **no lee** `memo_leido` ni `t4_decision`; no escribe hechos; emite «efecto de escena pedido», «estado de objeto pedido», «tarjeta final pedida», «línea pedida» y «ascensor rechazado»; escucha «ascensor llamado» (de 8) |
 | 22 Llamada telefónica | Dura | Lee `carta_variante`; escribe `llamada_iniciada` (restricción de momento: nota tras la tabla de hechos), `respuesta_llamada`, `llamada_completada`; emite «llamada iniciada» y «llamada completada» |
 | 23 Director de audio | Blanda | Se suscribe a avisos; emite «línea terminada», «línea sin audio» y «línea fallida» |
 | 25 Menú de pausa | Blanda | Emite `pause_opened`; muestra «guardado en riesgo». No lee ni escribe hechos |
 | 27 Pantalla de título y cierre | Blanda | Lee hechos para detectar partida en curso |
 | 28 Atmósfera reactiva | Blanda | Se suscribe a avisos (apagón, parpadeo, reflejo) |
 | 11 a 16 Puzles | Indirecta (vía 9) | Escriben y leen sus hechos a través del marco de puzles |
-| 17 Sistema de pistas | Dura | Lee `formulario_leido` y `memo_leido` (el índice ya lista el 3 en su fila: `3, 9, 18`) |
+| 17 Sistema de pistas | Dura | Lee `formulario_leido` y `memo_leido` (único lector de `memo_leido`; el índice ya lista el 3 en su fila: `3, 9, 18`) |
 
 **Índice de sistemas:** la fila del sistema 17 ya lista el 3 (`3, 9, 18`). La fila del sistema 1 (Entrada y controles) queda sin dependencias porque la suya con este sistema es blanda.
 
-**Bidireccionalidad.** Existen los GDD de 1, 2, 4, 5, 6, 7, 9 y 18, y todos remiten a este documento: 1 (regla 3 y tabla; emisor blando), 4 (reglas 5, 6 y 17; sus avisos están ya en la regla 10), 5 (reglas 5, 7, 12, 13, 18, 24; instantánea, restablecimiento, `snapshot_version`, `cola_vacía`), 6 (reglas 3 y 7: los ajustes quedan fuera; aviso propio con las mismas reglas), 7 (regla 29: avisos y lectura por `habilitado_si`), 9 (reglas 1, 8 y 19: propiedad de los hechos de puzle y `pendiente_revelacion`), 2 y 18 (no usan el bus y lo declaran). Pendientes de redactarse y de listar este sistema con los nombres de la tabla de «Interacciones con otros sistemas»: 8, 10, 19, 20, 21, 22, 23, 25, 26, 27, 28 (y 11 a 16 vía 9; 17 en lo suyo).
+**Bidireccionalidad.** Existen los GDD de 1, 2, 4, 5, 6, 7, 8, 9, 10, 18, 19, 20 y 21, y todos remiten a este documento (los de 8, 10, 19, 20 y 21, lote Feature 1, en su tabla de dependencias o de cambios requeridos; pendientes de su re-review): 1 (regla 3 y tabla; emisor blando), 4 (reglas 5, 6 y 17; sus avisos están ya en la regla 10), 5 (reglas 5, 7, 12, 13, 18, 24; instantánea, restablecimiento, `snapshot_version`, `cola_vacía`), 6 (reglas 3 y 7: los ajustes quedan fuera; aviso propio con las mismas reglas), 7 (regla 29: avisos y lectura por `habilitado_si`), 9 (reglas 1, 8 y 19: propiedad de los hechos de puzle y `pendiente_revelacion`), 2 y 18 (no usan el bus y lo declaran). Pendientes de redactarse y de listar este sistema con los nombres de la tabla de «Interacciones con otros sistemas»: 22, 23, 25, 26, 27, 28 (y 11 a 16 vía 9; 17 en lo suyo).
 
 ## Tuning Knobs
 
@@ -208,7 +210,7 @@ Ninguno para el jugador. La consola de desarrollo (regla 15) es una herramienta 
 
 ## Cross-References
 
-Las referencias son a documentos de diseño; los GDD 1, 2, 4, 5, 6, 7, 9 y 18 ya existen y figuran abajo. Los demás sistemas dependientes se añadirán al redactarse.
+Las referencias son a documentos de diseño; los GDD 1, 2, 4, 5, 6, 7, 8, 9, 10, 18, 19, 20 y 21 ya existen y figuran abajo. Los demás sistemas dependientes se añadirán al redactarse.
 
 | Documento | Elemento | Naturaleza |
 |---|---|---|
@@ -217,7 +219,7 @@ Las referencias son a documentos de diseño; los GDD 1, 2, 4, 5, 6, 7, 9 y 18 ya
 | `design/slice/slice-v0.3.md` · §13.2 y D.3 | Puntos de autoguardado y reanudaciones | Condiciona la instantánea (reglas 13 y 14) |
 | `design/slice/slice-v0.3.md` · D-14, D-15, D-16 | Carta permanente; silencio en la llamada; orden de la caja | Justifican hechos de un solo sentido y `caja_completa` derivado |
 | `design/gdd/game-pillars.md` | *Tensión sin castigo*, *Información incompleta* | Pilares que este sistema sirve |
-| `design/gdd/systems-index.md` | Fila 3 y dependencias de los sistemas 4, 5, 8, 9, 10, 17, 19–23, 27, 28 | Debe reflejar la tabla de Dependencies |
+| `design/gdd/systems-index.md` | Fila 3 y dependencias de los sistemas 4, 5, 8, 9, 10, 17, 19–23, 27, 28 (8, 10, 19, 20 y 21 ya propagadas) | Debe reflejar la tabla de Dependencies |
 | `design/gdd/entrada-y-controles.md` · regla 3 | «dispositivo de entrada cambiado» y «contexto de entrada cambiado» | Avisos emitidos por Entrada (1) y listados en la regla 10 |
 | `design/gdd/jugador-en-primera-persona.md` · regla 31 y tabla de interacciones | El Jugador (2) no usa el bus | Sin dependencia; declarado en la regla 10 |
 | `design/gdd/escena-de-planta.md` · reglas 5, 6, 9, 13, 14, 16, 17 y «Cambios requeridos» nº 1 | Avisos de carga, de fallo y de zona; «partida terminada»; solo lee `llamada_completada` | Cubierto por la regla 10 y la fila 4 |
@@ -225,6 +227,11 @@ Las referencias son a documentos de diseño; los GDD 1, 2, 4, 5, 6, 7, 9 y 18 ya
 | `design/gdd/ajustes-persistentes.md` · reglas 3 y 7 | Ajustes fuera del estado; aviso propio con las mismas reglas y el mismo tope | Mecanismo duplicado a unificar en el ADR (Open Question 2) |
 | `design/gdd/interaccion-e-inspeccion.md` · regla 29 | Avisos de vista/lectura/interacción; lectura por `habilitado_si` | Regla 10 y Game Feel (coste) |
 | `design/gdd/marco-de-puzles.md` · reglas 1, 8, 19, 20, D9-4, D9-5, D9-13 | Propiedad de hechos de puzle; `pendiente_revelacion` al iniciar; avisos de puzle y de línea; identificadores `P1`–`P6` | Reglas 2, 5 y 10; Decisiones tomadas |
+| `design/gdd/control-de-acceso.md` · reglas 11, 13 a 15 y Dependencies | «puerta abierta», «ascensor llamado», «línea pedida»; lee `archivo_abierto`, `tarjeta_B/D`, `caja_completa`, `llamada_completada`; no escribe hechos | Regla 10 y tabla de hechos |
+| `design/gdd/caja-y-compartimentos.md` · reglas 3, 6, 19 | Lee `caja_c1`–`caja_c4`; `caja_completa` es derivado | Sin cambios de contrato |
+| `design/gdd/ordenador-correo-impresora.md` · R15, R21 | Escribe y lee `correos_leidos` (único lector) | Tabla de hechos |
+| `design/gdd/documentos-y-bolsillo.md` · R1, R8, R12 | Escribe `formulario_leido`, `tarjeta_B`, `tarjeta_D`; deriva los demás ítems de hechos de 9 | Tabla de hechos; D20-10 (sin avisos nuevos) |
+| `design/gdd/director-de-escenas.md` · reglas 5, 6, 14, 15, 17 | Lee 5 hechos sin escribir; avisos de 21; «ascensor llamado»/«ascensor rechazado» | Regla 10 y tabla de hechos |
 | `design/gdd/base-de-contenido-narrativo.md` · regla 5 | `carta_variante` y `respuesta_llamada` leídos por los consumidores | Sin dependencia directa |
 
 ## Acceptance Criteria
@@ -287,9 +294,9 @@ Revisados por `qa-lead`. **Testeabilidad hoy:** los CA marcados L se ejecutan si
 | 1 | ~~Identificadores de los puzles `P1` a `P6`.~~ **Resuelta:** confirmados por el GDD 9 (D9-13). | — | Cerrada (2026-11-09) |
 | 2 | **Tope de avisos encadenados** por fotograma y **formato de la instantánea** (mapa nombre → valor + versión). | `/architecture-decision` | Fase de arquitectura |
 | 3 | **Mecanismo del `owner`**: cómo se identifica al sistema escritor en desarrollo sin acoplar los sistemas. | `/architecture-decision` | Fase de arquitectura |
-| 4 | **Escritores y lectores de la tabla de interacciones**: confirmados por 1, 4, 5, 7 y 9; siguen como propuesta (‡) los de 8, 19–23, 25–28. | GDD de cada sistema dependiente | Al redactar cada uno |
+| 4 | **Escritores y lectores de la tabla de interacciones**: confirmados por 1, 4, 5, 7, 8, 9, 10, 19, 20 y 21 (lote Feature 1, pendientes de re-review); siguen como propuesta (‡) los de 17, 22, 23 y 25–28. | GDD de cada sistema dependiente | Al redactar cada uno |
 | 5 | ~~Índice de sistemas: añadir el sistema 3 a las dependencias del 17.~~ **Resuelta:** la fila 17 ya lista `3, 9, 18`. | — | Cerrada (2026-11-08) |
-| 6 | `memo_leido` y el director de escenas (21): el slice D.2 dice «Pistas, recompensa de B» y la fila de Recepción dice «(opcional, pistas)». **Decidido provisionalmente:** lectura opcional del 21 en Recepción, sin dependencia dura; el 21 la confirma o la retira. | `/design-system` del sistema 21 | GDD del sistema 21 |
+| 6 | ~~`memo_leido` y el director de escenas (21).~~ **Resuelta:** el GDD 21 retira la lectura opcional (DT-5 de 21); `memo_leido` solo lo lee 17 (DT-17). | — | Cerrada (2026-11-09) |
 | 8 | **Tipado de números JSON en Godot 4.7** (¿`2` llega como `int` o `float`?): no cubierto por `docs/engine-reference/godot/`, **pendiente de verificación**. La regla 13 es robusta a ambos casos. | ADR de la instantánea + prueba de ida y vuelta (GDD 5 AC-30c) | Fase de arquitectura |
 | 7 | **Destino de log inyectable** para las pruebas («se registra» verificable). | `/architecture-decision` | Fase de arquitectura |
 
@@ -304,13 +311,17 @@ Revisados por `qa-lead`. **Testeabilidad hoy:** los CA marcados L se ejecutan si
 | DT-5 | La restauración acepta un número sin parte fraccionaria como `int`; la escritura (regla 6) sigue estricta. La conducta JSON del motor queda pendiente de verificación | Rechazar todo `float` también al restaurar | Un guardado válido no debe perderse por el tipado del analizador |
 | DT-6 | El descarte de cola por tope emite «avisos descartados» (causa de guardado) y CA-32 comprueba que el slice no alcanza el tope | Solo documentar que no se alcanza | Cierra el hueco a coste mínimo |
 | DT-7 | Ajustes (6) no pasa por el bus; el ADR de avisos unifica ambos mecanismos | Que Ajustes use este bus | Los ajustes no son hechos del juego (regla 14); lo decide el GDD 6 |
-| DT-8 | `memo_leido`: lectura opcional del 21 en Recepción, pendiente de confirmar | Quitar al 21 como lector | La fila de Recepción del slice la sustenta |
+| DT-8 | ~~`memo_leido`: lectura opcional del 21 en Recepción, pendiente de confirmar~~ **Sustituida por DT-17** | Quitar al 21 como lector | La fila de Recepción del slice la sustenta |
 | DT-9 | **(usuario, 2026-11-09, D-B1)** Nuevo hecho `t4_decision` (enum `returned`/`assigned`, sin fijar, `owner = 9`, un solo sentido); el catálogo pasa de 19 a 20. Lo escribe el marco al resolver el puzle 4 | `bool` `t4_devuelta`; escribirlo al decidir la ficha | El enum admite un tercer valor y se lee como `carta_variante`; escribirlo al decidir chocaría con la restauración (el parcial del P4 no se persiste, GDD 9 D9-8) |
 | DT-10 | **(ronda 3, S-W7)** Escritura silenciosa de reparación (regla 16): solo el `owner`, solo reversibles, solo durante la carga, sin aviso; la línea base de `dif` de Guardado no se rehace | Que 9 use la escritura normal y los demás ignoren el aviso; o rehacer la línea base | 9 regla 8 / AC-41 exigen «sin avisos»; con aviso, 23 y 28 reaccionarían a un estado que no es un cambio del jugador. Dejar `dif` verdadero hace que la limpieza llegue a disco |
 | DT-11 | **(ronda 3, S-B1)** «Partida terminada» tiene un único emisor, 4, tras «terminada» de `recepcion` | «4 o 22» (referencia circular entre 3, 4 y 5); en «iniciada» | 22 vive en la planta, que se descarga; en «iniciada» un fallo de carga marcaría la partida |
 | DT-12 | **(ronda 3, C-W2)** «Carga de escena iniciada» lleva (destino, `motivo`, `D_carga`); nuevo «carga de escena fallida» (destino, `motivo`, causa) | Solo el destino; sin aviso de fallo | Entrada necesita `D_carga` y el fin de la carga; 5 distingue fallo de éxito |
 | DT-13 | **(ronda 3, C-B2)** «Avisos descartados» es la causa `notices_dropped` en 5 | Retirar la promesa y fiar en `periodic` | La garantía «no perder una causa» necesita contraparte en Guardado |
 | DT-14 | **(ronda 4, B-3/E1-3b)** El slice D.2 ya recoge los 20 hechos (v0.3.2); la ventana de la escritura silenciosa se acota con los avisos de carga de 4, a los que 3 se suscribe | Dejar «19 + 1» pendiente; ventana implícita | Elimina la discrepancia 19/20/21 y explicita la dependencia de 3 con 4 |
+| DT-15 | **(lote Feature 1)** Se declaran en la regla 10 los avisos de 8 («puerta abierta» A/B/D, «ascensor llamado», «línea pedida») y de 21 («efecto de escena pedido», «estado de objeto pedido», «tarjeta final pedida», «línea pedida», «ascensor rechazado»); se quita la ‡ de 8 | Que 4 emitiera «ascensor rechazado»; dejar la ‡ hasta el re-review de 8 | 4 solo rechaza `recepcion`; quien conoce el contexto de la llamada es 21 (GDD 21 regla 17); el contrato de nombre y datos ya está cerrado en 8 y 21 |
+| DT-16 | Propietarios cerrados: `correos_leidos` 19 (único lector 19; 9 no lo lee); `formulario_leido`, `tarjeta_B`, `tarjeta_D` 20 (8 solo lee las tarjetas). Se quitan las ‡ de esos escritores. Recuento: 20 hechos, sin cambios (verificado contra el slice D.2) | Que 9 lea `correos_leidos` para su `requires`; que 8 escriba las tarjetas | 9 declara `requires: all: []` (GDD 19 R27); `A05` es de 8 pero `tarjeta_B/D` las escribe 20 al `otorgar` (un solo dueño, regla 2) |
+| DT-17 | 21 deja de leer `memo_leido` y `t4_decision` (los lee 17 y 22 respectivamente) y pasa a leer `formulario_leido`; cierra Open Question 6 y sustituye a DT-8 | Mantener la lectura opcional del 21 | En Recepción no hay puzle ni pistas (GDD 21 DT-5, DT-6) |
+| DT-18 | `caja_completa` lo leen 21 (apagón y timbre; la llamada la inicia 22) y 8 (`C08` en `EN_APAGON`); `llamada_completada` la leen 21, 8 (activa `C08` +2,0 s) y 4 (precondición). 8 y 21 no escriben hechos | Que 21 «active el ascensor» o «dispare la llamada» | `C08` es íntegramente de 8 (D8-13, DT-17 de 21); corrige el texto previo de la tabla de hechos |
 
 ## Historial de cambios
 - **2026-11-09 (D-B1, decisión del usuario):** hecho nuevo `t4_decision` (enum `returned`/`assigned`, owner 9, un solo sentido): el catálogo pasa de 19 a 20 hechos (regla 2, regla 4, tabla de hechos, CA-01, CA-04, CA-18, CA-19, CA-24, CA-30, DT-9). Cambia el catálogo, no el mecanismo: pendiente de re-review.
@@ -320,3 +331,4 @@ Revisados por `qa-lead`. **Testeabilidad hoy:** los CA marcados L se ejecutan si
 
 - **2026-11-09 (ronda 3, aplica `gdd-cross-review-2026-11-09.md`):** regla 10 (datos de «carga de escena iniciada», «carga de escena fallida», «partida terminada» con 4 como único emisor; «avisos descartados» = `notices_dropped`), nueva regla 16 (escritura silenciosa y línea base de `dif`), regla 13 (`cola_vacía` → F1 de 5), tablas de interacciones y dependencias (4 lee `llamada_completada`), CA-35 y CA-36, DT-10 a DT-13. **Cambia reglas: pendiente de re-review.**
 - **2026-11-09 (ronda 4, aplica `gdd-cross-review-2026-11-09-r2.md`):** B-3: 20 hechos del Anexo D.2 (incluido `t4_decision`) en regla 1, CA-01, tabla de hechos, Fuentes y DT-2 (recogido en slice v0.3.2). E1-3b: regla 16a deja escrito que 3 se suscribe a «carga de escena iniciada»/«escena lista» de 4 para acotar la ventana. DT-14. Pendiente de re-review.
+- **2026-11-09 (propagación del lote Feature 1, GDD 8, 10, 19, 20 y 21):** regla 10 (avisos de 8 sin ‡ y de 21; «línea pedida» con tres emisores; fila 23 con la sangría corregida), tabla de hechos (dueños de `correos_leidos`, `formulario_leido`, `tarjeta_B/D` cerrados; lectores de `caja_completa`, `llamada_completada`, `memo_leido`, `t4_decision`, `formulario_leido`; texto «dispara el apagón y la llamada» corregido), otras interacciones, Dependencies (8, 10, 19, 20, 21, 17), bidireccionalidad, Cross-References, Open Questions 4 y 6, DT-8 sustituida y DT-15 a DT-18. 20 hechos (sin cambios). Ninguna pregunta de alcance del lote (`atrás`/`repasar_bolsillo`, B.1, `MEGA_03` y slice v0.4, quién muestra `I-05`/`I-06a`) afecta al contrato de 3. **Cambia reglas: pendiente de re-review.** Estado: Revisado (ronda de propagación 1) — pendiente de re-review.
