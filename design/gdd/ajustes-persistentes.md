@@ -374,7 +374,7 @@ Sin criterio hasta que exista el ADR: el tope del bucle de avisos encadenados, l
 | 14 | **Menú de pausa (25), sin GDD:** debe ofrecer `multiplicador_pie` (deslizador de paso 0,25) y `pie_persistente` junto a los demás ajustes de accesibilidad (reglas 1 y 8, UI Requirements); anotar en el GDD de 25 y en el de 30. | GDD de los sistemas 25 y 30 | Esos GDD |
 | 13 | **Registro de entidades:** lista completa de valores a registrar en la re-review («Cambios requeridos en otros GDDs»). | Revisión de consistencia | Aprobación del GDD |
 
-**Pendiente de decisión (lote Feature 1).** No se aplican; no hay clave nueva hasta que se resuelvan.
+**Siguen abiertas tras la ronda de decisiones 1 (lote Feature 1).** Ninguna de las decisiones aprobadas (D-A a D-E) las resuelve; no se aplican y no hay clave nueva hasta que se decidan.
 
 | # | Pregunta | Pide | Efecto |
 |---|---|---|---|
@@ -398,6 +398,8 @@ Sin criterio hasta que exista el ADR: el tope del bucle de avisos encadenados, l
 - **18 figura como dependencia blanda** en Dependencies (solo aloja los `UI_…`), alineado con el índice. Descartado: no listarlo, que dejaba el par incoherente con el índice.
 
 ## Historial de cambios
+
+- **2026-11-09 (ronda de decisiones 1):** sin cambios de reglas: `escala_texto_ui` (PA-3 de 19, pregunta 15) y `reducir_movimiento` sobre la caja (pregunta 5 de 10, pregunta 16) siguen abiertas; el catálogo se mantiene en 11 claves.
 
 - **2026-11-09 (ronda de propagación 1, lote Feature 1):** 19 y 21 añadidos como consumidores de `reducir_movimiento` (catálogo, interacciones, dependencias, AC-18b); `escala_texto_ui` (PA-3 de 19) y el alcance de `reducir_movimiento` en la caja (pregunta 5 de 10) como Open Questions 15 y 16. Sin claves nuevas. Estado: pendiente de re-review.
 
