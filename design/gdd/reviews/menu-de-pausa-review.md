@@ -1,0 +1,74 @@
+# Revisión independiente · Menú de pausa (sistema 25)
+
+> **Documento revisado:** `design/gdd/menu-de-pausa.md` (borrador, lote autónomo, 2026-11-09)
+> **Revisor:** independiente, sin el contexto del autor · **Fecha:** 2026-11-09
+> **Modo:** `standard` (se comprueban también las secciones extra del proyecto)
+
+## Veredicto: NEEDS REVISION
+
+El GDD está completo, es muy minucioso y sus ajustes, acciones, `pause_opened`, la petición `quit` y las reglas 15 a 17 y 20 de Entrada existen y se llaman igual en sus dueños. Hay 4 bloqueantes, todos de contrato con GDDs vecinos o de coherencia numérica interna, y todos se arreglan con ediciones locales sin rediseñar. Ninguno toca pilares ni alcance del slice. Tras corregirlos basta una re-verificación puntual.
+
+Resumen: **4 BLOQUEANTES (B) · 10 AVISOS (W).**
+
+---
+
+## 1. Completitud
+
+| Sección | Estado |
+|---|---|
+| Overview, Detailed Rules, Edge Cases, Dependencies, Acceptance Criteria (estándar) | Presentes |
+| Formulas (el sistema define umbrales, tiempos y pasos numéricos) | Presente: F1 a F4 con variables, rangos y ejemplos |
+| Player Fantasy, Tuning Knobs (8 secciones completas) | Presentes |
+| Extras del proyecto: Decisiones tomadas, Open Questions, Cambios requeridos en otros GDDs, Entradas para el registro, Historial | Presentes |
+| Conteos del Historial (29 reglas, 4 fórmulas, 33 edge cases, 49 AC, 18 decisiones, 10 OQ) | Coinciden con el contenido |
+
+Faltas de detalle:
+- El Quick reference y la fila del índice no incluyen 3 ni 4 como dependencias blandas, aunque la tabla de Dependencies sí las lista (ver W-1).
+- `mostrar_leyendas_gestos` está en Tuning Knobs pero no en «Entradas para el registro» (W-9).
+
+## 2. BLOQUEANTES
+
+| ID | Ubicación | Problema | Arreglo propuesto |
+|---|---|---|---|
+| **B-1** | Regla 3 («no tiene ningún otro consumidor»); Dependencies aguas abajo; OQ 2 | Contradice a 23. `director-de-audio.md` regla 41 (líneas 71, 179, 316, AC-23-18) consume `pause_opened` ‡ **y** «pausa cerrada» ‡ de 25 para pausar voces y efectos y reanudarlos. 25 no define «pausa cerrada» y afirma que `pause_opened` no tiene otro consumidor. La OQ 2 dice que 23 escucha «contexto de entrada cambiado», que no es lo que dice 23. 25 tampoco lista a 23 como consumidor de `pause_opened` (solo «se pausan con la pausa»). | Decidir una sola señal. Opción recomendada: 25 emite `pause_opened` y «pausa cerrada» (sin datos) en el bus (pedir su alta a 3 y al registro), tras restaurar el contexto. Corregir la regla 3 («consumidores: 5 y 23»). Alinear la OQ 2 y la fila 23 de Dependencies y «Cambios requeridos». Añadir un AC de la emisión de cierre. |
+| **B-2** | F2 y su ejemplo; regla 22 (b); AC-25-32 | Números que no cuadran. La regla y el ejemplo dicen que la captura escucha desde «soltar + `guarda_captura_s`» (el ejemplo da 0,35 s con soltar en 0,10 s). La fórmula `activa ⇔ t ≥ guarda ∧ t < t_captura ∧ ¬pulsada`, con `t` desde la apertura, da 0,25 s en ese mismo caso, porque en 0,25 s la tecla ya está suelta. Además no se define si los 8 s de `t_captura_s` y el «restante» cuentan desde la apertura o desde que empieza a escuchar. El AC-25-32 no distingue. | Reescribir F2 con `t_soltar` (instante en que se suelta la entrada que abrió): `t_escucha = max(t_soltar, 0) + guarda_captura_s`; `activa ⇔ t ≥ t_escucha ∧ t < t_captura_s`. Fijar que `t_captura_s` cuenta desde la apertura y recalcular el ejemplo. Añadir un AC con la entrada mantenida más de 0,25 s. |
+| **B-3** | Regla 1 («Pantalla de título» fuera), Dependencies aguas abajo (fila 27), Cambios requeridos (fila 27) | Dependencia no recíproca. `pantalla-de-titulo.md` regla 13, D27-5, AC-14 y la fila 208 de sus cambios requeridos **reutilizan las pantallas de nivel 2 de 25 como componente** (sin «Continuar», «Pistas» ni «Salir»). Piden a 25 «exponerlas como componente reutilizable». 25 solo cita a 27 como receptor del jugador y afirma que el menú no existe en el título. Quedan sin definir quién vacía los ajustes pendientes (regla 4) y de dónde se abre la pestaña por defecto desde el título. | Añadir una regla (p. ej. «Pantallas reutilizables») que declare las pantallas «Sonido y pantalla», «Accesibilidad» y «Controles» como componentes sin dependencia de la raíz. Corregir la fila 27 de Dependencies y «Cambios requeridos» como dependencia blanda de 27 sobre 25 con interfaz «pantallas». Añadir un AC que ejecute las pantallas fuera de la pausa. |
+| **B-4** | Reglas 2, 4, 5 y 17 (referencias internas); Overview; regla 15 | Referencias cruzadas rotas en una especificación que se usará para escribir historias. Overview dice «línea *guardado en riesgo* (regla 21)» y la regla 15 «Véase regla 21»; la regla 21 es *Filas y ranuras*, la línea es la **27**. La regla 17 remite a «captura de mando (regla 25)»; es la **22**. La regla 5 remite a «regla 9» para los ajustes inmediatos; es la **11**. La regla 15 es un puntero vacío. | Corregir las tres referencias y eliminar o rellenar la regla 15 (si se elimina, renumerar y actualizar los `R` de los AC). Hacer un barrido de «regla N» tras renumerar. |
+
+## 3. AVISOS
+
+| ID | Ubicación | Problema | Arreglo propuesto |
+|---|---|---|---|
+| **W-1** | Quick reference (l. 12); Cambios requeridos (índice); `systems-index.md` fila 25 | El Quick reference solo cita como blanda a 5. La fila 25 del índice dice «1, 6, 18 (blanda: 5)». Se pedía añadir 3 como blanda. El GDD lo lista en Dependencies, pero ni Quick reference ni la fila del índice (a la que «Cambios requeridos» añade solo 3) incluyen 4 (descarga total). | Quick reference: «Blandas: 3, 4, 5». Cambio al índice: añadir `3` y `4` como blandas. |
+| **W-2** | Regla 24 (aviso de imprimible) vs `entrada-y-controles.md` reglas 17 y 20 | Entrada garantiza una asignación no imprimible **solo para `atrás`**, y la regla 20 solo cita `atrás` e `interactuar`. El texto fijo «la otra asignación sigue valiendo» puede ser falso para `interactuar` o `pausa` cuando ambas ranuras son imprimibles. En `pausa` el efecto es peor: con el campo enfocado, `pausa` queda muda. La regla 20 de Entrada mantiene `Esc` como `pausa`. 25 lo trata como OQ 3 pero ya implementa la extensión. | Cambiar el texto del aviso por uno veraz sin la cláusula de la otra asignación para `interactuar` y `pausa`, o mostrar la cláusula solo si la otra ranura es no imprimible. Mantener la OQ 3 como bloqueante del cambio en 1. |
+| **W-3** | Regla 22 (d), F2, D25-11 | Temporizador de cancelación de 8 s† fijo en un cuadro de captura. Se justifica («cancelar no pierde nada»), pero no es ajustable y puede ser corto para un jugador con una mano torpe o con un dispositivo de entrada alternativo (pilares 3 y 4, accesibilidad). El rango seguro empieza en 4 s. | Elevar a Open Question para accessibility-specialist, con propuesta: reinicio del contador con cualquier pulsación no capturable o 15 s por defecto. |
+| **W-4** | Regla 28 y OQ 1 vs `pantalla-de-titulo.md` (l. 128 «Petición de descarga total (solo 21/27)», l. 112) y `escena-de-planta.md` regla 15 | La OQ 1 está bien elevada, pero la tabla de 27 y la regla 15 de 4 afirman que **solo 21 y 27** piden la descarga. 25 lo hace por defecto, así que hay contradicción viva con dos vecinos. | Mantener la OQ y añadir en «Cambios requeridos» la edición exacta de 27 y 4. Alternativa más limpia: 25 pide a 5 y 5 encadena a 27 sin que 25 llame a 4. |
+| **W-5** | Regla 23, conflicto | Falta el comportamiento de «Intercambiar» cuando la entrada en conflicto pertenece a un **conjunto** (`mover`, `mirar`) y la captura es de un único valor. También falta asignar la misma entrada a las dos ranuras de la misma acción. | Añadir fila en la tabla de resultados o edge case: tratar el conjunto como bloque y rechazar el intercambio, o permitirlo solo entre acciones simples. Para duplicado en las dos ranuras de la misma acción, decidir rechazo o fusión. |
+| **W-6** | F1 y AC-25-17 | «Un volumen recorre sus 20 pasos en ≈2,8 s»: con la fórmula son 1 + 19 pasos, es decir 0,4 + 18 × 0,12 = **2,56 s**. En el AC-25-17, mantener justo 1,0 s da `(1,0 − 0,4)/0,12 = 5` justo en el borde de un `floor` en coma flotante, así que el resultado depende del redondeo. | Corregir a ≈2,6 s. Cambiar el AC a un instante no frontera (p. ej. 1,03 s → 6 repeticiones) o fijar la tolerancia de ±1 fotograma sobre pasos. |
+| **W-7** | AC-25-18, AC-25-08, AC-25-12 | ACs no testables o sin regla de origen. El AC-25-18 exige «contraste ≥ 7:1» que la regla 13 no enuncia; «con la escala 150 % (cuando exista)» no es verificable ahora. El AC-25-08 «sin destellos» no tiene medida. | Añadir el contraste a la regla 13 (citando art bible 7.x). Marcar la parte de 150 % como diferida a OQ 5. Sustituir «sin destellos» por «una sola rampa monótona de alfa, sin cambios de luminancia posteriores» con captura de fotogramas. |
+| **W-8** | Cobertura de AC | Reglas sin AC: 10 (reabrir vuelve a «Continuar»), 19 (pestaña por defecto = dispositivo activo), 20 (leyendas se omiten sin recortar), 25 (pestaña «Mando» sin mando, editable), 26 (mando: lista de sticks/cruceta y `mirar` con ratón no reasignable), F3 (cierre con la misma duración), edge de cambio del texto del diálogo de salir al llegar «guardado en riesgo», estado «Saliendo» y orden de los pasos de la regla 28. | Añadir 5 a 8 AC cortos (L donde sea posible). |
+| **W-9** | Entradas para el registro; Tuning Knobs | `mostrar_leyendas_gestos` (knob) no figura en el registro, y los 13 rótulos `UI_PAUSA_AJ_<CLAVE>` no listan las claves de los 13 ajustes. El registro actual no contiene ninguna entrada `pausa_*` ni `UI_PAUSA_*` (Grep sin resultados), aunque `pause_opened` sí está en el vocabulario de causas (`entities.yaml` l. 949). | Añadir `pausa_mostrar_leyendas_gestos` al bloque de registro y propagar el lote al registro al cerrar la capa. |
+| **W-10** | Dependencies («17 (sin GDD)», «30», regla 14) | Texto obsoleto: ya existen `sistema-de-pistas.md` (17) y `opciones-de-accesibilidad.md` (30). 17 (regla 2, l. 19; l. 35) hace de 25 su único punto de petición y declara su `HintPanel` como panel alojado por 25: dependencia dura de 17 sobre 25. En el índice la fila 17 lista «3, 9, 18», sin 25. No he podido confirmar que el «proveedor de panel» ‡ de la regla 14 se llame así en 17 (Grep sin resultado visible) ni he revisado 30. | Sustituir «sin GDD» por la referencia real, verificar el nombre del contrato de registro (`HintPanel`) y alinearlo. Añadir 25 como dependencia dura en la fila 17 del índice. Comprobar 30 (¿repite las pantallas? regla 19 a 26) y ajustar la fila de 30. |
+
+Nota de aviso de alcance (fuera del conteo): el flujo de reasignación (dos ranuras, captura de conjuntos de cuatro pasos, listas de sticks, intercambio, restablecer por acción, dispositivo y todos) es amplio para un slice de 25 a 30 minutos. Está justificado por la regla 15 de Entrada y por la accesibilidad, así que no se contradice con el slice. Aun así conviene anotar en una OQ qué parte es mínima viable (p. ej. recortar la captura de conjuntos a «restablecer / elegir esquema predefinido»).
+
+## 4. Contradicciones con el slice y los pilares
+
+- **Slice §16 / l. 413 y §10 (l. 118):** el menú incluye pistas (tres niveles, dos en el puzle 6), subtítulos, controles y accesibilidad con «reducir movimiento». 25 lo cubre. No hay contradicción.
+- **Pilares** (`game-pillars.md`: 2 El espacio expresa la emoción, 3 Autonomía como progresión, 4 Tensión sin castigo): las citas de la cabecera coinciden con los nombres reales. «Sin contador de pistas» es coherente. Solo W-3 (temporizador) roza el pilar 4/accesibilidad; la confirmación de «Salir al título» con foco en «Cancelar» y texto tranquilizador es compatible con él.
+- Las decisiones de alcance (D25-5, OQ 7 «Salir del juego») están elevadas correctamente como OQ, sin ampliar el slice.
+
+## 5. API de Godot 4.7
+
+- `docs/engine-reference/godot/` no contiene ninguna entrada sobre pausa del árbol (`SceneTree.paused`, `process_mode`), foco de ventana o conexión de mandos (Grep sin coincidencias). El GDD no cita APIs concretas y deja «quién detiene el árbol» al ADR (regla 2, OQ 2), lo cual es correcto. Pero **no está verificado** que el contrato «Δ_juego = 0 en el mismo fotograma» y «la interfaz, los temporizadores de captura y la muestra de audio siguen en tiempo real» sea alcanzable: exige que el árbol del menú, los `Timer`/`Tween` de captura y el bus de audio de la muestra funcionen con el árbol pausado.
+- Recomendación: el ADR debe verificar con la documentación de 4.7 y registrar en `docs/engine-reference/godot/` el `process_mode` del menú, el reloj de tiempo real y el comportamiento de `AudioStreamPlayer` y `Tween` en pausa. Alt+Intro (`modo_ventana`, AC-25-16) no es un atajo nativo de Godot: debe implementarlo Ajustes o Entrada, y hay que decir quién (hoy el AC lo da por hecho).
+
+## 6. Verificado correcto
+
+- **Catálogo de 6:** los 13 ajustes de la regla 16 (3 volúmenes, `subtitulos_activos`, `modo_ventana`, `reducir_sobresaltos`, `reducir_movimiento`, `balanceo_camara`, `campo_vision`, `multiplicador_pie`, `pie_persistente`, 2 asistencias) existen en `ajustes-persistentes.md`. «Restablecer todos» = **12 claves** sin `modo_ventana` ni `controles` (6 regla 8). Cuantización 72 a 70 y 1,3 a 1,25 y 3,5 a 3,0 (AC-25-15 y AC-25-26) cuadran con 6 (F1 generalizada, AC-04f). Escritura inmediata (6 regla 5), vaciado al abrir la pausa (6 regla 13, AC-14c) y guardado diferido en tiempo real (6 AC-14d) existen y coinciden. 6 declara a 25 como dependiente duro: recíproco.
+- **Entrada (1):** reglas 7, 15 (acciones reasignables y gestos derivados no reasignables), 16 (pares permitidos `pausa`/`ui_atrás` en `Esc`, rechazo sin intercambio para `ui_*` fijas), 17 (mínimos y `atrás` no imprimible), 18 (ajustes de manejo), 20 (texto en el ordenador), 21 (pérdida de foco), 22 (mando desconectado) existen con el contenido citado. 1 lista a 25 como dependencia **dura**, igual que 25 → 1. La fila «Pendiente» del panel de mando (l. 401) sigue abierta y 25 la cierra.
+- **`pause_opened`:** existe en 3 (l. 55, 123, 181; sin datos), en 5 (causa no urgente, reglas 6/AC-09, AC-25-04 correcto) y en el vocabulario del registro (l. 949). La petición `quit` de 5 (reglas 6 y 17, AC-26b) y el indicador «guardado en riesgo» (5 l. 160, 327; 3 l. 123) existen. Dependencias de 3 y 5 con 25: **blandas**, recíprocas.
+- **Pistas (17):** 17 pone el panel y la petición solo desde la pausa (reglas 2, 3 del GDD de 17), no escribe hechos ni ajustes (6 regla 3 y 17 regla 1), y no muestra contadores. Coherente con las reglas 14 y 21.
+- **Eventos y vocabulario:** nombres de acciones (`pausa`, `atrás`, `interactuar`, `seleccionar`, `ui_*`), `pause_opened` y `quit` coinciden.
+- **Edge cases** de apertura, mando, foco y llamada son coherentes con 1 y con 22.
+- Estructura de un solo nivel respeta lo pedido por 2; la lógica de `Esc` (D25-2) está bien razonada y su cambio en 1 (regla 7) está listado en «Cambios requeridos».
