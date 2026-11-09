@@ -129,3 +129,16 @@ D-11 justifica no tratar el fichero de versión mayor como dañado porque «no s
 2. **Qué ofrece «Continuar» tras completar el slice (Open Question 10).** Con la partida sellada para siempre, «Continuar» vuelve a la llamada. Para la demo de financiación, ¿debe el título ofrecer solo «Nueva partida» tras llegar a Recepción? Afecta al alcance y al tono de la demo.
 3. **Puertas B y D al reanudar.** Hoy solo se guardan las tarjetas, no el estado «abierta» de B y D. ¿El jugador debe encontrarlas cerradas (y volver a usar la tarjeta, sin penalización) o abiertas? Lo segundo exige hechos nuevos y toca D.2 (19 hechos).
 4. **Progreso de pistas.** El nivel de pista alcanzado (tres niveles por puzle, dos en el P6) no se guarda y vuelve al nivel 1 al reanudar. ¿Es aceptable o conviene conservarlo (hechos nuevos, toca D.2)?
+
+## Cambios requeridos en otros GDDs
+
+Derivados de aplicar esta re-review a `guardado-y-carga.md` (estado «Revisado (ronda 2) — pendiente de re-review», 2026-11-09). Este GDD no los ha editado.
+
+- **Slice (`slice-v0.3.md`):** D.2, anotar que `llamada_iniciada` no evita repetir la llamada (decisión del usuario). D.3, «autoguardado al abrir cualquier puerta»: B y D no son hechos, solo escribe si otro hecho cambió; las puertas B y D se encuentran cerradas al reanudar (tarjeta sí). Añadir que tras llegar a Recepción el título ofrece solo «Nueva partida». Nueva causa de guardado al recoger tarjetas. El progreso de pistas no se guarda.
+- **GDD 4 (Escena de planta) y GDD 22 (Llamada):** emitir el aviso «partida terminada» al llegar a Recepción (a decidir cuál de los dos). Regla 16 de 4 («el guardado no cambia en Recepción»): añadir la excepción `slice_completed`. Comprobar que el fallo de carga con `partida_nueva` (regla 14) y el fundido de 2,0 s encajan con «Cargando partida».
+- **GDD 8 (Control de acceso):** reconstruir las puertas B y D cerradas al reanudar (solo `tarjeta_B/D` se guardan).
+- **GDD 27 (Pantalla de título):** consultar `terminada` (con ella solo «Nueva partida», sin confirmación) y `con_futura`; `nueva_partida()` entra en «Cargando partida» y 27 no pide `planta`.
+- **GDD 3 (Estado y bus):** confirmar que emite el aviso de cambio de `tarjeta_B/D` (causa `card_acquired`) y que la instantánea tras «estado restaurado» sirve de línea base.
+- **GDD 6, 18, 21, 22, 25 e índice de sistemas:** los de la menor 11 (6 retira «A confirmar»; 18 cita al 5 y da de alta los rótulos `UI_…`, incluido el aviso de «el siguiente guardado reemplazará la partida más nueva»; filas 25, 21 y 22 del índice listan al 5; fila 5 depende de 3 y 4). Open Question 10 de este GDD queda cerrada.
+- **Registro (`design/registry/entities.yaml`):** `save_format_version` describe la primera línea `v<N>`, no un campo del cuerpo; añadir las causas `card_acquired` y `slice_completed`, la clave opcional `completed` y el indicador `terminada`.
+- **Godot (no cubierto por `docs/engine-reference/godot/`), pendiente de verificación en el editor y en el ADR:** forzado a disco, borrado y renombrado y sus códigos de error, tipo numérico del analizador JSON, API y algoritmo del hash, reloj monotónico, cierre normal frente a forzado.
