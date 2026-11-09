@@ -22,16 +22,16 @@ Se excluyen a propósito combate, IA de enemigos, economía, progresión, red y 
 
 | # | System Name | Category | Priority | Status | Design Doc | Depends On |
 |---|-------------|----------|----------|--------|------------|------------|
-| 1 | Entrada y controles | Core | MVP | Revisado (ronda 5) — sin bloqueantes | design/gdd/entrada-y-controles.md | — (blandas: 3, 4, 18) |
-| 2 | Jugador en primera persona (movimiento, cámara, manos) | Core | MVP | Revisado (ronda de decisiones 1) — pendiente de re-review | design/gdd/jugador-en-primera-persona.md | 1, 4 (blandas: 6, 18) |
-| 3 | Estado del juego y bus de eventos | Core | MVP | Revisado (ronda de decisiones 1) — pendiente de re-review | design/gdd/estado-y-bus-de-eventos.md | — |
-| 4 | Escena de planta y carga de Recepción | Core | MVP | Revisado (ronda de decisiones 1) — pendiente de re-review | design/gdd/escena-de-planta.md | 3 (blandas: 1, 6, 18); 2 (dura) |
-| 5 | Guardado y carga | Persistence | MVP | Revisado (ronda de decisiones 1) — pendiente de re-review | design/gdd/guardado-y-carga.md | 3, 4 (blanda: 18) |
-| 6 | Ajustes persistentes (inferred) | Persistence | MVP | Revisado (ronda de corrección 2) — pendiente de re-review | design/gdd/ajustes-persistentes.md | 1 (blanda: 18) |
-| 7 | Interacción e inspección | Gameplay | MVP | Revisado (ronda de corrección 2) — pendiente de re-review | design/gdd/interaccion-e-inspeccion.md | 1, 2, 4, 18 (blanda: 3) |
-| 8 | Control de acceso (puertas, tarjetas, lectores, ascensor `C08`, cajón `A05`) | Gameplay | MVP | Revisado (ronda de corrección 1) — pendiente de re-review | design/gdd/control-de-acceso.md | 3, 4, 7, 18, 20 (blandas: 2, 5, 9, 21, 22, 23, 28/29) |
-| 9 | Marco de puzles (inferred) | Gameplay | MVP | Revisado (ronda de corrección 2) — pendiente de re-review | design/gdd/marco-de-puzles.md | 3, 4, 7, 10, 19 (duras; 9 ↔ 10 circular, ver Circular Dependencies), 18 (dura en validación) · blandas 2, 6, 8, 20, 23, 25, 26 |
-| 10 | Caja y compartimentos | Gameplay | MVP | Revisado (ronda de corrección 1) — pendiente de re-review | design/gdd/caja-y-compartimentos.md | 3, 4, 7, 9 (blandas: 20, 23; indirectas: 1, 2, 5, 21) |
+| 1 | Entrada y controles | Core | MVP | Revisado (ronda 6) — sin bloqueantes | design/gdd/entrada-y-controles.md | — (blandas: 3, 4, 18) |
+| 2 | Jugador en primera persona (movimiento, cámara, manos) | Core | MVP | Revisado (ronda 6) — sin bloqueantes | design/gdd/jugador-en-primera-persona.md | 1, 4 (blandas: 6, 18) |
+| 3 | Estado del juego y bus de eventos | Core | MVP | Revisado (ronda 6) — sin bloqueantes | design/gdd/estado-y-bus-de-eventos.md | — |
+| 4 | Escena de planta y carga de Recepción | Core | MVP | Revisado (ronda 6) — sin bloqueantes | design/gdd/escena-de-planta.md | 3 (blandas: 1, 6, 18); 2 (dura) |
+| 5 | Guardado y carga | Persistence | MVP | Revisado (ronda 6) — sin bloqueantes | design/gdd/guardado-y-carga.md | 3, 4 (blanda: 18) |
+| 6 | Ajustes persistentes (inferred) | Persistence | MVP | Revisado (ronda 6) — sin bloqueantes | design/gdd/ajustes-persistentes.md | 1 (blanda: 18) |
+| 7 | Interacción e inspección | Gameplay | MVP | Revisado (ronda 6) — sin bloqueantes | design/gdd/interaccion-e-inspeccion.md | 1, 2, 4, 18 (blanda: 3) |
+| 8 | Control de acceso (puertas, tarjetas, lectores, ascensor `C08`, cajón `A05`) | Gameplay | MVP | Revisado (ronda 6) — sin bloqueantes | design/gdd/control-de-acceso.md | 3, 4, 7, 18, 20 (blandas: 2, 5, 9, 21, 22, 23, 28/29) |
+| 9 | Marco de puzles (inferred) | Gameplay | MVP | Revisado (ronda 6) — sin bloqueantes | design/gdd/marco-de-puzles.md | 3, 4, 7, 10, 19 (duras; 9 ↔ 10 circular, ver Circular Dependencies), 18 (dura en validación) · blandas 2, 6, 8, 20, 23, 25, 26 |
+| 10 | Caja y compartimentos | Gameplay | MVP | Revisado (ronda 6) — sin bloqueantes | design/gdd/caja-y-compartimentos.md | 3, 4, 7, 9 (blandas: 20, 23; indirectas: 1, 2, 5, 21) |
 | 11 | Puzle 1 · Cronología | Gameplay | MVP | Not Started | — | 9, 18, 19, 20 |
 | 12 | Puzle 2 · Memorando en el cristal | Gameplay | MVP | Not Started | — | 7, 9, 18 |
 | 13 | Puzle 3 · Encaje de la foto | Gameplay | MVP | Not Started | — | 6, 9, 10 |
@@ -39,10 +39,10 @@ Se excluyen a propósito combate, IA de enemigos, economía, progresión, red y 
 | 15 | Puzle 5 · Espejo de la diferencia | Gameplay | MVP | Not Started | — | 6, 9, 10, 13 |
 | 16 | Puzle 6 · Decisión | Gameplay | MVP | Not Started | — | 9, 10, 18 |
 | 17 | Sistema de pistas (hasta 3 niveles; 2 en el puzle 6) | Gameplay | Vertical Slice | Not Started | — | 3, 9, 18 |
-| 18 | Base de contenido narrativo (líneas, documentos, claves de traducción) | Narrative | MVP | Revisado (ronda de corrección 2) — pendiente de re-review | design/gdd/base-de-contenido-narrativo.md | — |
-| 19 | Ordenador, correo e impresora | Narrative | MVP | Revisado (ronda de corrección 1) — pendiente de re-review | design/gdd/ordenador-correo-impresora.md | 1, 3, 4, 7, 18, 20 (blandas: 2, 6, 17, 21, 23, 25/30) |
-| 20 | Documentos y bolsillo | Narrative | MVP | Revisado (ronda de corrección 1) — pendiente de re-review | design/gdd/documentos-y-bolsillo.md | 3, 7, 18 (blandas: 1, 2, 9, 17, 24); dependen de 20 (duras): 8, 19 |
-| 21 | Director de escenas (escenas 1–8, disparadores, eventos temporizados) | Narrative | MVP | Revisado (ronda de corrección 1) — pendiente de re-review | design/gdd/director-de-escenas.md | 1, 3, 4, 18 (blandas: 5, 6, 7, 8) |
+| 18 | Base de contenido narrativo (líneas, documentos, claves de traducción) | Narrative | MVP | Revisado (ronda 6) — sin bloqueantes | design/gdd/base-de-contenido-narrativo.md | — |
+| 19 | Ordenador, correo e impresora | Narrative | MVP | Revisado (ronda 6) — sin bloqueantes | design/gdd/ordenador-correo-impresora.md | 1, 3, 4, 7, 18, 20 (blandas: 2, 6, 17, 21, 23, 25/30) |
+| 20 | Documentos y bolsillo | Narrative | MVP | Revisado (ronda 6) — sin bloqueantes | design/gdd/documentos-y-bolsillo.md | 3, 7, 18 (blandas: 1, 2, 9, 17, 24); dependen de 20 (duras): 8, 19 |
+| 21 | Director de escenas (escenas 1–8, disparadores, eventos temporizados) | Narrative | MVP | Revisado (ronda 6) — sin bloqueantes | design/gdd/director-de-escenas.md | 1, 3, 4, 18 (blandas: 5, 6, 7, 8) |
 | 22 | Llamada telefónica | Narrative | MVP | Not Started | — | 1, 3, 5, 7, 18 (blanda: 2) |
 | 23 | Director de audio | Audio | Vertical Slice | Not Started | — | 3, 6, 18 (blanda: 2) |
 | 24 | Prompt de interacción y feedback | UI | MVP | Not Started | — | 1, 7, 18 |
