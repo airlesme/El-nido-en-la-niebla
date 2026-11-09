@@ -203,6 +203,17 @@ formulas:
     added: 2026-11-09
     revised: ""
 
+  - name: box_chain_time
+    status: active
+    source: design/gdd/caja-y-compartimentos.md
+    referenced_by: [design/gdd/interaccion-e-inspeccion.md, design/gdd/entrada-y-controles.md]
+    variables: [BOX_Cn_OPEN, t_vista_entrada_s, box_open_margin_min_s]
+    output_range: [1.0, 2.8]
+    expression: "T_cadena(n) (F1 de 10)"
+    notes: "Duracion de la cadena de apertura de D01a..D01c; D01d no encadena (D10-2)"
+    added: 2026-11-09
+    revised: ""
+
 # Example:
 #
 # formulas:
@@ -499,13 +510,13 @@ constants:
     added: 2026-11-09
     revised: ""
   - name: BOX_Cn_OPEN
-    status: active
+    status: deprecated
     source: design/gdd/interaccion-e-inspeccion.md
     referenced_by: [design/gdd/entrada-y-controles.md, design/gdd/marco-de-puzles.md]
     value: 1.6
     unit: s
     range: [1.2, 1.6]
-    note: "Animacion del compartimento Cn (C1-C4), duenio GDD 7 (regla 19, D7-19). Cadena D01a: BOX_Cn_OPEN + t_vista_entrada_s (<= 1,2 s) debe caber en player_camera_transition_cap_s (3 s): con 1,2 s de camara el maximo es 1,6 s (ronda 5, E-5: 1,8 + 1,2 = 3,0 s no cabe en el tope minimo de 3 s). Rango [1,2; 1,6] tambien en 7 Tuning Knobs"
+    note: "Animacion del compartimento Cn (C1-C4), duenio GDD 7 (regla 19, D7-19). Cadena D01a: BOX_Cn_OPEN + t_vista_entrada_s (<= 1,2 s) debe caber en player_camera_transition_cap_s (3 s): con 1,2 s de camara el maximo es 1,6 s (ronda 5, E-5: 1,8 + 1,2 = 3,0 s no cabe en el tope minimo de 3 s). Rango [1,2; 1,6] tambien en 7 Tuning Knobs | SUSTITUIDA (lote Feature 1): valor unico pasa a BOX_C1_OPEN..BOX_C4_OPEN y tope BOX_OPEN_MAX (1,6 s), duenio GDD 10; pendiente de actualizar 7"
     added: 2026-11-09
     revised: 2026-11-09
   - name: t_vista_salida_s
@@ -1005,6 +1016,609 @@ constants:
     note: "Ronda 3, S-W7: limpieza de pendiente_revelacion al configurar tras una carga (GDD 9 regla 8, AC-41)"
     added: 2026-11-09
     revised: ""
+  # --- Lote Feature 1 (2026-11-09): GDD 8 Control de acceso ---
+  - name: door_open_duration_s
+    status: active
+    source: design/gdd/control-de-acceso.md
+    referenced_by: [design/gdd/marco-de-puzles.md, design/gdd/escena-de-planta.md]
+    value: 1.2
+    unit: "s"
+    note: "Duracion de ANIM_DOOR_OPEN; fijo (slice A.0); F2 de 8"
+    added: 2026-11-09
+    revised: ""
+  - name: card_read_delay_s
+    status: active
+    source: design/gdd/control-de-acceso.md
+    referenced_by: []
+    value: 0.5
+    unit: "s"
+    range: [0.2, 1.0]
+    note: "Pausa entre pasar la tarjeta y que empiece la hoja (t_lectura_s de 8). PROPUESTA (†)"
+    added: 2026-11-09
+    revised: ""
+  - name: elevator_activation_delay_s
+    status: active
+    source: design/gdd/control-de-acceso.md
+    referenced_by: [design/gdd/director-de-escenas.md]
+    value: 2.0
+    unit: "s"
+    range: [0, 4.0]
+    note: "Retraso de C08 tras llamada_completada (t_ascensor_s de 8, slice C.7). Coherente con retardo_restaurar_s de 21 (2,0 s)"
+    added: 2026-11-09
+    revised: ""
+  - name: elevator_deny_line_cooldown_s
+    status: active
+    source: design/gdd/control-de-acceso.md
+    referenced_by: [design/gdd/director-de-escenas.md]
+    value: 8
+    unit: "s"
+    note: "Unico enfriamiento de MEGA_03 (enfriamiento_linea_s de 8, †). Sustituye al t_ahorro_cooldown_s 10,0† de 21 (retirado, DT-17 de 21)"
+    added: 2026-11-09
+    revised: ""
+  - name: elevator_in_use_timeout_s
+    status: active
+    source: design/gdd/control-de-acceso.md
+    referenced_by: [design/gdd/director-de-escenas.md]
+    value: 20.0
+    unit: "s"
+    note: "Salida de EN_USO de C08 (t_en_uso_tope_s de 8, †); mayor que el traspaso de 12,0 s†"
+    added: 2026-11-09
+    revised: ""
+  - name: drawer_a05_open_s
+    status: active
+    source: design/gdd/control-de-acceso.md
+    referenced_by: [design/gdd/jugador-en-primera-persona.md]
+    value: 1.0
+    unit: "s"
+    note: "Animacion del cajon A05 (HAND_DRAWER). PROPUESTA (†)"
+    added: 2026-11-09
+    revised: ""
+  - name: door_open_angle_deg
+    status: active
+    source: design/gdd/control-de-acceso.md
+    referenced_by: [design/gdd/escena-de-planta.md]
+    value: 90
+    unit: "deg"
+    range: [80, 100]
+    note: "Giro de la hoja al interior (angulo_apertura_deg de 8, †)"
+    added: 2026-11-09
+    revised: ""
+  - name: door_ids
+    status: active
+    source: design/gdd/control-de-acceso.md
+    referenced_by: [design/gdd/estado-y-bus-de-eventos.md, design/gdd/guardado-y-carga.md]
+    value: "A, B, D"
+    unit: ""
+    note: "Datos del aviso «puerta abierta» y de la causa door_opened:<ID>"
+    added: 2026-11-09
+    revised: ""
+  - name: door_state
+    status: active
+    source: design/gdd/control-de-acceso.md
+    referenced_by: [design/gdd/guardado-y-carga.md]
+    value: "CERRADA / LEYENDO / ABRIENDOSE / ABIERTA"
+    unit: "enum"
+    note: "Estado de las puertas A, B y D; no se guarda (D-24 de 5)"
+    added: 2026-11-09
+    revised: ""
+  - name: elevator_state
+    status: active
+    source: design/gdd/control-de-acceso.md
+    referenced_by: [design/gdd/director-de-escenas.md]
+    value: "INACTIVO / EN_APAGON / ESPERA / LISTO / EN_USO"
+    unit: "enum"
+    note: "Estado de C08 (poseido por 8); no se guarda"
+    added: 2026-11-09
+    revised: ""
+  - name: drawer_state
+    status: active
+    source: design/gdd/control-de-acceso.md
+    referenced_by: [design/gdd/documentos-y-bolsillo.md]
+    value: "CERRADO / ABRIENDO / ABIERTO"
+    unit: "enum"
+    note: "Estado del cajon A05 (poseido por 8); no se guarda"
+    added: 2026-11-09
+    revised: ""
+  - name: MEGA_03
+    status: active
+    source: design/gdd/control-de-acceso.md
+    referenced_by: [design/gdd/base-de-contenido-narrativo.md, design/gdd/director-de-escenas.md]
+    value: "Planta en modo de ahorro energetico"
+    unit: "line"
+    note: "Linea de megafonia pedida solo por 8 (C08 INACTIVO). PROPUESTA ‡: texto y slice v0.4 pendientes (pregunta de alcance, 8 Q1)"
+    added: 2026-11-09
+    revised: ""
+  - name: SFX_CARD_OK
+    status: active
+    source: design/gdd/control-de-acceso.md
+    referenced_by: []
+    value: "-"
+    unit: "sound"
+    note: "Sonido pedido por 8 a 23; PROPUESTA ‡. Se reproduce por C01"
+    added: 2026-11-09
+    revised: ""
+  - name: SFX_DOOR_SWING
+    status: active
+    source: design/gdd/control-de-acceso.md
+    referenced_by: []
+    value: "-"
+    unit: "sound"
+    note: "Sonido pedido por 8 a 23; PROPUESTA ‡ (1,2 s). Se reproduce por C01"
+    added: 2026-11-09
+    revised: ""
+  - name: SFX_DRAWER_OPEN
+    status: active
+    source: design/gdd/control-de-acceso.md
+    referenced_by: []
+    value: "-"
+    unit: "sound"
+    note: "Sonido pedido por 8 a 23; PROPUESTA ‡. Se reproduce por C01"
+    added: 2026-11-09
+    revised: ""
+  - name: state_notices_access
+    status: active
+    source: design/gdd/control-de-acceso.md
+    referenced_by: [design/gdd/estado-y-bus-de-eventos.md, design/gdd/guardado-y-carga.md, design/gdd/director-de-escenas.md]
+    value: "«puerta abierta» (8; A, B o D), «ascensor llamado» (8; sin datos; una por aceptacion), «ascensor rechazado» (21; sin datos; consume 8)"
+    unit: ""
+    note: "Avisos con nombre de 8 y 21 sobre C08/puertas (regla 10 de 3); 8 tambien emite «linea pedida» (MEGA_03)"
+    added: 2026-11-09
+    revised: ""
+  # --- GDD 10 Caja y compartimentos ---
+  - name: BOX_C1_OPEN
+    status: active
+    source: design/gdd/caja-y-compartimentos.md
+    referenced_by: [design/gdd/interaccion-e-inspeccion.md, design/gdd/marco-de-puzles.md]
+    value: 1.6
+    unit: "s"
+    range: [1.2, 1.6]
+    note: "slice B.3; sustituye al valor unico BOX_Cn_OPEN de 7 (tope BOX_OPEN_MAX = 3,0 - 1,2 - 0,2)"
+    added: 2026-11-09
+    revised: ""
+  - name: BOX_C2_OPEN
+    status: active
+    source: design/gdd/caja-y-compartimentos.md
+    referenced_by: [design/gdd/interaccion-e-inspeccion.md, design/gdd/marco-de-puzles.md]
+    value: 1.4
+    unit: "s"
+    range: [1.2, 1.6]
+    note: "slice B.4"
+    added: 2026-11-09
+    revised: ""
+  - name: BOX_C3_OPEN
+    status: active
+    source: design/gdd/caja-y-compartimentos.md
+    referenced_by: [design/gdd/interaccion-e-inspeccion.md, design/gdd/marco-de-puzles.md]
+    value: 1.4
+    unit: "s"
+    range: [1.2, 1.6]
+    note: "PROPUESTA (sin valor en el slice); D10-1; parte entreabierta 2 cm"
+    added: 2026-11-09
+    revised: ""
+  - name: BOX_C4_OPEN
+    status: active
+    source: design/gdd/caja-y-compartimentos.md
+    referenced_by: [design/gdd/interaccion-e-inspeccion.md, design/gdd/marco-de-puzles.md]
+    value: 1.6
+    unit: "s"
+    range: [1.2, 1.6]
+    note: "slice B.6; tapa en la resolucion del P6, fuera de T_cadena (D10-2)"
+    added: 2026-11-09
+    revised: ""
+  - name: BOX_OPEN_MAX
+    status: active
+    source: design/gdd/caja-y-compartimentos.md
+    referenced_by: [design/gdd/interaccion-e-inspeccion.md]
+    value: 1.6
+    unit: "s"
+    note: "F2 de 10; el antiguo BOX_Cn_OPEN de 7 pasa a ser este tope"
+    added: 2026-11-09
+    revised: ""
+  - name: box_open_margin_min_s
+    status: active
+    source: design/gdd/caja-y-compartimentos.md
+    referenced_by: []
+    value: 0.2
+    unit: "s"
+    range: [0.1, 0.2]
+    note: "Margen minimo de la cadena D01a (F2)"
+    added: 2026-11-09
+    revised: ""
+  - name: BOX_Cn_CLOSE
+    status: active
+    source: design/gdd/caja-y-compartimentos.md
+    referenced_by: []
+    value: 0.8
+    unit: "s"
+    range: [0.4, 1.2]
+    note: "PROPUESTA, validar en playtest"
+    added: 2026-11-09
+    revised: ""
+  - name: box_close_delay_s
+    status: active
+    source: design/gdd/caja-y-compartimentos.md
+    referenced_by: []
+    value: 0.3
+    unit: "s"
+    range: [0.0, 1.0]
+    note: "PROPUESTA, validar en playtest"
+    added: 2026-11-09
+    revised: ""
+  - name: box_ajar_s
+    status: active
+    source: design/gdd/caja-y-compartimentos.md
+    referenced_by: [design/gdd/marco-de-puzles.md]
+    value: 0.6
+    unit: "s"
+    range: [0.3, 1.2]
+    note: "PROPUESTA, validar en playtest"
+    added: 2026-11-09
+    revised: ""
+  - name: box_ajar_visible_dist_m
+    status: active
+    source: design/gdd/caja-y-compartimentos.md
+    referenced_by: []
+    value: 2.0
+    unit: "m"
+    range: [1.0, 3.0]
+    note: "PROPUESTA; regla 12 de 10"
+    added: 2026-11-09
+    revised: ""
+  - name: box_interfaces
+    status: active
+    source: design/gdd/caja-y-compartimentos.md
+    referenced_by: [design/gdd/marco-de-puzles.md]
+    value: "play_open(n) · set_final_pose(n)"
+    unit: ""
+    note: "play_open(4) lo llama el controlador del P6; set_final_pose(n) lo llama restore_solved_presentation() de cada controlador (9). Ids de escena: SFX_BOX_WOOD_OPEN, SFX_BOX_WOOD_CLOSE, SPK_D01C, VIS_D01C, ANC_D01B..D"
+    added: 2026-11-09
+    revised: ""
+  # --- GDD 19 Ordenador, correo e impresora ---
+  - name: t_busqueda_s
+    status: active
+    source: design/gdd/ordenador-correo-impresora.md
+    referenced_by: []
+    value: 0.4
+    unit: "s"
+    range: [0.2, 0.8]
+    note: "Latencia del buscador (slice C.2)"
+    added: 2026-11-09
+    revised: ""
+  - name: t_impresion_s
+    status: active
+    source: design/gdd/ordenador-correo-impresora.md
+    referenced_by: []
+    value: 1.5
+    unit: "s"
+    range: [1.0, 2.5]
+    note: "Duracion de la impresion en V08 (slice V08)"
+    added: 2026-11-09
+    revised: ""
+  - name: long_consulta_min
+    status: active
+    source: design/gdd/ordenador-correo-impresora.md
+    referenced_by: []
+    value: 3
+    unit: "chars"
+    range: [1, 6]
+    note: "Valor † (sin playtest); ver Tuning Knobs de 19"
+    added: 2026-11-09
+    revised: ""
+  - name: long_consulta_max
+    status: active
+    source: design/gdd/ordenador-correo-impresora.md
+    referenced_by: []
+    value: 32
+    unit: "chars"
+    range: [16, 64]
+    note: "Valor † (sin playtest); ver Tuning Knobs de 19"
+    added: 2026-11-09
+    revised: ""
+  - name: tecla_px
+    status: active
+    source: design/gdd/ordenador-correo-impresora.md
+    referenced_by: [design/gdd/interaccion-e-inspeccion.md]
+    value: 56
+    unit: "px"
+    range: [44, 72]
+    note: "Valor † (sin playtest); ver Tuning Knobs de 19"
+    added: 2026-11-09
+    revised: ""
+  - name: tecla_sep_px
+    status: active
+    source: design/gdd/ordenador-correo-impresora.md
+    referenced_by: []
+    value: 8
+    unit: "px"
+    range: [8, 16]
+    note: "Valor † (sin playtest); ver Tuning Knobs de 19"
+    added: 2026-11-09
+    revised: ""
+  - name: fila_px
+    status: active
+    source: design/gdd/ordenador-correo-impresora.md
+    referenced_by: [design/gdd/interaccion-e-inspeccion.md]
+    value: 48
+    unit: "px"
+    range: [44, 64]
+    note: "Valor † (sin playtest); ver Tuning Knobs de 19"
+    added: 2026-11-09
+    revised: ""
+  - name: filas_visibles_min
+    status: active
+    source: design/gdd/ordenador-correo-impresora.md
+    referenced_by: []
+    value: 4
+    unit: "rows"
+    range: [3, 6]
+    note: "Valor † (sin playtest); ver Tuning Knobs de 19"
+    added: 2026-11-09
+    revised: ""
+  - name: texto_min_px
+    status: active
+    source: design/gdd/ordenador-correo-impresora.md
+    referenced_by: []
+    value: 24
+    unit: "px"
+    range: [20, 32]
+    note: "Valor † (sin playtest); ver Tuning Knobs de 19"
+    added: 2026-11-09
+    revised: ""
+  - name: pantalla_min_px
+    status: active
+    source: design/gdd/ordenador-correo-impresora.md
+    referenced_by: [design/gdd/interaccion-e-inspeccion.md]
+    value: 1280
+    unit: "px"
+    range: [960, 1600]
+    note: "Valor † (sin playtest); ver Tuning Knobs de 19"
+    added: 2026-11-09
+    revised: ""
+  - name: item_I01
+    status: active
+    source: design/gdd/ordenador-correo-impresora.md
+    referenced_by: [design/gdd/marco-de-puzles.md, design/gdd/documentos-y-bolsillo.md]
+    value: "I-01"
+    unit: "item"
+    note: "Item no persistente (conjunto de sesion de 20); origen V08; 19 posee el contenido (compose_i01(), plantilla DOC_I01) y llama a otorgar_sesion(\"I-01\") de 20"
+    added: 2026-11-09
+    revised: ""
+  - name: object_states_computer
+    status: active
+    source: design/gdd/ordenador-correo-impresora.md
+    referenced_by: [design/gdd/interaccion-e-inspeccion.md]
+    value: "V01: apagado / sesion abierta · V08: sin_resultados / lista / imprimiendo"
+    unit: "enum"
+    note: "Estados de objeto de 19; indicador interno hoja_en_bandeja"
+    added: 2026-11-09
+    revised: ""
+  # --- GDD 20 Documentos y bolsillo ---
+  - name: t_mostrar_item_s
+    status: active
+    source: design/gdd/documentos-y-bolsillo.md
+    referenced_by: [design/gdd/control-de-acceso.md]
+    value: 0.7
+    unit: "s"
+    range: [0.4, 1.5]
+    note: "Tiempo con la tarjeta visible (F1 de 20), †"
+    added: 2026-11-09
+    revised: ""
+  - name: t_tapa_s
+    status: active
+    source: design/gdd/documentos-y-bolsillo.md
+    referenced_by: []
+    value: 0.6
+    unit: "s"
+    range: [0.3, 1.0]
+    note: "Animacion de A03 (R15), †"
+    added: 2026-11-09
+    revised: ""
+  - name: repaso_orden
+    status: active
+    source: design/gdd/documentos-y-bolsillo.md
+    referenced_by: []
+    value: "I-07, I-05, I-06a, I-04"
+    unit: ""
+    note: "Orden fijo del repaso del bolsillo (R6); cualquier permutacion"
+    added: 2026-11-09
+    revised: ""
+  - name: repaso_cerrar_ciclo
+    status: active
+    source: design/gdd/documentos-y-bolsillo.md
+    referenced_by: []
+    value: true
+    unit: "bool"
+    note: "R22; con false se detiene en el ultimo"
+    added: 2026-11-09
+    revised: ""
+  - name: pocket_interface
+    status: active
+    source: design/gdd/documentos-y-bolsillo.md
+    referenced_by: [design/gdd/control-de-acceso.md, design/gdd/ordenador-correo-impresora.md]
+    value: "has_item(id) · otorgar(origen_id) [8, \"A05\"] · otorgar_sesion(id) [19] · sostener_item(id) -> ACEPTADA|RECHAZADA(motivo) [8] · guardar_item() [8] · repasar_bolsillo() [accion de 1; pendiente de Q1]"
+    unit: ""
+    note: "Interfaz de 20; guardar_item() sin item sostenido no hace nada"
+    added: 2026-11-09
+    revised: ""
+  # --- GDD 21 Director de escenas (datos de scene-config.json) ---
+  - name: h_decl_s
+    status: active
+    source: design/gdd/director-de-escenas.md
+    referenced_by: []
+    value: 1.0
+    unit: "s"
+    range: [0.5, 3.0]
+    note: "Holgura de la duracion declarada (F2). Dato de scene-config.json"
+    added: 2026-11-09
+    revised: ""
+  - name: t_linea_max_s
+    status: active
+    source: design/gdd/director-de-escenas.md
+    referenced_by: []
+    value: 8.0
+    unit: "s"
+    range: [4, 15]
+    note: "Espera del fin de una linea de Vera (F3). Dato de scene-config.json"
+    added: 2026-11-09
+    revised: ""
+  - name: t_espera_voz_s
+    status: active
+    source: design/gdd/director-de-escenas.md
+    referenced_by: []
+    value: 8.0
+    unit: "s"
+    range: [2, 15]
+    note: "Aplazamiento de una linea del mismo canal (F4). Dato de scene-config.json"
+    added: 2026-11-09
+    revised: ""
+  - name: t_modos_max_s
+    status: active
+    source: design/gdd/director-de-escenas.md
+    referenced_by: []
+    value: 2.0
+    unit: "s"
+    range: [1.0, 3.0]
+    note: "Espera de «modos cerrados». Dato de scene-config.json"
+    added: 2026-11-09
+    revised: ""
+  - name: g_post_lectura_s
+    status: active
+    source: design/gdd/director-de-escenas.md
+    referenced_by: []
+    value: 3.0
+    unit: "s"
+    range: [1, 6]
+    note: "slice. Dato de scene-config.json"
+    added: 2026-11-09
+    revised: ""
+  - name: g_entre_lineas_s
+    status: active
+    source: design/gdd/director-de-escenas.md
+    referenced_by: []
+    value: 3.0
+    unit: "s"
+    range: [1, 6]
+    note: "slice. Dato de scene-config.json"
+    added: 2026-11-09
+    revised: ""
+  - name: g_pre_fundido_s
+    status: active
+    source: design/gdd/director-de-escenas.md
+    referenced_by: []
+    value: 2.0
+    unit: "s"
+    range: [1, 4]
+    note: "slice. Dato de scene-config.json"
+    added: 2026-11-09
+    revised: ""
+  - name: d_cierre
+    status: active
+    source: design/gdd/director-de-escenas.md
+    referenced_by: []
+    value: 0.8
+    unit: "s"
+    range: [0.1, 2.0]
+    note: "Fundido a negro propio del 21 (0,1 con reducir_movimiento). Dato de scene-config.json"
+    added: 2026-11-09
+    revised: ""
+  - name: t_tarjeta_s
+    status: active
+    source: design/gdd/director-de-escenas.md
+    referenced_by: []
+    value: 3.0
+    unit: "s"
+    range: [2, 5]
+    note: "Duracion de la tarjeta final (slice). Dato de scene-config.json"
+    added: 2026-11-09
+    revised: ""
+  - name: t_timbre_pasillo_s
+    status: active
+    source: design/gdd/director-de-escenas.md
+    referenced_by: []
+    value: 60.0
+    unit: "s"
+    range: [30, 120]
+    note: "† (origen «desde el apagon» del autor; slice C.7). Dato de scene-config.json"
+    added: 2026-11-09
+    revised: ""
+  - name: retardo_restaurar_s
+    status: active
+    source: design/gdd/director-de-escenas.md
+    referenced_by: []
+    value: 2.0
+    unit: "s"
+    range: [0, 5]
+    note: "slice C.7; ESC7_RESTAURAR (el de C08 es elevator_activation_delay_s de 8). Dato de scene-config.json"
+    added: 2026-11-09
+    revised: ""
+  - name: d_vo04_s
+    status: active
+    source: design/gdd/director-de-escenas.md
+    referenced_by: []
+    value: 1.0
+    unit: "s"
+    range: [0, 3]
+    note: "†. Dato de scene-config.json"
+    added: 2026-11-09
+    revised: ""
+  - name: d_vo08_s
+    status: active
+    source: design/gdd/director-de-escenas.md
+    referenced_by: []
+    value: 3.0
+    unit: "s"
+    range: [1, 5]
+    note: "†. Dato de scene-config.json"
+    added: 2026-11-09
+    revised: ""
+  - name: d_realce_lluvia_s
+    status: active
+    source: design/gdd/director-de-escenas.md
+    referenced_by: []
+    value: 8.0
+    unit: "s"
+    range: [3, 20]
+    note: "†. Dato de scene-config.json"
+    added: 2026-11-09
+    revised: ""
+  - name: atenuacion_reducida_s
+    status: active
+    source: design/gdd/director-de-escenas.md
+    referenced_by: []
+    value: 0.6
+    unit: "s"
+    range: [0.3, 1.5]
+    note: "†, con reducir_movimiento. Dato de scene-config.json"
+    added: 2026-11-09
+    revised: ""
+  - name: scene_declared_durations
+    status: active
+    source: design/gdd/director-de-escenas.md
+    referenced_by: [design/gdd/entrada-y-controles.md]
+    value: "ESC1_LLEGADA 15,0 s · ESC8_ASCENSOR 7,0 s · ESC8_CIERRE 25,8 s"
+    unit: ""
+    note: "Duraciones declaradas a Entrada (F2/F3 de 21)"
+    added: 2026-11-09
+    revised: ""
+  - name: scene_ids_director
+    status: active
+    source: design/gdd/director-de-escenas.md
+    referenced_by: [design/gdd/estado-y-bus-de-eventos.md, design/gdd/escena-de-planta.md]
+    value: "ESC1_LLEGADA, ESC1_MENSAJE, ESC3_FORMULARIO, ESC4_PASILLO_MEGA, ESC4_PASILLO_REFLEJO, ESC5_MEMORANDO, ESC7_APAGON, ESC7_TIMBRE, ESC7_RESTAURAR, ESC8_ASCENSOR, ESC8_CIERRE"
+    unit: ""
+    note: "scenes.json; ESC8_AHORRO retirada (C08 es de 8). Sistema 21 persistente, sin hechos propios. Zonas propuestas T-D-OUT, T-OFI-IN (en 4). Memoria volatil (no hechos): apagon_activo, esc4_mega_hecha, esc4_reflejo_hecho, mensaje_telefono_pendiente, cierre_iniciado"
+    added: 2026-11-09
+    revised: ""
+  - name: state_notices_director
+    status: active
+    source: design/gdd/director-de-escenas.md
+    referenced_by: [design/gdd/estado-y-bus-de-eventos.md]
+    value: "«efecto de escena pedido», «estado de objeto pedido», «tarjeta final pedida», «linea pedida» (segundo emisor), «ascensor rechazado» (sin datos)"
+    unit: ""
+    note: "Avisos con emisor 21 (regla 10 de 3)"
+    added: 2026-11-09
+    revised: ""
+
 # Example:
 #
 # constants:

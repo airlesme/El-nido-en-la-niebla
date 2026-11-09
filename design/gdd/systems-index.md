@@ -24,14 +24,14 @@ Se excluyen a propósito combate, IA de enemigos, economía, progresión, red y 
 |---|-------------|----------|----------|--------|------------|------------|
 | 1 | Entrada y controles | Core | MVP | Revisado (ronda 5) — sin bloqueantes | design/gdd/entrada-y-controles.md | — (blandas: 3, 4, 18) |
 | 2 | Jugador en primera persona (movimiento, cámara, manos) | Core | MVP | Revisado (ronda 5) — sin bloqueantes | design/gdd/jugador-en-primera-persona.md | 1, 4 (blandas: 6, 18) |
-| 3 | Estado del juego y bus de eventos | Core | MVP | Revisado (ronda 5) — sin bloqueantes | design/gdd/estado-y-bus-de-eventos.md | — |
+| 3 | Estado del juego y bus de eventos | Core | MVP | Revisado (ronda de propagación 1) — pendiente de re-review | design/gdd/estado-y-bus-de-eventos.md | — |
 | 4 | Escena de planta y carga de Recepción | Core | MVP | Revisado (ronda 5) — sin bloqueantes | design/gdd/escena-de-planta.md | 3 (blandas: 1, 6, 18); 2 (dura) |
 | 5 | Guardado y carga | Persistence | MVP | Revisado (ronda 5) — sin bloqueantes | design/gdd/guardado-y-carga.md | 3, 4 (blanda: 18) |
 | 6 | Ajustes persistentes (inferred) | Persistence | MVP | Revisado (ronda 5) — sin bloqueantes | design/gdd/ajustes-persistentes.md | 1 (blanda: 18) |
 | 7 | Interacción e inspección | Gameplay | MVP | Revisado (ronda 5) — sin bloqueantes | design/gdd/interaccion-e-inspeccion.md | 1, 2, 4, 18 (blanda: 3) |
-| 8 | Control de acceso (puertas, tarjetas, lectores) | Gameplay | MVP | Needs Revision | design/gdd/control-de-acceso.md | 3, 7, 18 |
+| 8 | Control de acceso (puertas, tarjetas, lectores, ascensor `C08`, cajón `A05`) | Gameplay | MVP | Revisado (ronda de corrección 1) — pendiente de re-review | design/gdd/control-de-acceso.md | 3, 4, 7, 18, 20 (blandas: 2, 5, 9, 21, 22, 23, 28/29) |
 | 9 | Marco de puzles (inferred) | Gameplay | MVP | Revisado (ronda 5) — sin bloqueantes | design/gdd/marco-de-puzles.md | 3, 4, 7, 18 (dura en validación) · blandas 2, 6, 20, 23, 25, 26 |
-| 10 | Caja y compartimentos | Gameplay | MVP | Needs Revision | design/gdd/caja-y-compartimentos.md | 3, 7, 9 |
+| 10 | Caja y compartimentos | Gameplay | MVP | Revisado (ronda de corrección 1) — pendiente de re-review | design/gdd/caja-y-compartimentos.md | 3, 4, 7, 9 (blandas: 20, 23; indirectas: 1, 2, 5, 21) |
 | 11 | Puzle 1 · Cronología | Gameplay | MVP | Not Started | — | 9, 18, 19, 20 |
 | 12 | Puzle 2 · Memorando en el cristal | Gameplay | MVP | Not Started | — | 7, 9, 18 |
 | 13 | Puzle 3 · Encaje de la foto | Gameplay | MVP | Not Started | — | 6, 9, 10 |
@@ -40,9 +40,9 @@ Se excluyen a propósito combate, IA de enemigos, economía, progresión, red y 
 | 16 | Puzle 6 · Decisión | Gameplay | MVP | Not Started | — | 9, 10, 18 |
 | 17 | Sistema de pistas (hasta 3 niveles; 2 en el puzle 6) | Gameplay | Vertical Slice | Not Started | — | 3, 9, 18 |
 | 18 | Base de contenido narrativo (líneas, documentos, claves de traducción) | Narrative | MVP | Revisado (ronda 5) — sin bloqueantes | design/gdd/base-de-contenido-narrativo.md | — |
-| 19 | Ordenador, correo e impresora | Narrative | MVP | Needs Revision | design/gdd/ordenador-correo-impresora.md | 1, 3, 7, 18, 20 (blanda: 2) |
-| 20 | Documentos y bolsillo visual | Narrative | MVP | Needs Revision | design/gdd/documentos-y-bolsillo.md | 3, 7, 18 (blanda: 2) |
-| 21 | Director de escenas (escenas 1–8, disparadores, eventos temporizados) | Narrative | MVP | Needs Revision | design/gdd/director-de-escenas.md | 1, 3, 4, 18 (blanda: 5) |
+| 19 | Ordenador, correo e impresora | Narrative | MVP | Revisado (ronda de corrección 1) — pendiente de re-review | design/gdd/ordenador-correo-impresora.md | 1, 3, 4, 7, 18, 20 (blandas: 2, 6, 17, 21, 23, 25/30) |
+| 20 | Documentos y bolsillo | Narrative | MVP | Revisado (ronda de corrección 1) — pendiente de re-review | design/gdd/documentos-y-bolsillo.md | 3, 7, 18 (blandas: 1, 2, 9, 17, 24); dependen de 20 (duras): 8, 19 |
+| 21 | Director de escenas (escenas 1–8, disparadores, eventos temporizados) | Narrative | MVP | Revisado (ronda de corrección 1) — pendiente de re-review | design/gdd/director-de-escenas.md | 1, 3, 4, 18 (blandas: 5, 6, 7, 8) |
 | 22 | Llamada telefónica | Narrative | MVP | Not Started | — | 1, 3, 5, 7, 18 (blanda: 2) |
 | 23 | Director de audio | Audio | Vertical Slice | Not Started | — | 3, 6, 18 (blanda: 2) |
 | 24 | Prompt de interacción y feedback | UI | MVP | Not Started | — | 1, 7, 18 |
@@ -183,6 +183,7 @@ Esfuerzo: S = 1 sesión, M = 2–3, L = 4+. El puzle 2 va después de la caja po
 ## Circular Dependencies
 
 - **Ninguna encontrada.**
+- Acoplamiento blando mutuo 8 ↔ 21 por el bus: 8 emite «ascensor llamado» (21 ejecuta el trayecto) y 21 emite «ascensor rechazado» (8 devuelve `C08` a `LISTO`). Son avisos sin llamadas directas ni hechos compartidos; no es un ciclo duro. 8 → 20 es dura y 20 no depende de 8 (la interfaz `sostener_item`/`guardar_item`/`otorgar` la ofrece 20).
 - Dos casos que habrían formado ciclo se resuelven con el bus de eventos (sistema 3), sin dependencias directas: director de escenas (21) ↔ llamada (22), y director de escenas (21) ↔ audio (23) / atmósfera (28).
 
 ---
@@ -205,10 +206,10 @@ Esfuerzo: S = 1 sesión, M = 2–3, L = 4+. El puzle 2 va después de la caja po
 | Metric | Count |
 |--------|-------|
 | Total systems identified | 30 |
-| Design docs started | 9 |
+| Design docs started | 14 |
 | Design docs reviewed | 9 (1 a 7, 9 y 18: ronda 2 aplicada el 2026-11-09 tras sus re-reviews, `design/gdd/reviews/*-re-review.md`; pendientes de re-review) |
 | Design docs approved | 0 |
-| MVP systems designed | 9/23 |
+| MVP systems designed | 14/23 |
 | Vertical Slice systems designed | 0/7 |
 
 ---
@@ -269,6 +270,20 @@ Consolidado de `design/gdd/reviews/*-re-review.md`. No se han creado GDDs; cada 
 Decisión del usuario: T4 «Carta a Dirección» acepta devolver o asignar; la elección queda en el hecho nuevo `t4_decision` (`returned`/`assigned`; 20 hechos). Cada sistema sin GDD debe recoger esto al redactarse:
 
 - **22 Llamada:** lee `t4_decision` para la variación de `VO_G_14` (propuesta en el GDD 18, pendiente de narrative-director/usuario; clave provisional `VO_G_14_ASG`, `VO_G_14` queda como línea de `returned`). Si el director de escenas (21) reproduce esa línea, el lector es 21; confirmar en su GDD.
-- **21 Director de escenas:** lector alternativo de `t4_decision` si es él quien reproduce la escena posterior más cercana al puzle 4.
+- **21 Director de escenas:** ~~lector alternativo de `t4_decision`~~ **resuelto en el GDD 21 (DT-6): no lo lee; lo lee 22.**
 - **14 Puzle 4 (GDD aún sin redactar):** T4 de doble salida (regla 12c del GDD 9); sin «No corresponde» en T4; la pista de nivel 3 no la toca.
 - **Slice:** B.4, §10.4 y D.2 (20 hechos) autorizados y aplicados en el slice v0.3.2.
+
+---
+
+## Notas de la propagación del lote Feature 1 (2026-11-09): GDDs 8, 10, 19, 20, 21
+
+Propagados a 3, al registro y a este índice los «Cambios requeridos» de los cinco GDD. **Quedan sin propagar** (los edita otro agente o dependen de una decisión):
+
+- **Preguntas de alcance pendientes de decisión del usuario:** releer desde el bolsillo con `atrás` (`repasar_bolsillo`, Q1 de 20 → 1, 7, 24); B.1 del slice (pie y hora de `I-01`, PA-1/PA-2 de 19); `MEGA_03` y slice v0.4 (28 entradas; texto «Planta en modo de ahorro energético»; 8 Q1); quién muestra `I-05`/`I-06a` (Q2 de 20; 10 Q7; 9); `D01d` sin cadena (7, regla 19). Hasta decidirse, sus valores en el registro son PROPUESTA (†/‡).
+- **GDD 22 (Llamada) sin escribir:** debe describir que 21 pone `V02` en `vibrando` y 22 en `en_llamada`, que «Descolgar» solo vale en `vibrando`, que 22 inicia la llamada y escribe `llamada_iniciada`/`respuesta_llamada`/`llamada_completada`, que 8 lee `llamada_completada` (activa `C08` a +2,0 s) y que 22 es el único lector de `t4_decision`. Lista a 8 y 21 como lectores.
+- **Dependencia 9 → 19 (dura):** 9 llama a `compose_i01()` de 19 (R30 de 19); la fila 9 no la recoge aún. 9 no lee `correos_leidos`.
+- **Estado de 21 en su lista de cambios:** pedía «Borrador»; el GDD ya está en ronda de corrección 1 y así figura arriba.
+- **Futuros:** 23 Audio (`SFX_CARD_OK`, `SFX_DOOR_SWING`, `SFX_DRAWER_OPEN`, `SPK_D01C`, `SFX_BOX_WOOD_*`, `MEGA_03` por `C01`), 24 Prompt (pie `UI_BOLSILLO_AYUDA`), 17 Pistas (`V08` como `targets_if_missing_items`, `formulario_leido`), 28 Atmósfera.
+- **UX:** pendiente `design/ux/ordenador-correo.md` (pantalla de 19, vía `/ux-design`).
+- **Re-review pendiente:** 3, 8, 10, 19, 20 y 21; además de los vecinos tocados por otros agentes.
