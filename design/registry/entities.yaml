@@ -516,7 +516,7 @@ constants:
     value: 1.6
     unit: s
     range: [1.2, 1.6]
-    note: "Animacion del compartimento Cn (C1-C4), duenio GDD 7 (regla 19, D7-19). Cadena D01a: BOX_Cn_OPEN + t_vista_entrada_s (<= 1,2 s) debe caber en player_camera_transition_cap_s (3 s): con 1,2 s de camara el maximo es 1,6 s (ronda 5, E-5: 1,8 + 1,2 = 3,0 s no cabe en el tope minimo de 3 s). Rango [1,2; 1,6] tambien en 7 Tuning Knobs | SUSTITUIDA (lote Feature 1): valor unico pasa a BOX_C1_OPEN..BOX_C4_OPEN y tope BOX_OPEN_MAX (1,6 s), duenio GDD 10; pendiente de actualizar 7"
+    note: "Animacion del compartimento Cn (C1-C4), duenio GDD 7 (regla 19, D7-19). Cadena D01a: BOX_Cn_OPEN + t_vista_entrada_s (<= 1,2 s) debe caber en player_camera_transition_cap_s (3 s): con 1,2 s de camara el maximo es 1,6 s (ronda 5, E-5: 1,8 + 1,2 = 3,0 s no cabe en el tope minimo de 3 s). Rango [1,2; 1,6] tambien en 7 Tuning Knobs | SUSTITUIDA (lote Feature 1): valor unico pasa a BOX_C1_OPEN..BOX_C4_OPEN y tope BOX_OPEN_MAX (1,6 s), duenio GDD 10; ya aplicado en 7 (D7-62, ronda de correccion 2); el nombre queda solo como referencia historica (status deprecated)"
     added: 2026-11-09
     revised: 2026-11-09
   - name: t_vista_salida_s
