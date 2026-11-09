@@ -2,7 +2,7 @@
 
 > **Status**: Draft
 > **Created**: 2026-11-08
-> **Last Updated**: 2026-11-09
+> **Last Updated**: 2026-11-09 (ronda de corrección 4)
 > **Source Concept**: design/gdd/game-concept.md
 > **Source of truth for details**: design/slice/slice-v0.3.md (versión v0.4; Anexos A–D)
 
@@ -26,12 +26,12 @@ Se excluyen a propósito combate, IA de enemigos, economía, progresión, red y 
 | 2 | Jugador en primera persona (movimiento, cámara, manos) | Core | MVP | Revisado (ronda 6) — sin bloqueantes | design/gdd/jugador-en-primera-persona.md | 1, 4 (blandas: 6, 18) |
 | 3 | Estado del juego y bus de eventos | Core | MVP | Revisado (ronda de corrección 3) — pendiente de re-review | design/gdd/estado-y-bus-de-eventos.md | — |
 | 4 | Escena de planta y carga de Recepción | Core | MVP | Revisado (ronda 6) — sin bloqueantes | design/gdd/escena-de-planta.md | 3 (blandas: 1, 6, 18); 2 (dura) |
-| 5 | Guardado y carga | Persistence | MVP | Revisado (ronda de corrección 3) — pendiente de re-review | design/gdd/guardado-y-carga.md | 3, 4 (duras) · blanda 18 |
-| 6 | Ajustes persistentes (inferred) | Persistence | MVP | Revisado (ronda de corrección 3) — pendiente de re-review | design/gdd/ajustes-persistentes.md | 1 (dura de contrato) · blanda 18 |
-| 7 | Interacción e inspección | Gameplay | MVP | Revisado (ronda 6) — sin bloqueantes | design/gdd/interaccion-e-inspeccion.md | 1, 2, 4, 18 (blanda: 3) |
+| 5 | Guardado y carga | Persistence | MVP | Revisado (ronda de corrección 4) — pendiente de re-review | design/gdd/guardado-y-carga.md | 3, 4 (duras) · blanda 18 |
+| 6 | Ajustes persistentes (inferred) | Persistence | MVP | Revisado (ronda de corrección 4) — pendiente de re-review | design/gdd/ajustes-persistentes.md | 1 (dura de contrato) · blanda 18 |
+| 7 | Interacción e inspección | Gameplay | MVP | Revisado (ronda de corrección 4) — pendiente de re-review | design/gdd/interaccion-e-inspeccion.md | 1, 2, 4, 18 (blandas: 3, 6) |
 | 8 | Control de acceso (puertas, tarjetas, lectores, ascensor `C08`, cajón `A05`) | Gameplay | MVP | Revisado (ronda 6) — sin bloqueantes | design/gdd/control-de-acceso.md | 3, 4, 7, 18, 20 (duras; 8 → 20 dura, 20 no depende de 8) · blandas 2, 5, 9, 21, 22, 23, 28/29 |
-| 9 | Marco de puzles (inferred) | Gameplay | MVP | Revisado (ronda 6) — sin bloqueantes | design/gdd/marco-de-puzles.md | 3, 4, 7, 10, 19 (duras; 9 ↔ 10 circular, ver Circular Dependencies), 18 (dura en validación) · blandas 2, 6, 20, 23, 25, 26 (8 depende de 9, no al revés) |
-| 10 | Caja y compartimentos | Gameplay | MVP | Revisado (ronda 6) — sin bloqueantes | design/gdd/caja-y-compartimentos.md | 3, 4, 7, 9 (duras; 9 ↔ 10 circular) · blandas 2, 5, 20, 21, 23 · indirecta 1 |
+| 9 | Marco de puzles (inferred) | Gameplay | MVP | Revisado (ronda de corrección 4) — pendiente de re-review | design/gdd/marco-de-puzles.md | 3, 4, 7, 10, 19 (duras; 9 ↔ 10 circular, ver Circular Dependencies), 18 (dura en validación) · blandas 2, 5, 6, 20, 23, 25, 26 · dependen de 9 (no al revés): 8 (blanda), 21 (indirecta), 10, 11–16 y 17 (duras) |
+| 10 | Caja y compartimentos | Gameplay | MVP | Revisado (ronda 6) — sin bloqueantes | design/gdd/caja-y-compartimentos.md | 3, 4, 7, 9 (duras; 9 ↔ 10 circular) · blandas 5, 20, 23 · indirectas 1, 2, 21 (las declara 10) |
 | 11 | Puzle 1 · Cronología | Gameplay | MVP | Not Started | — | 9, 18, 19, 20 |
 | 12 | Puzle 2 · Memorando en el cristal | Gameplay | MVP | Not Started | — | 7, 9, 18 |
 | 13 | Puzle 3 · Encaje de la foto | Gameplay | MVP | Not Started | — | 6, 9, 10 |
@@ -40,10 +40,10 @@ Se excluyen a propósito combate, IA de enemigos, economía, progresión, red y 
 | 16 | Puzle 6 · Decisión | Gameplay | MVP | Not Started | — | 9, 10, 18 |
 | 17 | Sistema de pistas (hasta 3 niveles; 2 en el puzle 6) | Gameplay | Vertical Slice | Not Started | — | 3, 9, 18 |
 | 18 | Base de contenido narrativo (líneas, documentos, claves de traducción) | Narrative | MVP | Revisado (ronda de corrección 3) — pendiente de re-review | design/gdd/base-de-contenido-narrativo.md | — |
-| 19 | Ordenador, correo e impresora | Narrative | MVP | Revisado (ronda 6) — sin bloqueantes | design/gdd/ordenador-correo-impresora.md | 1, 3, 4, 7, 18, 20 (duras; 9 depende de 19, dura) · blandas 2, 6, 17, 21 (sin camino en el slice), 23, 25/30 |
-| 20 | Documentos y bolsillo | Narrative | MVP | Revisado (ronda 6) — sin bloqueantes | design/gdd/documentos-y-bolsillo.md | 3, 7, 18 (duras) · blandas 1, 2, 9, 10 · indirectas 4, 5, 21; dependen de 20: 8 y 19 (duras), 17 y 24 (blandas) |
-| 21 | Director de escenas (escenas 1–8, disparadores, eventos temporizados) | Narrative | MVP | Revisado (ronda 6) — sin bloqueantes | design/gdd/director-de-escenas.md | 1, 3, 4, 18 (duras) · blandas 5, 6, 7, 8 · indirectas 2, 20 · sin dependencia 9, 22, 23, 26, 27, 28 |
-| 22 | Llamada telefónica | Narrative | MVP | Not Started | — | 1, 3, 5, 7, 18 (blanda: 2) |
+| 19 | Ordenador, correo e impresora | Narrative | MVP | Revisado (ronda 6) — sin bloqueantes | design/gdd/ordenador-correo-impresora.md | 1, 3, 4, 7, 18, 20 (duras; 9 depende de 19, dura) · blandas 2, 6, 17, 23, 25/30 · indirecta 21 (vía 7, sin camino en el slice) |
+| 20 | Documentos y bolsillo | Narrative | MVP | Revisado (ronda 6) — sin bloqueantes | design/gdd/documentos-y-bolsillo.md | 3, 4, 7, 18 (duras) · blandas 1, 2, 9, 10 · indirectas 5, 21; dependen de 20: 8 y 19 (duras), 9, 17 y 24 (blandas) |
+| 21 | Director de escenas (escenas 1–8, disparadores, eventos temporizados) | Narrative | MVP | Revisado (ronda 6) — sin bloqueantes | design/gdd/director-de-escenas.md | 1, 3, 4, 18 (duras) · blandas 5, 6, 7, 8 · indirectas 2, 9, 20 · sin dependencia 22, 23, 26, 27, 28 (19 ↔ 21 indirecta vía 7, la declara 19; 21 no depende de 19) |
+| 22 | Llamada telefónica | Narrative | MVP | Borrador (lote Feature 2) | design/gdd/llamada-telefonica.md | 3, 5, 7, 18 (duras, según las declaran 3, 5, 7 y 18) · blandas 1, 2 (provisional: su sección Dependencies está pendiente) |
 | 23 | Director de audio | Audio | Vertical Slice | Not Started | — | 3, 6, 18 (blanda: 2) |
 | 24 | Prompt de interacción y feedback | UI | MVP | Not Started | — | 1, 7, 18 |
 | 25 | Menú de pausa | UI | MVP | Not Started | — | 1, 6, 18 (blanda: 5) |
@@ -112,15 +112,15 @@ Reparto: **23 MVP · 7 Vertical Slice · 0 Alpha · 0 Full Vision** (30 en total
 
 ### Feature Layer (depends on core)
 
-1. **Interacción e inspección (7)** — depends on: 1, 2, 4, 18 (blanda: 3).
-2. **Marco de puzles (9)** — depends on: 3, 4, 7, 10, 19 (duras; 9 ↔ 10 circular, ver Circular Dependencies), 18 (dura en validación) · blandas 2, 6, 20, 23, 25, 26.
+1. **Interacción e inspección (7)** — depends on: 1, 2, 4, 18 (blandas: 3, 6).
+2. **Marco de puzles (9)** — depends on: 3, 4, 7, 10, 19 (duras; 9 ↔ 10 circular, ver Circular Dependencies), 18 (dura en validación) · blandas 2, 5, 6, 20, 23, 25, 26.
 3. **Control de acceso (8)** — depends on: 3, 4, 7, 18, 20 (duras; 8 → 20 dura) · blandas 2, 5, 9, 21, 22, 23, 28/29.
-4. **Documentos y bolsillo (20)** — depends on: 3, 7, 18 (duras) · blandas 1, 2, 9, 10 · indirectas 4, 5, 21.
-5. **Ordenador, correo e impresora (19)** — depends on: 1, 3, 4, 7, 18, 20 (duras) · blandas 2, 6, 17, 21 (sin camino en el slice), 23, 25/30.
-6. **Caja y compartimentos (10)** — depends on: 3, 4, 7, 9 (duras; 9 ↔ 10 circular) · blandas 2, 5, 20, 21, 23 · indirecta 1.
+4. **Documentos y bolsillo (20)** — depends on: 3, 4, 7, 18 (duras) · blandas 1, 2, 9, 10 · indirectas 5, 21.
+5. **Ordenador, correo e impresora (19)** — depends on: 1, 3, 4, 7, 18, 20 (duras) · blandas 2, 6, 17, 23, 25/30 · indirecta 21 (vía 7).
+6. **Caja y compartimentos (10)** — depends on: 3, 4, 7, 9 (duras; 9 ↔ 10 circular) · blandas 5, 20, 23 · indirectas 1, 2, 21.
 7. **Puzles 1–6 (11–16)** — depend on: 9 (más 10 los de la caja, 18 los de texto, 19 y 20 el puzle 1, 13 el puzle 5).
-8. **Director de escenas (21)** — depends on: 1, 3, 4, 18 (duras) · blandas 5, 6, 7, 8 · indirectas 2, 20 · sin dependencia 9, 22, 23, 26, 27, 28.
-9. **Llamada telefónica (22)** — depends on: 1, 3, 5, 7, 18 (blanda: 2).
+8. **Director de escenas (21)** — depends on: 1, 3, 4, 18 (duras) · blandas 5, 6, 7, 8 · indirectas 2, 9, 20 · sin dependencia 22, 23, 26, 27, 28.
+9. **Llamada telefónica (22)** — depends on: 3, 5, 7, 18 (duras) · blandas 1, 2 (provisional hasta que 22 rellene Dependencies).
 10. **Sistema de pistas (17)** — depends on: 3, 9, 18.
 
 ### Presentation Layer (depends on features)
@@ -183,8 +183,9 @@ Esfuerzo: S = 1 sesión, M = 2–3, L = 4+. El puzle 2 va después de la caja po
 ## Circular Dependencies
 
 - **Dura en ambos sentidos, aceptada: 2 ↔ 4** (4 declara al 2 como dura y 2 declara al 4 como dura «en ambos sentidos»; 4 solo invoca `colocar`). Es de ejecución, no de construcción. **9 ↔ 10** y las demás, abajo.
-- Acoplamiento blando mutuo 8 ↔ 21 por el bus: 8 emite «ascensor llamado» (21 ejecuta el trayecto) y 21 emite «ascensor rechazado» (8 devuelve `C08` a `LISTO`). Son avisos sin llamadas directas ni hechos compartidos; no es un ciclo duro. 8 → 20 es dura (la declara 8, el dependiente) y la interfaz `sostener_item`/`guardar_item`/`otorgar` la ofrece 20; el GDD 20 la anota como «Dura, recíproca (8 ↔ 20)» pero 8 no figura entre sus dependencias aguas arriba: discrepancia de texto abierta en 20 (ver «ronda de corrección 3»).
+- Acoplamiento blando mutuo 8 ↔ 21 por el bus: 8 emite «ascensor llamado» (21 ejecuta el trayecto) y 21 emite «ascensor rechazado» (8 devuelve `C08` a `LISTO`). Son avisos sin llamadas directas ni hechos compartidos; no es un ciclo duro. 8 → 20 es dura (la declara 8, el dependiente) y la interfaz `sostener_item`/`guardar_item`/`otorgar` la ofrece 20; 20 la repite como «Dura (de 8 hacia 20)». 20 no depende de 8: no hay ciclo.
 - **9 ↔ 10 (dura, circular, aceptada; W-4 de r5):** 10 lee `caja_cn` y `get_view_gate` de 9; 9 llama a `play_open`/`set_final_pose` de 10. Es una dependencia de ejecución tras «escena lista», no de construcción ni de datos, así que no impide diseñar ni implementar ninguno primero (D9-62).
+- 5 ↔ 9 (cerrada en la ronda de corrección 4): 9 depende de 5 (blanda, la declara 9) y 5 no depende de 9; igual que 8 y 10 con 5. 9 ↔ 20 es blanda en un solo sentido declarado por 9 (20 la repite). 19 ↔ 21 indirecta (vía 7; la declara 19 y 21 la repite; ni 19 consume API de 21 ni 21 depende de 19).
 - Dos casos que habrían formado ciclo se resuelven con el bus de eventos (sistema 3), sin dependencias directas: director de escenas (21) ↔ llamada (22), y director de escenas (21) ↔ audio (23) / atmósfera (28).
 
 ---
@@ -207,7 +208,7 @@ Esfuerzo: S = 1 sesión, M = 2–3, L = 4+. El puzle 2 va después de la caja po
 | Metric | Count |
 |--------|-------|
 | Total systems identified | 30 |
-| Design docs started | 14 |
+| Design docs started | 15 (22 en borrador) |
 | Design docs reviewed | 9 (1 a 7, 9 y 18: ronda 2 aplicada el 2026-11-09 tras sus re-reviews, `design/gdd/reviews/*-re-review.md`; pendientes de re-review) |
 | Design docs approved | 0 |
 | MVP systems designed | 14/23 |
@@ -294,5 +295,9 @@ Propagados a 3, al registro y a este índice los «Cambios requeridos» de los c
 
 - **Regla común (R6-1):** la dureza (dura / blanda / indirecta) la declara el GDD **dependiente** y el proveedor repite la misma; si discrepan, manda el dependiente salvo texto obsoleto. Reconstruidas con ese criterio las filas 1, 4, 5, 8, 9, 10, 19, 20 y 21 (tabla y mapa); 6 y 18 alineados con sus dependientes.
 - **Nombres (R6-2):** la acción derivada es `repasar_bolsillo`; `BOX_Cn_OPEN` queda sustituida por `BOX_C1_OPEN`…`BOX_C4_OPEN` y `BOX_OPEN_MAX` (dueño 10).
-- **Discrepancias de dureza que quedan en GDD ajenos a esta ronda** (los edita otro agente): 9 → 20 y 9 → 21 figuran como «Indirecta» en 9, pero 20 declara a 9 «Blanda» y 21 «Sin dependencia» (manda el dependiente); 10 → 1: 1 dice «Dura (indirecta)» y 10 «Indirecta»; 20 → 4: 4 dice «Dura vía contenedores e IDs», 20 «Indirecta» (se deja Indirecta); 20 → 8: ver Circular Dependencies; 19 ↔ 21 (19 la declara blanda sin camino en el slice, 21 no depende de 19); 10 → 21 (10 la declara blanda, 21 no lista a 10) y 5 ↔ 9 (9 lista a 5 como dependiente, 5 lista a 9 como dependiente: dirección sin cerrar); la fila 7 no lista a 6 (7 lo declara blanda).
+- **(Resueltas en la ronda de corrección 4, ver más abajo)** Discrepancias de dureza que quedaban en GDD ajenos a esta ronda (los edita otro agente): 9 → 20 y 9 → 21 figuran como «Indirecta» en 9, pero 20 declara a 9 «Blanda» y 21 «Sin dependencia» (manda el dependiente); 10 → 1: 1 dice «Dura (indirecta)» y 10 «Indirecta»; 20 → 4: 4 dice «Dura vía contenedores e IDs», 20 «Indirecta» (se deja Indirecta); 20 → 8: ver Circular Dependencies; 19 ↔ 21 (19 la declara blanda sin camino en el slice, 21 no depende de 19); 10 → 21 (10 la declara blanda, 21 no lista a 10) y 5 ↔ 9 (9 lista a 5 como dependiente, 5 lista a 9 como dependiente: dirección sin cerrar); la fila 7 no lista a 6 (7 lo declara blanda).
 - 17 y 24 pasan de «dependencias» de 20 a «dependen de 20» (20 les da `formulario_leido` y el pie `UI_BOLSILLO_AYUDA`); sus filas se completarán al redactarse.
+
+## Notas de la ronda de corrección 4 (2026-11-09): cierre de durezas y reciprocidad
+
+Resuelve R6-1 (`gdd-cross-review-2026-11-09-r6.md`) y D1–D11 de `reviews/cross-review-r6-2.md` con la regla común (la dureza la declara el GDD dependiente y el proveedor repite la misma; si discrepan, manda el dependiente salvo texto obsoleto). Pares resueltos: 9↔20 Blanda (declara 9, 20 repite); 9↔21 Indirecta (declara 21, 9 repite); 5↔9 Blanda con 9 como dependiente (declara 9); 5↔20 Indirecta (declara 20); 4↔20 Dura (declara 20, 4 repite); 8↔20 Dura (declara 8, 20 repite); 1↔10 Indirecta (declara 10, 1 repite); 10↔21 y 10↔2 Indirecta (declara 10); 19↔21 Indirecta vía 7 (declara 19; 21 no depende de 19); 7↔6 Blanda (declara 7); 6↔18 Blanda (declara 6, 18 repite); 9↔10 Dura circular (ambos). Filas reconstruidas: 7, 9, 10, 20, 21 y 22 (nueva: Borrador del lote Feature 2).
