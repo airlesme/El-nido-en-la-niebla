@@ -85,3 +85,20 @@ Ninguna que cambie pilares, tono o alcance. Una decisión de producto menor, opc
 ## Alcance estimado
 
 L: 8 fórmulas, 22 reglas, 11 dependientes, probable ADR de entrada/InputMap. A confirmar por producción antes de planificar sprint.
+
+## Cambios requeridos en otros GDDs
+
+Generados al aplicar la ronda 2 (2026-11-09) en `entrada-y-controles.md` (estado: Revisado (ronda 2), pendiente de re-review). Entrada no toca otros ficheros.
+
+- **GDD 4 (`escena-de-planta.md`):** (a) sustituir «regla 15 de Entrada» por «regla 6 y Edge Cases de Entrada» en las citas del reinicio de la pila (hoy la regla 15 es la reasignación); (b) elegir una sola versión de quién devuelve `exploración` tras una carga: la línea 190 dice que 4 la pide y AC-X1 que la pide 21; Entrada acepta a quien abrió el `sin control` (4 en cargas, 21 en escenas dirigidas); (c) Entrada ya lo acepta como emisor blando de «carga de escena iniciada» / «terminada» y de `D_carga`: marcar el cambio pendiente del punto 2 como resuelto.
+- **GDD 2 (`jugador-en-primera-persona.md`):** misma corrección de cita («regla 15» → regla 6 y Edge Cases de Entrada) donde aparezca el reinicio de la pila.
+- **GDD 7 (`interaccion-e-inspeccion.md`):** (a) entregar a Entrada, por elemento de la vista, `gestos_aceptados` ⊆ {`agarrar`, `rotar`, `mantener`} además de posición y tolerancia en px; (b) informar a Entrada, para el objeto apuntado, de si tiene `verbo_largo` (regla 10 de Entrada); (c) `seleccionar` se entrega al soltar si la pulsación no se convirtió en gesto derivado; (d) `leer` es el gesto «`interactuar` mantenida hasta `t_hold`», no una acción: revisar la tabla de Interacciones donde se recibe «`leer`» como acción; (e) corregir `fov_vigente()` por `fov_actual()` (decisión de ronda 2) en su fila del sistema 2.
+- **Puzles 11 a 16:** declarar `gestos_aceptados` por elemento y su tolerancia en px (vía 7); el puzle 5 acepta `rotar` y debe funcionar también con «alternar en lugar de mantener».
+- **GDD 3 (`estado-y-bus-de-eventos.md`):** añadir a Entrada como suscriptor de «carga de escena iniciada» / «terminada» (de 4) y de «ajustes aplicados» (de 6), no solo emisor.
+- **GDD 6 (`ajustes-persistentes.md`):** confirmar que emite «ajustes aplicados» al arrancar y que Entrada es su receptor.
+- **GDD 25 (Menú de pausa, aún sin escribir):** pantalla de reasignación (sin los gestos derivados `leer`/`agarrar`/`rotar`/`mantener`; aviso al asignar `atrás` a una tecla imprimible; rechazo de dejar `atrás` solo con una tecla imprimible) y mensaje «Mando desconectado» con «continuar».
+- **GDD 19 (Ordenador) y 24 (Prompt):** 19 debe respetar la regla 20 (campo enfocado consume texto, `Retroceso` no cierra, `Esc` = pausa); 24 muestra `atrás` sin `Retroceso`.
+- **`design/gdd/systems-index.md`:** fila 4, dependencias «3 (blanda: 1)»; fila 1 puede anotar a 4 como emisor blando; fila 17 «Sistema de pistas (3 niveles)» → «tres niveles; dos en el puzle 6».
+- **`design/gdd/game-pillars.md` (línea ~193):** «pistas de tres niveles» → «tres niveles; dos en el puzle 6».
+- **`design/registry/entities.yaml`:** (a) `F6_ppm`: sin cambio (2.203 px/m ya coincide); (b) retirar la nota «cambio pendiente» del tope de `sin control` de una carga (resuelto en F8 de Entrada); (c) añadir `dz_in` rango 0,05–0,5 y `R_max_elem` = 128 px† si se registran las constantes de F1 y F5b.
+- **Slice (`design/slice/slice-v0.3.md`):** el «gesto de cámara» de las pistas (línea ~118/136) se reinterpreta como resaltado, sin acción de entrada (Open Question 8 de Entrada cerrada).
