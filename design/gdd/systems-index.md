@@ -23,14 +23,14 @@ Se excluyen a propósito combate, IA de enemigos, economía, progresión, red y 
 | # | System Name | Category | Priority | Status | Design Doc | Depends On |
 |---|-------------|----------|----------|--------|------------|------------|
 | 1 | Entrada y controles | Core | MVP | In Review | design/gdd/entrada-y-controles.md | — |
-| 2 | Jugador en primera persona (movimiento, cámara, manos) | Core | MVP | Not Started | — | 1, 4 |
+| 2 | Jugador en primera persona (movimiento, cámara, manos) | Core | MVP | Designed | design/gdd/jugador-en-primera-persona.md | 1, 4 |
 | 3 | Estado del juego y bus de eventos | Core | MVP | In Review | design/gdd/estado-y-bus-de-eventos.md | — |
 | 4 | Escena de planta y carga de Recepción | Core | MVP | Designed | design/gdd/escena-de-planta.md | 3 |
-| 5 | Guardado y carga | Persistence | MVP | Not Started | — | 3, 4, 6 |
+| 5 | Guardado y carga | Persistence | MVP | Designed | design/gdd/guardado-y-carga.md | 3, 4 |
 | 6 | Ajustes persistentes (inferred) | Persistence | MVP | In Review | design/gdd/ajustes-persistentes.md | 1 |
-| 7 | Interacción e inspección | Gameplay | MVP | Not Started | — | 1, 2, 18 |
+| 7 | Interacción e inspección | Gameplay | MVP | Designed | design/gdd/interaccion-e-inspeccion.md | 1, 2, 18 (blanda: 3) |
 | 8 | Control de acceso (puertas, tarjetas, lectores) | Gameplay | MVP | Not Started | — | 3, 7, 18 |
-| 9 | Marco de puzles (inferred) | Gameplay | MVP | Not Started | — | 3, 7 |
+| 9 | Marco de puzles (inferred) | Gameplay | MVP | Designed | design/gdd/marco-de-puzles.md | 3, 7 (blandas: 6, 18) |
 | 10 | Caja y compartimentos | Gameplay | MVP | Not Started | — | 3, 7, 9 |
 | 11 | Puzle 1 · Cronología | Gameplay | MVP | Not Started | — | 9, 18, 19, 20 |
 | 12 | Puzle 2 · Memorando en el cristal | Gameplay | MVP | Not Started | — | 7, 9, 18 |

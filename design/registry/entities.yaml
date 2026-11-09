@@ -210,6 +210,16 @@ constants:
     added: 2026-11-08
     revised: ""
 
+  # --- Lote 2026-11-09 (GDDs 2, 5, 7, 9) ---
+  - {name: player_eye_height_m, status: active, source: design/slice/slice-v0.3.md, referenced_by: [design/gdd/jugador-en-primera-persona.md, design/gdd/escena-de-planta.md], value: 1.62, unit: m, added: 2026-11-09, revised: ""}
+  - {name: player_walk_speed_mps, status: active, source: design/gdd/jugador-en-primera-persona.md, referenced_by: [design/gdd/entrada-y-controles.md], value: 1.6, unit: m/s, range: [1.0, 2.2], added: 2026-11-09, revised: ""}
+  - {name: player_capsule_radius_m, status: active, source: design/gdd/jugador-en-primera-persona.md, referenced_by: [design/gdd/escena-de-planta.md], value: 0.25, unit: m, range: [0.20, 0.30], added: 2026-11-09, revised: ""}
+  - {name: player_fov_vertical_default_deg, status: active, source: design/gdd/jugador-en-primera-persona.md, referenced_by: [design/gdd/entrada-y-controles.md, design/gdd/interaccion-e-inspeccion.md], value: 70, unit: deg, range: [60, 90], added: 2026-11-09, revised: ""}
+  - {name: alcance_interaccion_m, status: active, source: design/gdd/interaccion-e-inspeccion.md, referenced_by: [design/gdd/entrada-y-controles.md], value: 1.8, unit: m, range: [1.2, 3.0], added: 2026-11-09, revised: ""}
+  - {name: lock_max_s, status: active, source: design/gdd/marco-de-puzles.md, referenced_by: [design/gdd/interaccion-e-inspeccion.md], value: 2.0, unit: s, added: 2026-11-09, revised: ""}
+  - {name: save_format_version, status: active, source: design/gdd/guardado-y-carga.md, referenced_by: [design/gdd/ajustes-persistentes.md], value: 1, unit: "", added: 2026-11-09, revised: ""}
+  - {name: save_periodic_interval_s, status: active, source: design/gdd/guardado-y-carga.md, referenced_by: [design/gdd/marco-de-puzles.md], value: 120, unit: s, added: 2026-11-09, revised: ""}
+
 # Example:
 #
 # constants:

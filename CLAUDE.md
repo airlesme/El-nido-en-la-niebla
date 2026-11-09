@@ -17,6 +17,25 @@ Aventura/puzles en **primera persona 3D** (Godot). Alcance actual: vertical slic
   ADR, un hito) se mergea directamente en `main` y se hace push, sin abrir PR. Decisión
   del usuario (2026-11-08): no hace falta volver a pedirlo en cada fase.
 
+## Modo de trabajo por lotes (decisión del usuario, 2026-11-09)
+
+Sustituye al ciclo Pregunta→Opciones→Decisión→Borrador→Aprobación *por documento*.
+
+- **Lotes por tipo:** una sesión de diseño redacta 4–5 GDDs de la misma capa; otra
+  sesión revisa todos (un subagente por GDD, sin el contexto del autor, en paralelo).
+  `/review-all-gdds` al cerrar una capa.
+- **Decisiones por defecto:** se decide con la recomendación propia y se registra en
+  una sección «Decisiones tomadas» del GDD (alternativa descartada + motivo). Solo se
+  pregunta lo que cambie pilares, tono o alcance del slice, o contradiga
+  `design/slice/slice-v0.3.md`.
+- **Sin permiso por archivo:** se escribe sin preguntar «May I write…?»; la
+  aprobación es una sola, al final del lote, sobre un resumen de una página por sistema.
+- **Git:** un commit por GDD, push al final del lote (ver Fin de fase).
+- **Paralelismo:** GDDs independientes con subagentes a la vez; los que se tocan, en serie.
+- **Calidad intacta:** las 8 secciones (o las de `modes.workflow`), revisión
+  independiente y consistencia con el índice y el registro de entidades.
+- `project.yaml`: `modes.automation: autonomous`.
+
 ## Technology Stack
 
 - **Engine**: Godot 4.7
