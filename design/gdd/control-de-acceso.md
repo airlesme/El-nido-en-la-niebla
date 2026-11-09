@@ -1,6 +1,6 @@
 # Control de acceso (puertas, tarjetas, lectores)
 
-> **Status**: Revisado (ronda de corrección 1) — pendiente de re-review
+> **Status**: Revisado (ronda de decisiones 1) — pendiente de re-review (la ronda de decisiones 1 cierra la Pregunta 1, `MEGA_03`: D8-23; ronda de corrección 1 anterior)
 > **Author**: level-designer (lote autónomo) + Álvaro
 > **Last Updated**: 2026-11-09
 > **Last Verified**: 2026-11-09
@@ -96,7 +96,7 @@ Lo que **no** debe sentir: que el edificio la castiga. Un lector sin tarjeta es 
 
    `NO` = sin icono ni reacción (7 regla 3). `ESPERA` y `EN_APAGON` no producen megafonía: la escena ya está ocupada con luces, lluvia, llamada o ambiente (Pilares 2 y 4; D8-18). 8 es la **única fuente** de «el ascensor está activo»: 21 no mantiene una bandera propia (D8-13).
 14. **`interact(Entrar)`**. En `LISTO`: pasa a `EN_USO`, emite «ascensor llamado» (regla 11) y devuelve `HECHO` (7 reserva `HAND_REACH`, 0,5 s, antes, lo que cubre el hueco de un fotograma hasta que 21 toma el `sin control`). 8 **no** carga Recepción ni anima la cabina (la planta no la modela, regla 18(e) de 4): eso lo ordena 21 a 4, que rechaza `recepcion` con `llamada_completada` falso (4 regla 13), así que un fallo de 8 no puede adelantar el final. **`EN_USO` siempre sale** (D8-14): vuelve a `LISTO` cuando llega «ascensor rechazado» (21 lo emite si 4 rechaza `recepcion`: carga en curso, estado no «Listo») o, como red de seguridad, cuando pasan `t_en_uso_tope_s` (20,0 s†, tiempo de juego; mayor que el traspaso de 12,0 s† de 21, F4); el jugador puede entonces reintentar. Si la carga tiene éxito, la planta se descarga y 8 desaparece. En cualquier estado distinto de `LISTO`, `interact` devuelve `SIN_EFECTO` sin efectos (en `INACTIVO`, aplica la regla 15). Si 4 informa de un fallo de carga de Recepción (4 regla 14), la planta se recarga desde el título (5 regla 18): `llamada_completada` ya no estará verdadero, el ascensor nace `INACTIVO` (o `EN_APAGON` si `caja_completa`) y la llamada se repite (slice §13.2).
-15. **Ascensor `INACTIVO` (slice §13.3).** El jugador ve el icono «Entrar» en `C08` y puede intentar usarlo: 7 reserva `HAND_REACH`, llama a `interact()` y 8 (a) devuelve `SIN_EFECTO` con `texto_inactivo` como pie (suena `SFX_CLICK_SUBTLE`, 7 regla 11) y (b) si ha pasado `enfriamiento_linea_s` (8 s†, **el único enfriamiento de `MEGA_03`**: 21 no tiene otro; D8-20) desde la última, emite «línea pedida» (`MEGA_03`) ‡ (megafonía por `C01`: «Planta en modo de ahorro energético»), que 23 reproduce. Dentro del enfriamiento solo pie y clic. **No hay penalización**: sin contador, sin consecuencia, sin cambio de estado. En `ESPERA` y `EN_APAGON` el objeto está en `NO` (el jugador que vuelve a su despacho pasando junto a `C08`, X 1,4–2,6, no oye megafonía sobre las sillas, el tecleo o la llamada).
+15. **Ascensor `INACTIVO` (slice §13.3).** El jugador ve el icono «Entrar» en `C08` y puede intentar usarlo: 7 reserva `HAND_REACH`, llama a `interact()` y 8 (a) devuelve `SIN_EFECTO` con `texto_inactivo` como pie (suena `SFX_CLICK_SUBTLE`, 7 regla 11) y (b) si ha pasado `enfriamiento_linea_s` (8 s†, **el único enfriamiento de `MEGA_03`**: 21 no tiene otro; D8-20) desde la última, emite «línea pedida» (`MEGA_03`, línea aprobada del slice v0.4, D8-23) (megafonía por `C01`: «Planta en modo de ahorro energético»), que 23 reproduce. Dentro del enfriamiento solo pie y clic. **No hay penalización**: sin contador, sin consecuencia, sin cambio de estado. En `ESPERA` y `EN_APAGON` el objeto está en `NO` (el jugador que vuelve a su despacho pasando junto a `C08`, X 1,4–2,6, no oye megafonía sobre las sillas, el tecleo o la llamada).
 
 ### Textos, audio y accesibilidad
 
@@ -226,7 +226,7 @@ Todos están en `assets/data/access/access.json` (regla 3). † = valor propuest
 - **Hoja:** giro de 90° hacia el interior de la sala, `ANIM_DOOR_OPEN` (animación, slice B.7; 1,2 s, F3), con el sonido de hoja `SFX_DOOR_SWING` ‡ (1,2 s, sin chirrido agudo; con `reducir_sobresaltos` ya queda mínimo) en A, B y D. La puerta A usa además `SFX_UNLOCK` de 9; B y D, `SFX_CARD_OK` ‡ del lector.
 - **Lector:** pieza pequeña con LED de tres presentaciones (regla 17); en la oscuridad de la escena 7 el LED es la única luz de la zona y no debe sobreexponer. La tarjeta se ve en la mano (20/2) durante el gesto; si 20 la rechaza, el gesto va sin tarjeta.
 - **Cajón `A05`:** se desliza `t_cajon_s` con `HAND_DRAWER`; foley de cajón `SFX_DRAWER_OPEN` ‡ (pendiente de 23).
-- **Audio nuevo propuesto:** `SFX_CARD_OK` ‡ (clic suave de cierre, 0,3 s), `SFX_DOOR_SWING` ‡, `SFX_DRAWER_OPEN` ‡, `MEGA_03` ‡ (voz de megafonía, pendiente de ID y texto final en 18). No existe `SFX_DENY`: el rechazo es `SFX_CLICK_SUBTLE` de 7.
+- **Audio nuevo propuesto:** `SFX_CARD_OK` ‡ (clic suave de cierre, 0,3 s), `SFX_DOOR_SWING` ‡, `SFX_DRAWER_OPEN` ‡, `MEGA_03` (voz de megafonía; línea aprobada en el slice v0.4, 28 entradas; la redacción final es del writer en 18). No existe `SFX_DENY`: el rechazo es `SFX_CLICK_SUBTLE` de 7.
 - **Iluminación y ambiente por puerta (guía al art-director):** el interior de A se ve al abrir con su tubo fluorescente parpadeando (slice A.4); el de B, lámparas ámbar; el de D, lámpara de escritorio. Lo que se ve tras la hoja debe ser el primer «premio» visual de la puerta.
 
 ## UI Requirements
@@ -284,10 +284,11 @@ Tipos: **L** = lógica (prueba automatizada en `tests/unit/access/`), **I** = in
 | D8-20 | **Un solo enfriamiento** de `MEGA_03` (`enfriamiento_linea_s` = 8 s†, de 8). | Mantener también `t_ahorro_cooldown_s` = 10,0† en 21. | Dos emisores con dos valores (8 s vs 10 s) hacían inconsistente la repetición. |
 | D8-21 | La hoja lleva su propio sonido `SFX_DOOR_SWING` ‡; `ANIM_DOOR_OPEN` es solo animación. | Tratar `ANIM_DOOR_OPEN` como sonido (borrador). | Slice B.7 la define como animación; sin sonido, B y D tenían 1,2 s de hoja muda tras un clic de 0,3 s. |
 | D8-22 | El fail-open (regla 19) se extiende al ascensor y al cajón, y se declara como **excepción** a la política de 7 (objeto deshabilitado). | Deshabilitar el objeto con datos inválidos, como 7. | Aquí un objeto deshabilitado sería un softlock (Pilar 4). |
+| D8-23 | **(Ronda de decisiones 1, D-D, aprobada por el usuario, 2026-11-09)** `MEGA_03` («Planta en modo de ahorro energético») es una línea nueva con ID, aprobada en el slice v0.4 (28 entradas). La lógica de la regla 15 y F4 no cambia; conserva `enfriamiento_linea_s` = 8 s† (único; 21 cierra su PA-6 con el mismo criterio: la megafonía es de 8) | Texto de interfaz sin ID; dejar la línea fuera del slice | Decisión de alcance del usuario; §13.3 ya fija el texto como megafonía y necesita ID para localización y QA |
 
 ## Open Questions
 
-1. **ID y texto de la megafonía de ahorro energético.** El slice §13.3 da el texto («Planta en modo de ahorro energético») sin ID, mientras §12 dice que cada línea tiene uno. Se propone `MEGA_03` ‡ y que 18 pase de 27 a 28 entradas, lo que exige slice v0.4 (18 regla 15 y su verificador, AC-02 de 18). **Decisión única compartida con 21** (PA-6, DT-14 de 21 proponen lo mismo por su cuenta): el dueño del pedido es 8, 21 no pide la línea. *Dueño:* usuario (alcance menor: añadir una línea de contenido, ya exigida por §13.3) / narrative-director / 18.
+1. ~~ID y texto de la megafonía de ahorro energético~~ **Cerrada (D8-23, aprobada por el usuario, 2026-11-09):** `MEGA_03` es una línea nueva del slice v0.4 (28 entradas en 18; §12 pasa a 21 audibles, 3 de megafonía); sin cambio de lógica en 8, que sigue siendo el único pedidor y dueño del enfriamiento. Queda la redacción final (writer, 18).
 2. **Mecanismo de peticiones de sonido 3D a 23.** 8 pide efectos en un lector, hueco o cajón y una línea de megafonía; 23 no tiene GDD. Debe confirmar la interfaz (¿aviso «línea pedida» también para efectos?). *Dueño:* 23 / audio-director.
 3. **Resuelta (v0.2):** la variante de la tarjeta en `HAND_CARD_SWIPE` ya no necesita parámetro: el gesto usa el ítem que 20 sostiene (`sostener_item`, D8-16).
 4. **¿Debería 17 (pistas) ofrecer una pista si el jugador intenta un lector sin tarjeta repetidas veces?** El slice no lo pide; el camino crítico ya pasa por el Archivo (P1, con pistas). *Dueño:* 17.
@@ -330,7 +331,7 @@ Formato de `design/registry/entities.yaml` (todas con `source: design/gdd/contro
 | `elevator_state` | `INACTIVO`/`EN_APAGON`/`ESPERA`/`LISTO`/`EN_USO` | enum | 21 | No se guarda |
 | `drawer_state` | `CERRADO`/`ABRIENDO`/`ABIERTO` | enum | 20 | No se guarda |
 | `door_ids` | `A`, `B`, `D` | — | 5 | Datos del aviso «puerta abierta» y de la causa `door_opened:<ID>` |
-| `MEGA_03` | «Planta en modo de ahorro energético» | línea | 18, 23 | Propuesta ‡ (pregunta abierta 1) |
+| `MEGA_03` | «Planta en modo de ahorro energético» | línea | 18, 23 | Aprobada por el usuario (2026-11-09), slice v0.4, 28 entradas; redacción final pendiente del writer (D8-23) |
 | `SFX_CARD_OK` | — | sonido | 23 | Propuesta ‡ |
 | `SFX_DOOR_SWING` | — | sonido | 23 | Propuesta ‡ (1,2 s) |
 | `SFX_DRAWER_OPEN` | — | sonido | 23 | Propuesta ‡ |
@@ -342,3 +343,4 @@ Formato de `design/registry/entities.yaml` (todas con `source: design/gdd/contro
 |---|---|---|
 | 0.1 | 2026-11-09 | Borrador (lote Feature 1): 20 reglas, 4 fórmulas, 16 AC, 12 decisiones, 5 preguntas abiertas. Pendiente de review independiente. |
 | 0.2 | 2026-11-09 | Ronda de corrección 1 (revisión independiente: 3 bloqueantes, 13 avisos): 8 posee `A05` (reglas 21–23) y `C08` completo (D8-13, EN_USO recuperable, `EN_APAGON`); gesto de tarjeta vía 20 (`sostener_item`/`guardar_item`, D8-16); `LEYENDO` pasa a estado de la puerta; Pilar 4; 20 hechos; F1 con `v_paseo`; F2 con cámara; esquema de datos completo; † en valores sin fuente; ACs 17–20 y retipado. 23 reglas, 4 fórmulas, 20 AC, 22 decisiones, 8 preguntas abiertas. Pendiente de re-review. |
+| 0.3 | 2026-11-09 | Ronda de decisiones 1 (lote Feature 1): cierra la Pregunta 1 (`MEGA_03` aprobada como línea nueva del slice v0.4, sin cambio de lógica; D8-23); se quita la marca ‡ a `MEGA_03` y conserva el enfriamiento de 8 s†. Estado: Revisado (ronda de decisiones 1) — pendiente de re-review. |
