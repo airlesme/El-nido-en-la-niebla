@@ -1,6 +1,6 @@
 # Slice «Turno de noche» · Índice del documento
 
-Fuente de verdad: [`slice-v0.3.md`](slice-v0.3.md) (contenido en **versión 0.4.1**, 2026-11-09; el nombre del fichero se mantiene). **No se edita en caliente**: los cambios entran como nueva versión (v0.4…) con entrada en su historial (sección 24).
+Fuente de verdad: [`slice-v0.3.md`](slice-v0.3.md) (contenido en **versión 0.4.2**, 2026-11-09; el nombre del fichero se mantiene). **No se edita en caliente**: los cambios entran como nueva versión (v0.4…) con entrada en su historial (sección 24).
 
 ## Dónde vive cada parte en el repo
 

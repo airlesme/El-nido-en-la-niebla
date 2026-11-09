@@ -1,9 +1,9 @@
 # El Nido en la Niebla · Documento de referencia del vertical slice «Turno de noche»
 
-**Versión:** 0.4.1 (contenido v0.4; ver §24)
+**Versión:** 0.4.2 (contenido v0.4; ver §24)
 **Fecha:** 2026-11-09
 **Estado:** base para desarrollo. Sujeta a revisión tras el primer playtest.
-**Alcance:** vertical slice de entre ~15 y ~30 minutos según el jugador (mínimo 15,0 min con fuentes firmes, techo ≈ 33 min en el peor caso; rango a confirmar en playtest con AC-X5 de `marco-de-puzles.md`; no se afirma 25–30 min).
+**Alcance:** vertical slice de entre ~15 y ~30 minutos según el jugador (mínimo ≈ 14,8 min con los componentes estimados, techo ≈ 33 min en el peor caso; rango a confirmar en playtest con AC-X5 de `marco-de-puzles.md`; no se afirma 25–30 min).
 
 > Este documento es la fuente de verdad para el slice. Prevalece sobre el GDD general (v0.1, 26 de octubre de 2026) y sobre las versiones 0.1, 0.2 y 0.3 (con sus ajustes 0.3.1 y 0.3.2) de este documento. Donde el GDD general diga tercera persona, el slice usa **primera persona** (decisión D-01). Los anexos A a D contienen el detalle de implementación de espacios, puzles, eventos e inventario.
 
@@ -445,7 +445,7 @@ Según la política de Steam de 2026, hay que declarar el contenido generado por
 
 El slice se considera aceptable cuando:
 
-1. Un jugador nuevo completa el slice sin guía externa en entre ~15 y ~30 minutos según el jugador (mínimo 15,0 min con fuentes firmes, techo ≈ 33 min en el peor caso). Rango **a confirmar en playtest** con AC-X5 de `marco-de-puzles.md` (F9): el criterio queda «a medir» y no se afirma como logrado.
+1. Un jugador nuevo completa el slice sin guía externa en entre ~15 y ~30 minutos según el jugador (mínimo ≈ 14,8 min con los componentes estimados, techo ≈ 33 min en el peor caso). Rango **a confirmar en playtest** con AC-X5 de `marco-de-puzles.md` (F9): el criterio queda «a medir» y no se afirma como logrado.
 2. Cada puzle se resuelve con información que está en el juego (pistas en tres niveles; dos en el puzle 6).
 3. Ningún fallo en un puzle bloquea el avance.
 4. Tres de cada cuatro jugadores de prueba describen el ambiente como «tenso» o «inquietante» sin usar la palabra «confuso» como única descripción.
@@ -1009,7 +1009,7 @@ S6 queda vacío.
 | 4,5 | Tecleo lejano (3 s). |
 | Al entrar en el despacho de Vera | V02 suena (`SFX_PHONE_BUZZ`). Si el jugador no entra en 60 s, el teléfono se oye desde el pasillo. El juego espera en el despacho. |
 | Al pulsar V02 | `ANIM_PHONE_PICKUP` (0,8 s). Silencio de 2,0 s. Respiración de 2,0 s. |
-| +4,0 | Línea de variante: `VO_G_12A`, `VO_G_12B` o `VO_G_12C` (unos 5 s). |
+| +4,0 (se lee como la línea a **4,8 s** del pulso: 0,8 + 2,0 + 2,0; v0.4.2) | Línea de variante: `VO_G_12A`, `VO_G_12B` o `VO_G_12C` (unos 5 s). |
 | +1,0 tras la línea | Aparecen las opciones: «Estoy bien», «Estoy desbordada», «No quiero hablarlo ahora» y «No responder». |
 | +20,0 sin elegir | `SFX_BREATH_BROKEN` (4 s) y `VO_G_14_RET` «Sigo aquí.» o `VO_G_14_ASG` «Sigo aquí. La carta a Dirección ya va firmada.» según `t4_decision`. Las opciones siguen visibles. No hay elección automática. |
 | Al elegir | Se reproduce la línea de respuesta (`VO_G_13A` a `VO_G_13D`). Se guarda `respuesta_llamada`. |
@@ -1067,7 +1067,7 @@ Son 20 hechos en total (los de la tabla, contando `pos_L`, `pos_C` y `pos_R` por
 | `pendiente_revelacion` | bool | falso | Puzle 5 (al iniciar la revelación; se limpia al terminarla) | Puzle 5 |
 | `caja_completa` | bool | falso | Puzle 6 | Apagón y llamada |
 | `carta_variante` | enum (A, B, C) | — | Puzle 6 | Escena 7 |
-| `llamada_iniciada` | bool | falso | Escena 7 (se escribe justo antes de «llamada iniciada») | Marca el sellado del guardado; **no** evita repetir la llamada (se repite hasta `llamada_completada` y guardada) |
+| `llamada_iniciada` | bool | falso | Escena 7 (se escribe al pulsar «Descolgar», justo antes de «llamada iniciada») | Marca el sellado del guardado; **no** evita repetir la llamada (se repite hasta `llamada_completada` y guardada) |
 | `respuesta_llamada` | enum (A, B, C, D) | — | Escena 7 | Escena 8 |
 | `llamada_completada` | bool | falso | Escena 7 | C08 (ascensor) |
 
@@ -1101,6 +1101,7 @@ Son 20 hechos en total (los de la tabla, contando `pos_L`, `pos_C` y `pos_R` por
 | Versión | Fecha | Cambio |
 |---|---|---|
 | 0.4.1 | 2026-11-09 | Decisión del usuario (opción (c) de la Open Question 10 de `marco-de-puzles.md`, R6-9): el criterio de duración «25–30 min» (cabecera, §19.1) pasa a «entre ~15 y ~30 min según el jugador (mínimo 15,0 min con fuentes firmes, techo ≈ 33 min), a confirmar en playtest con AC-X5». §22: se retira «ningún puzle requiere más de dos minutos» (choca con F7) por «cada puzle entre ~1 y ~6 min». §23: playtest de ≥ 5 testers nuevos (unificado con AC-X5). Sin cambios de pilares ni de alcance. |
+| 0.4.2 | 2026-11-09 | Decisión del usuario sobre la fila «+4,0» de C.7: se interpreta como la línea de variante a **4,8 s** del pulso en `V02` (animación 0,8 s + silencio 2,0 s + respiración 2,0 s), no a 4,0 s ni a 8,8 s; las opciones aparecen a ≈ 10,8 s (con la línea de ≈ 5 s y +1,0 s) y la llamada dura 16,4–44,8 s (`llamada-telefonica.md`, F1–F5). Consecuencia: el mínimo del criterio de duración (cabecera, §19.1) pasa de 15,0 a ≈ 14,8 min (`marco-de-puzles.md`, F9, D9-66). D.2: `llamada_iniciada` se escribe al pulsar «Descolgar» (aclaración, D22-3). Sin cambios de pilares ni de alcance; D-15 sigue pendiente de confirmar. |
 | 0.4 | 2026-11-09 | Versión mayor que integra cinco decisiones del usuario surgidas de los GDDs de la capa Feature: (1) `MEGA_03`, megafonía de ahorro energético del ascensor inactivo, entra en §12 (27→28 entradas; 21 audibles, 3 de megafonía) con el texto de §13.3, redacción final pendiente del writer; (2) zonas `T-D-OUT` y `T-OFI-IN` añadidas al Anexo A.3 y D.4 con coordenadas propuestas; (3) `atrás` corta en `exploración` = «repasar bolsillo» (un documento por pulsación, sin menú), matiza D.1; (4) I-05 e I-06a releíbles desde el bolsillo; (5) B.1 confirmado literal (hoja con `Enviado: hh:mm` y pie «Ordena por hora de envío»; pistas 2 y 3 sin información nueva). Afecta a §12, §13.3, A.3, B.1, D.1 y D.4. |
 | 0.3.2 | 2026-11-09 | Ajustes autorizados por el usuario sobre v0.3 (sin cambiar de versión): la ficha T4 «Carta a Dirección» acepta Devolver o resolverla con los selectores (cualquier combinación), sin respuesta incorrecta ni «No corresponde»; la elección se guarda en `t4_decision` (`returned`/`assigned`, escrito antes de `caja_c2`); `VO_G_14` pasa a `VO_G_14_RET`/`VO_G_14_ASG` (propuesta provisional pendiente de narrative-director); D.2 pasa de 19 a 20 hechos. Afecta a B.4, 10.4, 11, 12, 13.3 y D.2. |
 | 0.3.1 | 2026-11-09 | Ajustes autorizados por el usuario sobre v0.3 (sin cambiar de versión): P1 nivel 1 pasa de gesto de cámara a resaltado; D.2 `llamada_iniciada` no evita repetir la llamada y `pendiente_revelacion` se escribe al iniciar la revelación; tras llegar a Recepción la partida queda sellada y el título ofrece solo «Nueva partida»; «reducir movimiento» entra en la accesibilidad del MVP. |

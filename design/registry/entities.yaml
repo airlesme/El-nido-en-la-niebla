@@ -938,7 +938,7 @@ constants:
   - name: line_grace_s
     status: active
     source: design/gdd/marco-de-puzles.md
-    referenced_by: []
+    referenced_by: [design/gdd/llamada-telefonica.md]
     value: 2.0
     unit: s
     added: 2026-11-09
@@ -1617,6 +1617,140 @@ constants:
     value: "«efecto de escena pedido», «estado de objeto pedido», «tarjeta final pedida», «linea pedida» (segundo emisor), «ascensor rechazado» (sin datos)"
     unit: ""
     note: "Avisos con emisor 21 (regla 10 de 3)"
+    added: 2026-11-09
+    revised: ""
+  - name: t_sil_s
+    status: active
+    source: design/gdd/llamada-telefonica.md
+    referenced_by: [design/gdd/marco-de-puzles.md]
+    value: 2
+    unit: "s"
+    range: [1.0, 4.0]
+    note: "† (slice C.7: silencio tras ANIM_PHONE_PICKUP). Dato de call.json ‡; F1 de 22"
+    added: 2026-11-09
+    revised: ""
+  - name: t_resp_s
+    status: active
+    source: design/gdd/llamada-telefonica.md
+    referenced_by: [design/gdd/marco-de-puzles.md]
+    value: 2
+    unit: "s"
+    range: [1.0, 4.0]
+    note: "† (slice C.7: respiracion SFX_CALL_BREATH). F1 de 22; la linea de variante empieza a 4,8 s del pulso (D22-1, decision del usuario 2026-11-09)"
+    added: 2026-11-09
+    revised: ""
+  - name: t_ante_s
+    status: active
+    source: design/gdd/llamada-telefonica.md
+    referenced_by: [design/gdd/marco-de-puzles.md]
+    value: 1
+    unit: "s"
+    range: [0.5, 2.0]
+    note: "† (slice C.7: +1,0 tras la linea de variante hasta las opciones)"
+    added: 2026-11-09
+    revised: ""
+  - name: t_guarda_opciones_s
+    status: active
+    source: design/gdd/llamada-telefonica.md
+    referenced_by: [design/gdd/marco-de-puzles.md]
+    value: 0.6
+    unit: "s"
+    range: [0, 1.0]
+    note: "† (D22-5: pulsaciones ignoradas tras aparecer las opciones; no se encolan)"
+    added: 2026-11-09
+    revised: ""
+  - name: t_espera_s
+    status: active
+    source: design/gdd/llamada-telefonica.md
+    referenced_by: [design/gdd/marco-de-puzles.md]
+    value: 20
+    unit: "s"
+    range: [10, 40]
+    note: "† (slice C.7 / D-15: sin elegir, SFX_BREATH_BROKEN + VO_G_14_*; cuenta desde que aparecen las opciones; la señal ocurre una sola vez)"
+    added: 2026-11-09
+    revised: ""
+  - name: t_cierre_s
+    status: active
+    source: design/gdd/llamada-telefonica.md
+    referenced_by: [design/gdd/marco-de-puzles.md]
+    value: 1
+    unit: "s"
+    range: [0.5, 2.0]
+    note: "† (slice C.7: +1,0 tras la respuesta, SFX_PHONE_END y llamada_completada)"
+    added: 2026-11-09
+    revised: ""
+  - name: t_corte_senal_s
+    status: active
+    source: design/gdd/llamada-telefonica.md
+    referenced_by: [design/gdd/marco-de-puzles.md]
+    value: 0.3
+    unit: "s"
+    range: [0, 0.5]
+    note: "† (interrupcion de la señal al elegir, regla 15 de 22; contrato ‡ de 23)"
+    added: 2026-11-09
+    revised: ""
+  - name: t_putdown_s
+    status: active
+    source: design/gdd/llamada-telefonica.md
+    referenced_by: [design/gdd/marco-de-puzles.md]
+    value: "<=0.6"
+    unit: "s"
+    range: [0.3, 0.8]
+    note: "† (HAND_PHONE_PUTDOWN pedido a 2; si 2 lo rechaza, 22 libera el contexto a los 0,6 s)"
+    added: 2026-11-09
+    revised: ""
+  - name: call_timeline_s
+    status: active
+    source: design/gdd/llamada-telefonica.md
+    referenced_by: [design/gdd/marco-de-puzles.md, design/slice/slice-v0.3.md]
+    value: "linea de variante 4,8; opciones 10,8; llamada completa 16,4 a 44,8"
+    unit: "s"
+    note: "F1 a F3 y F5 de 22 (decision del usuario 2026-11-09: la fila +4,0 de C.7 es la linea a 4,8 s; slice v0.4.2). Alimenta F9 de 9 (0,27 a 0,75 min †). L12 ≈ 5,0 †, L13 ≈ 4,0 †, L14 1 a 5 †"
+    added: 2026-11-09
+    revised: ""
+  - name: v02_state
+    status: active
+    source: design/gdd/llamada-telefonica.md
+    referenced_by: [design/gdd/interaccion-e-inspeccion.md, design/gdd/director-de-escenas.md]
+    value: "reposo / vibrando / en_llamada"
+    unit: "enum"
+    note: "Estados del telefono V02: reposo, vibrando (lo pone 21; 22 en la reanudacion con llamada_iniciada), en_llamada (22). Catalogo de 7: el verbo Descolgar solo existe en vibrando y su can_interact lo evalua 22. No se guarda"
+    added: 2026-11-09
+    revised: ""
+  - name: call_input_context
+    status: active
+    source: design/gdd/llamada-telefonica.md
+    referenced_by: [design/gdd/entrada-y-controles.md]
+    value: "llamada"
+    unit: "context"
+    note: "Contexto de entrada de 1; lo abren y cierran 22 (regla 6 de 1). Cursor oculto hasta OPCIONES (D22-10); ui_atras y atras sin efecto (D22-9)"
+    added: 2026-11-09
+    revised: ""
+  - name: call_state
+    status: active
+    source: design/gdd/llamada-telefonica.md
+    referenced_by: [design/gdd/guardado-y-carga.md]
+    value: "INACTIVA / DESCOLGANDO / SILENCIO / RESPIRACION / LINEA / ANTES_OPCIONES / OPCIONES (ESPERA, SENAL) / RESPUESTA / CIERRE / COMPLETADA"
+    unit: "enum"
+    note: "Maquina de estados de 22; no se guarda: la llamada se repite desde el principio al cargar con llamada_iniciada y sin llamada_completada (regla 30 de 22). La respuesta es definitiva"
+    added: 2026-11-09
+    revised: ""
+  - name: state_notices_call
+    status: active
+    source: design/gdd/llamada-telefonica.md
+    referenced_by: [design/gdd/estado-y-bus-de-eventos.md, design/gdd/director-de-escenas.md, design/gdd/control-de-acceso.md]
+    value: "«llamada iniciada», «llamada completada», «linea pedida» (tambien 22), «sonido de llamada pedido» ‡ (22 a 23); recibe «estado de objeto pedido» ‡ (21 a 22, solo V02)"
+    unit: ""
+    note: "Avisos con emisor 22 (tabla de avisos de 3, fila 22)"
+    added: 2026-11-09
+    revised: ""
+  - name: call_content_ids
+    status: active
+    source: design/gdd/llamada-telefonica.md
+    referenced_by: [design/gdd/base-de-contenido-narrativo.md]
+    value: "SFX_CALL_BREATH ‡; SUB_BREATH_BROKEN (texto provisional, marcador de pendiente); UI_LLAMADA_OPCION_A..D ‡"
+    unit: "id"
+    note: "IDs propuestos por 22 y registrados en la regla 23 de 18 (no son del §12: no cambian el recuento de 28 ni el de 8 PISTA_*). Existentes usados: V02, VO_G_12A/B/C, VO_G_13A-D, VO_G_14_RET/ASG, SFX_PHONE_BUZZ, SFX_BREATH_BROKEN, SFX_PHONE_END, ANIM_PHONE_PICKUP, HAND_PHONE_HOLD, HAND_PHONE_PUTDOWN, VO_V_12A-D (consumidas por 21)"
     added: 2026-11-09
     revised: ""
 
