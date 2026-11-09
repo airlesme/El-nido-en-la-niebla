@@ -1,6 +1,6 @@
 # Interacción e inspección
 
-> **Status**: Revisado (ronda de corrección 3) — pendiente de re-review (ronda de corrección 3 aplica R6-3 y R6-5 de `gdd-cross-review-2026-11-09-r6.md`: D7-64 y D7-65; ronda de corrección 2 aplica W-5, W-7, W-9 y N4-2 de `gdd-cross-review-2026-11-09-r5.md`: D7-62 y D7-63; ronda de decisiones 1 ronda de decisiones 1 cierra P1, P3, P4 y P5 del lote Feature 1: D7-59 a D7-61; ronda de propagación 1 aplica los «Cambios requeridos» de 8, 10, 19, 20 y 21 del lote Feature 1: D7-53 a D7-58; ronda 5 aplica C-W6 (opción a), E-3, E-4 y E-5 de `gdd-cross-review-2026-11-09-r3.md`; ronda 4 aplica B-1, B-4, E1-2 y N-W5 de `gdd-cross-review-2026-11-09-r2.md`; ronda 3: C-B1, C-B3, C-W1, C-W11, C-W12 y C-W13; ronda 2: `reviews/interaccion-e-inspeccion-re-review.md`; ronda 1: H-01 a H-20)
+> **Status**: Revisado (ronda de corrección 4) — pendiente de re-review (ronda de corrección 4 aplica R6-1 de `gdd-cross-review-2026-11-09-r6.md` y `reviews/cross-review-r6-2.md`: D7-66; ronda de corrección 3 aplica R6-3 y R6-5 de `gdd-cross-review-2026-11-09-r6.md`: D7-64 y D7-65; ronda de corrección 2 aplica W-5, W-7, W-9 y N4-2 de `gdd-cross-review-2026-11-09-r5.md`: D7-62 y D7-63; ronda de decisiones 1 ronda de decisiones 1 cierra P1, P3, P4 y P5 del lote Feature 1: D7-59 a D7-61; ronda de propagación 1 aplica los «Cambios requeridos» de 8, 10, 19, 20 y 21 del lote Feature 1: D7-53 a D7-58; ronda 5 aplica C-W6 (opción a), E-3, E-4 y E-5 de `gdd-cross-review-2026-11-09-r3.md`; ronda 4 aplica B-1, B-4, E1-2 y N-W5 de `gdd-cross-review-2026-11-09-r2.md`; ronda 3: C-B1, C-B3, C-W1, C-W11, C-W12 y C-W13; ronda 2: `reviews/interaccion-e-inspeccion-re-review.md`; ronda 1: H-01 a H-20)
 > **Author**: Álvaro + agentes
 > **Last Updated**: 2026-11-09
 > **Last Verified**: 2026-11-09
@@ -415,7 +415,7 @@ La cadena `D01a`–`D01c` (regla 19; `D01d` no encadena, D7-53) se acota **enter
 | 6 Ajustes persistentes | Blanda | Lee `multiplicador_pie` y `pie_persistente` (F5, regla 12) y se suscribe a su aviso de cambio; sin Ajustes usa 1,0 y falso |
 | 3 Estado y bus de eventos | Blanda | Lee hechos para `habilitado_si` (lectura directa por paso de física); emite los avisos de la regla 29. El GDD del 3 ya lista a 7 como lector y emisor |
 
-El **índice** (fila 7 y Feature Layer, punto 1) ya lista «1, 2, 4, 18 (blanda: 3)».
+El **índice** (fila 7 y Feature Layer, punto 1) lista «1, 2, 4, 18 (blandas: 3, 6)» desde la ronda de corrección 4 (D7-66).
 
 **Aguas abajo (quién depende de este sistema)**
 
@@ -666,6 +666,7 @@ Revisados por `qa-lead`. **Evidencia:** **L** = test unitario automático (gdUni
 | D7-63 | **(Ronda de corrección 2, N4-2, W-5, W-7, 2026-11-09)** Un `atrás` durante la salida de la vista de `D01d` lo consume la vista y no aplaza ni cancela la lectura de la carta del P6; el repaso solo se acepta en `exploración` estable (regla 27b; AC-27e (9)). La acción se llama siempre `repasar_bolsillo` (regla 23 de Entrada). Se retiran los «sin GDD» obsoletos de Dependencies | Prioridad de la petición del dueño sobre el repaso, o ignorar `repasar_bolsillo` mientras la carta esté pendiente | Basta con que `atrás` lo consuma quien está saliendo: no añade estado ni excepciones a la tabla de 27b |
 | D7-64 | **(Ronda de corrección 3, R6-3, 2026-11-09)** La pieza arrastrada del puzle 3 no es sostenible: 7 no la añade a la lista de `V05` (regla 13); se mueve con el puntero y el gesto de encaje es `HAND_PLACE` sobre el elemento de la vista, sin `sostener`/`soltar()`. `sostener` lleva siempre tres argumentos y la mano de `V05` es `izquierda`. Cierra el «Cambios requeridos» de 2 (W-2, D-42 de 2) | Declarar la pieza `sostenible` (amplía la lista única) | La lista de sostenibles es única y cerrada; un arrastre con el cursor no necesita mano que sostenga |
 | D7-65 | **(Ronda de corrección 3, R6-5, 2026-11-09)** Durante `Saliendo` de `D01d` el contexto sigue siendo el de la vista: un `atrás` lo consume la vista (regla 27b) y `repasar_bolsillo` solo se acepta con la pila `exploración` estable. Es compatible con Entrada AC-E17 (transición bloqueante en `exploración`); AC-27f los distingue por contexto | Tratar `Saliendo` como `exploración` y dejar que el repaso compita con la carta del P6 | No añade estado a 7 y evita que el repaso ocupe la plaza de petición aplazada |
+| D7-66 | **(Ronda de corrección 4, R6-1, 2026-11-09)** Dureza de las dependencias, regla común (la declara el GDD dependiente; el proveedor repite la misma): 7 declara Dura 1, 2, 4, 18, y Blanda 3 y 6; como proveedor repiten Dura 8, 9, 10, 19, 20, 22, 24 y Blanda 21, 23, 28 (21 la declara Blanda: `cerrar_modos()`, «interacción ejecutada»). La fila 7 del índice añade 6 a las blandas (7 lo declara en su tabla; 6 lo repite como Blanda). Sin cambios de reglas. | Dejar el índice sin 6 | La tabla de Dependencies de 7 ya lo declaraba; faltaba en el índice. |
 
 ## Open Questions
 
