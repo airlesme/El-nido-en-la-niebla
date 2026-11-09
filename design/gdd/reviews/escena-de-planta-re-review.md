@@ -84,3 +84,16 @@ Arreglo: etiquetar cada AC con la API como «a verificar en el editor 4.7» y ma
 ## Preguntas para el usuario
 
 Ninguna que cambie pilares, tono o alcance. Una decisión de diseño menor que conviene confirmar por si afecta a la sensación de cierre del slice: si el fundido de 0,8 s de A.0 son 0,8 s en cada sentido (la interpretación del GDD, OQ 4) o 0,8 s en total. Hasta que se confirme, se mantiene la interpretación actual.
+
+## Cambios requeridos en otros GDDs
+
+Derivados de la ronda 2 de `escena-de-planta.md` (2026-11-09). Este GDD ya está aplicado; falta lo siguiente fuera de él.
+
+- **GDD 1 (Entrada y controles):** (a) listar al sistema 4 como emisor de «carga de escena iniciada / terminada»; (b) F8: aceptar que el 4 abra el `sin control` de una carga al recibir «iniciada» con `D_carga` como duración declarada (hoy solo la declara el director de escenas); (c) el tope de ese `sin control` no se detiene durante la carga (la pausa no se puede abrir) y se mide desde «iniciada»; (d) con `control_final` = `ninguno` el `sin control` se mantiene en «terminada» hasta que 21 toma el suyo; (e) definir la pila al arrancar `partida_nueva` desde el título.
+- **GDD 3 (Estado y bus):** añadir a la regla 10 los avisos «carga de escena iniciada» (con destino, `motivo`, `D_carga`), «escena lista», «carga de escena terminada» y «zona activada»; reescribir las líneas ~98 y ~141 («el 4 lee hechos al cargar»): el 4 lee solo `llamada_completada` (regla 13 del GDD 4) y los elementos leen el resto.
+- **GDD 6 (Ajustes):** incluir la clave booleana `reducir_movimiento`, que consume la cortina (regla 11 del GDD 4).
+- **GDD 5 y 22:** definir quién sella la partida al llegar a Recepción y en qué aviso (propuesto: «carga de escena terminada» de `recepcion`), de modo que un fallo de carga antes de eso siga reanudando en el despacho (regla 16).
+- **GDD 21:** tomar el `sin control` en el mismo fotograma de «terminada» cuando `control_final` = `ninguno`; decidir qué responde el ascensor (`door_slot_elevator`).
+- **Registro de entidades (`design/registry/entities.yaml`):** registrar el fundido de 2,0 s (C.1), `N_gap`, `Δ_max`, `Δ_ref` y los 0,1 s de `reducir_movimiento`; `scene_load_max_duration`: `output_range` a [3; 40,34] y retirar el comentario «cambio pendiente»; la variable `scene_load_timeout` (T_cap) pasa a contarse desde cortina opaca.
+- **Índice de sistemas:** estado del sistema 4 a «Revisado (ronda 2) — pendiente de re-review» (hoy «Designed»).
+- **Slice (A.0):** decir «tras la llamada completada (escena 8)» en lugar de «escena 7».
