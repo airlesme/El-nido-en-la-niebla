@@ -1,9 +1,9 @@
 # Ajustes persistentes
 
-> **Status**: In Review (revisado 2026-11-08, NEEDS REVISION aplicado; pendiente de re-review)
+> **Status**: Revisado (ronda 2) — pendiente de re-review
 > **Author**: Álvaro + agentes
-> **Last Updated**: 2026-11-08
-> **Last Verified**: 2026-11-08
+> **Last Updated**: 2026-11-09
+> **Last Verified**: 2026-11-09
 > **Implements Pillar**: Tensión sin castigo (reducir sobresaltos, remapeo, accesibilidad) · Autonomía como progresión (el jugador ajusta su experiencia)
 
 ## Summary
@@ -39,20 +39,23 @@ Existe por dos razones. La primera es el pilar *Tensión sin castigo*: reducir s
    | `asistencia_rotacion` | bool · falso | Tolerancia asistida de ±6° en el puzle 5 (slice B.5); nombre provisional, ver Open Questions | 15 Puzle 5 |
    | `balanceo_camara` | enum `completo`, `reducido`, `ninguno` · `reducido` | Balanceo de la cámara al caminar (solo traslación; GDD 2, regla 16) | 2 Jugador |
    | `campo_vision` | float 60 a 90 (grados verticales), paso 5 · 70 | Campo de visión vertical (GDD 2, regla 17; tope horizontal `fov_h_max`) | 2 Jugador |
+   | `reducir_movimiento` | bool · falso | Fundido fijo de 100 ms en lugar de la transición larga y cambio estático en lugar de temblor (art bible §7.4): feedback de error de los puzles y cortina de escena | 9 Marco de puzles, 4 Escena de planta (cortina) |
    | `modo_ventana` | enum `pantalla_completa`, `ventana` · `pantalla_completa` | Modo de la ventana del juego | este sistema (regla 12) |
-   | `controles` | bloque opaco | Asignaciones y ajustes de manejo de Entrada y controles (reglas 15 a 19 de ese GDD) | 1 Entrada |
+   | `controles` | bloque (tipo propio, validación delegada en Entrada) · ausente | Asignaciones y ajustes de manejo de Entrada y controles (reglas 15 a 19 de ese GDD) | 1 Entrada |
+
+   **Cuantización de los `float` con paso.** Todo `float` con paso declarado (los tres volúmenes con `N_pasos`, `campo_vision` con paso 5) se redondea a su rejilla antes de comparar y de guardar (F1 generalizada): 72 pasa a 70; 90,0 a 90; fuera de rango se ajusta al límite y luego se cuantiza.
 
    `balanceo_camara` y `campo_vision` los ofrecen las pantallas 25 (pausa) y 30 (accesibilidad) junto a `reducir_sobresaltos`. Si los sistemas 26 (subtítulos) o 30 (accesibilidad) necesitan más ajustes (tamaño o fondo de subtítulo, otras ayudas), se añaden a esta tabla cuando se diseñen esos sistemas; este GDD no los inventa.
 2. **El bloque de controles es opaco.** Este sistema guarda y devuelve el bloque `controles` tal como Entrada lo exporta, sin interpretar su contenido. Entrada valida las asignaciones y los valores al importarlo (sus casos límite). Aquí solo se garantiza que el bloque se conserva, que si falta se usan los valores por defecto de Entrada y que un bloque ilegible no impide arrancar.
-3. **Los ajustes no son hechos del juego ni parte de la partida.** No se incluyen en la instantánea del estado (regla 14 del GDD del 3) ni en el guardado (5). Empezar una partida nueva, cargar otra o borrarlas no toca los ajustes, y cambiar un ajuste no toca la partida.
+3. **Los ajustes no son hechos del juego ni parte de la partida.** No se incluyen en la instantánea del estado (regla 14 del GDD del 3) ni en el guardado (5). Empezar una partida nueva, cargar otra o borrarlas no toca los ajustes, y cambiar un ajuste no toca la partida. Tampoco son ajustes los niveles de pista ni su uso: son hechos de partida (3; marco 9 reglas 25 a 27; menú 25) y 25 o 30 no deben colocarlos aquí.
 
 **Lectura, escritura y validación**
 
 4. **Valor siempre disponible y válido.** Cualquier sistema puede leer un ajuste en cualquier momento y obtiene siempre un valor válido: el del jugador, o el inicial si no se ha tocado, o falta, o es inválido en el fichero.
 5. **Escritura.** Escribe un ajuste el sistema cuya pantalla lo ofrece al jugador: menú de pausa (25), accesibilidad (30) o título (27); y Entrada escribe el bloque `controles`. Una escritura válida se aplica en el instante en que se hace: una lectura inmediatamente posterior devuelve el valor nuevo.
-6. **Escritura inválida.** Un `float` fuera de rango se **ajusta al límite más cercano** (el deslizador nunca rompe nada) y se registra; los volúmenes se cuantizan además en pasos (F1). Un `float` NaN, una clave no declarada, un valor de tipo incorrecto o un `enum` fuera de su lista se rechazan: en las builds de desarrollo producen un error visible que detiene la ejecución, en la build final se conserva el valor anterior y se registra una línea en el log.
-7. **Aviso de cambio.** Cada vez que el valor de un ajuste cambia realmente, este sistema emite un aviso propio con tres datos (clave, valor anterior, valor nuevo); escribir el mismo valor no emite nada. La entrega sigue las mismas reglas que el bus de eventos (3), sin depender de él: orden de suscripción, valor aplicado al instante y aviso encolado si el cambio se provoca desde dentro de una entrega, sin reentrada, y baja de suscriptores efectiva al terminar la entrega en curso. El formato técnico lo fija un ADR.
-8. **Restablecer.** Existe «restablecer un ajuste» y «restablecer todos» («todos» abarca los tres volúmenes, `subtitulos_activos`, `reducir_sobresaltos`, las dos asistencias, `balanceo_camara` y `campo_vision`; no toca `modo_ventana` ni el bloque `controles`, que tiene su propio restablecer en Entrada, regla 17). Cada uno aplica el valor inicial y emite el aviso de cambio de los que cambian.
+6. **Escritura inválida.** Un `float` fuera de rango se **ajusta al límite más cercano** (el deslizador nunca rompe nada) y se registra; los `float` con paso (volúmenes y `campo_vision`) se cuantizan además a su rejilla (F1). Para `controles` solo se comprueba que sea un bloque (no un escalar): su contenido lo valida Entrada. Un `float` NaN, una clave no declarada, un valor de tipo incorrecto o un `enum` fuera de su lista se rechazan: en las builds de desarrollo producen un error visible que detiene la ejecución, en la build final se conserva el valor anterior y se registra una línea en el log.
+7. **Aviso de cambio.** Cada vez que el valor de un ajuste cambia realmente, este sistema emite un aviso propio con tres datos (clave, valor anterior, valor nuevo); escribir el mismo valor no emite nada. «Cambio real» se decide tras cuantizar (por paso `n` en los `float` con paso, F1) y, en `controles`, por igualdad profunda del bloque; el aviso de `controles` lleva solo la clave (sin anterior ni nuevo, para no copiar el bloque) y el receptor lo relee. La entrega sigue las mismas reglas que el bus de eventos (3), sin depender de él: orden de suscripción, valor aplicado al instante y aviso encolado si el cambio se provoca desde dentro de una entrega, sin reentrada, y baja de suscriptores efectiva al terminar la entrega en curso. El formato técnico lo fija un ADR.
+8. **Restablecer.** Existe «restablecer un ajuste» y «restablecer todos» («todos» abarca los tres volúmenes, `subtitulos_activos`, `reducir_sobresaltos`, `reducir_movimiento`, las dos asistencias, `balanceo_camara` y `campo_vision`: 10 claves; no toca `modo_ventana` ni el bloque `controles`, que tiene su propio restablecer en Entrada, regla 17). Cada uno aplica el valor inicial y emite el aviso de cambio de los que cambian.
 
 **Fichero, carga y guardado**
 
@@ -79,25 +82,28 @@ La tabla del catálogo (regla 1) indica quién lee cada ajuste. Otras interaccio
 
 | Sistema | Qué recibe de Ajustes | Qué entrega a Ajustes |
 |---|---|---|
-| 1 Entrada y controles | Al arrancar, el bloque `controles` guardado (o nada); el aviso «ajustes aplicados» | Su bloque exportado cada vez que el jugador cambia una asignación o un ajuste de manejo |
+| 1 Entrada y controles | El aviso «ajustes aplicados», al recibirlo Entrada lee e importa el bloque `controles` guardado (o nada); contrato de señales que Entrada debe registrar (ver re-review) | Su bloque exportado cada vez que el jugador cambia una asignación o un ajuste de manejo |
 | 23 Director de audio | Volúmenes, `reducir_sobresaltos`, avisos de cambio | — |
 | 26 Subtítulos | `subtitulos_activos`, avisos de cambio | — |
 | 28 Atmósfera reactiva | `reducir_sobresaltos` | — |
 | 2 Jugador en primera persona | `balanceo_camara`, `campo_vision`, avisos de cambio (aplicación inmediata; blanda: sin Ajustes usa los iniciales) | — |
-| 13 Puzle 3 · 15 Puzle 5 | `asistencia_encaje`, `asistencia_rotacion` (vía el marco de puzles 9) | — |
+| 9 Marco de puzles (y 13, 15 vía el marco) | `asistencia_encaje`, `asistencia_rotacion`, `reducir_movimiento` (feedback de error) | — |
+| 4 Escena de planta | `reducir_movimiento` (cortina). Requiere que el nodo de Ajustes sobreviva a los cambios de escena (4, regla 1) | — |
 | 25 Menú de pausa · 30 Accesibilidad · 27 Pantalla de título | Valor actual de los ajustes que muestran | Escrituras del jugador y peticiones de restablecer |
-| 5 Guardado y carga | Nada: los ajustes quedan fuera de la partida (regla 3). El índice lo lista como dependiente; ver Open Questions | — |
+| 5 Guardado y carga | Ninguna: ficheros independientes; los ajustes quedan fuera de la partida (regla 3) | — |
 | 3 Estado y bus de eventos | Nada | Nada |
 
 ## Formulas
 
 Propuestas por `systems-designer`. † = valor propuesto, **a validar en playtest**. Los valores que se leen de `assets/data/settings/defaults.json` (regla 14) se marcan «data file». El sistema no define presupuesto de rendimiento y no se inventa uno.
 
-### F1 · Pasos del deslizador de volumen
+### F1 · Pasos del deslizador de volumen (y de todo `float` con paso)
 
-La fórmula de pasos del deslizador se define como:
+La fórmula de pasos del deslizador se define como (redondeo de la mitad hacia arriba: 0,025 × 20 = 0,5 → n = 1):
 
-`n = round(v_ui × N_pasos);   v = n / N_pasos`
+`n = floor(v_ui × N_pasos + 0,5);   v = n / N_pasos`
+
+Se generaliza a `campo_vision`: `n = floor((fov − 60) / 5 + 0,5)`, `fov = 60 + 5n`, n de 0 a 6 (72 → 70; 72,5 → 75; 90,0 → 90; 95 → 90 y se registra). Las demás reglas de F1 (comparar `n`, no el float) valen igual.
 
 **Variables:**
 | Variable | Type | Range | Source | Description |
@@ -170,7 +176,7 @@ La fórmula de guardado diferido se define como:
 - **If una clave del fichero es inválida** (tipo, `enum` o NaN): solo ese ajuste vuelve a su valor inicial y se registra; el resto se conserva (regla 10). Un `float` fuera de rango no es inválido: se ajusta al límite más cercano y se registra.
 - **If el bloque `controles` del fichero es ilegible**: Entrada usa sus asignaciones por defecto (sus casos límite); el resto de los ajustes no se ve afectado.
 - **If queda un fichero temporal huérfano de una escritura interrumpida**: se ignora al leer y se elimina; el fichero principal sigue siendo el válido (regla 13, escritura atómica).
-- **If se lee o escribe un ajuste antes de «Listo»**: en desarrollo, error visible que detiene la ejecución; en la build final, la escritura se descarta y se registra, y la lectura devuelve el valor inicial del catálogo si se pudo leer, o si no uno seguro (volumen 1,0, subtítulos verdadero, `modo_ventana` = `ventana`, `controles` ausente, resto falso) y se registra. El orden de arranque garantiza en la práctica que no ocurre; lo fija el ADR.
+- **If se lee o escribe un ajuste antes de «Listo»**: en desarrollo, error visible que detiene la ejecución; en la build final, la escritura se descarta y se registra, y la lectura devuelve el valor inicial del catálogo si se pudo leer, o si no uno seguro (volumen 1,0, subtítulos verdadero, `modo_ventana` = `ventana`, `controles` ausente, resto falso; `campo_vision` 70 y `balanceo_camara` `reducido`) y se registra. `modo_ventana` = `ventana` es intencionado y difiere del inicial del catálogo: sin catálogo fiable no se toca el monitor del jugador ni se fuerza pantalla completa. El orden de arranque garantiza en la práctica que no ocurre; lo fija el ADR.
 - **If `defaults.json` falta, está corrupto o tiene un parámetro fuera de su rango** (`N_pasos`, `db_min`, `t_guardado`, `t_guardado_max` o la restricción de F3): el juego no entra en partida y muestra un mensaje de error claro, igual que los otros sistemas de datos (3 y 18); sin catálogo no hay valores iniciales fiables.
 
 **Escritura y guardado**
@@ -207,13 +213,25 @@ La fórmula de guardado diferido se define como:
 | 30 Opciones de accesibilidad | Dura | Muestra y escribe ajustes de accesibilidad; usa «restablecer» |
 | 27 Pantalla de título y cierre | Blanda | Muestra y escribe ajustes desde el título |
 | 28 Atmósfera reactiva | Blanda | Lee `reducir_sobresaltos` (parpadeo del pasillo y apagón) |
-| 13 Puzle 3 · 15 Puzle 5 | Blanda (vía marco 9) | Leen `asistencia_encaje` y `asistencia_rotacion` |
+| 2 Jugador en primera persona | Blanda | Lee `balanceo_camara` y `campo_vision` (GDD 2, reglas 16 y 17); aplicación inmediata |
+| 9 Marco de puzles (13 y 15 vía el marco) | Blanda | Lee `asistencia_encaje`, `asistencia_rotacion` y `reducir_movimiento` |
+| 4 Escena de planta | Blanda | Lee `reducir_movimiento` (cortina); exige que el nodo de Ajustes sobreviva a los cambios de escena (su regla 1, AC-01) |
 | 1 Entrada y controles | Dura (su lado) | Entrega y recupera el bloque `controles` |
-| 5 Guardado y carga | **A confirmar** | El índice lo lista como dependiente; no hay ningún ajuste que lo gobierne (autoguardado fijo, slice D.3). Ver Open Questions |
+| 5 Guardado y carga | Ninguna | Ficheros independientes; retirada por el GDD 5 (regla 4, D-12) |
 
-**Índice de sistemas:** (a) hecho: los puzles 13 y 15 y la atmósfera 28 ya listan al sistema 6 como dependencia; (b) pendiente: la dependencia del sistema 5 respecto de este se confirma o se retira en el GDD de Guardado y carga (Open Questions 6).
+**Índice de sistemas:** los puzles 13 y 15 y la atmósfera 28 ya listan al sistema 6 como dependencia; la dependencia del sistema 5 está retirada (el índice ya no la lista).
 
 **Bidireccionalidad.** El par con el sistema 1 está cerrado: Entrada ya lista a Ajustes como dependiente (su tabla de Dependencies y su regla 19). El GDD del 3 ya declara que los ajustes quedan fuera del estado (regla 14), y su tabla de interacciones dice «Nada». Ninguno de los demás sistemas tiene GDD: cada uno debe, al redactarse, listar a Ajustes como dependencia y usar las claves del catálogo de la regla 1.
+
+## Tuning Knobs
+
+| Parámetro | Valor † | Rango seguro | Qué afecta |
+|---|---|---|---|
+| `N_pasos` | 20 | 10–40 | Granularidad de los volúmenes (2 dB por paso con `db_min` −40) |
+| `db_min` | −40 dB | −60 a −30 | Suelo de la curva de volumen; subir a −50 si la voz de Vera se pierde en el paso 1 |
+| `t_guardado` | 0,5 s | 0,2–2,0 s | Silencio necesario antes de escribir el fichero |
+| `t_guardado_max` | 5,0 s | 2,0–30,0 s (≥ 2 × `t_guardado`) | Pérdida máxima ante cierre forzado y frecuencia de escrituras |
+| Valores iniciales y rangos del catálogo | regla 1 | los de cada clave | Primera experiencia del jugador; en `defaults.json` |
 
 ## Visual/Audio Requirements
 
@@ -231,7 +249,7 @@ No aplica: el jugador no opera este sistema directamente. Lo único exigible es 
 
 El sistema no tiene pantalla propia; las ponen el menú de pausa (25), las opciones de accesibilidad (30) y la pantalla de título (27). Requisitos que este GDD fija a esas pantallas:
 - **Deslizadores de volumen:** `N_pasos` pasos (20†) con el valor visible, operables con ratón y con mando (`ui_izquierda` y `ui_derecha` mueven un paso, Entrada regla 15), y con el silencio claramente distinguible del paso más bajo.
-- **Conmutadores:** `subtitulos_activos`, `reducir_sobresaltos`, `asistencia_encaje`, `asistencia_rotacion` y `modo_ventana`, con su valor actual siempre visible.
+- **Conmutadores:** `subtitulos_activos`, `reducir_sobresaltos`, `reducir_movimiento`, `asistencia_encaje`, `asistencia_rotacion` y `modo_ventana`, con su valor actual siempre visible.
 - **Restablecer:** «restablecer» por ajuste y «restablecer todos» (regla 8), con confirmación en este último porque cambia varios valores a la vez.
 - **Sin mensajes por ficheros dañados:** el jugador no ve ningún aviso cuando el fichero de ajustes falta o se recupera (regla 11).
 - **Textos:** todos los rótulos de las pantallas son entradas `UI_…` de la base de contenido (18).
@@ -251,18 +269,23 @@ El sistema no tiene pantalla propia; las ponen el menú de pausa (25), las opcio
 | `design/gdd/estado-y-bus-de-eventos.md` · regla 14, CA-24 y regla 11 | Los ajustes quedan fuera del estado y de la instantánea; reglas de entrega de avisos | Origen de la regla 3 y patrón de la regla 7 |
 | `design/gdd/entrada-y-controles.md` · reglas 15 a 19 y AC-18 | Reasignación, ajustes de manejo y bloque exportable de asignaciones | Origen de `controles` (regla 2) |
 | `design/gdd/base-de-contenido-narrativo.md` | Textos de interfaz `UI_…` | Rótulos de las pantallas de ajustes |
-| `design/gdd/systems-index.md` | Fila 6 y dependientes 5, 23, 25, 26, 27, 28, 30, 13 y 15 | Debe reflejar la tabla de Dependencies (ver Open Questions) |
+| `design/gdd/systems-index.md` | Fila 6 y dependientes 2, 4, 9, 23, 25, 26, 27, 28, 30, 13 y 15 (el 5 está retirado) | Debe reflejar la tabla de Dependencies |
+| `design/gdd/escena-de-planta.md` · regla 1 y AC-01 | Nodo de Ajustes persistente entre escenas; cortina con `reducir_movimiento` | Condición de arranque y lector de la clave |
+| `design/art/art-bible.md` · §7.4 | «Reducir movimiento» | Origen de `reducir_movimiento` |
 
 ## Acceptance Criteria
 
 Revisados por `qa-lead`. **Evidencia:** **L** = test unitario automático (gdUnit4, `tests/unit/settings/`), bloqueante; **I** = test de integración o playtest documentado, bloqueante. Los tests L **no hacen E/S real**: usan un almacenamiento falso, un reloj inyectado (ticks enteros, sin acumular error de coma flotante), un manejador de errores y un destino de log sustituibles, y una fixture de `defaults.json` por caso. Solo los criterios I tocan el disco. Tolerancia numérica ±0,0001 salvo indicación. «Se cierra cuando exista X» marca un criterio que depende de un sistema sin GDD. El sistema no define presupuesto de rendimiento y no se inventa uno.
 
 **Catálogo y lectura (reglas 1 a 5)**
-- **AC-01 (R1, L)**: **GIVEN** el `defaults.json` del slice, **WHEN** se leen las diez claves con valor (los tres volúmenes, `subtitulos_activos`, `reducir_sobresaltos`, las dos asistencias, `balanceo_camara`, `campo_vision` y `modo_ventana`), **THEN** cada una coincide en tipo, rango e inicial con la tabla de la regla 1; **WHEN** se lee `controles` sin bloque guardado, **THEN** devuelve «ausente»; **WHEN** se escribe una clave que no está en el catálogo, **THEN** se rechaza (regla 6).
+- **AC-01 (R1, L)**: **GIVEN** el `defaults.json` del slice, **WHEN** se leen las once claves con valor (los tres volúmenes, `subtitulos_activos`, `reducir_sobresaltos`, `reducir_movimiento`, las dos asistencias, `balanceo_camara`, `campo_vision` y `modo_ventana`), **THEN** cada una coincide en tipo, rango e inicial con la tabla de la regla 1; **WHEN** se lee `controles` sin bloque guardado, **THEN** devuelve «ausente»; **WHEN** se escribe una clave que no está en el catálogo, **THEN** se rechaza (regla 6).
 - **AC-02 (R4-5, L)**: **GIVEN** `vol_musica` = 1,0, **WHEN** se escribe 0,5, **THEN** la lectura inmediata devuelve 0,5. Igual con un `bool` (`subtitulos_activos` a falso) y con un `enum` (`modo_ventana` a `ventana`).
 - **AC-03a (R3, L)**: **GIVEN** `vol_voces` = 0,5, **WHEN** se serializa la instantánea del estado (3), **THEN** no contiene ninguna clave de ajustes.
 - **AC-03b (R3, I)**: **GIVEN** una partida guardada y un ajuste cambiado, **THEN** el fichero de partida no cambia (mismo hash), y empezar partida nueva o cargar otra no altera ningún ajuste. *(Se cierra cuando existan 3 y 5.)*
 - **AC-04a (R2, L)**: **GIVEN** un bloque `controles` cualquiera, **WHEN** se guarda y se recarga, **THEN** es estructuralmente idéntico (igualdad profunda, no de bytes); **GIVEN** que no hay bloque, **THEN** se arranca sin error.
+- **AC-04c (R2, R6-7, L)**: **WHEN** Entrada escribe un bloque distinto del guardado, **THEN** se emite un aviso con solo la clave `controles` y queda pendiente; **WHEN** escribe un bloque profundamente igual, **THEN** no hay aviso ni pendiente; **WHEN** se escribe un escalar en `controles`, **THEN** se rechaza (regla 6).
+- **AC-04d (R1, R6, L)**: **WHEN** se escribe 72 en `campo_vision`, **THEN** se guarda 70; 90,0 se guarda 90; 95 se guarda 90 con una línea en el log; 72 tras 70 no emite aviso (mismo `n`). **GIVEN** 72 en el fichero, **THEN** se carga como 70.
+- **AC-04e (R1, R8, L)**: **GIVEN** `reducir_movimiento` ausente en el fichero, **THEN** vale falso; **WHEN** se escribe verdadero, **THEN** la lectura devuelve verdadero y se emite un aviso (`reducir_movimiento`, falso, verdadero).
 - **AC-04b (R2, L)**: **GIVEN** un fichero con el bloque `controles` ilegible y el resto válido, **WHEN** se carga, **THEN** se llega a «Listo», los demás ajustes conservan su valor y `controles` queda «ausente». *(La reacción de Entrada se cierra cuando exista el sistema 1.)*
 
 **Escritura inválida y avisos (reglas 6 a 8)**
@@ -277,7 +300,7 @@ Revisados por `qa-lead`. **Evidencia:** **L** = test unitario automático (gdUni
 - **AC-06e (R7, L)**: **GIVEN** que A se da de baja durante una entrega, **THEN** A aún recibe el aviso en curso y no recibe ningún aviso posterior.
 - **AC-06f (R7, L)**: **GIVEN** dos escrituras del mismo ajuste en el mismo fotograma (0,5 y después 0,7), **THEN** gana la última (lectura = 0,7) y los avisos llegan en el orden de las escrituras: (1,0 → 0,5) y (0,5 → 0,7).
 - **AC-07a (R8, L)**: **GIVEN** `vol_musica` = 0,5, **WHEN** se restablece solo ese ajuste, **THEN** vale su inicial (1,0), se emite un solo aviso (`vol_musica`, 0,5, 1,0), los demás ajustes no cambian y quedan cambios pendientes; **WHEN** se restablece un ajuste que ya vale su inicial, **THEN** no se emite aviso.
-- **AC-07 (R8, L)**: **GIVEN** `vol_voces` = 0,5 y `vol_efectos` = 1,0 (ya inicial), **WHEN** se restablecen todos, **THEN** se emite un solo aviso (`vol_voces`, 0,5, 1,0) y ninguno para `vol_efectos`, `modo_ventana` y `controles` no cambian y el sistema queda con cambios pendientes de guardar.
+- **AC-07 (R8, L)**: **GIVEN** `vol_voces` = 0,5 y `vol_efectos` = 1,0 (ya inicial), **WHEN** se restablecen todos (las 10 claves de la regla 8, incluida `reducir_movimiento`), **THEN** se emite un solo aviso (`vol_voces`, 0,5, 1,0) y ninguno para `vol_efectos`; **GIVEN** además `reducir_movimiento` = verdadero, **THEN** su aviso (verdadero, falso) también se emite; `modo_ventana` y `controles` no cambian y el sistema queda con cambios pendientes de guardar.
 
 **Fichero, carga y guardado (reglas 9 a 14)**
 - **AC-08a (R10, L)**: **GIVEN** que no hay fichero, **WHEN** se carga, **THEN** los ajustes valen su inicial, el log no contiene ninguna línea de error o aviso y no se abre ningún diálogo.
@@ -303,10 +326,10 @@ Revisados por `qa-lead`. **Evidencia:** **L** = test unitario automático (gdUni
 
 **Estados (States and Transitions)**
 - **AC-17a (L)**: **GIVEN** «Sin cargar» o «Cargando» y una build de desarrollo, **WHEN** se lee o se escribe, **THEN** hay un error visible (manejador de errores inyectado).
-- **AC-17b (L)**: **GIVEN** la build final en esos estados, **WHEN** se escribe, **THEN** la escritura se descarta y se añade una línea al log; **WHEN** se lee, **THEN** devuelve el inicial del catálogo si se pudo leer, o si no el valor seguro (volumen 1,0, subtítulos verdadero, `modo_ventana` = `ventana`, `controles` ausente, resto falso), con una línea al log.
+- **AC-17b (L)**: **GIVEN** la build final en esos estados, **WHEN** se escribe, **THEN** la escritura se descarta y se añade una línea al log; **WHEN** se lee, **THEN** devuelve el inicial del catálogo si se pudo leer, o si no el valor seguro (volumen 1,0, subtítulos verdadero, `modo_ventana` = `ventana` (intencionado, ver Edge Cases), `controles` ausente, `campo_vision` 70, `balanceo_camara` `reducido`, resto falso), con una línea al log.
 
 **Fórmulas (valores del ejemplo, tolerancia ±0,0001)**
-- **AC-F1 (L)**: **GIVEN** N_pasos = 20, **THEN** v_ui = 0,512 → n = 10 y v = 0,5; 0,026 → n = 1; 0,024 → n = 0; 1,0 → n = 20; con N_pasos = 10, cada paso son 4 dB, y con 40, 1 dB. **GIVEN** un volumen del fichero dentro de rango pero fuera de la rejilla (p. ej. 0,512), **WHEN** se carga, **THEN** se cuantiza a 0,5 (regla 10).
+- **AC-F1 (L)**: **GIVEN** N_pasos = 20, **THEN** v_ui = 0,512 → n = 10 y v = 0,5; 0,026 → n = 1; 0,024 → n = 0; 0,025 → n = 1 (mitad hacia arriba); 1,0 → n = 20; con N_pasos = 10, cada paso son 4 dB, y con 40, 1 dB. **GIVEN** un volumen del fichero dentro de rango pero fuera de la rejilla (p. ej. 0,512), **WHEN** se carga, **THEN** se cuantiza a 0,5 (regla 10).
 - **AC-F2a (L)**: **GIVEN** db_min = −40, **THEN** v = 0 → silencio con ganancia exactamente 0 y sin llamar a `log(0)` (nunca −∞); 0,25 → −30 dB / 0,0316; 0,5 → −20 / 0,1000; 0,75 → −10 / 0,3162; 1 → 0 / 1,0; n = 1 → −38 dB / 0,0126 (la comparación en dB usa tolerancia por el error de coma flotante de 1/20).
 - **AC-F2b (L)**: **GIVEN** db_min = −50 y n = 1, **THEN** −47,5 dB / 0,0042; con db_min = −60 y −30, n = 1 da −57 y −28,5 dB. *(La entrega de la ganancia al bus se cierra cuando exista el sistema 23.)*
 
@@ -322,17 +345,30 @@ Sin criterio hasta que exista el ADR: el tope del bucle de avisos encadenados, l
 | 1 | **Ruta, formato y versionado del fichero** de ajustes; nombre y ruta de la copia del dañado; cómo se hace el reemplazo atómico; qué representa un NaN en el fichero (JSON estándar no lo admite); **no hay referencia de motor para el dominio Core** (`docs/engine-reference/godot/modules/` no tiene `core.md`), así que hay que verificarlo contra la documentación del motor. Dato ya conocido: desde 4.4 `FileAccess.store_*` devuelven `bool` (`breaking-changes.md`), lo que permite detectar fallos de escritura (F3, AC-14e); el ADR debe fijar también cómo se detecta el fallo del renombrado (regla 11, AC-10c). | `/architecture-decision` | Fase de arquitectura |
 | 2 | **Mecanismo del aviso de cambio:** propio (regla 7) frente a unificarlo con el bus de eventos (3); y el tope de avisos encadenados. | `/architecture-decision` | Fase de arquitectura |
 | 3 | **Orden de arranque:** garantizar que Ajustes está «Listo» antes de que lo lean audio, subtítulos, Entrada y las pantallas (edge case de lectura antes de «Listo»). | `/architecture-decision` | Fase de arquitectura |
-| 4 | **Detección de un cambio externo del modo de ventana** (sondeo o señal del motor) para sincronizar `modo_ventana`. | `/architecture-decision` | Fase de arquitectura |
+| 4 | **Detección de un cambio externo del modo de ventana** (sondeo o señal del motor) para sincronizar `modo_ventana`. `DisplayServer` y `AudioServer` tampoco tienen referencia local en `docs/engine-reference/godot/`: pendiente de verificación. | `/architecture-decision` | Fase de arquitectura |
 | 5 | **`asistencia_rotacion`:** el slice (B.5) nombra una tolerancia «asistido» de ±6° en el puzle 5 pero no una opción; el nombre y que sea un ajuste separado de `asistencia_encaje` son provisionales. | GDD de los sistemas 15 y 30 | GDD del sistema 15 |
-| 6 | **Índice de sistemas:** (a) ~~añadir el sistema 6 como dependencia de 13, 15 y 28~~ **hecho (2026-11-08)**; (b) el sistema 5 figura como dependiente de 6 y no hay ningún ajuste que lo gobierne: confirmar o retirar. | GDD del sistema 5 | GDD del sistema 5 |
+| 6 | **Índice de sistemas:** (a) ~~añadir el sistema 6 como dependencia de 13, 15 y 28~~ **hecho (2026-11-08)**; (b) ~~el sistema 5 como dependiente de 6~~ **retirada** (GDD 5 regla 4, D-12). Solo queda que el índice refleje 2, 4 y 9 como dependientes (ver re-review). | Índice | Cierre de la revisión |
 | 7 | **Asignación de sonidos a los tres buses:** voces (`VO_*`, `MEGA_*`) está clara; falta decidir si la lluvia y el drone del edificio van a `vol_efectos` o a `vol_musica`. | GDD del sistema 23 | GDD del sistema 23 |
 | 8 | **Rampa anti-chasquido** al cambiar un volumen (p. ej. 0,05 s) y muestra de referencia al mover el deslizador. | GDD del sistema 23 | GDD del sistema 23 |
-| 9 | **Más ajustes** que puedan pedir los subtítulos y la accesibilidad: se añaden al catálogo cuando se diseñen. Ya definidos como opciones en el art bible (§7.4, §7.5 y §7.6), a la espera de clave, tipo y rango: **reducir movimiento** (fundido fijo de 100 ms y cambio estático en vez de temblor; afecta al feedback de error de los puzles, MVP), **escala de texto UI** (100, 125, 150 %), **escala de subtítulos** (100, 125, 150, 200 %), **panel de subtítulos** (85 %, 100 %, sin panel), **alto contraste**, **icono de interacción grande** y **etiquetas de acción**. | GDD de los sistemas 26, 30 y 24 | Esos GDD |
+| 9 | **Más ajustes** que puedan pedir los subtítulos y la accesibilidad: se añaden al catálogo cuando se diseñen. `reducir_movimiento` ya está en el catálogo (decisión 2026-11-09). Ya definidos como opciones en el art bible (§7.5 y §7.6), a la espera de clave, tipo y rango: **escala de texto UI** (100, 125, 150 %), **escala de subtítulos** (100, 125, 150, 200 %), **panel de subtítulos** (85 %, 100 %, sin panel), **alto contraste**, **icono de interacción grande** y **etiquetas de acción**. | GDD de los sistemas 26, 30 y 24 | Esos GDD |
 | 10 | **Valores † de F1 a F3 y los iniciales del catálogo** (`db_min` = −40 dB: probar que la voz de Vera sigue audible en el paso 1 en una sala silenciosa; si no, bajar a −50). | Playtest (slice §23.4) | Primer playtest |
 | 11 | **Rótulos `UI_…`** de las pantallas de ajustes: dar de alta en la base de contenido y contarlos. El GDD 18 (regla 2) aún no los anticipa (solo los de Entrada): anotarlo allí. | GDD del sistema 18 y de los sistemas 25, 27 y 30 | Esos GDD |
 | 12 | **Reducir sobresaltos:** qué atenúa exactamente en audio (23) y en luz (28), y con qué límite de destellos. | GDD de los sistemas 23 y 28 | Esos GDD |
-| 13 | **Registro de entidades:** registrar como constantes entre sistemas `N_pasos` y `db_min` y la fórmula de la curva de volumen (F2), que consumen 23, 25 y 30. | `/design-system` (al cerrar el GDD) | Aprobación del GDD |
+| 13 | **Registro de entidades:** lista completa de valores a registrar en la re-review («Cambios requeridos en otros GDDs»). | Revisión de consistencia | Aprobación del GDD |
+
+## Decisiones tomadas
+
+- **`reducir_movimiento` entra en el MVP** (usuario, 2026-11-09): clave `bool`, falsa por defecto, lectores 9 (feedback de error) y 4 (cortina). Descartado: dejarla en una Open Question genérica; el art bible ya la da por hecha y sin clave no se pueden diseñar 9 ni 25 contra ella.
+- **Pistas no son ajustes** (decisión del P6 a dos niveles): son hechos de partida; el progreso de pistas no se guarda. Descartado: una clave de pistas en el catálogo.
+- **Entrada recibe `controles` al oír «ajustes aplicados»** (push por señal, no pull): un solo contrato de arranque para todos los lectores. Descartado: que Entrada lea en su propia inicialización (orden de arranque frágil).
+- **`float` con paso se cuantizan como los volúmenes** (F1 generalizada, incluye `campo_vision`). Descartado: declararlo `enum` de 7 valores (peor para el deslizador).
+- **`controles` es un tipo propio con validación delegada**; cambio real por igualdad profunda; aviso solo con la clave. Descartado: copiar el bloque en el aviso (tres datos con un bloque dentro).
+- **Valor seguro `modo_ventana` = `ventana` antes de Listo**: se mantiene y se justifica (no tocar el monitor sin catálogo fiable).
+- **Redondeo de la mitad hacia arriba** en F1. Descartado: dejar la ambigüedad.
+- **Tuning Knobs** se añade como tabla única (opcional en `standard`, barato).
 
 ## Historial de cambios
+
+- **2026-11-09 (ronda 2, aplica la re-review):** añadida `reducir_movimiento` (catálogo, restablecer todos = 10 claves, interacciones, UI, AC-01 = once claves, AC-04e); F1 generalizada a `float` con paso y redondeo de la mitad hacia arriba (AC-04d, AC-F1); `controles` como tipo propio (AC-04c); dependencias 2, 4 y 9 añadidas y la del 5 retirada; contrato «ajustes aplicados» con Entrada; pistas fuera de ajustes; Tuning Knobs; valor seguro justificado; sección «Decisiones tomadas». Pendiente de re-review.
 
 - **2026-11-09 (lote 2/5/7/9, cambios derivados de la revisión del GDD 2):** regla 1 con `balanceo_camara` (enum `completo`/`reducido`/`ninguno`, inicial `reducido`†) y `campo_vision` (float 60 a 90, paso 5, inicial 70†), lector «2 Jugador»; incorporados a «restablecer todos» (regla 8), a las interacciones y a AC-01 (diez claves). Las pantallas 25 y 30 los ofrecen junto a «reducir sobresaltos». Informe de 5: `save_format_version` no lo usa este GDD (se quita de su `referenced_by` en el registro); ninguna acción. **Cambia reglas: pendiente de re-review.** Estado sin cambios.

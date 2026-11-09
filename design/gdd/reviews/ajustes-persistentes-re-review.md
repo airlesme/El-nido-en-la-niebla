@@ -57,3 +57,17 @@ El P6 con dos niveles de pista no afecta a este sistema: las pistas son estado d
 ## Preguntas para el usuario
 
 1. **¿Entra «Reducir movimiento» (art bible §7.4) en el catálogo MVP del slice?** El slice v0.3 solo exige subtítulos, remapeo, tres volúmenes y reducir sobresaltos. Añadirlo amplía el alcance de accesibilidad (afecta al feedback de error de los puzles y a la cortina de escena) pero el art bible ya lo da por hecho. Mi recomendación, si no hay objeción: sí, como `reducir_movimiento` bool.
+
+## Cambios requeridos en otros GDDs
+
+Aplicada la ronda 2 al GDD 6 el 2026-11-09 (hallazgos 1 a 12; el 13 sin acción). Pendiente fuera de este GDD:
+
+- **GDD 1 Entrada y controles:** registrar que importa el bloque `controles` al recibir «ajustes aplicados» (GDD 6, interacciones) y que el aviso de cambio de `controles` lleva solo la clave. Añadir «ajustes aplicados» a su tabla (línea ~118).
+- **GDD 2 Jugador:** sin cambios de contrato; `campo_vision` se cuantiza a paso 5 (72 pasa a 70); confirmar que usa `fov_actual()`.
+- **GDD 4 Escena de planta:** listar al 6 como dependencia (lector de `reducir_movimiento`; nodo persistente, su regla 1); cerrar su remisión «OQ 9 del GDD 6» (ahora clave `reducir_movimiento`).
+- **GDD 9 Marco de puzles:** leer `reducir_movimiento` (feedback de error: fundido fijo de 100 ms, cambio estático en vez de temblor); mantener `asistencia_*` como blandas.
+- **GDD 25, 27, 30:** ofrecer `reducir_movimiento` como conmutador; las pistas no se colocan en ajustes.
+- **Slice v0.3 (§5, §14, §16):** añadir «reducir movimiento» a las opciones de accesibilidad.
+- **Art bible §7.4:** referenciar la clave `reducir_movimiento`.
+- **`systems-index.md`:** fila 6 con dependientes 2, 4, 9 (no 5); actualizar la línea del estado de la re-review (~240).
+- **`design/registry/entities.yaml`:** registrar `volume_steps` = 20 (`N_pasos`, 10–40), `volume_db_min` = −40 (−60 a −30), `volume_curve_db` (F2: `db_min × (1 − v)`, silencio si n = 0), `settings_save_debounce_s` = 0,5 (0,2–2,0), `settings_save_max_wait_s` = 5,0 (2,0–30,0; ≥ 2×), `fov_step` = 5 con rango 60–90 y defecto 70, `asistencia_rotacion` = ±6° (provisional) y la tolerancia normal de 3° del marco, y los defaults de las once claves de la regla 1 (consumen 2, 4, 9, 23, 25, 30).
