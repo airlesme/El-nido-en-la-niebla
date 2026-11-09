@@ -1,6 +1,6 @@
 # Ajustes persistentes
 
-> **Status**: Revisado (ronda 2) — pendiente de re-review
+> **Status**: Revisado (ronda 5) — pendiente de re-review (ronda 5 aplica C-W6 y F-3 de `gdd-cross-review-2026-11-09-r3.md`; ronda 2: re-review)
 > **Author**: Álvaro + agentes
 > **Last Updated**: 2026-11-09
 > **Last Verified**: 2026-11-09
@@ -40,12 +40,14 @@ Existe por dos razones. La primera es el pilar *Tensión sin castigo*: reducir s
    | `balanceo_camara` | enum `completo`, `reducido`, `ninguno` · `reducido` | Balanceo de la cámara al caminar (solo traslación; GDD 2, regla 16) | 2 Jugador |
    | `campo_vision` | float 60 a 90 (grados verticales), paso 5 · 70 | Campo de visión vertical (GDD 2, regla 17; tope horizontal `fov_h_max`) | 2 Jugador |
    | `reducir_movimiento` | bool · falso | Fundido fijo de 100 ms en lugar de la transición larga y cambio estático en lugar de temblor (art bible §7.4): feedback de error de los puzles y cortina de escena | 9 Marco de puzles, 4 Escena de planta (cortina) |
+   | `multiplicador_pie` | float 1,0 a 3,0, paso 0,25 · 1,0 | Accesibilidad: multiplica la duración del pie de texto de objeto (GDD 7, F5 y regla 12); 1,0 = duración normal | 7 Interacción e inspección (el sistema 24 dibuja el pie) |
+   | `pie_persistente` | bool · falso | Accesibilidad: el pie de texto dura hasta que cambie el objetivo o se active otro objeto, en lugar de la duración de F5 (GDD 7, regla 12) | 7 Interacción e inspección |
    | `modo_ventana` | enum `pantalla_completa`, `ventana` · `pantalla_completa` | Modo de la ventana del juego | este sistema (regla 12) |
    | `controles` | bloque (tipo propio, validación delegada en Entrada) · ausente | Asignaciones y ajustes de manejo de Entrada y controles (reglas 15 a 19 de ese GDD) | 1 Entrada |
 
-   **Cuantización de los `float` con paso.** Todo `float` con paso declarado (los tres volúmenes con `N_pasos`, `campo_vision` con paso 5) se redondea a su rejilla antes de comparar y de guardar (F1 generalizada): 72 pasa a 70; 90,0 a 90; fuera de rango se ajusta al límite y luego se cuantiza.
+   **Cuantización de los `float` con paso.** Todo `float` con paso declarado (los tres volúmenes con `N_pasos`, `campo_vision` con paso 5, `multiplicador_pie` con paso 0,25) se redondea a su rejilla antes de comparar y de guardar (F1 generalizada): 72 pasa a 70; 90,0 a 90; 1,3 pasa a 1,25; fuera de rango se ajusta al límite y luego se cuantiza.
 
-   `balanceo_camara` y `campo_vision` los ofrecen las pantallas 25 (pausa) y 30 (accesibilidad) junto a `reducir_sobresaltos`. Si los sistemas 26 (subtítulos) o 30 (accesibilidad) necesitan más ajustes (tamaño o fondo de subtítulo, otras ayudas), se añaden a esta tabla cuando se diseñen esos sistemas; este GDD no los inventa.
+   `balanceo_camara`, `campo_vision`, `multiplicador_pie` y `pie_persistente` los ofrecen las pantallas 25 (pausa) y 30 (accesibilidad) junto a `reducir_sobresaltos`. `reducir_movimiento` **ya está en este catálogo** (fila propia arriba; el GDD 4, que la lee para la cortina, puede darla por hecha). Si los sistemas 26 (subtítulos) o 30 (accesibilidad) necesitan más ajustes (tamaño o fondo de subtítulo, otras ayudas), se añaden a esta tabla cuando se diseñen esos sistemas; este GDD no los inventa.
 2. **El bloque de controles es opaco.** Este sistema guarda y devuelve el bloque `controles` tal como Entrada lo exporta, sin interpretar su contenido. Entrada valida las asignaciones y los valores al importarlo (sus casos límite). Aquí solo se garantiza que el bloque se conserva, que si falta se usan los valores por defecto de Entrada y que un bloque ilegible no impide arrancar.
 3. **Los ajustes no son hechos del juego ni parte de la partida.** No se incluyen en la instantánea del estado (regla 14 del GDD del 3) ni en el guardado (5). Empezar una partida nueva, cargar otra o borrarlas no toca los ajustes, y cambiar un ajuste no toca la partida. Tampoco son ajustes los niveles de pista ni su uso: son hechos de partida (3; marco 9 reglas 25 a 27; menú 25) y 25 o 30 no deben colocarlos aquí.
 
@@ -53,9 +55,9 @@ Existe por dos razones. La primera es el pilar *Tensión sin castigo*: reducir s
 
 4. **Valor siempre disponible y válido.** Cualquier sistema puede leer un ajuste en cualquier momento y obtiene siempre un valor válido: el del jugador, o el inicial si no se ha tocado, o falta, o es inválido en el fichero.
 5. **Escritura.** Escribe un ajuste el sistema cuya pantalla lo ofrece al jugador: menú de pausa (25), accesibilidad (30) o título (27); y Entrada escribe el bloque `controles`. Una escritura válida se aplica en el instante en que se hace: una lectura inmediatamente posterior devuelve el valor nuevo.
-6. **Escritura inválida.** Un `float` fuera de rango se **ajusta al límite más cercano** (el deslizador nunca rompe nada) y se registra; los `float` con paso (volúmenes y `campo_vision`) se cuantizan además a su rejilla (F1). Para `controles` solo se comprueba que sea un bloque (no un escalar): su contenido lo valida Entrada. Un `float` NaN, una clave no declarada, un valor de tipo incorrecto o un `enum` fuera de su lista se rechazan: en las builds de desarrollo producen un error visible que detiene la ejecución, en la build final se conserva el valor anterior y se registra una línea en el log.
-7. **Aviso de cambio.** Cada vez que el valor de un ajuste cambia realmente, este sistema emite un aviso propio con tres datos (clave, valor anterior, valor nuevo); escribir el mismo valor no emite nada. «Cambio real» se decide tras cuantizar (por paso `n` en los `float` con paso, F1) y, en `controles`, por igualdad profunda del bloque; el aviso de `controles` lleva solo la clave (sin anterior ni nuevo, para no copiar el bloque) y el receptor lo relee. La entrega sigue las mismas reglas que el bus de eventos (3), sin depender de él: orden de suscripción, valor aplicado al instante y aviso encolado si el cambio se provoca desde dentro de una entrega, sin reentrada, y baja de suscriptores efectiva al terminar la entrega en curso. El formato técnico lo fija un ADR.
-8. **Restablecer.** Existe «restablecer un ajuste» y «restablecer todos» («todos» abarca los tres volúmenes, `subtitulos_activos`, `reducir_sobresaltos`, `reducir_movimiento`, las dos asistencias, `balanceo_camara` y `campo_vision`: 10 claves; no toca `modo_ventana` ni el bloque `controles`, que tiene su propio restablecer en Entrada, regla 17). Cada uno aplica el valor inicial y emite el aviso de cambio de los que cambian.
+6. **Escritura inválida.** Un `float` fuera de rango se **ajusta al límite más cercano** (el deslizador nunca rompe nada) y se registra; los `float` con paso (volúmenes, `campo_vision` y `multiplicador_pie`) se cuantizan además a su rejilla (F1). Para `controles` solo se comprueba que sea un bloque (no un escalar): su contenido lo valida Entrada. Un `float` NaN, una clave no declarada, un valor de tipo incorrecto o un `enum` fuera de su lista se rechazan: en las builds de desarrollo producen un error visible que detiene la ejecución, en la build final se conserva el valor anterior y se registra una línea en el log.
+7. **Aviso de cambio.** Cada vez que el valor de un ajuste cambia realmente, este sistema emite un aviso propio con tres datos (clave, valor anterior, valor nuevo); escribir el mismo valor no emite nada. «Cambio real» se decide tras cuantizar (por paso `n` en los `float` con paso, F1) y, en `controles`, por igualdad profunda del bloque; el aviso de `controles` lleva solo la clave (sin anterior ni nuevo, para no copiar el bloque) y el receptor lo relee. La entrega sigue las mismas reglas que el bus de eventos (3), sin depender de él: orden de suscripción, valor aplicado al instante y aviso encolado si el cambio se provoca desde dentro de una entrega, sin reentrada, y baja de suscriptores efectiva al terminar la entrega en curso. **Descarga de la planta:** cuando se descarga la escena de planta (4), los suscriptores que viven en ella (p. ej. 7, 9, 24) se dan de baja automáticamente del aviso de este sistema, igual que en el bus (3, edge case de descarga de un sistema suscrito): dejan de recibir avisos sin darse de baja a mano y sin errores; el nodo de Ajustes, que sobrevive a los cambios de escena, no queda con referencias colgantes. El formato técnico lo fija un ADR.
+8. **Restablecer.** Existe «restablecer un ajuste» y «restablecer todos» («todos» abarca los tres volúmenes, `subtitulos_activos`, `reducir_sobresaltos`, `reducir_movimiento`, las dos asistencias, `balanceo_camara`, `campo_vision`, `multiplicador_pie` y `pie_persistente`: 12 claves; no toca `modo_ventana` ni el bloque `controles`, que tiene su propio restablecer en Entrada, regla 17). Cada uno aplica el valor inicial y emite el aviso de cambio de los que cambian.
 
 **Fichero, carga y guardado**
 
@@ -88,6 +90,7 @@ La tabla del catálogo (regla 1) indica quién lee cada ajuste. Otras interaccio
 | 28 Atmósfera reactiva | `reducir_sobresaltos` | — |
 | 2 Jugador en primera persona | `balanceo_camara`, `campo_vision`, avisos de cambio (aplicación inmediata; blanda: sin Ajustes usa los iniciales) | — |
 | 9 Marco de puzles (y 13, 15 vía el marco) | `asistencia_encaje`, `asistencia_rotacion`, `reducir_movimiento` (feedback de error) | — |
+| 7 Interacción e inspección | `multiplicador_pie`, `pie_persistente` (duración del pie de texto, GDD 7 regla 12 y F5); avisos de cambio | — |
 | 4 Escena de planta | `reducir_movimiento` (cortina). Requiere que el nodo de Ajustes sobreviva a los cambios de escena (4, regla 1) | — |
 | 25 Menú de pausa · 30 Accesibilidad · 27 Pantalla de título | Valor actual de los ajustes que muestran | Escrituras del jugador y peticiones de restablecer |
 | 5 Guardado y carga | Ninguna: ficheros independientes; los ajustes quedan fuera de la partida (regla 3) | — |
@@ -103,7 +106,7 @@ La fórmula de pasos del deslizador se define como (redondeo de la mitad hacia a
 
 `n = floor(v_ui × N_pasos + 0,5);   v = n / N_pasos`
 
-Se generaliza a `campo_vision`: `n = floor((fov − 60) / 5 + 0,5)`, `fov = 60 + 5n`, n de 0 a 6 (72 → 70; 72,5 → 75; 90,0 → 90; 95 → 90 y se registra). Las demás reglas de F1 (comparar `n`, no el float) valen igual.
+Se generaliza a `campo_vision`: `n = floor((fov − 60) / 5 + 0,5)`, `fov = 60 + 5n`, n de 0 a 6 (72 → 70; 72,5 → 75; 90,0 → 90; 95 → 90 y se registra). Y a `multiplicador_pie`: `n = floor((m − 1,0) / 0,25 + 0,5)`, `m = 1,0 + 0,25n`, n de 0 a 8 (1,3 → 1,25; 1,125 → 1,25; 3,5 → 3,0 y se registra). Las demás reglas de F1 (comparar `n`, no el float) valen igual.
 
 **Variables:**
 | Variable | Type | Range | Source | Description |
@@ -215,6 +218,8 @@ La fórmula de guardado diferido se define como:
 | 28 Atmósfera reactiva | Blanda | Lee `reducir_sobresaltos` (parpadeo del pasillo y apagón) |
 | 2 Jugador en primera persona | Blanda | Lee `balanceo_camara` y `campo_vision` (GDD 2, reglas 16 y 17); aplicación inmediata |
 | 9 Marco de puzles (13 y 15 vía el marco) | Blanda | Lee `asistencia_encaje`, `asistencia_rotacion` y `reducir_movimiento` |
+| 7 Interacción e inspección | Blanda | Lee `multiplicador_pie` y `pie_persistente` (F5 de ese GDD); sin Ajustes usa 1,0 y falso |
+| 18 Base de contenido narrativo | Blanda | Aloja los textos de interfaz `UI_…` de las pantallas de ajustes (25, 27, 30); no lee ni escribe ajustes. Relación que el índice ya recoge; este GDD no depende de 18 en ejecución |
 | 4 Escena de planta | Blanda | Lee `reducir_movimiento` (cortina); exige que el nodo de Ajustes sobreviva a los cambios de escena (su regla 1, AC-01) |
 | 1 Entrada y controles | Dura (su lado) | Entrega y recupera el bloque `controles` |
 | 5 Guardado y carga | Ninguna | Ficheros independientes; retirada por el GDD 5 (regla 4, D-12) |
@@ -231,6 +236,8 @@ La fórmula de guardado diferido se define como:
 | `db_min` | −40 dB | −60 a −30 | Suelo de la curva de volumen; subir a −50 si la voz de Vera se pierde en el paso 1 |
 | `t_guardado` | 0,5 s | 0,2–2,0 s | Silencio necesario antes de escribir el fichero |
 | `t_guardado_max` | 5,0 s | 2,0–30,0 s (≥ 2 × `t_guardado`) | Pérdida máxima ante cierre forzado y frecuencia de escrituras |
+| `multiplicador_pie` | 1,0 | 1,0–3,0, paso 0,25 | Cuánto se alarga el pie de texto para quien no llega a leerlo (regla 1; lo consume F5 de 7) |
+| `pie_persistente` | falso | bool | Si el pie dura hasta que cambie el objetivo (regla 1) |
 | Valores iniciales y rangos del catálogo | regla 1 | los de cada clave | Primera experiencia del jugador; en `defaults.json` |
 
 ## Visual/Audio Requirements
@@ -249,7 +256,8 @@ No aplica: el jugador no opera este sistema directamente. Lo único exigible es 
 
 El sistema no tiene pantalla propia; las ponen el menú de pausa (25), las opciones de accesibilidad (30) y la pantalla de título (27). Requisitos que este GDD fija a esas pantallas:
 - **Deslizadores de volumen:** `N_pasos` pasos (20†) con el valor visible, operables con ratón y con mando (`ui_izquierda` y `ui_derecha` mueven un paso, Entrada regla 15), y con el silencio claramente distinguible del paso más bajo.
-- **Conmutadores:** `subtitulos_activos`, `reducir_sobresaltos`, `reducir_movimiento`, `asistencia_encaje`, `asistencia_rotacion` y `modo_ventana`, con su valor actual siempre visible.
+- **Conmutadores:** `subtitulos_activos`, `reducir_sobresaltos`, `reducir_movimiento`, `asistencia_encaje`, `asistencia_rotacion`, `pie_persistente` y `modo_ventana`, con su valor actual siempre visible.
+- **Deslizador de paso:** `multiplicador_pie` (1,0 a 3,0 en pasos de 0,25, valor visible; mismo manejo que los volúmenes).
 - **Restablecer:** «restablecer» por ajuste y «restablecer todos» (regla 8), con confirmación en este último porque cambia varios valores a la vez.
 - **Sin mensajes por ficheros dañados:** el jugador no ve ningún aviso cuando el fichero de ajustes falta o se recupera (regla 11).
 - **Textos:** todos los rótulos de las pantallas son entradas `UI_…` de la base de contenido (18).
@@ -269,7 +277,7 @@ El sistema no tiene pantalla propia; las ponen el menú de pausa (25), las opcio
 | `design/gdd/estado-y-bus-de-eventos.md` · regla 14, CA-24 y regla 11 | Los ajustes quedan fuera del estado y de la instantánea; reglas de entrega de avisos | Origen de la regla 3 y patrón de la regla 7 |
 | `design/gdd/entrada-y-controles.md` · reglas 15 a 19 y AC-18 | Reasignación, ajustes de manejo y bloque exportable de asignaciones | Origen de `controles` (regla 2) |
 | `design/gdd/base-de-contenido-narrativo.md` | Textos de interfaz `UI_…` | Rótulos de las pantallas de ajustes |
-| `design/gdd/systems-index.md` | Fila 6 y dependientes 2, 4, 9, 23, 25, 26, 27, 28, 30, 13 y 15 (el 5 está retirado) | Debe reflejar la tabla de Dependencies |
+| `design/gdd/systems-index.md` | Fila 6 y dependientes 2, 4, 7, 9, 23, 25, 26, 27, 28, 30, 13 y 15, más la relación con 18 (textos `UI_…`; el 5 está retirado) | Debe reflejar la tabla de Dependencies |
 | `design/gdd/escena-de-planta.md` · regla 1 y AC-01 | Nodo de Ajustes persistente entre escenas; cortina con `reducir_movimiento` | Condición de arranque y lector de la clave |
 | `design/art/art-bible.md` · §7.4 | «Reducir movimiento» | Origen de `reducir_movimiento` |
 
@@ -278,7 +286,7 @@ El sistema no tiene pantalla propia; las ponen el menú de pausa (25), las opcio
 Revisados por `qa-lead`. **Evidencia:** **L** = test unitario automático (gdUnit4, `tests/unit/settings/`), bloqueante; **I** = test de integración o playtest documentado, bloqueante. Los tests L **no hacen E/S real**: usan un almacenamiento falso, un reloj inyectado (ticks enteros, sin acumular error de coma flotante), un manejador de errores y un destino de log sustituibles, y una fixture de `defaults.json` por caso. Solo los criterios I tocan el disco. Tolerancia numérica ±0,0001 salvo indicación. «Se cierra cuando exista X» marca un criterio que depende de un sistema sin GDD. El sistema no define presupuesto de rendimiento y no se inventa uno.
 
 **Catálogo y lectura (reglas 1 a 5)**
-- **AC-01 (R1, L)**: **GIVEN** el `defaults.json` del slice, **WHEN** se leen las once claves con valor (los tres volúmenes, `subtitulos_activos`, `reducir_sobresaltos`, `reducir_movimiento`, las dos asistencias, `balanceo_camara`, `campo_vision` y `modo_ventana`), **THEN** cada una coincide en tipo, rango e inicial con la tabla de la regla 1; **WHEN** se lee `controles` sin bloque guardado, **THEN** devuelve «ausente»; **WHEN** se escribe una clave que no está en el catálogo, **THEN** se rechaza (regla 6).
+- **AC-01 (R1, L)**: **GIVEN** el `defaults.json` del slice, **WHEN** se leen las trece claves con valor (los tres volúmenes, `subtitulos_activos`, `reducir_sobresaltos`, `reducir_movimiento`, las dos asistencias, `balanceo_camara`, `campo_vision`, `multiplicador_pie`, `pie_persistente` y `modo_ventana`), **THEN** cada una coincide en tipo, rango e inicial con la tabla de la regla 1; **WHEN** se lee `controles` sin bloque guardado, **THEN** devuelve «ausente»; **WHEN** se escribe una clave que no está en el catálogo, **THEN** se rechaza (regla 6).
 - **AC-02 (R4-5, L)**: **GIVEN** `vol_musica` = 1,0, **WHEN** se escribe 0,5, **THEN** la lectura inmediata devuelve 0,5. Igual con un `bool` (`subtitulos_activos` a falso) y con un `enum` (`modo_ventana` a `ventana`).
 - **AC-03a (R3, L)**: **GIVEN** `vol_voces` = 0,5, **WHEN** se serializa la instantánea del estado (3), **THEN** no contiene ninguna clave de ajustes.
 - **AC-03b (R3, I)**: **GIVEN** una partida guardada y un ajuste cambiado, **THEN** el fichero de partida no cambia (mismo hash), y empezar partida nueva o cargar otra no altera ningún ajuste. *(Se cierra cuando existan 3 y 5.)*
@@ -286,6 +294,8 @@ Revisados por `qa-lead`. **Evidencia:** **L** = test unitario automático (gdUni
 - **AC-04c (R2, R6-7, L)**: **WHEN** Entrada escribe un bloque distinto del guardado, **THEN** se emite un aviso con solo la clave `controles` y queda pendiente; **WHEN** escribe un bloque profundamente igual, **THEN** no hay aviso ni pendiente; **WHEN** se escribe un escalar en `controles`, **THEN** se rechaza (regla 6).
 - **AC-04d (R1, R6, L)**: **WHEN** se escribe 72 en `campo_vision`, **THEN** se guarda 70; 90,0 se guarda 90; 95 se guarda 90 con una línea en el log; 72 tras 70 no emite aviso (mismo `n`). **GIVEN** 72 en el fichero, **THEN** se carga como 70.
 - **AC-04e (R1, R8, L)**: **GIVEN** `reducir_movimiento` ausente en el fichero, **THEN** vale falso; **WHEN** se escribe verdadero, **THEN** la lectura devuelve verdadero y se emite un aviso (`reducir_movimiento`, falso, verdadero).
+- **AC-04f (R1, R6, R8, L)**: **GIVEN** `multiplicador_pie` ausente en el fichero, **THEN** vale 1,0; **WHEN** se escribe 1,3, **THEN** se guarda 1,25; 3,5 se guarda 3,0 con una línea en el log; 0,5 se guarda 1,0; 1,3 tras 1,25 no emite aviso (mismo `n`); 2,0 emite (`multiplicador_pie`, 1,25, 2,0). **WHEN** se escribe un NaN o un valor no numérico, **THEN** se rechaza (regla 6). **GIVEN** 1,3 en el fichero, **WHEN** se carga, **THEN** vale 1,25.
+- **AC-04g (R1, R7, R8, L)**: **GIVEN** `pie_persistente` ausente en el fichero, **THEN** vale falso; **WHEN** se escribe verdadero, **THEN** la lectura devuelve verdadero y se emite un aviso (`pie_persistente`, falso, verdadero); escribir verdadero otra vez no emite; un valor no booleano se rechaza (regla 6); **WHEN** se restablece ese ajuste, **THEN** vuelve a falso con su aviso.
 - **AC-04b (R2, L)**: **GIVEN** un fichero con el bloque `controles` ilegible y el resto válido, **WHEN** se carga, **THEN** se llega a «Listo», los demás ajustes conservan su valor y `controles` queda «ausente». *(La reacción de Entrada se cierra cuando exista el sistema 1.)*
 
 **Escritura inválida y avisos (reglas 6 a 8)**
@@ -299,8 +309,9 @@ Revisados por `qa-lead`. **Evidencia:** **L** = test unitario automático (gdUni
 - **AC-06d (R7, L)**: **GIVEN** un suscriptor que, al recibir el aviso de X, escribe Y, **THEN** la lectura de Y dentro del manejador ya devuelve el valor nuevo, el aviso de Y se entrega después de que X llegue a todos y no hay invocaciones anidadas.
 - **AC-06e (R7, L)**: **GIVEN** que A se da de baja durante una entrega, **THEN** A aún recibe el aviso en curso y no recibe ningún aviso posterior.
 - **AC-06f (R7, L)**: **GIVEN** dos escrituras del mismo ajuste en el mismo fotograma (0,5 y después 0,7), **THEN** gana la última (lectura = 0,7) y los avisos llegan en el orden de las escrituras: (1,0 → 0,5) y (0,5 → 0,7).
+- **AC-06g (R7, L)**: **GIVEN** un suscriptor que vive en la escena de planta (nodo hijo de ella), **WHEN** la planta se descarga, **THEN** queda dado de baja sin llamada explícita; **WHEN** después cambia un ajuste, **THEN** no recibe el aviso, no hay error ni referencia colgante y los demás suscriptores lo reciben con normalidad; si la descarga ocurre dentro de una entrega en curso, la baja se hace efectiva al terminar esa entrega.
 - **AC-07a (R8, L)**: **GIVEN** `vol_musica` = 0,5, **WHEN** se restablece solo ese ajuste, **THEN** vale su inicial (1,0), se emite un solo aviso (`vol_musica`, 0,5, 1,0), los demás ajustes no cambian y quedan cambios pendientes; **WHEN** se restablece un ajuste que ya vale su inicial, **THEN** no se emite aviso.
-- **AC-07 (R8, L)**: **GIVEN** `vol_voces` = 0,5 y `vol_efectos` = 1,0 (ya inicial), **WHEN** se restablecen todos (las 10 claves de la regla 8, incluida `reducir_movimiento`), **THEN** se emite un solo aviso (`vol_voces`, 0,5, 1,0) y ninguno para `vol_efectos`; **GIVEN** además `reducir_movimiento` = verdadero, **THEN** su aviso (verdadero, falso) también se emite; `modo_ventana` y `controles` no cambian y el sistema queda con cambios pendientes de guardar.
+- **AC-07 (R8, L)**: **GIVEN** `vol_voces` = 0,5 y `vol_efectos` = 1,0 (ya inicial), **WHEN** se restablecen todos (las 12 claves de la regla 8, incluidas `reducir_movimiento`, `multiplicador_pie` y `pie_persistente`), **THEN** se emite un solo aviso (`vol_voces`, 0,5, 1,0) y ninguno para `vol_efectos`; **GIVEN** además `reducir_movimiento` = verdadero, `multiplicador_pie` = 2,0 y `pie_persistente` = verdadero, **THEN** sus avisos (verdadero, falso), (2,0, 1,0) y (verdadero, falso) también se emiten; `modo_ventana` y `controles` no cambian y el sistema queda con cambios pendientes de guardar.
 
 **Fichero, carga y guardado (reglas 9 a 14)**
 - **AC-08a (R10, L)**: **GIVEN** que no hay fichero, **WHEN** se carga, **THEN** los ajustes valen su inicial, el log no contiene ninguna línea de error o aviso y no se abre ningún diálogo.
@@ -354,6 +365,7 @@ Sin criterio hasta que exista el ADR: el tope del bucle de avisos encadenados, l
 | 10 | **Valores † de F1 a F3 y los iniciales del catálogo** (`db_min` = −40 dB: probar que la voz de Vera sigue audible en el paso 1 en una sala silenciosa; si no, bajar a −50). | Playtest (slice §23.4) | Primer playtest |
 | 11 | **Rótulos `UI_…`** de las pantallas de ajustes: dar de alta en la base de contenido y contarlos. El GDD 18 ya anticipa los `UI_…` (ronda 2); falta darlos de alta al diseñar 25, 27 y 30. | GDD del sistema 18 y de los sistemas 25, 27 y 30 | Esos GDD |
 | 12 | **Reducir sobresaltos:** qué atenúa exactamente en audio (23) y en luz (28), y con qué límite de destellos. | GDD de los sistemas 23 y 28 | Esos GDD |
+| 14 | **Menú de pausa (25), sin GDD:** debe ofrecer `multiplicador_pie` (deslizador de paso 0,25) y `pie_persistente` junto a los demás ajustes de accesibilidad (reglas 1 y 8, UI Requirements); anotar en el GDD de 25 y en el de 30. | GDD de los sistemas 25 y 30 | Esos GDD |
 | 13 | **Registro de entidades:** lista completa de valores a registrar en la re-review («Cambios requeridos en otros GDDs»). | Revisión de consistencia | Aprobación del GDD |
 
 ## Decisiones tomadas
@@ -366,8 +378,13 @@ Sin criterio hasta que exista el ADR: el tope del bucle de avisos encadenados, l
 - **Valor seguro `modo_ventana` = `ventana` antes de Listo**: se mantiene y se justifica (no tocar el monitor sin catálogo fiable).
 - **Redondeo de la mitad hacia arriba** en F1. Descartado: dejar la ambigüedad.
 - **Tuning Knobs** se añade como tabla única (opcional en `standard`, barato).
+- **`multiplicador_pie` y `pie_persistente` son ajustes de 6** (C-W6, opción a; ronda 5): 7 ya los usa en F5 y regla 12 y son accesibilidad pura. `multiplicador_pie` es `float` 1,0–3,0 con paso 0,25 (9 pasos, defecto 1,0†); `pie_persistente` `bool` falso. Entran en «restablecer todos» (12 claves) y en AC-01 (trece claves). Descartado (b): fijar el valor en los Tuning Knobs de 7, porque el jugador que no llega a leer el pie necesita regularlo y 7 no persiste preferencias.
+- **Baja automática al descargar la planta** (F-3): regla 7 la recoge como en el bus de 3 (AC-06g). Descartado: exigir la baja manual a cada suscriptor, que deja referencias colgantes si un sistema de planta olvida darse de baja.
+- **18 figura como dependencia blanda** en Dependencies (solo aloja los `UI_…`), alineado con el índice. Descartado: no listarlo, que dejaba el par incoherente con el índice.
 
 ## Historial de cambios
+
+- **2026-11-09 (ronda 5, aplica C-W6 y F-3 de `gdd-cross-review-2026-11-09-r3.md`):** añadidos `multiplicador_pie` y `pie_persistente` (catálogo, cuantización, restablecer todos = 12 claves, interacciones, dependencias con 7, Tuning Knobs, UI, AC-01 = trece claves, AC-04f, AC-04g, AC-07, OQ 14); regla 7 con baja automática de suscriptores al descargar la planta (AC-06g); 18 añadido a Dependencies; aclarado que `reducir_movimiento` ya está en el catálogo.
 
 - **2026-11-09 (ronda 2, aplica la re-review):** añadida `reducir_movimiento` (catálogo, restablecer todos = 10 claves, interacciones, UI, AC-01 = once claves, AC-04e); F1 generalizada a `float` con paso y redondeo de la mitad hacia arriba (AC-04d, AC-F1); `controles` como tipo propio (AC-04c); dependencias 2, 4 y 9 añadidas y la del 5 retirada; contrato «ajustes aplicados» con Entrada; pistas fuera de ajustes; Tuning Knobs; valor seguro justificado; sección «Decisiones tomadas». Pendiente de re-review.
 
