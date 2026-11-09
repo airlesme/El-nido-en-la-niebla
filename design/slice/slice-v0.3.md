@@ -273,7 +273,7 @@ Hay además dos correos sin relación (un recordatorio de cambio de extensiones 
 | Opción de Vera | Guarda | Respuesta de El Guardián |
 |---|---|---|
 | «Estoy bien» | `A` | `VO_G_13A`: «Ya. Eso dijiste también la última vez». |
-| «Estoy desbordada» | `B` | `VO_G_13B`: «Lo sé. Por eso lo pedí». |
+| «Estoy desbordada» | `B` | `VO_G_13B`: «Lo sé». (v0.3.3: sin «Por eso lo pedí», que confirmaba la intención del Guardián; ver D-B2 del informe de revisión cruzada.) |
 | «No quiero hablarlo ahora» | `C` | `VO_G_13C`: «Vale. Pero la caja sigue en tu mesa». |
 | No responder | `D` | `VO_G_13D`: «Entonces hablo yo. Te he dejado la caja abierta. Cuando quieras». |
 
@@ -313,7 +313,7 @@ Cada línea tiene un ID para que audio, localización y QA puedan referenciarla.
 | `VO_G_12B` | El Guardián | «Has escrito que no sabes qué firmaste. ¿Estás resfriada?». | 7 |
 | `VO_G_12C` | El Guardián | «Has escrito que todavía no puedes enviarlo. ¿Estás resfriada?». | 7 |
 | `VO_G_13A` | El Guardián | «Ya. Eso dijiste también la última vez». | 7 |
-| `VO_G_13B` | El Guardián | «Lo sé. Por eso lo pedí». | 7 |
+| `VO_G_13B` | El Guardián | «Lo sé». | 7 |
 | `VO_G_13C` | El Guardián | «Vale. Pero la caja sigue en tu mesa». | 7 |
 | `VO_G_13D` | El Guardián | «Entonces hablo yo. Te he dejado la caja abierta. Cuando quieras». | 7 |
 | `VO_G_14_RET` | El Guardián | «Sigo aquí.» (si `t4_decision` = `returned`) | 7 |

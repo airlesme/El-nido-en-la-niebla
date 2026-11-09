@@ -310,6 +310,12 @@ Ronda 2 (2026-11-09), por lotes; la re-review está en `design/gdd/reviews/base-
 | D18-8 | 9 es dependencia dura en validación y blanda en ejecución. | Solo dura o solo blanda. | Unifica las tres redacciones previas. |
 | D18-9 | **(usuario, 2026-11-09, D-B1)** Se elimina el mensaje «No corresponde» (rechazo de 1,5 s) **para T4**: T4 acepta devolver («DEVUELTA») o asignar («ACEPTADA»). El texto «No corresponde» se conserva para T1–T3. Una línea cambia según `t4_decision` (regla 5), como **propuesta** pendiente de narrative-director/usuario | Mantener «Devolver» como única solución; cambiar una línea de Vera en vez de la del Guardián | Pilar 1: ninguna opción es incorrecta. La línea del Guardián (`VO_G_14`) es la última de la llamada y no obliga a tocar las cartas ni las de Vera, ya con 4 variantes |
 
+Ronda 3 (2026-11-09), tras `/review-all-gdds` (informe `gdd-cross-review-2026-11-09.md`).
+
+| # | Decisión | Alternativa descartada | Motivo |
+|---|---|---|---|
+| D18-10 | **(D-B2)** `VO_G_13B` pasa a «Lo sé» (slice v0.3.3). | Mantener «Lo sé. Por eso lo pedí» como excepción registrada; reescribirla con narrative-director. | «Por eso lo pedí» confirma la intención del Guardián, que el pilar 1 («Violating») prohíbe; «Lo sé» reconoce a Vera sin explicar la historia (anti-pilar). La línea sigue siendo audible y la clave no cambia. Sin subtítulo ni audio fuera del slice. |
+
 ## Historial de cambios
 
 - **2026-11-09 (D-B1):** hueco de contenido por la decisión de T4: grupo provisional `VO_G_14_RET`/`VO_G_14_ASG` (propuesta, `fuente: propuesta_D-B1`), texto del REJECT de T4 retirado (D18-9) y referencias a `t4_decision`. Cambia contenido propuesto: pendiente de re-review y de narrative-director.
