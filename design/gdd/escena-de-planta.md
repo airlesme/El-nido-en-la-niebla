@@ -1,6 +1,6 @@
 # Escena de planta y carga de Recepción
 
-> **Status**: Revisado (ronda de corrección 3) — pendiente de re-review
+> **Status**: Revisado (ronda de corrección 4) — pendiente de re-review
 > **Author**: Álvaro + agentes
 > **Last Updated**: 2026-11-09
 > **Last Verified**: 2026-11-08
@@ -233,7 +233,7 @@ La fórmula del tope declarado se define como:
 | 23 Director de audio · 28 Atmósfera reactiva | Blanda | «Escena lista» y zonas `T-…` |
 | 27 Pantalla de título y cierre | Blanda | Pide la descarga total; recibe el fallo de carga (no pide `planta`: lo hace 5) |
 
-**Regla de dureza (R6-1, común a todos los GDDs).** La dureza (dura / blanda / indirecta) la declara el GDD **dependiente** (el que consume la API) y el proveedor repite la misma; si discrepan, manda el dependiente salvo texto obsoleto. Aplicada aquí: 4 lista a 19 como **Dura** (la declara 19, que consume el anclaje de `V01` y la bandeja de `V08`), a 21 como **Dura** (la declara 21) y a 1 como **Blanda** (cada uno declara la suya: 1 depende de 4 por los avisos de carga; 4 de 1 para devolver el control).
+**Regla de dureza (R6-1, común a todos los GDDs).** La dureza (dura / blanda / indirecta) la declara el GDD **dependiente** (el que consume la API) y el proveedor repite la misma; si discrepan, manda el dependiente salvo texto obsoleto. Aplicada aquí: 4 lista a 19 como **Dura** (la declara 19, que consume el anclaje de `V01` y la bandeja de `V08`), a 21 como **Dura** (la declara 21) y a 1 como **Blanda** (cada uno declara la suya: 1 depende de 4 por los avisos de carga; 4 de 1 para devolver el control). Los demás pares son simétricos: 8, 9, 10, 20, 2, 7 y 5 declaran a 4 como **Dura** y 4 lo repite; 6 la declara **Blanda** (`reducir_movimiento`) y 4 la repite. Comprobado en la ronda de corrección 4.
 
 **Índice de sistemas:** la fila del sistema 4 dice «3 (blandas: 1, 6, 18); 2 (dura)», que coincide con este GDD (verificado en la ronda de corrección 2). Las filas de 2, 5, 8, 9, 10, 19, 20 y 21 también listan al sistema 4. El GDD 2 ya declara al 4 como «Dura (en ambos sentidos)».
 
@@ -244,7 +244,7 @@ La fórmula del tope declarado se define como:
 4. **GDD de 5 y 22:** (resuelto en la ronda 3) el 4 emite «partida terminada»; 5 la consume como `slice_completed` y 22 deja de ser candidato a emisor.
 4b. **GDD del 3:** (resuelto en la ronda 3) regla 10 con «carga de escena iniciada» (destino, `motivo`, `D_carga`), «carga de escena fallida» y «partida terminada» emitido por el 4. **GDD del 18:** (resuelto en la ronda 4) regla 21 ya dice «Vuelve a intentarlo desde el título» (D18-11).
 4c. **GDD del 9:** su regla 29 (validación de datos de puzle) ya apunta al gancho que recoge la regla 9, paso 6, de este documento.
-5. **Los demás.** Ya listan al sistema 4 los GDDs 2, 5, 8, 9, 10, 19, 20 y 21 (verificado en la ronda de corrección 2; el 20 lo cita como «Indirecta», el 4 lo trata como «Dura vía contenedores e IDs»: ver fila de la tabla). Los que todavía no tienen GDD (23, 27, 28) deben, al redactarse, listar al sistema 4 y usar los nombres de este documento (`spawn_office`, `spawn_elevator`, `door_slot_*`, IDs del Anexo D.4).
+5. **Los demás.** Ya listan al sistema 4 los GDDs 2, 5, 8, 9, 10, 19, 20 y 21 (verificado en la ronda de corrección 2; el 20 y el 10 los declaran como Dura, igual que la fila «9 · 10 · 20» de la tabla; ronda de corrección 4). Los que todavía no tienen GDD (23, 27, 28) deben, al redactarse, listar al sistema 4 y usar los nombres de este documento (`spawn_office`, `spawn_elevator`, `door_slot_*`, IDs del Anexo D.4).
 
 ## Tuning Knobs
 
@@ -404,6 +404,7 @@ Ronda de propagación 1 (2026-11-09, lote Feature 1: 8, 10, 19, 20, 21).
 | (E7-1, corregida en la ronda 3, R6-4 d) Descarga total: **el 4 emite «descarga total solicitada»** al aceptar la petición (regla 15) y **el 21 se inactiva** (no escucha ni emite) desde ese aviso, o desde su propia petición, hasta «descarga total completada», en que borra su estado (reglas 1 y 15; GDD 21 regla 1) | Que el 4 no avise y el 21 se entere solo por su propia petición; cancelar al 21 en «descarga total solicitada» (la redacción anterior de esta fila decía «avisar al 21 desde el 4», lo contrario de lo que fijan ahora las reglas 1 y 15) | La descarga total la piden 21, 27 y el flujo de «Volver al título» tras un fallo, y solo el 4 las acepta todas; el aviso evita que la línea de `ESC8_CIERRE` emita órdenes sobre la descarga en curso |
 | (R6-4 a, e, g) La forma de pila [`exploración`, `sin control`(21), `menú`] (`ESC8_CIERRE` con pausa) y la fila «Nueva partida desde la pausa en la planta» ([`exploración`, `menú`]) entran en la tabla de pila; la descarga total no pasa por el reinicio de pila | Dejar las formas solo en el texto general de Entrada (regla 6); que la descarga total pase por [`sin control`] antes de [`menú`] | La regla general ya las cubría, pero la tabla y los ACs no las listaban; [`menú`] es el final de toda descarga total, y un paso intermedio solo añadiría un aviso |
 | (R6-1) Dureza de dependencias: la declara el GDD dependiente y el proveedor la repite; 4 lista a 19 y a 21 como Dura y a 1 como Blanda | Que mande el proveedor | Una sola fuente por dependencia evita las discrepancias de la ronda 6 |
+| (R6-1, ronda de corrección 4) Pares de dureza comprobados con la declaración vigente del otro lado: 4↔8, 4↔9, 4↔10, 4↔19, 4↔20, 4↔21, 4↔2, 4↔7 y 4↔5 **Dura/Dura**; 4↔1 y 4↔6 **Blanda/Blanda**. El 20 ya declara a 4 como Dura (no «Indirecta»): la fila «9 · 10 · 20» queda tal cual y se retira del texto de Bidireccionalidad la mención obsoleta | Mantener la nota de que el 20 cita a 4 como «Indirecta» | Esa nota describía una versión anterior de 20; con ella la discrepancia parecía abierta |
 | Open Question 11 cerrada por DT-3 de 21 | Hecho «escena 4 vista» | Catálogo de hechos cerrado |
 
 ## Open Questions
@@ -440,3 +441,4 @@ Ronda de propagación 1 (2026-11-09, lote Feature 1: 8, 10, 19, 20, 21).
 - **2026-11-09 (ronda de propagación 1, lote Feature 1: 8, 10, 19, 20, 21):** reglas 1, 3, 9 (paso 6 y fila de pila propuesta), 11, 13 y 15 (descarga total ≤ 3,0 s†), F1 (motivo `cierre`), Interacciones, Dependencies, Tuning Knobs, Edge Case del ascensor, Open Questions 9 y 11 cerradas y 14 a 16 nuevas. **Cambia reglas: pendiente de re-review.**
 - **2026-11-09 (ronda de corrección 2, `gdd-cross-review-2026-11-09-r5.md`):** E4-1 (regla 9 paso 3, nota y tabla de pila con las dos formas de la pila durante una escena dirigida, ahora firmes; Decisiones tomadas), E7-1 (regla 1: el 21 queda inactivo durante la descarga total), W-4 (fila de 19 en Dependencies), W-7 (textos «sin GDD»/índice desfasados corregidos; AC-36 y AC-38c son de 5 —`guardado-y-carga.md`—, el 4 no los cita). Estado: Revisado (ronda de corrección 2) — pendiente de re-review.
 - **2026-11-09 (ronda de corrección 3, `gdd-cross-review-2026-11-09-r6.md`):** R6-4 (regla 1: «inactivo» del 21 y cuándo borra su estado; regla 15 y paso 3: la descarga total no pasa por el reinicio de pila; tabla de pila con las filas «Nueva partida desde la pausa en la planta» y `ESC8_CIERRE` con pausa; fila E7-1 de Decisiones corregida) y R6-1 (regla común de dureza). **Cambia reglas: pendiente de re-review.**
+- **2026-11-09 (ronda de corrección 4, `gdd-cross-review-2026-11-09-r6.md` y `reviews/cross-review-r6-2.md`):** R6-1: pares de dureza de 4 comprobados con los otros 13 GDDs (Dura con 2, 5, 7, 8, 9, 10, 19, 20 y 21; Blanda con 1 y 6); retirada la nota obsoleta sobre 20 «Indirecta» en Bidireccionalidad (decisión añadida en «Decisiones tomadas»). Estado: Revisado (ronda de corrección 4) — pendiente de re-review.
