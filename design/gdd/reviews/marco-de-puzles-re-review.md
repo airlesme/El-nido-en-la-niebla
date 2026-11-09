@@ -184,3 +184,21 @@ Reviewed-Content-Hash: design/gdd/systems-index.md 040f47822d57f2110b20a2933585c
 Reviewed-Content-Hash: design/gdd/game-pillars.md b779b89b06b8cb687a8fe0148e81b82831914b97
 Reviewed-Content-Hash: design/gdd/ajustes-persistentes.md b1dcff8162a3584582ad67d1b88c80ed542e7746
 Reviewed-Content-Hash: design/gdd/entrada-y-controles.md f39e00bb5c26462a61eae5b53af7481bcc72afcf
+
+---
+
+## Cambios requeridos en otros GDDs (ronda 2 del GDD 9, 2026-11-09)
+
+Lo que el GDD 9 ya asume y deben reflejar los demás documentos (el 9 solo edita el 9):
+
+- **GDD 7 (`interaccion-e-inspeccion.md`)**: (a) renombrar `requires.items` a `needs_items` (reglas 19, D7-22, l.317) y fijar el nombre; (b) corregir la fila de `D01a`–`D01d` (l.181): dependencias reales P5←`caja_c1`, P6←`caja_c1`∧`c2`∧`c3`, P3/P4 sin dependencias, y `SIN_EFECTO` también cuando el puzle está resuelto; el dueño (10) consulta `get_view_gate(view_id)` del marco antes de `abrir_vista`; (c) `C05` con `habilitado_si: { ninguno: [archivo_abierto] }` y receptor = marco; (d) citar `HIGHLIGHT` sobre objetos del mundo y elementos de vista (`C05/paper`, `V08`) como servicio de resaltado, sin cámara; (e) el marco entrega `elements()` con `{id, forma, z_orden, atraccion}` y emite `elements_changed`; usa `on_open`/`on_close(motivo)` y las cuatro fases. **Discrepancias que persistan tras la corrección de 7**: ninguna conocida (el 9 adopta sus nombres).
+- **GDD 2 (Jugador)**: no añadir `CAMERA_NUDGE` ni un propietario `pista`; mantener la regla 14/18 (ningún evento mueve la cámara). Reinterpretar el «gesto de cámara» de la pista.
+- **Slice v0.3**: (a) la pista de nivel 1 del P1 pasa a resaltado (~l.136 y ~l.724); (b) corregir §8 y §13.3 ante el Anexo B (P5←c1, P6←c1∧c2∧c3) si el usuario confirma D9-35; (c) D.2: nota de `pendiente_revelacion` al iniciar, `I-01` no persistente e impresión repetible.
+- **GDD 3**: añadir a la lista de avisos (regla 10) «línea terminada / sin audio / fallida» (emisor 23, carga `{line_id}`), «línea pedida» `{puzzle, line_id, fallback_s}`, «feedback de puzle» `{puzzle, sound_id, text_key?, element?}` y «puzle activado» `{puzzle, ajar_cm?}`.
+- **GDD 4**: añadir «datos de puzle inválidos» a los fallos de carga (regla 14), con validación tras cargar catálogos de 7 y claves de 18 y antes de configurar los puzles; consumir `reducir_movimiento` (cortina).
+- **GDD 6 (Ajustes)**: clave booleana `reducir_movimiento` (decisión del usuario), leída por 9 y 4.
+- **GDD 18**: la validación del 9 es la regla 29 (no la 27); 9 es dependencia dura en validación.
+- **GDD 19/20**: imprimir en `V08` repetible e ilimitado; `I-01` no se conserva entre sesiones y `has_item('I-01')` es falso tras cargar.
+- **Índice de sistemas**: fila 9 = `3, 4, 7, 18 (dura en validación) · blandas 2, 6, 20, 23, 25, 26`; `get_view_gate` en la API de 7/10.
+- **Registro (`entities.yaml`)**: añadir `reveal_outline_s_P5`, `line_grace_s`, `idle_s_P6_N1`/`N2`, `idle_move_px_P3`, `tol_deg`, asistido 0,10 m, `highlight_s_P1`, `reducir_movimiento`; `referenced_by` de `lock_max_s`.
+- **Preguntas aún abiertas para el usuario** (el 9 sigue la recomendación): D9-34 (icono en compartimentos bloqueados) y D9-35 (orden de la caja, D-16).
