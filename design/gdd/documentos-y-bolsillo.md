@@ -1,6 +1,6 @@
 # Documentos y bolsillo
 
-> **Estado:** Revisado (ronda de corrección 2) — pendiente de re-review
+> **Estado:** Revisado (ronda de corrección 3) — pendiente de re-review
 > **Sistema:** 20 del índice (`design/gdd/systems-index.md`) · Categoría: Narrative · Prioridad: MVP
 > **Autor:** game-designer (lote autónomo, 2026-11-09)
 > **Fuente de verdad del slice:** `design/slice/slice-v0.3.md` (D.1 ítems, D.2 banderas, A.4/A.5/A.6 objetos, C.3/C.6 escenas)
@@ -160,7 +160,7 @@ No hay sonido de «recompensa»: solo el foley de papel/plástico del Jugador/23
 
 **F1 · Duración de la presentación de adquisición (R12).**
 `t_pres = Σ_{i=1..n} (t_item_dentro + t_mostrar_item_s + t_item_fuera)`, con `n` ∈ {0, 1, 2} (tarjetas recién adquiridas).
-Variables: `t_item_dentro` = `t_item_fuera` = 0,3 s (2, tuning, rango 0,15–0,6); `t_mostrar_item_s` = 0,7 s† (rango 0,4–1,5).
+Variables: `t_item_dentro` = `t_item_fuera` = 0,3 s (2, tuning, rango 0,15–0,6); `t_mostrar_item_s` = 0,7 s† (rango 0,4–1,5; propuesta: el slice no fija este tiempo, se ajusta en playtest).
 Ejemplo (valores por defecto, `n` = 2): `2 × (0,3 + 0,7 + 0,3)` = **2,6 s†** (depende de †). Con `n` = 1: 1,3 s†. Con `n` = 0: 0 s.
 Aborto: si en cualquier instante se cumple una condición de la R12, se corta y la duración efectiva es el tiempo transcurrido; el ítem no se pierde.
 
@@ -209,15 +209,15 @@ Con `repaso_cerrar_ciclo = false`: si `c` es el último de `L`, `i_siguiente` = 
 | 18 Contenido narrativo | Dura | Muestra documentos con su estilo (regla 1) | Textos y fragmentos (regla 10), marcadores de nombre, texto de emergencia (regla 21) |
 | 2 Jugador | Blanda | `sostener(id, izquierda)` y `soltar()` (regla 24), tras `gesto_terminado` | `objeto_sujeto`, `objeto_soltado`, `gesto_terminado`; `t_item_dentro/fuera` |
 | 9 Marco de puzles | Blanda (‡) | `has_item(id)` para `needs_items` (regla 34); deriva `I-05`, `I-06a`, `I-07` de sus hechos | `abrir_lectura(I-07)` al resolver P6 (regla 16 de 9, paso final); en la reapertura, `on_reopen` responde `SIN_EFECTO` (regla 35) y la relectura de la carta **no la pide 9**: la hace el jugador con `repasar_bolsillo()` (20, vía R18 y 7, regla 27b); 20 no avanza su cursor con la lectura que abre 9 (R20, N4-1); los hechos `caja_c1..c4` y `carta_variante`; AC-39, AC-39b |
-| 8 Control de acceso | Dura, **recíproca** (8 ↔ 20) | `otorgar("A05")`, `sostener_item(id) -> {ACEPTADA, RECHAZADA(motivo)}`, `guardar_item()`, `has_item(id)`; escribe `tarjeta_B/D` | 8 es dueño de `A05` y de su `interact()`; llama a esas cuatro operaciones alrededor de `HAND_CARD_SWIPE` (7 no pasa `tarjeta_item`); lee `tarjeta_B/D` |
+| 8 Control de acceso | Dura (de 8 hacia 20; la declara 8, que consume `otorgar`/`sostener_item`/`guardar_item`; 20 la repite) | `otorgar("A05")`, `sostener_item(id) -> {ACEPTADA, RECHAZADA(motivo)}`, `guardar_item()`, `has_item(id)`; escribe `tarjeta_B/D` | 8 es dueño de `A05` y de su `interact()`; llama a esas cuatro operaciones alrededor de `HAND_CARD_SWIPE` (7 no pasa `tarjeta_item`); lee `tarjeta_B/D` |
 | 19 Ordenador, correo e impresora | Dura (de 19 hacia 20) | `otorgar_sesion("I-01")`, `has_item("I-01")` | Llama a `otorgar_sesion("I-01")` tras la impresión de `V08`; posee el contenido (`DOC_I01`); 20 no lo lee |
 | 10 Caja y compartimentos | Blanda | Nada (deriva `I-06a`, `I-05`, `I-07` de `caja_c1`, `caja_c2`, `caja_c4`, R5) | Decorado `NOTA_01`, papel de `I-05` y carta plegada (no interactivos); 10 no presenta la lectura de `I-05`/`I-06a` (D20-19) ni consulta `has_item` (10 reglas 17, 18; Dependencies de 10) |
 | 17 Pistas (sin GDD) | Blanda | `formulario_leido` | Lee el hecho |
-| 1 Entrada | Blanda en 20; 1 la lista como «Dura (de 20 hacia 1)» (discrepancia anotada, ronda 5) | La acción `repasar_bolsillo()` (R18); 20 no define mando propio | La acción derivada `repasar_bolsillo` de `atrás` corta con el contexto en `exploración` (1, regla 23; AC-E15 a AC-E17) |
-| 5 Guardado | Indirecta | — | Persiste los hechos; causa `card_acquired` (regla 14, AC-04b) |
+| 1 Entrada | Blanda (así la declaran 20 y 1) | La acción `repasar_bolsillo()` (R18); 20 no define mando propio | La acción derivada `repasar_bolsillo` de `atrás` corta con el contexto en `exploración` (1, regla 23; AC-E15 a AC-E17) |
+| 5 Guardado | Blanda (así la declara 5) | — | Persiste los hechos; causa `card_acquired` (regla 14, AC-04b) |
 | 24 Prompt | Blanda | Pie `UI_BOLSILLO_AYUDA` (R23) | Dibuja el pie |
-| 4 Escena de planta | Indirecta | Libera sesión en la descarga (R26) | Descarga |
-| 21 Director de escenas | Indirecta (21 no la lista) | — | `cerrar_modos()` cierra la lectura (7, regla 27a) |
+| 4 Escena de planta | Dura (así la declara 4: vía contenedores e IDs) | Libera sesión en la descarga (R26) | Sus elementos viven en los contenedores de la planta; descarga |
+| 21 Director de escenas | Indirecta (así la declara 21) | — | `cerrar_modos()` cierra la lectura (7, regla 27a) |
 
 Contrato recíproco con 7: la fila 20 de las interacciones de 7 («Documento a mostrar, estilo, aviso lectura completada» / «Dibujo de la pantalla; `abrir_lectura`») coincide con las reglas R14 y R19–R20. Con 2: la nota de la regla 24 («20 pide `sostener` solo tras `gesto_terminado`») es R11. Con 9: `has_item` (regla 34) y `rewards` (regla 16, los ítems no son hechos propios) son R5 y R8.
 
@@ -227,8 +227,8 @@ Contrato recíproco con 7: la fila 20 de las interacciones de 7 («Documento a m
 
 | Perilla | Defecto | Rango seguro | Categoría | Razón |
 |---|---|---|---|---|
-| `t_mostrar_item_s` | 0,7 s† | 0,4–1,5 | Feel | Tiempo con la tarjeta visible. Menos de 0,4 no se lee; más de 1,5 con dos tarjetas supera 4 s de presentación sin control |
-| `t_tapa_s` (animación de `A03`) | 0,6 s† | 0,3–1,0 | Feel | Visual, no bloquea |
+| `t_mostrar_item_s` | 0,7 s† (propuesta, sin fuente en el slice) | 0,4–1,5 | Feel | Tiempo con la tarjeta visible. Menos de 0,4 no se lee; más de 1,5 con dos tarjetas supera 4 s de presentación sin control |
+| `t_tapa_s` (animación de `A03`) | 0,6 s† (propuesta, sin fuente en el slice) | 0,3–1,0 | Feel | Visual, no bloquea |
 | `repaso_orden` | `I-07, I-05, I-06a, I-04` | Cualquier permutación | Feel | Orden fijo y neutro (no expresa importancia, R3); la adquisición es libre y no se guarda (D20-9) |
 | `repaso_cerrar_ciclo` | `true` | `true`/`false` | Feel | Vuelve al primero tras el último (R22, F2); con `false` se detiene en el último |
 | `aplazada_tope_s` | 3 s (de 7) | no es de 20 | Gate | Solo referencia: lo posee 7 (regla 27b) |
@@ -297,6 +297,8 @@ Tipos: **L** lógica (prueba unitaria), **I** integración, **PV** playtest/visu
 | D20-18 | La relectura de la carta tras reabrir P6 la hace el jugador (R18); 9 responde `SIN_EFECTO` en `on_reopen` (regla 35). | 9 pide `abrir_lectura(I-07)` al reabrir. | 9 regla 35 y D9-23 lo dejan como petición independiente de la vista. |
 | D20-19 | `I-05` (lista, P4) e `I-06a` (nota, P3) no tienen presentación nueva al resolver el puzle: quedan como decorado de la caja (10) y son releíbles desde el bolsillo con `repasar_bolsillo()` (R18–R22). Cierra Q2. Aprobada por el usuario, 2026-11-09. | Mostrarlos con `abrir_lectura` al resolver P4/P3 como la carta del P6. | Cambiaría el ritmo de la escena 6 (slice C.6) y el tono del clímax; la relectura voluntaria da el mismo acceso sin interrumpir. |
 | D20-8b | Confirmación de D20-8 (Q1): acción `atrás` corta en `exploración` aprobada y activada en Entrada (1). Aprobada por el usuario, 2026-11-09. | Rechazarla y dar un objeto de escena a la carta. | Mantener D.1 del slice (sin menú) y mantener la relectura que 9 (D9-23) ya asume; riesgo mínimo: abrir una lectura sin querer, sin coste. |
+| D20-23 | **(Ronda de corrección 3, R6-1)** Regla común de dureza: la declara el GDD dependiente (el que consume la API) y el proveedor repite la misma; si discrepan manda el dependiente salvo texto obsoleto. En 20: 8 **Dura** (de 8 hacia 20), 4 **Dura**, 5 **Blanda**, 21 **Indirecta** (así las declaran 8, 4, 5 y 21), 1 **Blanda** (texto «Dura» retirado: la regla 23 de 1 existe), 9 y 10 **Blanda**. | Mantener «Indirecta» con 4 y 5 y la nota de discrepancia con 1. | Una sola dureza por pareja; la fila de 1 estaba obsoleta tras la regla 23 de Entrada. |
+| D20-24 | **(R6-2, R6-7)** `repasar_bolsillo` con guion bajo también en el Historial; `t_mostrar_item_s` y `t_tapa_s` marcados † como propuesta (el slice no fija tiempos de presentación). | Dejarlos sin marca. | Valores sin fuente deben declararse como propuesta. |
 
 ## Preguntas abiertas
 
@@ -328,8 +330,8 @@ Tipos: **L** lógica (prueba unitaria), **I** integración, **PV** playtest/visu
 
 | Nombre | Valor | Fuente |
 |---|---|---|
-| `t_mostrar_item_s` | 0,7 s | este GDD, F1 |
-| `t_tapa_s` | 0,6 s | R15 |
+| `t_mostrar_item_s` | 0,7 s† | este GDD, F1 (propuesta; sin fuente en el slice) |
+| `t_tapa_s` | 0,6 s† | R15 (propuesta; sin fuente en el slice) |
 | `repaso_orden` | `I-07, I-05, I-06a, I-04` | R6 |
 | `repaso_cerrar_ciclo` | `true` | R22 |
 
@@ -352,5 +354,6 @@ Tipos: **L** lógica (prueba unitaria), **I** integración, **PV** playtest/visu
 |---|---|
 | 2026-11-09 | Borrador inicial (lote Feature 1), pendiente de review. |
 | 2026-11-09 | Ronda de corrección 1 tras la review independiente (2 bloqueantes, 13 avisos): contrato con 8 (`A05`, gesto de tarjeta, recíproca), `I-01` de 19, cita 7 regla 27b, orden de repaso (R22/F2/`repaso_orden`), regla 29 de 7, regla 35 de 9, Q1 como pregunta de alcance, `quit`/120 s†, R12 con `HAND_HOLD_ITEM` y orden `reposo()`/`HAND_READ`, R18/R20, R23/AC-18, `repaso_cerrar_ciclo`, ACs nuevos y separados, valores con †. Decisiones D20-12 a D20-18. Estado: pendiente de re-review. |
-| 2026-11-09 | Ronda de decisiones 1: Q1 decidida (D-A, `atrás` corta en `exploración` = repasar bolsillo; AC-11, AC-12, AC-12b y AC-14 firmes, activada en 1) y Q2 decidida (D-B, D20-19: `I-05`/`I-06a` sin presentación nueva, releíbles con el repaso). Estado: pendiente de re-review. |
+| 2026-11-09 | Ronda de decisiones 1: Q1 decidida (D-A, `atrás` corta en `exploración` = `repasar_bolsillo`; AC-11, AC-12, AC-12b y AC-14 firmes, activada en 1) y Q2 decidida (D-B, D20-19: `I-05`/`I-06a` sin presentación nueva, releíbles con el repaso). Estado: pendiente de re-review. |
 | 2026-11-09 | Ronda de corrección 2 (informe cruzado ronda 5: W-4, W-5, W-6, W-7, N1-1, N4-1): fila de 10 y fila 1 corregida en Dependencies, `repasar_bolsillo` unificado, R8/R13 sin presentación de 9/10 para `I-05`/`I-06a`, orden presentación-gesto de 8 (R12, R16, AC-24), `repaso_pendiente` (R20, AC-12c), D20-20 a D20-22. Estado: Revisado (ronda de corrección 2) — pendiente de re-review. |
+| 2026-11-09 | Ronda de corrección 3 (informe cruzado ronda 6: R6-1, R6-2, R6-7): durezas alineadas con las declaradas por 8, 4, 5, 21, 1, 9, 10 (D20-23), fila de 1 sin la discrepancia obsoleta, `repasar_bolsillo` en el log, `t_mostrar_item_s` y `t_tapa_s` como propuesta † (D20-24). Estado: Revisado (ronda de corrección 3) — pendiente de re-review. |
