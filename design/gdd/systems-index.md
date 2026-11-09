@@ -30,20 +30,20 @@ Se excluyen a propósito combate, IA de enemigos, economía, progresión, red y 
 | 6 | Ajustes persistentes (inferred) | Persistence | MVP | Revisado (ronda de corrección 4) — pendiente de re-review | design/gdd/ajustes-persistentes.md | 1 (blanda; la declaran 6 y 1; sin ciclo) · blanda 18 |
 | 7 | Interacción e inspección | Gameplay | MVP | Revisado (ronda de corrección 4) — pendiente de re-review | design/gdd/interaccion-e-inspeccion.md | 1, 2, 4, 18 (blandas: 3, 6) |
 | 8 | Control de acceso (puertas, tarjetas, lectores, ascensor `C08`, cajón `A05`) | Gameplay | MVP | Revisado (ronda 6) — sin bloqueantes | design/gdd/control-de-acceso.md | 3, 4, 7, 18, 20 (duras; 8 → 20 dura, 20 no depende de 8) · indirecta 22 (vía 3, por `llamada_completada`; la declara 8 y 22 la repite) · blandas 2, 5, 9, 21, 23, 28/29 |
-| 9 | Marco de puzles (inferred) | Gameplay | MVP | Revisado (ronda de corrección 4) — pendiente de re-review | design/gdd/marco-de-puzles.md | 3, 4, 7, 10, 19 (duras; 9 ↔ 10 circular, ver Circular Dependencies), 18 (dura en validación) · blandas 2, 5, 6, 20, 23, 25, 26 · dependen de 9 (no al revés): 8 (blanda), 21 y 22 (indirectas; 22 la declara), 10, 11–16 y 17 (duras) |
-| 10 | Caja y compartimentos | Gameplay | MVP | Revisado (ronda 6) — sin bloqueantes | design/gdd/caja-y-compartimentos.md | 3, 4, 7, 9 (duras; 9 ↔ 10 circular) · blandas 5, 20, 23 · indirectas 1, 2, 21 (las declara 10) |
-| 11 | Puzle 1 · Cronología | Gameplay | MVP | Borrador (lote Feature 3) | design/gdd/puzle-1-cronologia.md | 9, 18, 19, 20 |
-| 12 | Puzle 2 · Memorando en el cristal | Gameplay | MVP | Borrador (lote Feature 3) | design/gdd/puzle-2-memorando-en-el-cristal.md | 7, 9, 18 |
-| 13 | Puzle 3 · Encaje de la foto | Gameplay | MVP | Borrador (lote Feature 3) | design/gdd/puzle-3-encaje-de-la-foto.md | 6, 9, 10 |
-| 14 | Puzle 4 · Tablero de tareas | Gameplay | MVP | Borrador (lote Feature 3) | design/gdd/puzle-4-tablero-de-tareas.md | 9, 10, 18 |
-| 15 | Puzle 5 · Espejo de la diferencia | Gameplay | MVP | Borrador (lote Feature 3) | design/gdd/puzle-5-espejo-de-la-diferencia.md | 6, 9, 10, 13 |
-| 16 | Puzle 6 · Decisión | Gameplay | MVP | Borrador (lote Feature 3) | design/gdd/puzle-6-decision.md | 9, 10, 18 |
+| 9 | Marco de puzles (inferred) | Gameplay | MVP | Revisado (ronda de corrección 4) — pendiente de re-review | design/gdd/marco-de-puzles.md | 3, 4, 7, 10, 19 (duras; 9 ↔ 10 circular, ver Circular Dependencies), 18 (dura en validación) · blandas 2, 5, 6, 20, 23, 25, 26 · dependen de 9 (no al revés): 8 (blanda), 21 y 22 (indirectas; 22 la declara), 10 y 11–16 (duras; 11 a 16 declaran 9 como dura, 15 incluida) y 17 (dura) |
+| 10 | Caja y compartimentos | Gameplay | MVP | Revisado (ronda 6) — sin bloqueantes | design/gdd/caja-y-compartimentos.md | 3, 4, 7, 9 (duras; 9 ↔ 10 circular) · blandas 5, 20, 23 · indirectas 1, 2, 21 (las declara 10) · dependen de 10 (duras; la dureza la declara el dependiente): 13, 14, 15, 16 |
+| 11 | Puzle 1 · Cronología | Gameplay | MVP | Borrador (lote Feature 3) — revisado una vez; pendiente de re-review | design/gdd/puzle-1-cronologia.md | 9, 18, 19, 20 (duras; la dureza la declara 11; 18 dura en validación) · blandas 6 (`reducir_movimiento`), 17, 23 · indirecta 5 · dependen de 11: 8 (blanda), 7 (la declara 7), 20 (contraparte) |
+| 12 | Puzle 2 · Memorando en el cristal | Gameplay | MVP | Borrador (lote Feature 3) — revisado una vez; pendiente de re-review | design/gdd/puzle-2-memorando-en-el-cristal.md | 7, 9, 18 (duras; 18 dura en validación) · blandas 3, 4, 2, 6 (el índice solo lista las duras) · dependen de 12: 17 (lee `memo_leido`), 21 (indirecta), 5, 23, 28/29 |
+| 13 | Puzle 3 · Encaje de la foto | Gameplay | MVP | Borrador (lote Feature 3) — revisado una vez; pendiente de re-review | design/gdd/puzle-3-encaje-de-la-foto.md | 9, 10 (duras), 7 (dura, transitiva vía 9) · blandas 6 (`asistencia_encaje`), 2, 18 · dependen de 13: 20 (dura, `caja_c1`), 15 (blanda, de contenido: la foto completa que reutiliza `D01c/box_photo`; la declara 15), 5, 17, 23, 28 |
+| 14 | Puzle 4 · Tablero de tareas | Gameplay | MVP | Borrador (lote Feature 3) — revisado una vez; pendiente de re-review | design/gdd/puzle-4-tablero-de-tareas.md | 9, 10, 18 (duras; 18 dura en validación y datos) · blandas 7, 3, 2, 6, 17 (vía 9) · dependen de 14: 22 (indirecta, por `t4_decision` vía 3; la declara 22), 16 (dura, por `caja_c2`), 20 (blanda), 10 y 9 (recíprocas), 5 (indirecta) |
+| 15 | Puzle 5 · Espejo de la diferencia | Gameplay | MVP | Borrador (lote Feature 3) — revisado una vez; pendiente de re-review | design/gdd/puzle-5-espejo-de-la-diferencia.md | 9, 10 (duras), 6 y 13 (blandas; 13 solo de contenido: la foto) · indirectas 7, 23/26, 3/5, 17/18, 1/2 · dependen de 15: 9 y 10 (duras), 29 (blanda) |
+| 16 | Puzle 6 · Decisión | Gameplay | MVP | Borrador (lote Feature 3) — revisado una vez; pendiente de re-review | design/gdd/puzle-6-decision.md | 9, 10, 18 (duras; 9 ↔ 10 circular aceptada) · blandas 20, 7 (vía 9), 17 · indirectas 3 · sin dependencia de 6 · dependen de 16: 20 y 22 (declaran ellos; 22 indirecta por `carta_variante`) |
 | 17 | Sistema de pistas (hasta 3 niveles; 2 en el puzle 6) | Gameplay | Vertical Slice | Not Started | — | 3, 9, 18 |
 | 18 | Base de contenido narrativo (líneas, documentos, claves de traducción) | Narrative | MVP | Revisado (ronda de corrección 3) — pendiente de re-review | design/gdd/base-de-contenido-narrativo.md | — |
 | 19 | Ordenador, correo e impresora | Narrative | MVP | Revisado (ronda 6) — sin bloqueantes | design/gdd/ordenador-correo-impresora.md | 1, 3, 4, 7, 18, 20 (duras; 9 depende de 19, dura) · blandas 2, 6, 17, 23, 25/30 · indirecta 21 (vía 7, sin camino en el slice) |
 | 20 | Documentos y bolsillo | Narrative | MVP | Revisado (ronda 6) — sin bloqueantes | design/gdd/documentos-y-bolsillo.md | 3, 4, 7, 18 (duras) · blandas 1, 2, 10 · indirecta 5 · dependen de 20: 8 y 19 (duras), 9, 17 y 24 (blandas; 9 → 20 la declara 9: 20 no depende de 9), 21 (indirecta, la declara 21) |
 | 21 | Director de escenas (escenas 1–8, disparadores, eventos temporizados) | Narrative | MVP | Revisado (ronda de corrección 6) — pendiente de re-review | design/gdd/director-de-escenas.md | 1, 3, 4, 18 (duras) · blandas 5, 6, 7, 8 · indirectas 2, 9, 10, 20, 22 (22 vía 3, por `llamada_iniciada`/`llamada_completada`; la declara 21 y 22 la repite) · sin dependencia 23, 26, 27, 28 (19 ↔ 21 indirecta vía 7, la declara 19; 21 no depende de 19) |
-| 22 | Llamada telefónica | Narrative | MVP | Revisado (ronda de corrección 6) — pendiente de re-review | design/gdd/llamada-telefonica.md | 1, 3, 5, 7, 18 (duras; la dureza la declara 22, el dependiente, y los proveedores la repiten) · blanda 2 · indirectas 8, 9 y 21 (vía 3; 8 y 21 la declaran como dependientes, 9 la declara 22) · sin dependencia 4, 6 · 23 y 26 (sin GDD): contrato ‡ fuera de dependencias (D22-25) |
+| 22 | Llamada telefónica | Narrative | MVP | Revisado (ronda de corrección 8) — pendiente de re-review | design/gdd/llamada-telefonica.md | 1, 3, 5, 7, 18 (duras; la dureza la declara 22, el dependiente, y los proveedores la repiten) · blanda 2 · indirectas 8, 9 y 21 (vía 3; 8 y 21 la declaran como dependientes, 9 la declara 22) · sin dependencia 4, 6 · 23 y 26 (sin GDD): contrato ‡ fuera de dependencias (D22-25) |
 | 23 | Director de audio | Audio | Vertical Slice | Not Started | — | 3, 6, 18 (blanda: 2) |
 | 24 | Prompt de interacción y feedback | UI | MVP | Not Started | — | 1, 7, 18 |
 | 25 | Menú de pausa | UI | MVP | Not Started | — | 1, 6, 18 (blanda: 5) |
@@ -274,7 +274,7 @@ Decisión del usuario: T4 «Carta a Dirección» acepta devolver o asignar; la e
 
 - **22 Llamada:** lee `t4_decision` para la variación de `VO_G_14` (propuesta en el GDD 18, pendiente de narrative-director/usuario; clave provisional `VO_G_14_ASG`, `VO_G_14` queda como línea de `returned`). Si el director de escenas (21) reproduce esa línea, el lector es 21; confirmar en su GDD.
 - **21 Director de escenas:** ~~lector alternativo de `t4_decision`~~ **resuelto en el GDD 21 (DT-6): no lo lee; lo lee 22.**
-- **14 Puzle 4 (GDD aún sin redactar):** T4 de doble salida (regla 12c del GDD 9); sin «No corresponde» en T4; la pista de nivel 3 no la toca.
+- **14 Puzle 4 (GDD en `design/gdd/puzle-4-tablero-de-tareas.md`, revisado una vez):** T4 de doble salida (regla 12c del GDD 9); sin «No corresponde» en T4; la pista de nivel 3 no la toca.
 - **Slice:** B.4, §10.4 y D.2 (20 hechos) autorizados y aplicados en el slice v0.3.2.
 
 ---
@@ -310,3 +310,17 @@ Aplica `reviews/dependencias-r7-review.md` (A1–A12) y `reviews/feature-batch-2
 ## Notas de la ronda de corrección 6 (2026-11-09): dureza común 8/21/22 y estados
 
 Aplica los últimos avisos de `reviews/` (22 y dependencias). **Regla común:** la dureza la declara el GDD dependiente y el proveedor la repite. **Fila 22:** indirectas 8, 9 y 21 (vía 3); 23 y 26 no se listan (contrato ‡ sin GDD). **Fila 8:** 22 pasa a Indirecta (vía 3). **Fila 21:** 22 pasa a Indirecta (vía 3). **Fila 6:** 1 es Blanda (no «dura de contrato»). **Fila 9:** relación Indirecta de 22 añadida. Filas 2, 5, 21 y 22: estado «Revisado (ronda de corrección 6) — pendiente de re-review» (cambios: D-44 en 2, D-53 en 5, DT-29 en 21, D22-30 en 22). `repasar_bolsillo` unificado como identificador.
+
+## Notas de la ronda de corrección 8 (2026-11-09): propagación del lote Feature 3 (GDDs 11 a 16)
+
+Propaga lo que piden los seis GDDs de puzle (sus secciones «Cambios requeridos en otros GDDs» y «Entradas para el registro») y el esquema v2 de 9 (regla 4b, D9-67 a D9-79). **Filas 11 a 16:** dependencias reales según la sección Dependencies de cada puzle (la dureza la declara el dependiente: 11 → 9, 18, 19, 20; 12 → 7, 9, 18, con blandas 3, 4, 2, 6; 13 → 9, 10 (+7 transitiva) con 6 blanda; 14 → 9, 10, 18; 15 → 9, 10 con 6 y 13 blandas (13 solo de contenido); 16 → 9, 10, 18); estado «Borrador (lote Feature 3) — revisado una vez; pendiente de re-review». **Fila 9:** 11 a 16 dependientes duros (15 incluida). **Fila 10:** 13 a 16 dependientes duros. **Fila 13:** 15 dependiente blando de contenido (lo declara 15). **Circulares:** sin cambio (9 ↔ 10 sigue aceptada; 16 → 9 → 10 y 16 → 10 → 9 la reproducen; 13 y 15 no añaden ciclos: la blanda 15 → 13 es de contenido y 13 no depende de 15). **14 ↔ 22:** indirecta por `t4_decision` (vía 3); 22 no calcula `p_oir`, que es métrica de playtest de 14 (P4-F4). **Registro:** constantes y fórmulas de P1 a P6 con sufijo `_P1`…`_P6`, `puzzles_schema_version` = 2 y `affordance_catalog` (8 nombres); `BOX_*` ya registrados por 10.
+
+**Preguntas de alcance pendientes (las decide el usuario o el director creativo):**
+- **D13-4 (bandeja):** 13 sigue B.3 (`REJECT`); `NONE` queda como propuesta (OQ 7 de 13).
+- **Silueta/tono de `slot_6`** (OQ 2 de 13; AC-25 condicionado).
+- **`VO_G_07`** (15; creative-director).
+- **`CARTA_A` y el botón B «La verdad»** (OQ 2 de 16).
+- **Asimetría Devolver/Asignar** en el puzle 4 (OQ 7 de 14).
+- **Rehacer la elección tras un cierre antes de guardar** (OQ 12 de 16; regla 22 de 9).
+- **Tiempo del puzle 2:** medir antes de fijarlo (Q12-2; F4 da 1,1–4,5 min frente al objetivo de F7).
+- **`cobertura_anexo_a.json`:** no existe (solo lo cita el registro); crearlo con `B04` y `B08` como `interactuable: false` o corregir la referencia.

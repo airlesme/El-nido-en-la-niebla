@@ -235,7 +235,160 @@ formulas:
 #       damage_cap in combat.md clamps at 999."
 #     added: 2026-03-26
 #     revised: ""
-
+  # --- Feature 3: puzles 1-6 (propagacion ronda 8) ---
+  - name: p1_attempt_fail_cost_s
+    status: active
+    source: design/gdd/puzle-1-cronologia.md
+    referenced_by: []
+    expression: "8*t_clic + delay_s + reset_after_s"
+    output: 5.3
+    unit: "s"
+    note: "F2; t_clic 0,4 s†"
+    added: 2026-11-09
+    revised: ""
+  - name: p1_bruteforce_worst_s
+    status: active
+    source: design/gdd/puzle-1-cronologia.md
+    referenced_by: []
+    expression: "23*p1_attempt_fail_cost_s + (8*t_clic + delay_s)"
+    output: 125.7
+    unit: "s"
+    note: "F2; la media sin repetir es 64,8 s"
+    added: 2026-11-09
+    revised: ""
+  - name: p1_time_central_s
+    status: active
+    source: design/gdd/puzle-1-cronologia.md
+    referenced_by: []
+    expression: "T_leer + T_trayectos + T_ordenar + T_fallos + T_desvio + T_cierre"
+    output: 177.5
+    output_range: [95.8, 272.8]
+    unit: "s"
+    note: "F4; objetivo F7 de marco-de-puzles 120-240 s; hipotesis sin medir"
+    added: 2026-11-09
+    revised: ""
+  - name: p2_clicks_to_target
+    status: active
+    source: design/gdd/puzle-2-memorando-en-el-cristal.md
+    referenced_by: []
+    expression: "(p* - p0) mod 4"
+    output_range: [0, 3]
+    unit: "clics"
+    note: "F1"
+    added: 2026-11-09
+    revised: ""
+  - name: p2_expected_time_min
+    status: active
+    source: design/gdd/puzle-2-memorando-en-el-cristal.md
+    referenced_by: []
+    expression: "F4 de puzle-2 (t_clic 0,8 s, t_paso 3,6 s)"
+    output_range: [1.1, 4.5]
+    nominal: 2.0
+    unit: "min"
+    note: "sin validar; recalculada ronda 7 (66,6 / 122,4 / 270,6 s); medir antes (Q12-2)"
+    added: 2026-11-09
+    revised: ""
+  - name: snap_acceptance_P3
+    status: active
+    source: design/gdd/puzle-3-encaje-de-la-foto.md
+    referenced_by: []
+    expression: "|c - p_i| <= r  AND  slot_i libre"
+    unit: "m"
+    note: "regla 10; r en {0,04; 0,10}"
+    added: 2026-11-09
+    revised: ""
+  - name: bruteforce_time_P3
+    status: active
+    source: design/gdd/puzle-3-encaje-de-la-foto.md
+    referenced_by: []
+    expression: "F2"
+    output: "T_peor ~ 30 s; T_media ~ 18 s"
+    unit: "s"
+    note: "comprobacion, no objetivo"
+    added: 2026-11-09
+    revised: ""
+  - name: expected_duration_P3
+    status: active
+    source: design/gdd/puzle-3-encaje-de-la-foto.md
+    referenced_by: []
+    expression: "F3"
+    output_range: [65, 150]
+    nominal: 100
+    unit: "s"
+    note: "mediana ~ 100 s; frente a F7 de 9 (90-180 s)"
+    added: 2026-11-09
+    revised: ""
+  - name: p4_bruteforce_worst_s
+    status: active
+    source: design/gdd/puzle-4-tablero-de-tareas.md
+    referenced_by: []
+    output_range: [2.4, 22.8]
+    unit: "s"
+    note: "T1-T3, t_clic 0,4 s; T4 no es forzable"
+    added: 2026-11-09
+    revised: ""
+  - name: p4_expected_duration_s
+    status: active
+    source: design/gdd/puzle-4-tablero-de-tareas.md
+    referenced_by: []
+    output_range: [89.4, 406.6]
+    nominal: 176.8
+    unit: "s"
+    note: "contraste con F7 de 9 (2-4 min); estimaciones. p_oir, r_T4 y p_RET son metrica de playtest de 14 (P4-F4), no de 22 ni de la regla 32 de 9"
+    added: 2026-11-09
+    revised: ""
+  - name: v_max_deg_s_P5
+    status: active
+    source: design/gdd/puzle-5-espejo-de-la-diferencia.md
+    referenced_by: []
+    expression: "W / hold_s"
+    output: "7,5 (normal) / 15 (asistido)"
+    unit: "deg/s"
+    note: "F-P5-2"
+    added: 2026-11-09
+    revised: ""
+  - name: T_seq_P5
+    status: active
+    source: design/gdd/puzle-5-espejo-de-la-diferencia.md
+    referenced_by: []
+    expression: "1,2 + 0,8 + T_line"
+    nominal: 16.0
+    unit: "s"
+    note: "F-P5-4 (instancia de F8 de 9); rango 2,0 + t_terminada a 18,0"
+    added: 2026-11-09
+    revised: ""
+  - name: T_P5_modelo
+    status: active
+    source: design/gdd/puzle-5-espejo-de-la-diferencia.md
+    referenced_by: []
+    expression: "F-P5-5 (T_ent 2,4 s)"
+    output_range: [56.2, 188.2]
+    unit: "s"
+    note: "contrastar con F7 de 9 (1,5-3 min, revelacion incluida, D15-7)"
+    added: 2026-11-09
+    revised: ""
+  - name: t_carta_p6
+    status: active
+    source: design/gdd/puzle-6-decision.md
+    referenced_by: []
+    expression: "0,3 + BOX_C4_OPEN"
+    output: 1.9
+    output_range: [1.5, 1.9]
+    unit: "s"
+    note: "F2"
+    added: 2026-11-09
+    revised: ""
+  - name: T_P6
+    status: active
+    source: design/gdd/puzle-6-decision.md
+    referenced_by: []
+    expression: "t_entrada + t_decision + t_presentacion + t_lectura + t_salida"
+    output_range: [11.4, 104.6]
+    nominal: 28.4
+    unit: "s"
+    note: "F3; minimo plausible 11,4 s; tipico ~ 28 s"
+    added: 2026-11-09
+    revised: ""
 
 # ─── CONSTANTS ───────────────────────────────────────────────────────────────
 # Named numerical values referenced across multiple systems.
@@ -531,7 +684,7 @@ constants:
   - name: close_view_after_s
     status: active
     source: design/gdd/marco-de-puzles.md
-    referenced_by: [design/gdd/interaccion-e-inspeccion.md]
+    referenced_by: [design/gdd/interaccion-e-inspeccion.md, design/gdd/puzle-1-cronologia.md, design/gdd/puzle-5-espejo-de-la-diferencia.md]
     value: 1.5
     unit: s
     note: "Sustituye a t_auto_salida_s de 7"
@@ -540,7 +693,7 @@ constants:
   - name: delay_s_P1
     status: active
     source: design/slice/slice-v0.3.md
-    referenced_by: [design/gdd/marco-de-puzles.md]
+    referenced_by: [design/gdd/marco-de-puzles.md, design/gdd/puzle-1-cronologia.md]
     value: 0.6
     unit: s
     note: "slice B.1"
@@ -549,7 +702,7 @@ constants:
   - name: snap_radius_m_P3
     status: active
     source: design/slice/slice-v0.3.md
-    referenced_by: [design/gdd/marco-de-puzles.md]
+    referenced_by: [design/gdd/marco-de-puzles.md, design/gdd/puzle-3-encaje-de-la-foto.md]
     value: 0.04
     unit: m
     note: "Asistido (asistencia_encaje): 0,10 m. Slice B.3"
@@ -558,7 +711,7 @@ constants:
   - name: theta_solution_deg_P5
     status: active
     source: design/slice/slice-v0.3.md
-    referenced_by: [design/gdd/marco-de-puzles.md]
+    referenced_by: [design/gdd/marco-de-puzles.md, design/gdd/puzle-5-espejo-de-la-diferencia.md]
     value: 40
     unit: deg
     note: "tol_deg 3 (asistido 6). Slice B.5"
@@ -567,7 +720,7 @@ constants:
   - name: hold_s_P5
     status: active
     source: design/slice/slice-v0.3.md
-    referenced_by: [design/gdd/marco-de-puzles.md]
+    referenced_by: [design/gdd/marco-de-puzles.md, design/gdd/puzle-5-espejo-de-la-diferencia.md]
     value: 0.8
     unit: s
     added: 2026-11-09
@@ -575,7 +728,7 @@ constants:
   - name: reveal_fade_s_P5
     status: active
     source: design/slice/slice-v0.3.md
-    referenced_by: [design/gdd/marco-de-puzles.md]
+    referenced_by: [design/gdd/marco-de-puzles.md, design/gdd/puzle-5-espejo-de-la-diferencia.md]
     value: 1.2
     unit: s
     note: "reveal_outline_s_P5 0,8; line_grace_s 2,0; suma nominal 16,0 s (F8 del GDD 9)"
@@ -584,7 +737,7 @@ constants:
   - name: line_fallback_s_P5
     status: active
     source: design/slice/slice-v0.3.md
-    referenced_by: [design/gdd/marco-de-puzles.md]
+    referenced_by: [design/gdd/marco-de-puzles.md, design/gdd/puzle-5-espejo-de-la-diferencia.md]
     value: 14.0
     unit: s
     added: 2026-11-09
@@ -601,7 +754,7 @@ constants:
   - name: idle_s_P3_N3
     status: active
     source: design/slice/slice-v0.3.md
-    referenced_by: [design/gdd/marco-de-puzles.md]
+    referenced_by: [design/gdd/marco-de-puzles.md, design/gdd/puzle-3-encaje-de-la-foto.md]
     value: 60
     unit: s
     note: "idle_s_P6_N1 10 s e idle_s_P6_N2 20 s (P6 solo tiene dos niveles de pista); idle_move_px_P3 40 px"
@@ -710,7 +863,7 @@ constants:
   - name: asistencia_rotacion_deg
     status: active
     source: design/gdd/ajustes-persistentes.md
-    referenced_by: [design/gdd/marco-de-puzles.md]
+    referenced_by: [design/gdd/marco-de-puzles.md, design/gdd/puzle-5-espejo-de-la-diferencia.md]
     value: 6
     unit: deg
     note: "Provisional (±6°, ajuste asistencia_rotacion); tolerancia normal tol_deg = 3° (GDD 9)"
@@ -719,7 +872,7 @@ constants:
   - name: tol_deg_P5
     status: active
     source: design/gdd/marco-de-puzles.md
-    referenced_by: [design/gdd/ajustes-persistentes.md]
+    referenced_by: [design/gdd/ajustes-persistentes.md, design/gdd/puzle-5-espejo-de-la-diferencia.md]
     value: 3
     unit: deg
     note: "Tolerancia normal del puzle 5 (asistido 6°)"
@@ -783,7 +936,7 @@ constants:
   - name: game_state_facts
     status: active
     source: design/gdd/estado-y-bus-de-eventos.md
-    referenced_by: [design/slice/slice-v0.3.md, design/gdd/guardado-y-carga.md, design/gdd/marco-de-puzles.md, design/gdd/base-de-contenido-narrativo.md]
+    referenced_by: [design/slice/slice-v0.3.md, design/gdd/guardado-y-carga.md, design/gdd/marco-de-puzles.md, design/gdd/base-de-contenido-narrativo.md, design/gdd/puzle-4-tablero-de-tareas.md, design/gdd/puzle-6-decision.md]
     value: 20
     unit: facts
     note: "tipo / inicial / owner. correos_leidos bool falso 19; archivo_abierto bool falso 9; formulario_leido bool falso 20; tarjeta_B bool falso 20; tarjeta_D bool falso 20; memo_leido bool falso 9; pos_L/pos_C/pos_R int 1-4 inicial 2 owner 9; caja_c1..c4 bool falso 9; pendiente_revelacion bool falso 9 (reversible: se escribe al iniciar la revelación, se limpia al terminar); caja_completa bool derivado falso (3); carta_variante enum A/B/C 9; llamada_iniciada bool falso 22; respuesta_llamada enum A-D 22; llamada_completada bool falso 22; t4_decision enum returned/assigned sin fijar 9 (nuevo, D-B1 2026-11-09: 19 en el slice D.2 + 1; lo escribe el marco al resolver el puzle 4, antes de caja_c2; lo lee 22 Llamada para una variación de VO_G_14; recogido en slice v0.3.2)"
@@ -930,7 +1083,7 @@ constants:
   - name: reveal_outline_s_P5
     status: active
     source: design/slice/slice-v0.3.md
-    referenced_by: [design/gdd/marco-de-puzles.md]
+    referenced_by: [design/gdd/marco-de-puzles.md, design/gdd/puzle-5-espejo-de-la-diferencia.md]
     value: 0.8
     unit: s
     added: 2026-11-09
@@ -938,7 +1091,7 @@ constants:
   - name: line_grace_s
     status: active
     source: design/gdd/marco-de-puzles.md
-    referenced_by: [design/gdd/llamada-telefonica.md]
+    referenced_by: [design/gdd/llamada-telefonica.md, design/gdd/puzle-5-espejo-de-la-diferencia.md]
     value: 2.0
     unit: s
     added: 2026-11-09
@@ -946,7 +1099,7 @@ constants:
   - name: idle_s_P6_N1
     status: active
     source: design/gdd/marco-de-puzles.md
-    referenced_by: []
+    referenced_by: [design/gdd/puzle-6-decision.md]
     value: 10
     unit: s
     note: "idle_s_P6_N2 = 20 s (el P6 solo tiene dos niveles)"
@@ -955,7 +1108,7 @@ constants:
   - name: idle_move_px_P3
     status: active
     source: design/gdd/marco-de-puzles.md
-    referenced_by: []
+    referenced_by: [design/gdd/puzle-3-encaje-de-la-foto.md]
     value: 40
     unit: px
     added: 2026-11-09
@@ -963,7 +1116,7 @@ constants:
   - name: assisted_snap_radius_m_P3
     status: active
     source: design/gdd/marco-de-puzles.md
-    referenced_by: [design/gdd/ajustes-persistentes.md]
+    referenced_by: [design/gdd/ajustes-persistentes.md, design/gdd/puzle-3-encaje-de-la-foto.md]
     value: 0.10
     unit: m
     note: "Con asistencia_encaje (normal: snap_radius_m_P3 = 0,04 m)"
@@ -972,7 +1125,7 @@ constants:
   - name: highlight_s_P1
     status: active
     source: design/gdd/marco-de-puzles.md
-    referenced_by: [design/slice/slice-v0.3.md]
+    referenced_by: [design/slice/slice-v0.3.md, design/gdd/puzle-1-cronologia.md]
     value: 3.0
     unit: s
     range: [1.5, 5.0]
@@ -1188,7 +1341,7 @@ constants:
   - name: BOX_C3_OPEN
     status: active
     source: design/gdd/caja-y-compartimentos.md
-    referenced_by: [design/gdd/interaccion-e-inspeccion.md, design/gdd/marco-de-puzles.md]
+    referenced_by: [design/gdd/interaccion-e-inspeccion.md, design/gdd/marco-de-puzles.md, design/gdd/puzle-5-espejo-de-la-diferencia.md]
     value: 1.4
     unit: "s"
     range: [1.2, 1.6]
@@ -1198,7 +1351,7 @@ constants:
   - name: BOX_C4_OPEN
     status: active
     source: design/gdd/caja-y-compartimentos.md
-    referenced_by: [design/gdd/interaccion-e-inspeccion.md, design/gdd/marco-de-puzles.md]
+    referenced_by: [design/gdd/interaccion-e-inspeccion.md, design/gdd/marco-de-puzles.md, design/gdd/puzle-6-decision.md]
     value: 1.6
     unit: "s"
     range: [1.2, 1.6]
@@ -1751,6 +1904,488 @@ constants:
     value: "SFX_CALL_BREATH ‡; SUB_BREATH_BROKEN (texto provisional, marcador de pendiente); UI_LLAMADA_OPCION_A..D ‡"
     unit: "id"
     note: "IDs propuestos por 22 y registrados en la regla 23 de 18 (no son del §12: no cambian el recuento de 28 ni el de 8 PISTA_*). Existentes usados: V02, VO_G_12A/B/C, VO_G_13A-D, VO_G_14_RET/ASG, SFX_PHONE_BUZZ, SFX_BREATH_BROKEN, SFX_PHONE_END, ANIM_PHONE_PICKUP, HAND_PHONE_HOLD, HAND_PHONE_PUTDOWN, VO_V_12A-D (consumidas por 21)"
+    added: 2026-11-09
+    revised: ""
+  # --- Feature 3: puzles 1-6 (propagacion ronda 8). † valor sin validar; ‡ pendiente de otro GDD; ▲ a validar en playtest ---
+  - name: shake_s_P1
+    status: active
+    source: design/gdd/puzle-1-cronologia.md
+    referenced_by: []
+    value: 1.2
+    unit: "s"
+    range: [0.6, 2.0]
+    note: "slice B.1"
+    added: 2026-11-09
+    revised: ""
+  - name: reset_after_s_P1
+    status: active
+    source: design/gdd/puzle-1-cronologia.md
+    referenced_by: []
+    value: 1.5
+    unit: "s"
+    range: [0.6, 2.0]
+    note: "<= lock_max_s (2,0); slice B.1"
+    added: 2026-11-09
+    revised: ""
+  - name: unlock_sfx_s_P1
+    status: active
+    source: design/gdd/puzle-1-cronologia.md
+    referenced_by: []
+    value: 1.4
+    unit: "s"
+    range: [0.8, 2.5]
+    note: "SFX_UNLOCK; slice B.1"
+    added: 2026-11-09
+    revised: ""
+  - name: solution_sequence_P1
+    status: active
+    source: design/gdd/puzle-1-cronologia.md
+    referenced_by: []
+    value: [2, 1, 3, 4]
+    unit: "ref"
+    note: "H1..H4; derivada de (dia, hora) de los correos (R17); prueba AC-3. P1_CLOSE_VIEW_AFTER_S de 11 = close_view_after_s (1,5 s, ya registrado; no se duplica)"
+    added: 2026-11-09
+    revised: ""
+  - name: slot_count_P1
+    status: active
+    source: design/gdd/puzle-1-cronologia.md
+    referenced_by: []
+    value: 4
+    unit: "huecos"
+    note: "slice B.1; 24 permutaciones"
+    added: 2026-11-09
+    revised: ""
+  - name: chip_pitch_px_P1
+    status: active
+    source: design/gdd/puzle-1-cronologia.md
+    referenced_by: []
+    value: 150
+    unit: "px"
+    range: [128, 200]
+    note: "R1+R2 de Entrada con R=64; layout de referencia (R14)"
+    added: 2026-11-09
+    revised: ""
+  - name: slot_pitch_px_P1
+    status: active
+    source: design/gdd/puzle-1-cronologia.md
+    referenced_by: []
+    value: 200
+    unit: "px"
+    range: [128, 260]
+    note: "idem chip_pitch_px_P1"
+    added: 2026-11-09
+    revised: ""
+  - name: view_elements_C05_P1
+    status: active
+    source: design/gdd/puzle-1-cronologia.md
+    referenced_by: []
+    value: "C05/slot_1..4, C05/paper/ref_1..4, C05/paper/stamp_1..4"
+    unit: ""
+    note: "IDs de elemento de la vista C05 (R4); los stamp no son clicables (marcas decorativas; HIGHLIGHT admitido por D9-72)"
+    added: 2026-11-09
+    revised: ""
+  - name: lamp_count_P2
+    status: active
+    source: design/gdd/puzle-2-memorando-en-el-cristal.md
+    referenced_by: []
+    value: 3
+    unit: "lamparas"
+    note: "B01-B03 (L, C, R)"
+    added: 2026-11-09
+    revised: ""
+  - name: positions_P2
+    status: active
+    source: design/gdd/puzle-2-memorando-en-el-cristal.md
+    referenced_by: []
+    value: 4
+    unit: "posiciones"
+    note: "por lampara"
+    added: 2026-11-09
+    revised: ""
+  - name: initial_pos_P2
+    status: active
+    source: design/gdd/puzle-2-memorando-en-el-cristal.md
+    referenced_by: []
+    value: 2
+    unit: "pos"
+    note: "pos_L/C/R inicial (hechos, owner 9)"
+    added: 2026-11-09
+    revised: ""
+  - name: solution_P2
+    status: active
+    source: design/gdd/puzle-2-memorando-en-el-cristal.md
+    referenced_by: []
+    value: [3, 1, 4]
+    unit: "pos (L,C,R)"
+    note: "slice B.2"
+    added: 2026-11-09
+    revised: ""
+  - name: combinations_P2
+    status: active
+    source: design/gdd/puzle-2-memorando-en-el-cristal.md
+    referenced_by: []
+    value: 64
+    unit: "comb."
+    note: "4^3"
+    added: 2026-11-09
+    revised: ""
+  - name: clicks_worst_case_P2
+    status: active
+    source: design/gdd/puzle-2-memorando-en-el-cristal.md
+    referenced_by: []
+    value: 9
+    unit: "clics"
+    note: "F1"
+    added: 2026-11-09
+    revised: ""
+  - name: clicks_slice_P2
+    status: active
+    source: design/gdd/puzle-2-memorando-en-el-cristal.md
+    referenced_by: []
+    value: 6
+    unit: "clics"
+    note: "F1; solucion del slice desde p0 = 2"
+    added: 2026-11-09
+    revised: ""
+  - name: lamp_turn_s_P2
+    status: active
+    source: design/gdd/puzle-2-memorando-en-el-cristal.md
+    referenced_by: []
+    value: 0.4
+    unit: "s"
+    note: "† PROPUESTA; giro de lampara"
+    added: 2026-11-09
+    revised: ""
+  - name: halo_distance_m_P2
+    status: active
+    source: design/gdd/puzle-2-memorando-en-el-cristal.md
+    referenced_by: []
+    value: 1.5
+    unit: "m"
+    note: "† PROPUESTA; BEAM_HALO"
+    added: 2026-11-09
+    revised: ""
+  - name: mirror_preview_s_P2
+    status: active
+    source: design/gdd/puzle-2-memorando-en-el-cristal.md
+    referenced_by: []
+    value: 2.0
+    unit: "s"
+    note: "† PROPUESTA; MIRROR_PREVIEW"
+    added: 2026-11-09
+    revised: ""
+  - name: entities_P2
+    status: active
+    source: design/gdd/puzle-2-memorando-en-el-cristal.md
+    referenced_by: []
+    value: "B01-B03 (lamparas L, C, R); B04 (ventanal, no interactuable); B08 (marcas, decor: true); fragmentos F1-F3 de DOC_01; sello de Direccion (distractor)"
+    unit: ""
+    note: "Entidades de P2; B04 y B08 interactuable: false en cobertura_anexo_a.json (el fichero no existe aun; Q12 de 12)"
+    added: 2026-11-09
+    revised: ""
+  - name: slot_pitch_m_P3
+    status: active
+    source: design/gdd/puzle-3-encaje-de-la-foto.md
+    referenced_by: []
+    value: 0.12
+    unit: "m"
+    note: "† D13-12; minimo 256/ppm (F1)"
+    added: 2026-11-09
+    revised: ""
+  - name: slot_size_m_P3
+    status: active
+    source: design/gdd/puzle-3-encaje-de-la-foto.md
+    referenced_by: []
+    value: 0.1
+    unit: "m"
+    note: "†"
+    added: 2026-11-09
+    revised: ""
+  - name: piece_size_m_P3
+    status: active
+    source: design/gdd/puzle-3-encaje-de-la-foto.md
+    referenced_by: []
+    value: 0.09
+    unit: "m"
+    note: "†"
+    added: 2026-11-09
+    revised: ""
+  - name: view_center_m_P3
+    status: active
+    source: design/gdd/puzle-3-encaje-de-la-foto.md
+    referenced_by: []
+    value: [0.185, 0]
+    unit: "m"
+    note: "† D13-16; margen >= 0,09 m en 16:10 (F1b)"
+    added: 2026-11-09
+    revised: ""
+  - name: snap_anim_s_P3
+    status: active
+    source: design/gdd/puzle-3-encaje-de-la-foto.md
+    referenced_by: []
+    value: 0.2
+    unit: "s"
+    note: "† coincide con SFX_SNAP de B.3"
+    added: 2026-11-09
+    revised: ""
+  - name: t_centrar_s_P3
+    status: active
+    source: design/gdd/puzle-3-encaje-de-la-foto.md
+    referenced_by: []
+    value: 0.08
+    unit: "s"
+    note: "† D13-3"
+    added: 2026-11-09
+    revised: ""
+  - name: piece_count_P3
+    status: active
+    source: design/gdd/puzle-3-encaje-de-la-foto.md
+    referenced_by: []
+    value: 5
+    unit: "piezas"
+    note: "slice B.3; required = 5"
+    added: 2026-11-09
+    revised: ""
+  - name: slot_count_P3
+    status: active
+    source: design/gdd/puzle-3-encaje-de-la-foto.md
+    referenced_by: []
+    value: 6
+    unit: "huecos"
+    note: "slice B.3"
+    added: 2026-11-09
+    revised: ""
+  - name: empty_slot_count_P3
+    status: active
+    source: design/gdd/puzle-3-encaje-de-la-foto.md
+    referenced_by: []
+    value: 1
+    unit: "huecos"
+    note: "slice B.3; slot_6 vacio (silueta/tono abiertos, OQ 2 de 13)"
+    added: 2026-11-09
+    revised: ""
+  - name: hint_effect_ids_P3
+    status: active
+    source: design/gdd/puzle-3-encaje-de-la-foto.md
+    referenced_by: []
+    value: ["SLOT_SILHOUETTES", "ROW_NUMBER_ON_HOLD", "CORRECT_SLOT_OUTLINE"]
+    unit: ""
+    note: "D13-7; sin claves PISTA_*; ver affordance_catalog"
+    added: 2026-11-09
+    revised: ""
+  - name: no_corresponde_s
+    status: active
+    source: design/gdd/puzle-4-tablero-de-tareas.md
+    referenced_by: []
+    value: 1.5
+    unit: "s"
+    range: [1.0, 3.0]
+    note: "slice B.4; solo T1-T3; no bloquea la entrada"
+    added: 2026-11-09
+    revised: ""
+  - name: options_per_card_P4
+    status: active
+    source: design/gdd/puzle-4-tablero-de-tareas.md
+    referenced_by: []
+    value: 10
+    unit: "count"
+    note: "3 urgencias x 3 responsables + Devolver"
+    added: 2026-11-09
+    revised: ""
+  - name: min_element_separation_px_P4
+    status: active
+    source: design/gdd/puzle-4-tablero-de-tareas.md
+    referenced_by: []
+    value: 128
+    unit: "px"
+    range: [128, 176]
+    note: "R = 64 por elemento (regla 22 de 7)"
+    added: 2026-11-09
+    revised: ""
+  - name: dt_max_P5
+    status: active
+    source: design/gdd/puzle-5-espejo-de-la-diferencia.md
+    referenced_by: []
+    value: 0.1
+    unit: "s"
+    range: [0.05, 0.2]
+    note: "Tope por fotograma del acumulador (F2 de 9)"
+    added: 2026-11-09
+    revised: ""
+  - name: theta_initial_deg_P5
+    status: active
+    source: design/gdd/puzle-5-espejo-de-la-diferencia.md
+    referenced_by: []
+    value: 0
+    unit: "deg"
+    range: [0, 90]
+    note: "fuera de la ventana asistida"
+    added: 2026-11-09
+    revised: ""
+  - name: theta_range_deg_P5
+    status: active
+    source: design/gdd/puzle-5-espejo-de-la-diferencia.md
+    referenced_by: []
+    value: [0, 90]
+    unit: "deg"
+    note: "Recorrido del marco (slice B.5)"
+    added: 2026-11-09
+    revised: ""
+  - name: mark_step_deg_P5
+    status: active
+    source: design/gdd/puzle-5-espejo-de-la-diferencia.md
+    referenced_by: []
+    value: 5
+    unit: "deg"
+    range: [5, 15]
+    note: "Marcas cada 5 grados"
+    added: 2026-11-09
+    revised: ""
+  - name: theta_settle_s_P5
+    status: active
+    source: design/gdd/puzle-5-espejo-de-la-diferencia.md
+    referenced_by: []
+    value: 0.3
+    unit: "s"
+    range: [0, 0.6]
+    note: "▲ propuesto, validar en playtest; tween de recolocacion a theta*"
+    added: 2026-11-09
+    revised: ""
+  - name: hint_highlight_s_P5
+    status: active
+    source: design/gdd/puzle-5-espejo-de-la-diferencia.md
+    referenced_by: []
+    value: 3.0
+    unit: "s"
+    range: [2.0, 5.0]
+    note: "▲ propuesto, validar en playtest; HIGHLIGHT de N1 y N2"
+    added: 2026-11-09
+    revised: ""
+  - name: ajar_cm_P5
+    status: active
+    source: design/gdd/puzle-5-espejo-de-la-diferencia.md
+    referenced_by: []
+    value: 2
+    unit: "cm"
+    range: [1, 4]
+    note: "Entreabierto (slice B.5); box_ajar_s y box_ajar_visible_dist_m de 10 no lo duplican (son s y m)"
+    added: 2026-11-09
+    revised: ""
+  - name: view_elements_D01c_P5
+    status: active
+    source: design/gdd/puzle-5-espejo-de-la-diferencia.md
+    referenced_by: []
+    value: "D01c/frame, D01c/reflection, D01c/box_photo, D01c/marks, D01c/mark_40, D01c/speaker"
+    unit: ""
+    note: "Elementos de la vista de P5 (IDs con prefijo de vista)"
+    added: 2026-11-09
+    revised: ""
+  - name: affordance_ext_P5
+    status: active
+    source: design/gdd/puzle-5-espejo-de-la-diferencia.md
+    referenced_by: []
+    value: ["MARK_LIT", "SFX_FRAME_TURN"]
+    unit: ""
+    note: "‡ MARK_LIT: afordancia de pista nivel 3 (ver affordance_catalog); SFX_FRAME_TURN: lazo de giro opcional (propuesta)"
+    added: 2026-11-09
+    revised: ""
+  - name: button_ids_P6
+    status: active
+    source: design/gdd/puzle-6-decision.md
+    referenced_by: []
+    value: ["D01d/button_A", "D01d/button_B", "D01d/button_C"]
+    unit: ""
+    note: "A «Estoy bien», B «La verdad», C «Todavia no» (regla 4)"
+    added: 2026-11-09
+    revised: ""
+  - name: choices_P6
+    status: active
+    source: design/gdd/puzle-6-decision.md
+    referenced_by: []
+    value: ["A", "B", "C"]
+    unit: "enum"
+    note: "enum de choice y de carta_variante; sin D (reglas 4 y 10)"
+    added: 2026-11-09
+    revised: ""
+  - name: commit_on_P6
+    status: active
+    source: design/gdd/puzle-6-decision.md
+    referenced_by: []
+    value: "SELECT_SAME_ELEMENT"
+    unit: ""
+    note: "‡ esquema v2 de 9 (D16-2); quitar la marca cuando 9 lo publique"
+    added: 2026-11-09
+    revised: ""
+  - name: lock_click_s_P6
+    status: active
+    source: design/gdd/puzle-6-decision.md
+    referenced_by: []
+    value: 0.3
+    unit: "s"
+    note: "duracion de SFX_LOCK_CLICK; slice B.6; F2"
+    added: 2026-11-09
+    revised: ""
+  - name: t_lectura_est_s_P6
+    status: active
+    source: design/gdd/puzle-6-decision.md
+    referenced_by: []
+    value: [6, 12]
+    unit: "s"
+    note: "† estimacion de lectura; las 21-25 palabras† no tienen fuente (pedida a 18)"
+    added: 2026-11-09
+    revised: ""
+  - name: idle_reset_P6
+    status: active
+    source: design/gdd/puzle-6-decision.md
+    referenced_by: []
+    value: "PRESS_ONLY"
+    unit: ""
+    note: "regla 18"
+    added: 2026-11-09
+    revised: ""
+  - name: p6_choice_is_final
+    status: active
+    source: design/gdd/puzle-6-decision.md
+    referenced_by: []
+    value: true
+    unit: "regla"
+    note: "D-14: carta_variante es un hecho de un solo sentido; la reapertura contesta SIN_EFECTO (regla 8). Rehacer la eleccion tras un cierre: OQ 12 de 16"
+    added: 2026-11-09
+    revised: ""
+  - name: p6_no_ajustes
+    status: active
+    source: design/gdd/puzle-6-decision.md
+    referenced_by: []
+    value: true
+    unit: "regla"
+    note: "P6 no lee reducir_sobresaltos ni reducir_movimiento (reglas 21 y 22)"
+    added: 2026-11-09
+    revised: ""
+  - name: ui_p6_boton_keys
+    status: active
+    source: design/gdd/puzle-6-decision.md
+    referenced_by: []
+    value: ["UI_P6_BOTON_A", "UI_P6_BOTON_B", "UI_P6_BOTON_C"]
+    unit: ""
+    note: "‡ nombres propuestos, pendientes de 18"
+    added: 2026-11-09
+    revised: ""
+  - name: puzzles_schema_version
+    status: active
+    source: design/gdd/marco-de-puzles.md
+    referenced_by: []
+    value: 2
+    unit: "version"
+    note: "Esquema de puzzles.json v2 (regla 4b de 9; D9-67); otra version = fallo de validacion (regla 29)"
+    added: 2026-11-09
+    revised: ""
+  - name: affordance_catalog
+    status: active
+    source: design/gdd/marco-de-puzles.md
+    referenced_by: []
+    value: ["MIRROR_PREVIEW", "FLOOR_MARKS", "BEAM_HALO", "SLOT_SILHOUETTES", "ROW_NUMBER_ON_HOLD", "CORRECT_SLOT_OUTLINE", "HOVER_HIGHLIGHT", "MARK_LIT"]
+    unit: ""
+    note: "Catalogo cerrado de AFFORDANCE.affordance (regla 4b, D9-72). P2: MIRROR_PREVIEW, FLOOR_MARKS, BEAM_HALO; P3: SLOT_SILHOUETTES, ROW_NUMBER_ON_HOLD, CORRECT_SLOT_OUTLINE; P4: HOVER_HIGHLIGHT; P5: MARK_LIT. Valida, no cambia estado"
     added: 2026-11-09
     revised: ""
 
