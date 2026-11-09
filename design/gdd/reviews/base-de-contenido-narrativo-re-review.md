@@ -86,3 +86,15 @@ Solo una afecta al alcance:
 1. **Remitente y cuerpo de los dos correos de ruido (X1, X2) y otros textos de relleno** (hallazgo 5). El slice solo da asunto; son contenido nuevo no aprobado. ¿Los redacta el writer dentro del lote (se registra como v0.4 del slice o solo en datos) o se reducen a asunto + remitente genérico sin cuerpo legible? Por defecto asumo redacción mínima en datos, sin cambiar el slice.
 
 El resto (hallazgos 1 a 11) se decide con la recomendación propia y se registra en «Decisiones tomadas» del GDD; en concreto, el GDD carece de esa sección y debería añadirla al aplicar la revisión.
+
+## Cambios requeridos en otros GDDs
+
+Aplicada la ronda 2 al GDD 18 (2026-11-09). Pendiente en otros documentos (no se tocan desde aquí):
+
+- **Slice** (líneas ~136 y ~724, B.1 P1 N1): «gesto de cámara» pasa a «resaltado de la impresión»; B.1 y §10: orden de presentación 3, X1, 1, 4, X2, 2 (anotar; X1/X2 solo en datos).
+- **GDD 9 (marco de puzles):** las claves `PISTA_*` con texto son 8 (no 17): `PISTA_P1_N2`, `P2_N1`, `P4_N1`, `P4_N3`, `P5_N1`, `P5_N2`, `P6_N1`, `P6_N2`; las pistas no textuales no llevan clave (reglas 25 y 29, D9-14, OQ 1). Efecto P1 N1 = HIGHLIGHT, sin `CAMERA_NUDGE`. Dependencia del 18: dura en validación, blanda en ejecución.
+- **GDD 17 y fila 17 del índice:** retitular («3 niveles; P6 dos») y usar solo las 8 claves; los efectos sin clave viven en los datos del puzle.
+- **GDD 2 y GDD 7:** P1 N1 es un resaltado; ningún evento mueve la cámara.
+- **GDD 1, 2, 4, 5, 6 e índice (fila 18 y filas 1, 2, 4, 5, 6, 9):** listar 18 como dependencia blanda (`UI_…`). GDD 6 OQ 11 y GDD 4 OQ 8 quedan cerradas (mensaje de fallo de carga: regla 21 del 18, texto de emergencia fuera del catálogo).
+- **Registro (`entities.yaml`):** candidatos `mail_send_times`, `hint_key_count` (= 8 claves con texto) y `mail_presentation_order`.
+- **Índice:** estado del 18 → «Revisado (ronda 2) — pendiente de re-review».
