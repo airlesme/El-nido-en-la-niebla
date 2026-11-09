@@ -207,7 +207,7 @@ formulas:
     status: active
     source: design/gdd/caja-y-compartimentos.md
     referenced_by: [design/gdd/interaccion-e-inspeccion.md, design/gdd/entrada-y-controles.md]
-    variables: [BOX_Cn_OPEN, t_vista_entrada_s, box_open_margin_min_s]
+    variables: [BOX_C1_OPEN, BOX_C2_OPEN, BOX_C3_OPEN, BOX_OPEN_MAX, t_vista_entrada_s, box_open_margin_min_s]
     output_range: [1.0, 2.8]
     expression: "T_cadena(n) (F1 de 10)"
     notes: "Duracion de la cadena de apertura de D01a..D01c; D01d no encadena (D10-2)"
@@ -401,7 +401,7 @@ constants:
     value: 3.0
     unit: s
     range: [3.0, 5.0]
-    note: "Tope F8 de Entrada (su rango pasa de 1-5 a 3-5 s: con menos de 3 s no cabe la cadena D01a de 7, 1,6 + hasta 1,2 = 2,8 s); 7 mantiene el bloqueo hasta camara_devuelta/gesto_terminado con este tope"
+    note: "Tope F8 de Entrada (rango 3-5 s, defecto 3 s: con menos de 3 s no cabe la cadena D01a, BOX_OPEN_MAX 1,6 + hasta 1,2 = 2,8 s); 7 mantiene el bloqueo hasta camara_devuelta/gesto_terminado con este tope"
     added: 2026-11-09
     revised: ""
   - name: save_files
@@ -496,9 +496,9 @@ constants:
     referenced_by: [design/gdd/interaccion-e-inspeccion.md]
     value: 2.0
     unit: s
-    note: "slice A.4"
+    note: "† (interpretacion de «Leer (2 s)» del slice A.4; 7 Tuning Knobs, 20 y este registro lo rotulan igual)"
     added: 2026-11-09
-    revised: ""
+    revised: "2026-11-09 (ronda de correccion 2: rotulo † unificado)"
   - name: t_vista_entrada_D01a_s
     status: active
     source: design/slice/slice-v0.3.md
@@ -506,7 +506,7 @@ constants:
     value: 1.0
     unit: s
     range: [0.6, 1.2]
-    note: "slice B.3. Ronda 3 (C-W11): en vistas encadenadas D01a-D01d t_vista_entrada_s <= 1,2 s para que 1,6 s (BOX_Cn_OPEN) + 1,2 s = 2,8 s quepa en el tope unico de 3 s de Entrada F8"
+    note: "slice B.3. Ronda 3 (C-W11): en vistas encadenadas D01a-D01d t_vista_entrada_s <= 1,2 s para que 1,6 s (BOX_OPEN_MAX, tope de BOX_C1_OPEN..C3) + 1,2 s = 2,8 s quepa en el tope unico de 3 s de Entrada F8"
     added: 2026-11-09
     revised: ""
   - name: BOX_Cn_OPEN
@@ -703,8 +703,8 @@ constants:
     referenced_by: [design/gdd/jugador-en-primera-persona.md]
     value: 5
     unit: deg
-    range: [60, 90]
-    note: "Paso del ajuste campo_vision (defecto 70 = player_fov_vertical_default_deg); 72 se cuantiza a 70"
+    range: [1, 15]
+    note: "Paso del ajuste campo_vision (defecto 70 = player_fov_vertical_default_deg); 72 se cuantiza a 70. El rango [60, 90] es el de campo_vision, no el del paso; el rango [1, 15] del paso es PROPUESTA (†) (el slice solo fija 5)"
     added: 2026-11-09
     revised: ""
   - name: asistencia_rotacion_deg
@@ -993,7 +993,7 @@ constants:
     status: active
     source: design/gdd/escena-de-planta.md
     referenced_by: [design/gdd/estado-y-bus-de-eventos.md, design/gdd/entrada-y-controles.md, design/gdd/guardado-y-carga.md]
-    value: "iniciada (destino, motivo, D_carga) · escena lista (destino) · terminada · fallida (destino, motivo, causa) · partida terminada (sin datos; único emisor: 4, tras terminada de recepcion) · descarga total completada (sin datos; emite 4 al volver al título; la consume 5)"
+    value: "iniciada (destino, motivo, D_carga) · escena lista (destino) · terminada · fallida (destino, motivo, causa) · partida terminada (sin datos; único emisor: 4, tras terminada de recepcion) · descarga total solicitada (sin datos; emite 4 al aceptar volver al título; el 21 queda inactivo hasta «completada») · descarga total completada (sin datos; emite 4 al volver al título; la consume 5)"
     unit: ""
     note: "Avisos de carga emitidos por Escena de planta. «Fallida» es nuevo (ronda 3); Entrada termina carga_en_curso con terminada o fallida. Lo solicita C-W2/S-B1"
     added: 2026-11-09
@@ -1002,7 +1002,7 @@ constants:
     status: active
     source: design/gdd/entrada-y-controles.md
     referenced_by: [design/gdd/escena-de-planta.md]
-    value: "abrir(dueño, duración) · cerrar (solo el dueño) · traspasar(nuevo dueño, duración; renueva el tope) · pedir exploración (dueño) · reponer menú (4)"
+    value: "abrir(dueño, duración) · cerrar (solo el dueño) · traspasar(nuevo dueño, duración; renueva el tope) · pedir exploración (dueño) · reponer menú (4) · descartar la pila al aceptar una carga nueva (emite el aviso «sin control absorbido» con el dueño descartado; decisión firme E4-1, pendiente de confirmación del technical-director)"
     unit: ""
     note: "Operaciones sobre el contexto sin control (ronda 3, C-B4). El reinicio de pila al descargar conserva dueño, duración y cuenta del tope del sin control vigente"
     added: 2026-11-09
@@ -1208,10 +1208,11 @@ constants:
   - name: BOX_OPEN_MAX
     status: active
     source: design/gdd/caja-y-compartimentos.md
-    referenced_by: [design/gdd/interaccion-e-inspeccion.md]
+    referenced_by: [design/gdd/interaccion-e-inspeccion.md, design/gdd/marco-de-puzles.md]
     value: 1.6
     unit: "s"
-    note: "F2 de 10; el antiguo BOX_Cn_OPEN de 7 pasa a ser este tope"
+    range: [1.2, 1.6]
+    note: "UNICO DUENIO: GDD 10 (F2); 7 lo consume en F4 y Tuning Knobs, no lo define. El antiguo BOX_Cn_OPEN de 7 pasa a ser este tope"
     added: 2026-11-09
     revised: ""
   - name: box_open_margin_min_s
@@ -1538,7 +1539,7 @@ constants:
     value: 60.0
     unit: "s"
     range: [30, 120]
-    note: "† (origen «desde el apagon» del autor; slice C.7). Dato de scene-config.json"
+    note: "† (valor 60 s del slice C.7; el origen «desde el apagon» es del autor; mismo rotulo † que en 21). Dato de scene-config.json"
     added: 2026-11-09
     revised: ""
   - name: retardo_restaurar_s
