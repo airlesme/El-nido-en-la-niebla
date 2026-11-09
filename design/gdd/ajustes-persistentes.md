@@ -1,6 +1,6 @@
 # Ajustes persistentes
 
-> **Status**: Revisado (ronda 5) — pendiente de re-review (ronda 5 aplica C-W6 y F-3 de `gdd-cross-review-2026-11-09-r3.md`; ronda 2: re-review)
+> **Status**: Revisado (ronda 6) — pendiente de re-review (ronda 6 aplica G-2 e INFO de `gdd-cross-review-2026-11-09-r4.md`; ronda 5 aplica C-W6 y F-3 de `gdd-cross-review-2026-11-09-r3.md`; ronda 2: re-review)
 > **Author**: Álvaro + agentes
 > **Last Updated**: 2026-11-09
 > **Last Verified**: 2026-11-09
@@ -222,11 +222,12 @@ La fórmula de guardado diferido se define como:
 | 18 Base de contenido narrativo | Blanda | Aloja los textos de interfaz `UI_…` de las pantallas de ajustes (25, 27, 30); no lee ni escribe ajustes. Relación que el índice ya recoge; este GDD no depende de 18 en ejecución |
 | 4 Escena de planta | Blanda | Lee `reducir_movimiento` (cortina); exige que el nodo de Ajustes sobreviva a los cambios de escena (su regla 1, AC-01) |
 | 1 Entrada y controles | Dura (su lado) | Entrega y recupera el bloque `controles` |
+| 24 Pie de texto (dibuja el pie) | Blanda (sin GDD aún) | Lee `multiplicador_pie` y `pie_persistente` para dibujar el pie de texto; al redactarse debe listar a Ajustes como dependencia |
 | 5 Guardado y carga | Ninguna | Ficheros independientes; retirada por el GDD 5 (regla 4, D-12) |
 
 **Índice de sistemas:** los puzles 13 y 15 y la atmósfera 28 ya listan al sistema 6 como dependencia; la dependencia del sistema 5 está retirada (el índice ya no la lista).
 
-**Bidireccionalidad.** El par con el sistema 1 está cerrado: Entrada ya lista a Ajustes como dependiente (su tabla de Dependencies y su regla 19). El GDD del 3 ya declara que los ajustes quedan fuera del estado (regla 14), y su tabla de interacciones dice «Nada». Ninguno de los demás sistemas tiene GDD: cada uno debe, al redactarse, listar a Ajustes como dependencia y usar las claves del catálogo de la regla 1.
+**Bidireccionalidad.** El par con el sistema 1 está cerrado: Entrada ya lista a Ajustes como dependiente (su tabla de Dependencies y su regla 19). El GDD del 3 ya declara que los ajustes quedan fuera del estado (regla 14), y su tabla de interacciones dice «Nada». Los GDDs que ya existen y se relacionan con este sistema son: 1 Entrada y controles (bloque `controles`, dura de su lado), 2 Jugador (`balanceo_camara`, `campo_vision`), 4 Escena de planta (`reducir_movimiento`, supervivencia del nodo), 7 Interacción (`multiplicador_pie`, `pie_persistente`), 9 Marco de puzles (asistencias y `reducir_movimiento`) y 18 Base de contenido (textos `UI_…`); el 3 los deja fuera del estado y el 5 no tiene relación. Los demás sistemas de la tabla (23, 24, 25, 26, 27, 28, 30) aún no tienen GDD: cada uno debe, al redactarse, listar a Ajustes como dependencia y usar las claves del catálogo de la regla 1.
 
 ## Tuning Knobs
 
@@ -389,3 +390,4 @@ Sin criterio hasta que exista el ADR: el tope del bucle de avisos encadenados, l
 - **2026-11-09 (ronda 2, aplica la re-review):** añadida `reducir_movimiento` (catálogo, restablecer todos = 10 claves, interacciones, UI, AC-01 = once claves, AC-04e); F1 generalizada a `float` con paso y redondeo de la mitad hacia arriba (AC-04d, AC-F1); `controles` como tipo propio (AC-04c); dependencias 2, 4 y 9 añadidas y la del 5 retirada; contrato «ajustes aplicados» con Entrada; pistas fuera de ajustes; Tuning Knobs; valor seguro justificado; sección «Decisiones tomadas». Pendiente de re-review.
 
 - **2026-11-09 (lote 2/5/7/9, cambios derivados de la revisión del GDD 2):** regla 1 con `balanceo_camara` (enum `completo`/`reducido`/`ninguno`, inicial `reducido`†) y `campo_vision` (float 60 a 90, paso 5, inicial 70†), lector «2 Jugador»; incorporados a «restablecer todos» (regla 8), a las interacciones y a AC-01 (diez claves). Las pantallas 25 y 30 los ofrecen junto a «reducir sobresaltos». Informe de 5: `save_format_version` no lo usa este GDD (se quita de su `referenced_by` en el registro); ninguna acción. **Cambia reglas: pendiente de re-review.** Estado sin cambios.
+- **2026-11-09 (ronda 6, `gdd-cross-review-2026-11-09-r4.md`):** G-2: Dependencies sustituye «Ninguno de los demás sistemas tiene GDD» por la lista real (1, 2, 4, 7, 9, 18) y añade a 24 (pie de texto) como dependiente sin GDD (alternativa descartada: dejar la frase obsoleta; motivo: ya no era cierta).
