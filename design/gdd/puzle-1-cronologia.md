@@ -1,6 +1,6 @@
 # Puzle 1 · Cronología
 
-> **Status**: Borrador (lote Feature 3) — pendiente de review
+> **Status**: Revisado (ronda de corrección 7) — pendiente de re-review
 > **Author**: game-designer (lote autónomo) + usuario
 > **Last Updated**: 2026-11-09
 > **Sistema**: 11 (`design/gdd/systems-index.md`) · Capa `Feature` · Categoría `Gameplay` · Prioridad `MVP`
@@ -41,7 +41,7 @@ Todas las reglas son de **11 instanciando 9**: no redefinen el ciclo de vida, la
 
 **R3. Hechos.** 11 **no escribe ni lee ningún hecho**. El único hecho del P1 es `archivo_abierto` (bool, falso al inicio, un solo sentido, owner 9; tabla de hechos de 3, D.2 del slice) y lo escribe **9** al resolverse (R34). 11 no lee `correos_leidos` (solo lo lee 19; D9-50). No hay hecho de estado intermedio (`persist` vacío): las colocaciones **no se guardan** (R44).
 
-**R4. Identificadores.** Puzle `P1`; vista `C05`; hoja `C05/paper`; referencias clicables `C05/paper/ref_1`…`ref_4`; huecos `C05/slot_1`…`slot_4` (H1–H4 del slice; `slot_k` = Hk); marcas de sello `C05/paper/stamp_1`…`stamp_4` (día + hora de cada bloque numerado; **no** clicables, solo objetivo de la pista N3, R34). Los IDs llevan prefijo de vista (regla 4 de 9) para no colisionar con `P1`–`P5` (piezas del encaje, B.3).
+**R4. Identificadores.** Puzle `P1`; vista `C05`; hoja `C05/paper`; referencias clicables `C05/paper/ref_1`…`ref_4`; huecos `C05/slot_1`…`slot_4` (H1–H4 del slice; `slot_k` = Hk); marcas de sello `C05/paper/stamp_1`…`stamp_4` (día + hora de cada bloque numerado; **no** clicables, solo objetivo de la pista N3, R30). Los IDs llevan prefijo de vista (regla 4 de 9) para no colisionar con `P1`–`P5` (piezas del encaje, B.3).
 
 ### B. Estado inicial y apertura de la vista
 
@@ -50,9 +50,9 @@ Todas las reglas son de **11 instanciando 9**: no redefinen el ciclo de vida, la
 **R6. `C05` como objetivo.** 7 trata `C05` como `ABRIR_VISTA` genérico (verbo `EXAMINAR`, `t_vista_entrada_s` 1,0 s, fov 70°) con `habilitado_si: { ninguno: [archivo_abierto] }` (catálogo de 7, regla 7 de 9). Sin dueño propio: el receptor es el marco (regla 7 de 9). Con `archivo_abierto` verdadero, `C05` deja de ser objetivo (sin icono, sin vista, sin acercamiento).
 
 **R7. Al abrirse la vista (`on_open`).** El marco calcula `missing_items` con `has_item("I-01")` (regla 7 de 9) y el controlador construye sus elementos:
-- **Con `I-01`:** el marco llama a `compose_i01()` (R30 de 19: síncrona, pura, sin estado) y dibuja `C05/paper` con sus bloques en el orden que devuelve 19 (presentación `3 · 1 · 4 · 2` con los dos de ruido intercalados, B.1). El controlador crea `C05/paper/ref_N` **exactamente** para los bloques con `ref` ≠ null (4) y `C05/paper/stamp_N` para las marcas de N3.
+- **Con `I-01`:** el marco llama a `compose_i01()` (R30 de 19: síncrona, pura, sin estado) y dibuja `C05/paper` con sus bloques en el orden que devuelve 19 (presentación `3 · 1 · 4 · 2` con los dos de ruido intercalados, B.1). **Reparto único de `elements()`** (alineado con la regla 7 de 9, D11-18): `compose_i01()` de 19 aporta los bloques y sus 4 referencias (`ref` ≠ null); **el marco** (9) crea un elemento clicable `C05/paper/ref_N` por cada una (exactamente 4); **el controlador de 11** declara los 4 huecos `C05/slot_k` y las marcas no clicables `C05/paper/stamp_N` (una por bloque con referencia, a partir de `dia` y `hora_envio` del mismo `compose_i01()`).
 - **Sin `I-01`:** se dibujan los cuatro huecos vacíos y **ninguna** hoja ni referencia; los huecos responden con `locked_feedback` (`SFX_CLICK_SUBTLE`, sin texto, R27). El puzle sigue `ACTIVO`; no se escribe nada (S6, AC-39 de 9).
-- Se llama a `compose_i01()` en **cada** apertura, también al reabrir mientras P1 sigue `ACTIVO` (D9-49). Si `compose_i01()` devuelve un número de bloques con `ref` distinto de 4, el controlador registra un error de datos y trata el puzle como sin material (nunca se bloquea la vista; Edge Cases).
+- Se llama a `compose_i01()` en **cada** apertura, también al reabrir mientras P1 sigue `ACTIVO` (D9-49). Si `compose_i01()` devuelve un número de bloques con `ref` distinto de 4, el marco registra un error de datos y trata el puzle como sin material (nunca se bloquea la vista; Edge Cases; AC-21).
 
 **R8. Pistas y material.** La falta de `I-01` es un estado de **material**, no de bloqueo (regla 34 de 9): la ruta para conseguirlo existe siempre (leer en `V01`, imprimir en `V08`, repetible e ilimitado; R23–R24 de 19) y la pista N1 la señala (R28).
 
@@ -86,8 +86,8 @@ Notas: (a) una referencia colocada sigue siendo pulsable en la hoja (la hoja la 
 - Hoja `C05/paper`: 1000×960 px a la izquierda; seis bloques de **150 px** de paso (cuatro líneas de 32 px = 128 px, F4 de 19), cabecera y pie incluidos en 960 px.
 - `ref_N`: 112×56 px en el margen izquierdo de su bloque; **paso vertical entre chips ≥ 150 px**.
 - `slot_k`: 160×160 px en fila a la derecha (x desde 1100), separación 40 px (paso 200 px): ancho de fila 760 px.
-- Comprobaciones que 9 aplica al validar (regla 29 de 9): todos los elementos ≥ `pick_min_px` (44 px, mucho menor que 56 y 160); separación entre centros ≥ R₁+R₂ con R = min(max(64, tolerancia), 128) de la F5b de Entrada. El P1 **no declara `assist`** (solo P3 y P5) y sus elementos no tienen tolerancia propia: con R = 64 la separación mínima es 128 px; margen: 22 px en los chips (150 frente a 128) y 72 px en los huecos (200 frente a 128). **Pero** la regla 22 de 7 y la regla 29 de 9 validan con las tolerancias de P3 (normal 88 px → 176 px; asistida 220 px → 256 px) y no dicen qué se aplica a elementos sin tolerancia (OQ-8). Con 176 px, los huecos (200) pasan y los chips (150) fallarían el arranque. **Provisional:** la zona `ref_N` declara `atraccion_desactivada` = verdadero (nombre único de 7 y 9; los chips son grandes y están separados 150 px) y los huecos mantienen la atracción; si 7/9 aclaran que R = 64 aplica, la excepción se quita.
-- `atraccion` (atracción asistida): verdadera en `slot_k`; en `ref_N` el contrato de 9 (regla 9: «referencias y huecos del P1») la pide, pero la zona queda con `atraccion_desactivada` mientras no se resuelva OQ-8.
+- Comprobaciones que 9 aplica al validar (regla 29 de 9): todos los elementos ≥ `pick_min_px` (44 px, mucho menor que 56 y 160); separación entre centros ≥ R₁+R₂ con R = min(max(64, tolerancia), 128) de la F5b de Entrada. El P1 **no declara `assist`** (solo P3 y P5) y sus elementos no tienen tolerancia propia: con R = 64 la separación mínima es 128 px; margen: 22 px en los chips (150 frente a 128) y 72 px en los huecos (200 frente a 128). **Resuelto por 7 (AC-30b de 7):** la «tolerancia normal» se evalúa **por elemento** (64 px → umbral 128 px; a 170 px solo hay advertencia por la asistida de 256), de modo que los chips a 150 px y los huecos a 200 px pasan la validación sin excepción (antes OQ-8, ya no es pregunta; D11-17).
+- `atraccion` (atracción asistida): verdadera en `slot_k`; la zona `ref_N` declara `atraccion_desactivada` = verdadero (nombre único de 7 y 9) **de forma definitiva** (D11-17): los chips miden 112×56 px y están separados 150 px, así que la asistencia aporta poco (y, con la asistida de 256 px, 150 px solo daría advertencia, AC-30b de 7). Consecuencia aceptada: con mando/stick el cursor no es atraído por las referencias, solo por los huecos; la regla 9 de 9 («referencias y huecos del P1») pide atracción en ambos y 9 debe aceptar la excepción por zona (Cambios requeridos).
 
 **R15. Hueco de entrada.** El primer hueco en llegar a «lleno» no tiene orden obligatorio: el jugador puede rellenar H1–H4 en cualquier orden y reordenar hasta el último momento (Pilar *Autonomía como progresión*).
 
@@ -123,7 +123,7 @@ Los dos bloques sin referencia (Lunes 10:30, Martes 14:00) no participan: no son
 
 ### F. Feedback de acierto y de error (sin castigo)
 
-**R23. Cada acción procesada tiene respuesta visible en el mismo fotograma** (regla 13 de 9): seleccionar = resaltado de la referencia (R12); colocar = la referencia aparece en el hueco **con su sello (día y hora de envío, en pequeño, tomado de `compose_i01()`; D11-6)** y atenuada en la hoja + `SFX_SLOT_IN`; devolver = la referencia vuelve a la hoja (visual); `elements_changed` en cada cambio de forma (regla 9 de 9).
+**R23. Cada acción procesada tiene respuesta visible en el mismo fotograma** (regla 13 de 9): seleccionar = resaltado de la referencia (R12); colocar = la referencia aparece en el hueco **con su sello (día y hora de envío, en pequeño, tomado de `compose_i01()`; propuesta D11-6, pendiente de confirmación, OQ-4)** y atenuada en la hoja + `SFX_SLOT_IN`; devolver = la referencia vuelve a la hoja (visual); `elements_changed` en cada cambio de forma (regla 9 de 9).
 
 **R24. `SFX_SLOT_IN` lo pide el marco** (evento «feedback de puzle» `{puzzle:'P1', sound_id:'SFX_SLOT_IN', element:'C05/slot_k'}`) **por cada cambio que deja una referencia en un hueco** (filas 4 y 5 de R13), independientemente del veredicto. Se declara en datos como `on_change` ‡ (campo opcional nuevo del esquema; Cambios requeridos en 9). Los cambios que vacían un hueco (fila 6) no suenan (como en la regla 13b de 9: lo que disminuye no tiene sonido de acierto ni de rechazo).
 
@@ -159,7 +159,7 @@ Tres niveles, todos `REQUEST` (los pide el jugador desde la pausa vía 17; **no*
 5. Pide `SFX_UNLOCK` (1,4 s) y llama a `play_resolution` (R35).
 6. A `close_view_after_s` = 1,5 s pide `cerrar_vista('C05','resuelto')` (F4 de 9); la cámara vuelve en 0,5 s (`t_devolver`).
 
-**R35. Presentación (no bloqueante).** Los huecos quedan fijos mostrando `2 · 1 · 3 · 4` con sus sellos (la cronología queda visible en fila incluso para quien llegó por tanteo; mitigación de D-W1, D11-6) y con un cambio de tono estático (sin movimiento extra y **sin verde**: el acierto no se codifica como «bueno», Pilar *Ambivalencia*); la hoja permanece. Ningún hecho ni aviso espera a la presentación.
+**R35. Presentación (no bloqueante).** Los huecos quedan fijos mostrando `2 · 1 · 3 · 4` con sus sellos (la cronología queda visible en fila incluso para quien llegó por tanteo; mitigación de D-W1, propuesta D11-6 pendiente, OQ-4; sin sellos, los huecos muestran solo la referencia) y con un cambio de tono estático (sin movimiento extra y **sin verde**: el acierto no se codifica como «bueno», Pilar *Ambivalencia*); la hoja permanece. Ningún hecho ni aviso espera a la presentación.
 
 **R36. La puerta.** 8 reacciona al **hecho** `archivo_abierto` (no al aviso): al escribirse, la puerta A pasa a `ABRIÉNDOSE` en el mismo paso y reproduce `ANIM_DOOR_OPEN` (1,2 s); **no** reproduce `SFX_UNLOCK` (es de 9; regla 6 de 8). Con el cierre a 1,5 s y el regreso en 0,5 s, la puerta ya está abierta cuando el jugador vuelve a `exploración` (F4 de 9, ejemplo).
 
@@ -213,7 +213,7 @@ Tras un `REJECT` **todas** las referencias vuelven a la hoja (R25), así que cad
 | Media con repetición (jugador sin memoria: geométrica p = 1/24, 23 fallos esperados) | 23·5,3 + 3,8 | **125,7 s** |
 | Quien ya sabe que el 4 (martes) va último (N = 3! = 6) | peor 5·5,3 + 3,8; media 2,5·5,3 + 3,8 | **30,3 s** / **17,1 s** |
 
-**Lectura (D-W1 y D-W4 de las revisiones cruzadas).** El tanteo cuesta ≈ 1 a 2 min y **sigue exigiendo antes** leer los correos y reimprimir (la hoja solo existe si se ha buscado «transición»). No se bloquea (anti-pilar de castigo; Pilar *Tensión sin castigo*): es una consecuencia aceptada **a medir**. Mitigación barata (D11-6): los huecos muestran el sello de cada referencia, de modo que quien acierta por tanteo ve la cronología en fila al resolver. **Umbral de revisión (†):** si en playtest la mediana de rechazos por jugador es ≥ 6 (≈ un barrido de tanteo), se reabre R26 y la decisión de D11-6 antes del hito.
+**Lectura (D-W1 y D-W4 de las revisiones cruzadas).** El tanteo cuesta ≈ 1 a 2 min y **sigue exigiendo antes** leer los correos y reimprimir (la hoja solo existe si se ha buscado «transición»). No se bloquea (anti-pilar de castigo; Pilar *Tensión sin castigo*): es una consecuencia aceptada **a medir**. Mitigación barata (propuesta D11-6, pendiente de confirmación, OQ-4; sin ella el tanteo es igual de caro pero no deja la cronología a la vista): los huecos muestran el sello de cada referencia, de modo que quien acierta por tanteo ve la cronología en fila al resolver. **Umbral de revisión (†):** si en playtest la mediana de rechazos por jugador es ≥ 6 (≈ un barrido de tanteo), se reabre R26 y la decisión de D11-6 antes del hito.
 
 ### F3 · Contrafactual: por qué el rechazo no informa (R26)
 
@@ -244,7 +244,7 @@ Corregir una referencia colocada exige dos pulsaciones (referencia + hueco). Con
 
 ### F6 · Márgenes de geometría (R14)
 
-`margen_chip = paso_chip − (R₁+R₂) = 150 − 128 = 22 px`  ·  `margen_hueco = 200 − 128 = 72 px`  ·  `R = min(max(64, tol), 128) = 64` con `tol` = 0 (sin `assist`, el P1 no tiene tolerancia espacial; con las 88 px de P3 el chip a 150 px no llegaría a 176 px: OQ-8)
+`margen_chip = paso_chip − (R₁+R₂) = 150 − 128 = 22 px`  ·  `margen_hueco = 200 − 128 = 72 px`  ·  `R = min(max(64, tol), 128) = 64` con `tol` = 0 (sin `assist`, el P1 no tiene tolerancia espacial; la tolerancia se evalúa por elemento, AC-30b de 7; D11-17)
 
 **Rangos válidos:** `paso_chip ≥ 128 px`; `paso_hueco ≥ 128 px`; tamaño ≥ `pick_min_px` = 44 px (chips 112×56 y huecos 160×160 lo cumplen con holgura). Bloque de 4 líneas: 4·32 = 128 px ≤ paso 150 px (22 px de aire). Altura total: 6·150 + cabecera y pie = 960 px ≤ 1080 px.
 
@@ -261,7 +261,7 @@ Cada caso dice qué ocurre, no «se gestiona».
 - **Abrir `C05` sin `I-01`** (antes de imprimir o tras cargar con `correos_leidos` verdadero): la vista se abre con los huecos vacíos y sin hoja; pulsar un hueco = `SFX_CLICK_SUBTLE`, sin texto; no se escribe nada; el puzle sigue `ACTIVO` (R7, AC-5). La salida es siempre posible (`atrás`).
 - **`I-01` conseguida con la vista cerrada:** la siguiente apertura llama a `compose_i01()` y dibuja la hoja; las colocaciones previas (ninguna, porque sin hoja no se puede colocar nada) están vacías.
 - **Cargar con `correos_leidos` verdadero:** `I-01` no está (R9 de 20); `V08` nace en `lista`; el jugador reimprime (repetible, sin tope; R24 de 19) y la hoja es idéntica (función pura, AC-29 de 19). No se salta la impresión ni queda atasco (S6; AC-39b de 9).
-- **`compose_i01()` devuelve ≠ 4 bloques con `ref`** (correo ausente o ilegible; R30 de 19: el bloque se omite con «—»): el controlador registra un error de datos y trata la vista como **sin material**. Es un defecto de datos que **debe** atraparlo la prueba AC-3 en CI (no es alcanzable por el jugador); no hay solución de ejecución que invente una referencia (Pilar *Información incompleta*: hechos fijos).
+- **`compose_i01()` devuelve ≠ 4 bloques con `ref`** (correo ausente o ilegible; R30 de 19: el bloque se omite con «—»): el marco registra un error de datos y trata la vista como **sin material** (AC-21). Es un defecto de datos que **debe** atraparlo también la prueba AC-3 en CI (no es alcanzable por el jugador); no hay solución de ejecución que invente una referencia (Pilar *Información incompleta*: hechos fijos).
 - **Hora o día repetidos entre bloques con referencia:** la validación de datos (AC-3) lo rechaza; no existe empate en producción (R17).
 
 **Interacción**
@@ -274,7 +274,7 @@ Cada caso dice qué ocurre, no «se gestiona».
 - **Pausa durante la cuenta, el rechazo o un `HIGHLIGHT`:** el `GameClock` se detiene (regla 36 de 9); no corre nada hasta reanudar.
 - **`atrás` y acierto a la vez:** 7 ignora la segunda petición de cierre (regla 33 de 9).
 - **`reducir_movimiento` cambia durante un rechazo:** afecta al siguiente (regla 14b de 9).
-- **Mando / stick:** `ref_N` y `slot_k` tienen atracción asistida (R14); el gesto es un `seleccionar` sin mantener ni arrastrar, accesible con un solo botón; no hay ninguna acción solo-ratón.
+- **Mando / stick:** `slot_k` tiene atracción asistida y `ref_N` declara `atraccion_desactivada` (R14, D11-17); el gesto es un `seleccionar` sin mantener ni arrastrar, accesible con un solo botón; no hay ninguna acción solo-ratón.
 
 **Estado y persistencia**
 - **Estado completo con `S = [2,1,3,4]` pero el jugador sale antes de 0,6 s:** no se resuelve en ese instante; al reabrir se rearma y se resuelve a los 0,6 s (no hay estado sin salida).
@@ -338,7 +338,7 @@ Todos viven en datos externos, nunca en el controlador (estándar de `coding-sta
 | `on_solved.close_view_after_s` | F | **1,5 s†** | 0,5–3,0 | Tiempo que el jugador ve el resultado antes del cierre; debe permitir ver los sellos en fila (D11-6); < 1,0 s los esconde |
 | `hints[0].effects[0].duration_s` (N1) | F | **3,0 s** (`highlight_s` de 9) | 1,5–5,0 | Duración del resaltado de N1 (B.1) |
 | `hints[2].effects[0].duration_s` (N3) | F | **3,0 s†** | 1,5–5,0 | Duración del resaltado de los sellos; igual que N1 por coherencia |
-| `ui.show_stamp_in_slot` | C | **verdadero†** | bool | Muestra día y hora bajo cada referencia colocada (D11-6). Falso = B.1 estricto sin sello; sube la dificultad y quita la mitigación de D-W1 |
+| `ui.show_stamp_in_slot` | C | **verdadero†** (propuesta pendiente, OQ-4) | bool | Muestra día y hora bajo cada referencia colocada (D11-6). Falso = B.1 estricto sin sello; sube la dificultad y quita la mitigación de D-W1 |
 | `ui.chip_pitch_px` | F | **150 px** | ≥ 128 (R₁+R₂, F6) | Paso vertical entre referencias; define el tamaño del bloque (4 líneas = 128 px) |
 | `ui.slot_pitch_px` | F | **200 px** | ≥ 128 | Paso entre huecos |
 | `ui.slot_size_px` / `ui.chip_size_px` | F | **160×160 / 112×56** | ≥ `pick_min_px` 44 | Objetivos de pulsación (accesibilidad motriz) |
@@ -354,7 +354,8 @@ Tipos: **L** = lógica (prueba automática con reloj falso, `tests/unit/puzzle_1
 **Estado y apertura**
 - **AC-1 (R5, R6, L):** **GIVEN** una partida nueva, **THEN** `P1` está `ACTIVO`, `archivo_abierto` falso, los cuatro huecos vacíos y `en_mano = ninguna`; `C05` es objetivo en 7; **GIVEN** `archivo_abierto` verdadero, **THEN** `C05` no es objetivo (sin icono ni vista) y `P1` está `RESUELTO`.
 - **AC-2 (R7, I):** **GIVEN** `has_item("I-01")` verdadero, **WHEN** se abre `C05`, **THEN** el marco llama una vez a `compose_i01()`, `elements()` contiene exactamente 4 `C05/paper/ref_N` (N = 1..4), 4 `C05/slot_k` y la hoja muestra los 6 bloques en orden `3,1,4,2` con los dos de ruido sin referencia; **WHEN** se cierra y reabre, **THEN** se llama de nuevo y el resultado es idéntico.
-- **AC-3 (R17, R19, L):** **GIVEN** `compose_i01()` con los datos de 18, **WHEN** una prueba ordena los bloques con `ref` por (día, hora) ascendente, **THEN** el resultado es `[2,1,3,4]` y coincide con `solution.sequence` de `puzzles.json`; **WHEN** se cambia la hora de `MAIL_2` en 18 a «17:00» sin tocar `puzzles.json`, **THEN** la prueba falla; **GIVEN** dos bloques con `ref` con el mismo sello, **THEN** la validación de datos falla (sin empates).
+- **AC-3 (R17, R19, L):** **GIVEN** `compose_i01()` con los datos de 18, **WHEN** una prueba ordena los bloques con `ref` por el campo entero `ts_envio` de `compose_i01()` (minutos desde el lunes 00:00; sin analizar texto; Cambios requeridos en 19), ascendente, **THEN** el resultado es `[2,1,3,4]` y coincide con `solution.sequence` de `puzzles.json`; **WHEN** se cambia la hora de `MAIL_2` en 18 a «17:00» sin tocar `puzzles.json`, **THEN** la prueba falla; **GIVEN** dos bloques con `ref` con el mismo sello, **THEN** la validación de datos falla (sin empates).
+- **AC-21 (R7, L):** **GIVEN** `has_item("I-01")` verdadero y un doble de `compose_i01()` que devuelve 3 (o 5) bloques con `ref` ≠ null, **WHEN** se abre `C05`, **THEN** se registra un error de datos, la vista se abre como sin material (4 huecos vacíos, 0 referencias, `SFX_CLICK_SUBTLE` al pulsar un hueco), no se escribe ningún hecho y `atrás` cierra la vista.
 - **AC-5 (R7, R27, S6, L):** **GIVEN** `has_item("I-01")` falso, **WHEN** se abre `C05`, **THEN** hay 4 huecos vacíos y 0 referencias; **WHEN** se pulsa un hueco, **THEN** suena `SFX_CLICK_SUBTLE`, no hay texto, no se escribe ningún hecho y el puzle sigue `ACTIVO`; **WHEN** se pulsa `atrás`, **THEN** la vista se cierra.
 
 **Interacción**
@@ -363,7 +364,7 @@ Tipos: **L** = lógica (prueba automática con reloj falso, `tests/unit/puzzle_1
 - **AC-16 (R24, L):** **GIVEN** cualquier acción de las filas 4 o 5 de R13, **THEN** se emite una sola vez «feedback de puzle» con `SFX_SLOT_IN` y el hueco; **GIVEN** la fila 6, **THEN** no se emite sonido.
 
 **Comprobación y rechazo**
-- **AC-6 (R20, F5, L):** **GIVEN** el `GameClock` falso y P1 con material, **WHEN** los cuatro huecos se llenan en t = 10,00 y el jugador cambia H3 en t = 10,40, **THEN** `evaluate()` se llama en t = 11,00 y no antes; **WHEN** sale de la vista en t = 10,70, **THEN** no se evalúa y al volver con los cuatro llenos se rearma 0,6 s.
+- **AC-6 (R20, R12, F5, L):** **GIVEN** el `GameClock` falso y P1 con material, **WHEN** los cuatro huecos se llenan en t = 10,00 y el jugador **selecciona** la referencia de H3 en t = 10,40 (primera pulsación, `en_mano`) y la **coloca** en otro hueco en t = 10,80 (segunda pulsación; R12: cada una reinicia la cuenta), **THEN** no se llama a `evaluate()` en t = 10,60 ni en t = 11,00 (la cuenta de 10,00 y la de 10,40 quedan canceladas por el cambio siguiente) y se llama **una sola vez** en t = 11,40 (10,80 + 0,6); **WHEN** en cambio sale de la vista en t = 10,70 con la referencia en mano, **THEN** `en_mano = ninguna`, no se evalúa y al volver con los cuatro llenos se rearma 0,6 s. (La corrección completa con `NONE` intermedio: AC-7.)
 - **AC-7 (R12, R21, F5, L):** **GIVEN** los cuatro huecos llenos con un estado incorrecto y el jugador pulsa una referencia en t = 0,35 s tras el 4.º hueco, **THEN** a los 0,95 s `evaluate()` devuelve `NONE` (en mano) y no hay rechazo; **WHEN** coloca la referencia a los 1,20 s, **THEN** nueva evaluación a 1,80 s.
 - **AC-8 (R25, R22, L):** **GIVEN** `S = [1,2,3,4]` completo, **WHEN** el marco evalúa, **THEN** `REJECT`: `SFX_REJECT`, los cuatro huecos vibran 1,2 s, a los 1,5 s las cuatro referencias vuelven a la hoja, la entrada del puzle queda descartada 1,5 s y después acepta entrada; no existe contador de fallos, ni texto, ni hecho cambiado, y el nivel de pista alcanzado no varía.
 - **AC-10 (R26, L):** **GIVEN** los 23 estados completos incorrectos, **WHEN** se evalúa cada uno, **THEN** los 23 producen veredicto, sonido, animación y duración idénticos y ninguno lleva información de qué hueco es correcto.
@@ -382,7 +383,7 @@ Tipos: **L** = lógica (prueba automática con reloj falso, `tests/unit/puzzle_1
 - **AC-20 (R40, R41, L):** **GIVEN** dos huecos llenos, **WHEN** se cierra y reabre la vista, **THEN** los dos siguen llenos, `en_mano = ninguna` y la hoja se reconstruye con `compose_i01()`.
 
 **Datos y geometría**
-- **AC-18 (R14, F6, L):** **GIVEN** el fichero de vista, **THEN** todos los elementos ≥ 44 px, la separación entre centros de `ref_N` ≥ 128 px y de `slot_k` ≥ 128 px (valores por defecto: 150 y 200), y la zona `ref_N` declara `atraccion_desactivada` mientras OQ-8 siga abierta.
+- **AC-18 (R14, F6, L):** **GIVEN** el fichero de vista, **THEN** todos los elementos ≥ 44 px, la separación entre centros de `ref_N` ≥ 128 px y de `slot_k` ≥ 128 px (valores por defecto: 150 y 200), y la zona `ref_N` declara `atraccion_desactivada` = verdadero y `slot_k` no (D11-17).
 - **AC-19 (Datos del puzle, L; regla 29 de 9):** **GIVEN** la entrada `P1`, **THEN** pasa la validación de 9 (tres niveles de pista, `needs_items` existe en el catálogo de ítems, `reset_after_s` ≤ 2,0 s, `solution` no satisfecha por el estado inicial, `solved_flag` declarado en `flags.json`, enteros como `int`).
 
 **Experiencia (playtest)**
@@ -430,7 +431,7 @@ Entrada completa de `assets/data/puzzles/puzzles.json` según el esquema de la r
 }
 ```
 
-**Notas de datos.** (1) Sin `assist`, sin `on_unlock` ni `compartment` (P1 no completa compartimento ni se desbloquea). (2) `rewards: []` (R37). (3) `on_change` ‡ es un campo opcional nuevo (R24). (4) El layout y los tamaños de `ui.*` están en el fichero de vista (Tuning Knobs). (5) `targets` de N3 son marcas **no clicables** declaradas por el controlador (R4); la validación de la regla 29 de 9 debe admitirlas ‡. (6) Las claves de contenido las posee 18 (`PISTA_P1_N2`). (7) La zona de elementos `ref_N` declara `atraccion_desactivada: true` de forma provisional (R14, OQ-8).
+**Notas de datos.** (1) Sin `assist`, sin `on_unlock` ni `compartment` (P1 no completa compartimento ni se desbloquea). (2) `rewards: []` (R37). (3) `on_change` ‡ es un campo opcional nuevo (R24). (4) El layout y los tamaños de `ui.*` están en el fichero de vista (Tuning Knobs). (5) `targets` de N3 son marcas **no clicables** declaradas por el controlador (R4); la validación de la regla 29 de 9 debe admitirlas ‡. (6) Las claves de contenido las posee 18 (`PISTA_P1_N2`). (7) La zona de elementos `ref_N` declara `atraccion_desactivada: true` (definitivo, R14, D11-17); `slot_k` mantiene la atracción.
 
 ## Decisiones tomadas
 
@@ -443,9 +444,9 @@ Formato: decisión · alternativa descartada · motivo. (Modo por lotes: decidid
 | D11-3 | Pulsar un hueco lleno con una referencia en mano **la intercambia** (o devuelve la anterior a la hoja) | Rechazar la pulsación; devolver ambas a la hoja | B.1 no cubre este caso; intercambiar es reversible, no pierde piezas y reduce pulsaciones (Competencia) |
 | D11-4 | **El rechazo no informa** (R26): los 23 incorrectos son idénticos | Indicar los huecos acertados; mostrar «n/4» | Sería un medidor de acierto, bajaría la fuerza bruta a ≤ 6 fallos (F3) y anula el pie de B.1; coherente con «sin contador» (regla 14 de 9) |
 | D11-5 | `SFX_SLOT_IN` mediante un campo `on_change` ‡ de datos; el P1 no usa `PARTIAL` | `PARTIAL` con la ocupación como `progress`; que lo reproduzca 7 como respuesta del objeto | `PARTIAL` está definido para aciertos parciales y la matriz de 9 dice «—» para P1; la regla 13 de 9 exige respuesta a toda acción procesada |
-| D11-6 | Los **huecos muestran el sello** (día y hora) de la referencia colocada (`ui.show_stamp_in_slot`, †) y quedan visibles al resolver | B.1 estricto sin sello; mostrar el cuerpo del correo al colocarlo | Mitiga D-W1 (quien tantea ve la cronología) con coste mínimo; no revela la solución; apoya la comparación en fila (Competencia). Confirmar con el autor (OQ-4) |
+| D11-6 | **PROPUESTA PENDIENTE DE CONFIRMACIÓN (OQ-4):** los **huecos muestran el sello** (día y hora) de la referencia colocada (`ui.show_stamp_in_slot`, †) y quedan visibles al resolver | B.1 estricto sin sello; mostrar el cuerpo del correo al colocarlo | Mitiga D-W1 (quien tantea ve la cronología) con coste mínimo; no revela la solución; apoya la comparación en fila (Competencia). **Se aparta de B.1** (que no menciona el sello en el hueco) y baja algo la dificultad (criterio de competencia del slice): no es decisión del autor del GDD; si el autor del slice dice no, `show_stamp_in_slot = false` sin otro cambio |
 | D11-7 | Una referencia **colocada sigue siendo pulsable en la hoja** (atenuada) | Retirarla de la hoja al colocarla | B.1 dice «si ya estaba en otro hueco, se mueve»: implica poder pulsarla colocada |
-| D11-8 | N2 = `TEXT` con `PISTA_P1_N2`; N3 = `HIGHLIGHT` de los sellos `C05/paper/stamp_N` | N3 como `AFFORDANCE` nuevo; N3 con texto sin clave | Reutiliza efectos existentes (regla 25 de 9) sin añadir información ni una clave `PISTA_*` (conjunto cerrado de 8) |
+| D11-8 | N2 = `TEXT` con `PISTA_P1_N2` (firme); **PROPUESTA PENDIENTE DE CONFIRMACIÓN (OQ-9):** N3 = `HIGHLIGHT` de los sellos `C05/paper/stamp_N` | N3 como `AFFORDANCE` nuevo; N3 con texto sin clave; N3 = «la hora de envío aparece en letra pequeña» (B.1 literal) | Reutiliza efectos existentes (regla 25 de 9) sin añadir información ni una clave `PISTA_*` (conjunto cerrado de 8). El slice B.1 define N3 como la hora de envío en letra pequeña; v0.4 solo confirma que no añade información: la forma concreta de N3 es una lectura del autor del GDD |
 | D11-9 | `rewards: []`; las tarjetas las recoge el jugador en `A05` (20 y 8) | Que 9 entregue `tarjeta_B/D` al resolver | 9 no escribe `tarjeta_*` (son de 20, R10 de 20); el recorrido ya está decidido; se lee «se entregan» del slice como «quedan al alcance» (OQ-5) |
 | D11-10 | Sin material: `SFX_CLICK_SUBTLE`, **sin texto** | Texto «Falta consultar los correos» | No hay clave en 18; un texto sería dirección contraria a Pilar *Autonomía*; N1 ya orienta (OQ-2) |
 | D11-11 | Geometría de referencia con restricciones numéricas (R14, F6) | Dejarlo íntegramente a 9 | La validación de 7/9 (R₁+R₂) y el tamaño del bloque (F4 de 19) condicionan el diseño; si 9 elige otro layout debe cumplir los mismos límites |
@@ -454,35 +455,39 @@ Formato: decisión · alternativa descartada · motivo. (Modo por lotes: decidid
 | D11-14 | Colocaciones en memoria, `KEEP` al cerrar, no persistidas | Persistirlas con un hecho | Regla 22 de 9: rehacerlo no cuesta nada; evita hechos nuevos |
 | D11-15 | `restore_solved_presentation()` del P1 es **vacío** (la vista no se reabre; el panel del mundo no cambia) | Mostrar `2·1·3·4` en el panel 3D | No es accesible (R6) y requeriría arte/escena; puede añadirse después sin tocar reglas (OQ-6) |
 | D11-16 | Fuerza bruta **aceptada y medida** con umbral de revisión (F2, AC-PV4) | Limitar intentos, enfriamiento o rechazo creciente | Pilar *Tensión sin castigo* y anti-pilares; D-W1 queda vigente con medición, no se bloquea |
+| D11-17 | (Ronda 7, aviso 1-2 del review) `ref_N` declara `atraccion_desactivada` de forma **definitiva**; `slot_k` mantiene la atracción; OQ-8 queda resuelta por AC-30b de 7 (tolerancia normal por elemento: 64 px → 128 px, advertencia solo a 170 px frente a la asistida de 256) y se retira como pregunta | Atracción también en `ref_N` (pide la regla 9 de 9); dejar `atraccion_desactivada` «provisional» a la espera de 7/9 | Los chips (112×56, paso 150) pasan sin excepción; Edge Cases, R14, AC-18 y Datos nota 7 dicen ahora lo mismo. Coste aceptado: sin asistencia con mando en los chips; 9 debe admitir la excepción por zona (Cambios requeridos) |
+| D11-18 | (Ronda 7, aviso 5-6) Reparto de `elements()`: 19 (`compose_i01()`) aporta bloques y 4 referencias; el **marco** crea `ref_N` (regla 7 de 9); el **controlador de 11** declara `slot_k` y `stamp_N`. `compose_i01()` con ≠ 4 referencias = error de datos + sin material, con criterio propio (AC-21) | Que el controlador cree también `ref_N` (redacción anterior de R7) | Una sola fuente por elemento; evita que el programador adivine y coincide con la regla 7 de 9 y R30 de 19 |
+| D11-19 | (Ronda 7, aviso 7) AC-3 ordena por un entero `ts_envio` que debe aportar `compose_i01()` (petición a 19), no por cadenas | Analizar «Lunes»/«09:14» en la prueba | La prueba de la solución no debe depender de un formato de texto; AC-3 no es ejecutable hasta que 19 lo acepte (dependencia declarada en Cambios requeridos) |
+| D11-20 | (Ronda 7, aviso 8) D11-6 y D11-8 (N3 = resaltado de sellos) pasan de «decididas» a **propuesta pendiente de confirmación** y suben a Open Questions (OQ-4, OQ-9); el encabezado de Open Questions reconoce que OQ-5 contradice el slice | Mantenerlas como decididas por defecto | Tocan la dificultad/competencia frente a B.1 y el §8 del slice: según el modo por lotes solo se decide por defecto lo que no contradice el slice |
 
 ## Open Questions
 
-Ninguna cambia pilares ni tono ni contradice el slice; las marcadas «slice» o «autor» requieren confirmación humana porque tocan su alcance o su contenido.
+**OQ-5 contradice la letra del slice** (§8 «se entregan `tarjeta_B` y `tarjeta_D`») y OQ-4 y OQ-9 se apartan de B.1 (sello en los huecos; forma de N3): las tres requieren al autor del slice. El resto no cambia pilares ni tono. (OQ-8 se retiró en la ronda 7: resuelta por AC-30b de 7, D11-17.)
 
 | # | Pregunta | Quién | Valor provisional / impacto |
 |---|---|---|---|
 | OQ-1 | **Escalera de pistas efectiva de un solo nivel.** Con B.1 literal, N2 y N3 no añaden información sobre día ni hora (D-W4, A-C1 de la revisión r5: quien se atasca no recibe ayuda sobre el **día**, que es la arruga del puzle). ¿Se acepta tras playtest o se vuelve a decidir B.1? | autor del slice | Aceptado (v0.4, D7-61/D18-23); N3 como énfasis de sellos. Se mide con AC-PV3 |
 | OQ-2 | ¿Debe haber un texto de «sin material» al pulsar los huecos sin hoja? Necesitaría una clave `UI_*` en 18. | narrative-director / ux-designer | Sin texto (D11-10); N1 y `V08` orientan |
 | OQ-3 | N1 con `I-01` ausente resalta `V08` aunque el jugador no haya leído los correos (9 no lee `correos_leidos`, D9-50) y `V08` responde «sin resultados». ¿Debe poder apuntar a `V01`? | 9 / 17 | Aceptado: `OBJ_V08_SIN_RESULTADOS` completa el camino |
-| OQ-4 | **Sello en los huecos (D11-6):** añade un apoyo que B.1 no menciona; baja algo la dificultad y mitiga D-W1. ¿Se confirma? | autor | Activo; se anula con `ui.show_stamp_in_slot = false` sin otro cambio |
+| OQ-4 | **Sello en los huecos (D11-6, propuesta pendiente de confirmación):** añade un apoyo que B.1 no menciona; baja algo la dificultad (criterio de competencia del slice) y mitiga D-W1. ¿Se confirma? | autor del slice | Propuesta no confirmada: se diseña con él (`show_stamp_in_slot` verdadero†) pero no se da por decidido; se anula con `ui.show_stamp_in_slot = false` sin otro cambio. Si se rechaza, se reabre la mitigación de D-W1 (F2) y AC-PV5 cambia a «sin sellos» |
 | OQ-5 | El §8 del slice dice que al resolver P1 «se entregan `tarjeta_B` y `tarjeta_D`»; 8 y 20 las ponen en `A05` tras la puerta A. ¿Se reformula el §8 (v0.4.x)? | autor del slice | Se lee como «quedan al alcance» (D11-9) |
 | OQ-6 | ¿Muestra el panel 3D de `C05` la cronología `2·1·3·4` tras resolver (arte/escena)? | art-director / 4 | No (D11-15) |
-| OQ-8 | La regla 22 de 7 y la regla 29 de 9 no dicen qué tolerancia usar para elementos **sin** tolerancia (P1, P6): ¿R = 64 (128 px) o las 88/220 px de P3? De ello depende que los chips a 150 px sean válidos o requieran `atraccion_desactivada` (y se pierda la atracción con mando en `ref_N`). | 7 / 9 | `ref_N` con `atraccion_desactivada` provisional (R14) |
 | OQ-7 | **Tiempos sin medir:** `T_leer`, `T_trayectos`, `T_ordenar` y los rechazos esperados de F4 son hipótesis; no hay datos. La distancia `V01`→`V08`→`C05` depende de la escena de planta (4). | producer / QA | F4 da ≈ 3,0 min central; se contrasta con AC-PV1 |
+| OQ-9 | **Forma de N3 (D11-8, propuesta pendiente de confirmación):** B.1 dice que N3 es «la hora de envío aparece en letra pequeña»; el GDD la modela como resaltado de los sellos (`stamp_N`, marcas no clicables) porque la hoja ya trae día y hora (B.1 literal). ¿Se confirma el resaltado o se prefiere otra forma? | autor del slice | Propuesta no confirmada; no añade información (R31). Si se cambia, solo varía `hints[2]` de los datos y AC-13 |
 
 ## Cambios requeridos en otros GDDs
 
-No se ha editado ninguno. Para el siguiente paso del lote:
+No se ha editado ninguno desde 11. Para el siguiente paso del lote (el esquema de `puzzles.json` versión 2 de 9 lo definió otro agente y no se reabre aquí; (a) de 9 debe contrastarse con él):
 
 - **9 Marco de puzles:** (a) esquema (regla 4) y ejemplo (regla 5): campo opcional **`on_change`** (`{sfx, when: REF_PLACED}`, R24), `on_solved.rewards`, `persist`, `idle_reset` y los tres niveles de pista del P1 (la regla 5 solo trae el nivel 1); (b) regla 12/F1: dejar escrito que en `DELAYED_AFTER_CHANGE` el cambio de estado de un elemento (p. ej. `en_mano` del P1) cuenta como cambio y que `evaluate()` puede devolver `NONE` con todos los huecos llenos (R12, R21; F5 de 11); (c) regla 25/29: `HIGHLIGHT` puede apuntar a **marcas decorativas no clicables** declaradas por el controlador (`C05/paper/stamp_N`) y la validación de `targets` debe aceptarlas; (d) matriz de encaje y regla 7: apuntar al GDD 11 para las reglas del P1 y a R14 (geometría) en D9-49; (e) `restore_solved_presentation()` del P1 vacío (D11-15); (f) Dependencies: fila 11 con las reglas de esta página (9 → 11 es dependen-de-9, la declara 11); (g) AC-07/AC-06: citar los AC-6, AC-8 de 11 como instanciación.
-- **19 Ordenador, correo e impresora:** (a) `compose_i01()` devuelve además un **`ts_envio` entero** (minutos desde el lunes 00:00) por bloque o expone `dia_orden`, para que la prueba R19/AC-3 no analice cadenas de texto; (b) confirmar que `hora_visible` falso oculta también el sello en los huecos (D11-6) o que 11 usa `dia` solo; (c) R27/R28/R30 ya son recíprocos: sin otro cambio.
-- **18 Base de contenido:** (a) los registros de correo exponen el día de forma ordenable (`dia_orden`) además de la etiqueta («Lunes»); (b) sin claves nuevas (`PISTA_P1_N2` basta; OQ-2 sería la excepción).
-- **7 Interacción e inspección (y 9, regla 29):** aclarar en la regla 22 de 7 qué R usan los elementos sin tolerancia (OQ-8); confirmar que `elements()` de `C05` (4 chips, 4 huecos y la hoja) cabe en el picking y que `atraccion_desactivada` por zona queda disponible (ya definido).
+- **19 Ordenador, correo e impresora:** (a) **petición bloqueante para AC-3:** `compose_i01()` devuelve además un **`ts_envio` entero** (minutos desde el lunes 00:00) por bloque (alternativa: `dia_orden` entero más `hora_envio`), para que la prueba R19/AC-3 no analice cadenas de texto; hasta que 19 lo acepte, AC-3 no es ejecutable (D11-19); (b) confirmar que `hora_visible` falso oculta también el sello en los huecos (D11-6, pendiente) o que 11 usa `dia` solo; (c) **reciprocidad:** añadir a la tabla de dependientes/Dependencies de 19 la fila «11 Puzle 1 (dura): consume `compose_i01()`, `V08` objetivo resaltable y la impresión repetible» (hoy 19 solo nombra «P1»); (d) R27/R28/R30 ya son recíprocos: sin otro cambio.
+- **18 Base de contenido:** (a) (si 19 opta por `dia_orden` en vez de `ts_envio`) los registros de correo exponen el día de forma ordenable (`dia_orden`) además de la etiqueta («Lunes»); (b) sin claves nuevas (`PISTA_P1_N2` basta; OQ-2 sería la excepción).
+- **7 Interacción e inspección (y 9, regla 29):** sin pregunta pendiente sobre tolerancias (AC-30b de 7 ya cubre «normal» por elemento; OQ-8 retirada, D11-17); 9 (regla 9) debe admitir `atraccion_desactivada` por zona en `ref_N`; confirmar que `elements()` de `C05` (4 chips, 4 huecos y la hoja) cabe en el picking y que `atraccion_desactivada` por zona queda disponible (ya definido).
 - **17 Sistema de pistas (sin GDD):** el P1 no tiene niveles `IDLE`; N1 es la única con orientación real; resaltar `V08` por `targets_if_missing_items`.
 - **8 Control de acceso:** sin cambios (regla 6 de 8 ya cubre `archivo_abierto`).
-- **20 Documentos y bolsillo:** sin cambios.
+- **20 Documentos y bolsillo:** **reciprocidad:** añadir a su lista de dependientes/Dependencies la fila «11 Puzle 1 (dura): consulta `has_item("I-01")` vía 9; no recibe `rewards`» (hoy 20 solo nombra «P1»). Sin cambios de reglas.
 - **Slice (`slice-v0.3.md`):** OQ-5 (§8, «se entregan `tarjeta_B` y `tarjeta_D`»). No se edita.
-- **`systems-index.md`:** fila 11: estado «Borrador (lote Feature 3) — pendiente de review», enlace `design/gdd/puzle-1-cronologia.md`; dependencias 9, 18, 19, 20 (duras) como están; añadir en la columna de 9 y 19 que los dependientes incluyen 11.
+- **`systems-index.md`:** fila 11: estado «Revisado (ronda de corrección 7) — pendiente de re-review», enlace `design/gdd/puzle-1-cronologia.md`; dependencias 9, 18, 19, 20 (duras) como están; añadir en la columna de 9 y 19 que los dependientes incluyen 11.
 
 ## Entradas para el registro
 
@@ -575,4 +580,5 @@ Hechos: sin entradas nuevas (`archivo_abierto` ya está en el catálogo de 3). A
 
 | Fecha | Cambio |
 |---|---|
+| 2026-11-09 (ronda de corrección 7) | Corrección según `reviews/puzle-1-cronologia-review.md` (0 bloqueantes, 9 avisos): `ref_N` con `atraccion_desactivada` definitiva y OQ-8 retirada (R14, Edge Cases, AC-18, Datos nota 7, F6; D11-17); R4 cita R30 (no R34); AC-6 reescrito como dos pulsaciones (R12); reparto de `elements()` único en R7 alineado con la regla 7 de 9 (D11-18) y nuevo AC-21 para `compose_i01()` con ≠ 4 referencias; AC-3 por `ts_envio` entero pedido a 19 (D11-19); D11-6 y D11-8 pasan a propuesta pendiente (OQ-4, nueva OQ-9) y el encabezado de Open Questions reconoce que OQ-5 contradice el slice (D11-20); filas de reciprocidad para 19 y 20 en Cambios requeridos. Estado: Revisado (ronda 7), pendiente de re-review. Fórmulas F1–F7 sin cambio numérico (solo la nota de F6 sobre la tolerancia). |
 | 2026-11-09 | Esqueleto y primer borrador completo (lote Feature 3): Summary, Overview, Player Fantasy, Detailed Rules (R1–R46), Formulas (F1–F7), Edge Cases, Dependencies, Tuning Knobs, Acceptance Criteria, Datos del puzle, Decisiones D11-1 a D11-16, Open Questions OQ-1 a OQ-7, Cambios requeridos y Entradas para el registro. Estado: pendiente de review independiente. |
