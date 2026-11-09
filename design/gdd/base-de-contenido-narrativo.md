@@ -112,7 +112,7 @@ Existe por cuatro razones: (1) el nombre de Vera es provisional (D-04), así que
     | P6 N2 | Texto tras 20 s sin pulsar | `PISTA_P6_N2`: «La carta no cambia; cambia la primera frase» |
 
     Las 8 claves son un conjunto cerrado (`PISTA_P1_N2`, `PISTA_P2_N1`, `PISTA_P4_N1`, `PISTA_P4_N3`, `PISTA_P5_N1`, `PISTA_P5_N2`, `PISTA_P6_N1`, `PISTA_P6_N2`); P6 no tiene `PISTA_P6_N3`. Los textos coinciden con el slice (Anexo B). La carga de `puzzles.json` falla si un efecto `TEXT` referencia una clave `PISTA_*` inexistente (GDD 9, regla 29).
-21. **Textos de emergencia.** Existen dos textos que el catálogo no puede servir porque pueden pedirse sin catálogo cargado: el marcador «…» (petición sin catálogo o no encontrada en la build final) y un único **mensaje de fallo de carga** («No se ha podido cargar el contenido del juego. Reinicia la aplicación.», en `es`, redacción provisional del writer). Son constantes definidas fuera del catálogo, listadas como únicas excepciones de la regla 6. Ningún otro literal visible está permitido.
+21. **Textos de emergencia.** Existen dos textos que el catálogo no puede servir porque pueden pedirse sin catálogo cargado: el marcador «…» (petición sin catálogo o no encontrada en la build final) y un único **mensaje de fallo de carga** («No se ha podido cargar el contenido del juego. Vuelve a intentarlo desde el título.», en `es`, redacción provisional del writer). Son constantes definidas fuera del catálogo, listadas como únicas excepciones de la regla 6. Ningún otro literal visible está permitido.
 
 ### States and Transitions
 
@@ -315,6 +315,8 @@ Ronda 3 (2026-11-09), tras `/review-all-gdds` (informe `gdd-cross-review-2026-11
 | # | Decisión | Alternativa descartada | Motivo |
 |---|---|---|---|
 | D18-10 | **(D-B2)** `VO_G_13B` pasa a «Lo sé» (slice v0.3.3). | Mantener «Lo sé. Por eso lo pedí» como excepción registrada; reescribirla con narrative-director. | «Por eso lo pedí» confirma la intención del Guardián, que el pilar 1 («Violating») prohíbe; «Lo sé» reconoce a Vera sin explicar la historia (anti-pilar). La línea sigue siendo audible y la clave no cambia. Sin subtítulo ni audio fuera del slice. |
+
+| D18-11 | **(S-W4)** El mensaje de fallo de carga dice «Vuelve a intentarlo desde el título» (regla 21). | «Reinicia la aplicación». | Todo fallo de carga vuelve al título con acción «Volver al título» (GDD 4 regla 14); reiniciar castiga (*Tensión sin castigo*). |
 
 ## Historial de cambios
 
