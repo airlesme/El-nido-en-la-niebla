@@ -1,6 +1,6 @@
 # Entrada y controles
 
-> **Status**: Revisado (ronda de propagación 1) — pendiente de re-review
+> **Status**: Revisado (ronda de decisiones 1) — pendiente de re-review
 > **Author**: Álvaro + agentes
 > **Last Updated**: 2026-11-09
 > **Last Verified**: 2026-11-09
@@ -28,11 +28,11 @@ Existe porque el slice combina tres modos de manejo muy distintos (caminar en pr
 
 1. **Vocabulario de acciones.** El resto del juego solo conoce acciones lógicas, nunca teclas ni botones. Hay dos tipos (ver tabla de asignaciones por defecto):
    - **Acciones físicas** (las únicas que tienen entrada propia y se reasignan, regla 15):
-     - *Exploración:* `mover`, `mirar`, `interactuar`, `pausa`.
+     - *Exploración:* `mover`, `mirar`, `interactuar`, `pausa` y `atrás` (pulsación corta; decisión del usuario, 2026-11-09, D27). En `exploración` `atrás` no cierra nada: de ella deriva la acción `repasar_bolsillo` (regla 23).
      - *Inspección y lectura:* `atrás`; en `inspección` `mirar` gira el objeto (`rotar_objeto`, regla 11).
      - *Vista cercana de puzle, ordenador y llamada:* `mover_cursor`, `seleccionar`, `atrás`.
      - *Menús y opciones de la llamada:* `ui_arriba`, `ui_abajo`, `ui_izquierda`, `ui_derecha`, `ui_aceptar`, `ui_atrás`.
-   - **Gestos derivados** (los calcula este sistema a partir de una acción física; no tienen entrada propia ni se reasignan): `leer` (`interactuar` mantenida hasta `t_hold`, regla 10; no es una acción aparte), y a partir de `seleccionar`: `agarrar` (mantener y mover el cursor), `rotar` (mantener y mover en horizontal: gesto `ROTAR` del Anexo B) y `mantener` (mantener más allá del umbral: gesto `PULSAR` largo del puzle 3). Cuál de ellos se emite lo decide la regla 13 y F6.
+   - **Gestos derivados** (los calcula este sistema a partir de una acción física; no tienen entrada propia ni se reasignan): `repasar_bolsillo` (de `atrás` en `exploración`, regla 23), `leer` (`interactuar` mantenida hasta `t_hold`, regla 10; no es una acción aparte), y a partir de `seleccionar`: `agarrar` (mantener y mover el cursor), `rotar` (mantener y mover en horizontal: gesto `ROTAR` del Anexo B) y `mantener` (mantener más allá del umbral: gesto `PULSAR` largo del puzle 3). Cuál de ellos se emite lo decide la regla 13 y F6.
 
    (`leer` se retira de `inspección`: 7 no le da uso, D7-28.) No existen `correr`, `agacharse` ni `saltar` (slice §5 y A.0).
 2. **Dos dispositivos a la vez.** Teclado y ratón, y mando, están siempre activos: una acción llega al juego venga de donde venga. No hay modo «elige tu dispositivo».
@@ -62,8 +62,8 @@ Existe porque el slice combina tres modos de manejo muy distintos (caminar en pr
    | Título, `ninguno` (Nueva partida) | [`menú`] | [`menú`, `sin control`(4)] | [`menú`, `sin control`(21)] | [`exploración`] (el 21 la pide; descarta `menú`) |
    | Planta, `ninguno` (Nueva partida desde la pausa) | [`exploración`] | [`exploración`, `sin control`(4)] → tras la descarga [`sin control`(4)] | [`sin control`(21)] | [`exploración`] (el 21 la pide) |
    | Planta durante escena dirigida del 21 (`ESC1_LLEGADA`, `ESC8_CIERRE`), `ninguno` (Nueva partida desde la pausa) — **propuesta** | [`sin control`(21), `menú`] | [`sin control`(4)] (se descartan el `sin control`(21) y el `menú`; un aviso) | [`sin control`(21)] | [`exploración`] (el 21 la pide) |
-7. **Pausa.** `pausa` abre el menú sobre cualquier contexto salvo durante una carga de escena (entre el aviso «carga de escena iniciada» y «carga de escena terminada» o «carga de escena fallida», que emite Escena de planta, 4, y que este sistema escucha por el bus; mientras dura se mantiene un estado interno `carga_en_curso`; sin esos avisos la pausa no se bloquea nunca), detiene el tiempo de juego y, al cerrarlo, restablece el contexto inferior. Con el menú abierto, `atrás` y `pausa` lo cierran; si ambas comparten tecla (`Esc`), una sola pulsación produce un solo cierre, porque el menú consume el evento. Al abrir el menú el ratón se libera; al cerrarlo se recaptura si el contexto restaurado lo requiere. El menú de título es la base de la pila: `pausa`, `atrás` y `ui_atrás` no lo cierran; solo se sale de él al empezar o reanudar la partida.
-8. **Transiciones.** Mientras una transición de cámara o de animación bloquea el contexto (p. ej. la cámara acercándose al marco del puzle 3, o la animación de descolgar), solo se acepta `pausa`; el resto de acciones se descarta y **no se guarda para después**. **El bloqueo lo declara y mantiene Interacción (7) como transición bloqueante (sin `sin control`) desde `interactuar()` y termina con el aviso de fin que corresponda: «cámara cedida» (entrada a una vista cercana u ordenador, regla 19 de 7), «cámara devuelta» (salida) o «gesto terminado» (animación sin cesión de cámara), o con el tope de seguridad de 3 s (F8).** Las escenas dirigidas y las cargas (`sin control`) declaran su propia duración máxima (F8).
+7. **Pausa.** `pausa` abre el menú sobre cualquier contexto salvo durante una carga de escena (entre el aviso «carga de escena iniciada» y «carga de escena terminada» o «carga de escena fallida», que emite Escena de planta, 4, y que este sistema escucha por el bus; mientras dura se mantiene un estado interno `carga_en_curso`; sin esos avisos la pausa no se bloquea nunca), detiene el tiempo de juego y, al cerrarlo, restablece el contexto inferior. Con el menú abierto, `atrás` y `pausa` lo cierran; si ambas comparten tecla (`Esc`), una sola pulsación produce un solo cierre, porque el menú consume el evento. Al abrir el menú el ratón se libera; al cerrarlo se recaptura si el contexto restaurado lo requiere. Esa pulsación de `atrás` la consume el menú: no produce `repasar_bolsillo` (regla 23). El menú de título es la base de la pila: `pausa`, `atrás` y `ui_atrás` no lo cierran; solo se sale de él al empezar o reanudar la partida.
+8. **Transiciones.** Mientras una transición de cámara o de animación bloquea el contexto (p. ej. la cámara acercándose al marco del puzle 3, o la animación de descolgar), solo se acepta `pausa`; el resto de acciones se descarta y **no se guarda para después** (única excepción: `repasar_bolsillo`, regla 23, que se entrega a 20 sin guardarla en Entrada; 7 decide si la acepta, la aplaza o la rechaza). **El bloqueo lo declara y mantiene Interacción (7) como transición bloqueante (sin `sin control`) desde `interactuar()` y termina con el aviso de fin que corresponda: «cámara cedida» (entrada a una vista cercana u ordenador, regla 19 de 7), «cámara devuelta» (salida) o «gesto terminado» (animación sin cesión de cámara), o con el tope de seguridad de 3 s (F8).** Las escenas dirigidas y las cargas (`sin control`) declaran su propia duración máxima (F8).
 
 **Exploración, inspección y lectura**
 
@@ -99,6 +99,15 @@ Existe porque el slice combina tres modos de manejo muy distintos (caminar en pr
 21. **Ventana sin foco.** Si la ventana pierde el foco, se abre el menú de pausa automáticamente, también durante una transición bloqueante (regla 8); si ocurre durante una carga de escena (donde la regla 7 impide abrirla), se abre al terminar la carga.
 22. **Mando desconectado.** Si el mando era el dispositivo activo y se desconecta, se abre el menú de pausa con el mensaje «Mando desconectado» **en el acto, igual que la pérdida de foco** (también durante una transición bloqueante; si hay una carga de escena, al terminar la carga); al reconectar se ofrece continuar (la pantalla de ese mensaje es del sistema 25). Teclado y ratón siguen valiendo para reanudar.
 
+**Repaso del bolsillo (decisión del usuario, 2026-11-09, D27)**
+
+23. **`repasar_bolsillo`.** Con la pila en `exploración` (único contexto en que existe), una pulsación de `atrás` emite la acción derivada `repasar_bolsillo` hacia 20 (`repasar_bolsillo()`, 20 R18–R22): abre un documento por pulsación, sin menú ni pantalla de inventario (slice D.1). Reglas de entrega:
+    - **Pulsación corta.** Se emite en el flanco de pulsación, sin umbral `t_hold`: `atrás` no tiene gesto largo que desambiguar en `exploración`. Mantener el botón no repite y soltarlo no emite nada (se ignoran los eventos de auto-repetición del teclado). Un documento por pulsación.
+    - **Solo si la pulsación empieza en `exploración`.** El contexto se evalúa al pulsar. El `atrás` que **cierra** un modo (`lectura`, `inspección`, `vista cercana`, `ordenador`) o el menú (regla 7) lo consume ese contexto; aunque el cierre deje `exploración` arriba antes de soltar, esa misma pulsación **no** lanza `repasar_bolsillo`, ni al pulsar ni al soltar (20, AC-14). Para releer otro documento hace falta pulsar de nuevo.
+    - **Con el ajuste «alternar en lugar de mantener» (regla 14)**, el `atrás` que cancela un gesto en curso (`leer`) se consume en la cancelación y no lanza el repaso.
+    - **Transiciones.** Es la excepción de la regla 8: `repasar_bolsillo` se entrega aunque haya una transición bloqueante o un gesto de 7 (sin `sin control`), porque 7 decide `ACEPTADA`, `APLAZADA` o `RECHAZADA` (7, regla 27b); Entrada no la guarda ni la reintenta. En `sin control`, `menú`, `llamada` y el resto de contextos no existe.
+    - **Asignación.** Es la de `atrás` (regla 15, reasignable; regla 17: siempre queda una asignación); `repasar_bolsillo` no se reasigna aparte. El pie de ayuda lo pide 20 (R23 de 20, `UI_BOLSILLO_AYUDA`), no Entrada.
+
 **Asignaciones por defecto**
 
 | Acción | Teclado y ratón | Mando |
@@ -106,7 +115,7 @@ Existe porque el slice combina tres modos de manejo muy distintos (caminar en pr
 | `mover` | `W` `A` `S` `D` | Stick izquierdo |
 | `mirar` | Movimiento del ratón | Stick derecho |
 | `interactuar` (de él deriva `leer`, al mantener) | `E` · clic izquierdo | Botón sur (`A` / `✕`) |
-| `atrás` | Clic derecho | Botón este (`B` / `○`) |
+| `atrás` (en `exploración` deriva `repasar_bolsillo`, regla 23) | Clic derecho | Botón este (`B` / `○`) |
 | `pausa` | `Esc` | `Start` / `Options` |
 | `mover_cursor` | Ratón | Ambos sticks (solo el derecho en `llamada` y `menú`) |
 | `seleccionar` (de él derivan `agarrar`, `rotar`, `mantener`; no reasignables por separado) | Clic izquierdo (pulsar / mantener) | Botón sur (pulsar / mantener) |
@@ -119,7 +128,7 @@ La pila empieza vacía en el arranque, con `menú` (título) como primer context
 
 | Contexto | Acciones activas | Cursor y ratón | Se entra desde | Se sale con |
 |---|---|---|---|---|
-| `exploración` | `mover`, `mirar`, `interactuar`, `pausa` | Sin cursor; ratón capturado | Inicio de partida; al salir de cualquier otro | — (contexto base) |
+| `exploración` | `mover`, `mirar`, `interactuar`, `pausa`, `atrás` (→ `repasar_bolsillo`, regla 23) | Sin cursor; ratón capturado | Inicio de partida; al salir de cualquier otro | — (contexto base) |
 | `inspección` | `rotar_objeto` (eje de mirar), `atrás`, `pausa` | Sin cursor; ratón capturado | Interacción (7), al coger un objeto | `atrás` |
 | `lectura` | `atrás`, `interactuar` (pasar página), `pausa` | Sin cursor | Interacción (7), al leer | `atrás` |
 | `vista cercana` | `mover_cursor`, `seleccionar` (y sus gestos derivados `agarrar`, `rotar`, `mantener`), `atrás`, `pausa` | Cursor visible (virtual con mando) | Interacción (7), al abrir un puzle o panel | `atrás` o resolverse el puzle |
@@ -137,6 +146,7 @@ La pila empieza vacía en el arranque, con `menú` (título) como primer context
 | 2 Jugador | `mover` (vector 2D) y `mirar` (cambio de orientación) en `exploración` | Nada |
 | 7 Interacción | `interactuar` (pulsada, toque corto), gesto `leer`, `rotar_objeto`, `atrás`, gestos de puntero | Por elemento de la vista: posición y tolerancia en px (F5b) y `gestos_aceptados` (regla 13); si el objeto apuntado tiene `verbo_largo` (regla 10); peticiones de entrar y salir de `inspección`, `lectura`, `vista cercana` y `ordenador`; transición bloqueante con sus avisos de fin (regla 8) |
 | 4 Escena de planta | Contexto `sin control` durante las cargas (aguas abajo); reposición de `menú` | Avisos «carga de escena iniciada» (destino, `motivo`, `D_carga`) / «terminada» / «fallida» (bloquean y desbloquean `pausa`, regla 7); apertura de `sin control` con `D_carga` como duración declarada (F8); petición de `exploración` al terminar; petición de reponer `menú` ante un fallo o una descarga total |
+| 20 Documentos y bolsillo | La acción derivada `repasar_bolsillo` (de `atrás` en `exploración`, regla 23) | Nada (la llamada a `abrir_lectura` a 7 es de 20) |
 | 24 Prompt de interacción | Dispositivo activo (para elegir el icono) y la asignación actual de la acción | — |
 | 25 Menú de pausa | `pausa`, `ui_*`, `atrás`; avisos de foco y mando | Peticiones de entrar y salir de `menú`; pantalla de reasignación (usa la API de reasignación) |
 | 30 Accesibilidad | API de reasignación, ajustes de manejo, alternar-en-lugar-de-mantener | Valores elegidos por el jugador |
@@ -344,6 +354,9 @@ No hay fórmula: la duración la fijan la cámara o el director de escenas. Sí 
 - **If la pulsación mantenida es `agarrar` y el cursor se detiene sin llegar a ningún destino**: sigue siendo `agarrar` hasta soltar; no pasa a `mantener`.
 - **If se escribe en el campo de búsqueda del ordenador y se pulsa `Retroceso`**: borra un carácter; no cierra el ordenador ni dispara `atrás` (regla 20). `Esc` abre la pausa, no cancela el texto.
 
+- **If se pulsa `atrás` en `exploración` sin ningún documento relegible en el bolsillo**: `repasar_bolsillo` no hace nada (sin sonido ni mensaje, 20 R19).
+- **If se pulsa `atrás` en `exploración` durante un gesto de 7**: la acción llega a 20 y 7 devuelve `APLAZADA` o `RECHAZADA` (regla 23); Entrada no la guarda.
+
 **Reasignación**
 - **If el jugador intenta dejar `interactuar`, `atrás` o `pausa` sin asignación en un dispositivo**: se rechaza (regla 17).
 - **If un archivo de asignaciones guardado contiene una acción que ya no existe o una entrada no válida**: esa entrada se descarta con una línea en el log y la acción conserva su valor por defecto.
@@ -376,6 +389,7 @@ No hay fórmula: la duración la fijan la cámara o el director de escenas. Sí 
 | 30 Accesibilidad | Dura | API de reasignación y ajustes de manejo |
 | 6 Ajustes | Dura | Guarda y reaplica el bloque de asignaciones y ajustes de manejo |
 | 19 Ordenador | Blanda | Cursor, `seleccionar`, texto; el teclado en pantalla de 19 (R16) se opera con el mismo cursor y `seleccionar`, sin acciones nuevas de Entrada |
+| 20 Documentos y bolsillo | Dura (de 20 hacia 1) | Acción derivada `repasar_bolsillo` (regla 23) |
 | 22 Llamada | Blanda | Contexto `llamada`, `ui_*` |
 | 24 Prompt de interacción | Blanda | Dispositivo activo y asignación vigente de cada acción (para el icono) |
 | 27 Pantalla de título y cierre | Blanda | `ui_*`, cursor |
@@ -485,6 +499,9 @@ Revisados por `qa-lead`. **Evidencia:** **L** = test unitario automático (gdUni
 - **AC-E13 (L)**: **GIVEN** un `sin control` abierto por el 4 como superior, **WHEN** el 21 pide abrir otro `sin control`, **THEN** se rechaza y se registra; **WHEN** el 21 pide «traspasar», **THEN** cambia dueño y duración sin salir ni entrar, la pila no cambia y no hay aviso de cambio; **WHEN** un sistema que no es el dueño pide cerrarlo, **THEN** se rechaza; **WHEN** se pide «traspasar» sin `sin control` arriba, **THEN** se rechaza y se registra; **WHEN** el dueño pide `exploración`, **THEN** la pila queda [`exploración`] y se emite un solo aviso (`sin control`, `exploración`); **WHEN** el 4 repone `menú`, **THEN** la pila queda [`menú`].
 - **AC-E13b (L)** *(ronda 4, N-B1)*: **GIVEN** la pila [`menú`, `sin control`(4)] de una carga desde el título con `control_final` = `ninguno`, **WHEN** el 21 traspasa, **THEN** la pila sigue [`menú`, `sin control`(21)] sin aviso; **WHEN** el 21 pide `exploración`, **THEN** la pila queda [`exploración`] (sin `menú` debajo) con un solo aviso (`sin control`, `exploración`). **Cierre normal (ronda 5, E-1):** desde [`menú`, `sin control`(21)] (el 21 no pidió `exploración`: error de uso), **WHEN** el 21 «cierra» su `sin control`, **THEN** la pila queda [`menú`] y se registra el defecto. **Vuelta al título desde Recepción:** desde [`sin control`(21)] (sin `menú` debajo), **WHEN** el 4 completa la descarga total y pide *Reponer `menú`*, **THEN** la pila queda [`menú`] con un solo aviso; el 21 no cierra nada.
 - **AC-E13c (L)** *(propuesta, pendiente de confirmación; PA-2 de 21, AC-21-23b)*: **GIVEN** la pila [`sin control`(21), `menú`] durante `ESC1_LLEGADA`, **WHEN** llega «carga de escena iniciada» del 4 por «Nueva partida» desde la pausa, **THEN** la pila pasa a [`sin control`(4)] con un solo aviso (`menú`, `sin control`) y, tras el traspaso del 21 y su petición de `exploración`, queda [`exploración`]; **GIVEN** [`sin control`(21), `menú`] y que el 4 pide *abrir* sin esa carga (no hay «Nueva partida»), **THEN** se rechaza y se registra como en AC-E13.
+- **AC-E15 (R1, R23, L)** *(decisión D27)*: **GIVEN** la pila [`exploración`], **WHEN** llega una pulsación de `atrás`, **THEN** se emite una sola vez `repasar_bolsillo`; **WHEN** se mantiene el botón (auto-repetición) o se suelta, **THEN** no se emite nada más; **GIVEN** la pila en `inspección`, `lectura`, `vista cercana`, `ordenador`, `llamada`, `menú` o `sin control`, **WHEN** llega `atrás`, **THEN** nunca se emite `repasar_bolsillo`.
+- **AC-E16 (R23, R14, L + I)** *(decisión D27; cubre 20 AC-14)*: **GIVEN** una `lectura` abierta desde `exploración`, **WHEN** el jugador pulsa `atrás`, la lectura se cierra (la pila vuelve a [`exploración`]) y mantiene o suelta el botón, **THEN** esa pulsación no emite `repasar_bolsillo`; **WHEN** pulsa `atrás` de nuevo, **THEN** se emite una vez. **GIVEN** el ajuste «alternar» y un `leer` en curso, **WHEN** llega `atrás`, **THEN** cancela el gesto y no emite `repasar_bolsillo`.
+- **AC-E17 (R23, R8, I)** *(decisión D27)*: **GIVEN** una transición bloqueante de 7 en `exploración`, **WHEN** llega `atrás`, **THEN** `repasar_bolsillo` llega a 20 (y 7 responde `APLAZADA` o `RECHAZADA`), Entrada no la guarda ni la repite al terminar la transición y el resto de acciones sí se descartan (AC-08); **GIVEN** `atrás` reasignada, **THEN** `repasar_bolsillo` sigue a la asignación vigente.
 - **AC-E14 (L)**: **GIVEN** «carga de escena iniciada» y luego «carga de escena fallida», **THEN** `pausa` queda bloqueada entre los dos avisos y vuelve a aceptarse tras el segundo (con `menú` en la base de la pila no abre nada); una pausa pendiente por pérdida de foco durante la carga se descarta.
 
 ## Open Questions
@@ -506,7 +523,7 @@ Revisados por `qa-lead`. **Evidencia:** **L** = test unitario automático (gdUni
 | 13 | **Resolución lógica del cursor:** confirmar que los píxeles de F5a, F5b y F6 son del viewport lógico 1920 × 1080 (modo de estiramiento). | `/architecture-decision` | Fase de arquitectura |
 | 14 | **Pendiente de verificación en el editor (no cubierto por `docs/engine-reference/godot/`; no se afirma nada):** (a) que el motor entregue ejes crudos sin zona muerta para F1 y cómo se combina con la zona muerta por acción del `InputMap`; (b) captura de ratón y `relative_px` acumulado; (c) señal de pérdida/recuperación de foco de la ventana y de conexión/desconexión de mando; (d) reasignación en caliente y guardado de eventos del `InputMap`. Nota ya respaldada por `modules/input.md`: desde 4.7 el dispositivo activo (regla 3, F7) se identifica por tipo de evento y no por `device == 0`. | `godot-specialist` / ADR de entrada | Antes de implementar las reglas 3, 12, 15, 21, 22 y F1 |
 | 15 | **Validación de `gestos_aceptados`** por elemento (regla 13): 7 y los GDD de puzles deben declararlos; validar en playtest que ningún elemento del slice acepte a la vez `agarrar` y `mantener`, o que la precedencia de F6 resulte natural. | GDD 7 y puzles 11–16 | Esos GDD |
-| 16 | **Pendiente de decisión (lote Feature 1) — relectura del bolsillo con `atrás`** (20, Q1; alcance del slice, D.1 «no hay menú de inventario»): 20 propone añadir `atrás` (pulsación corta, solo si empieza en `exploración`) a las acciones activas de `exploración` y emitir la acción derivada `repasar_bolsillo` (un documento por pulsación, sin pantalla de selección). **No se activa** en este GDD: hoy `exploración` solo tiene `mover`, `mirar`, `interactuar` y `pausa`. Depende de ella AC-11, AC-12, AC-12b y AC-14 de 20 y la relectura de la carta (9 AC-42). | creative-director / autor del slice | Antes de cerrar 20 |
+| 16 | ~~Relectura del bolsillo con `atrás` (20, Q1).~~ **Resuelta (decisión del usuario, 2026-11-09, D27):** `atrás` (pulsación corta) activa en `exploración` con la acción derivada `repasar_bolsillo` (regla 23); AC-E15 a AC-E17; 20 AC-11, AC-12, AC-12b y AC-14 y 9 AC-42 son firmes. | — | Cerrada (2026-11-09) |
 | 17 | **Propuesta pendiente de confirmación (lote Feature 1) — «Nueva partida desde la pausa» durante una escena dirigida:** operación «absorber el `sin control` ajeno» de la regla 6 y AC-E13c (D22). Debe confirmarla el creative/technical lead; 4 la refleja en su regla 9. | technical-director | Antes de implementar 21 |
 
 ## Decisiones tomadas
@@ -550,7 +567,8 @@ Ronda de propagación 1 (2026-11-09, lote Feature 1: 8, 10, 19, 20, 21).
 | D23 | Open Question 12 cerrada con las duraciones de 21 (15,0 / 7,0 / 25,8 s); Dependencies de 21 recoge la apertura de un `sin control` propio en `ESC8_CIERRE`. | Dejar la pregunta abierta hasta implementar 21 | 21 ya las declara (F2/F3) |
 | D24 | Open Question 1 cerrada con R16 de 19 (teclado en pantalla con el mismo cursor, sin acciones nuevas); el criterio de mando es AC-10a de 19. | Acción nueva de Entrada para teclear | Regla 4 y 12: sin botones nuevos |
 | D25 | F8: la cadena de 7 cita el tope `BOX_OPEN_MAX` 1,6 s de 10 y no el valor único `BOX_Cn_OPEN`. | Mantener `BOX_Cn_OPEN` | 10 lo sustituye por valores por compartimento con tope |
-| D26 | `atrás` en `exploración` / `repasar_bolsillo` (20, Q1) queda como Open Question 16, **no activada**. | Activarla ahora | Pregunta de alcance (slice D.1) |
+| D26 | ~~`atrás` en `exploración` / `repasar_bolsillo` queda como Open Question 16, no activada.~~ **Sustituida por D27.** | — | — |
+| D27 | **Aprobada por el usuario, 2026-11-09:** `atrás` corta en `exploración` = acción derivada `repasar_bolsillo` (regla 23, tablas de acciones y de contextos, AC-E15 a AC-E17); se emite al pulsar, sin umbral `t_hold`; el `atrás` que cierra un modo o el menú no cuenta aunque deje `exploración` antes de soltar; es la única acción que se entrega durante una transición bloqueante de 7 sin guardarse (excepción a la regla 8, para que 7 decida `APLAZADA`/`RECHAZADA`). | (a) Menú de inventario (contradice slice D.1). (b) Sin relectura: la carta del P6 necesitaría un objeto de escena y 9 (D9-23) cambiaría. (c) `interactuar` mantenida sin objetivo (choca con `leer`, no es descubrible). (d) Emitir al soltar con umbral (retrasa la respuesta sin desambiguar nada). | Mantener el slice sin pantalla de inventario con el mínimo mando nuevo; el riesgo es abrir una lectura sin querer, sin coste (pilar *Tensión sin castigo*). |
 
 ## Historial de cambios
 
@@ -563,3 +581,4 @@ Ronda de propagación 1 (2026-11-09, lote Feature 1: 8, 10, 19, 20, 21).
 - **2026-11-09 (ronda 4, aplica `gdd-cross-review-2026-11-09-r2.md`):** regla 6 (operación «pedir `exploración`» del dueño vigente, también el 21; cierre normal del 21 restaura `menú`; tabla de pila por origen), AC-E13b, F8 y rango seguro del tope 3–5 s (B-4), Open Question 3 remitida a 7/9, lista de bidireccionalidad actualizada (N-W2). Ver D18 a D20.
 - **2026-11-09 (ronda 5, `gdd-cross-review-2026-11-09-r3.md`):** E-1: regla 6 (cierre normal del 21) y AC-E13b reescritos; D21.
 - **2026-11-09 (ronda de propagación 1, lote Feature 1: 8, 10, 19, 20, 21):** regla 6 (propuesta «absorber el `sin control` ajeno», fila de pila, AC-E13c), Dependencies de 19 y 21, F8 y rango del tope (`BOX_OPEN_MAX`), Open Questions 1 y 12 cerradas, 16 y 17 nuevas; D22 a D26. **Cambia reglas (propuesta): pendiente de re-review.**
+- **2026-11-09 (ronda de decisiones 1):** D-A aprobada por el usuario: `atrás` corta en `exploración` activa `repasar_bolsillo` (reglas 1, 7, 8 y nueva 23, tablas de contextos, acciones, interacciones y dependencias, edge cases, AC-E15 a AC-E17; Open Question 16 cerrada; D26 sustituida por D27). La propuesta «absorber el `sin control` ajeno» (OQ 17, D22) sigue pendiente. **Cambia reglas: pendiente de re-review.**
