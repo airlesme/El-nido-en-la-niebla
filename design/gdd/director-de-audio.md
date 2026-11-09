@@ -1,6 +1,6 @@
 # Director de audio (sistema 23)
 
-> **Status**: Borrador (lote autónomo)
+> **Status**: Revisado (ronda de corrección 1) — pendiente de re-review
 > **Author**: Audio Director (lote autónomo)
 > **Last Updated**: 2026-11-09
 > **Implements Pillar**: El espacio expresa la emoción (lluvia, drone y silencio como lenguaje) · Tensión sin castigo (sustos sonoros atenuables; ningún fallo de audio bloquea) · Ambivalencia sin moral binaria (ningún sonido clasifica una decisión; la voz del Guardián no suena ni amable ni amenazante) · Autonomía como progresión (la voz comenta, no guía) · Información incompleta (el audio no añade hechos)
@@ -68,7 +68,7 @@ MDA: **Sensation** (silencio como lenguaje) y **Narrative** (la llamada). SDT: *
    | «vista cercana abierta/cerrada» | 7 | Silencio parcial (R29) |
    | «carga de escena iniciada», «escena lista», «descarga total solicitada/completada» | 4 | Carga (I) |
    | «estado restablecido», «estado restaurado» | 3 | R45 |
-   | `pause_opened` ‡, «pausa cerrada» ‡ | 25 | R41 |
+   | `pause_opened`, `pause_closed` ‡ | 25 | R41 (par único; `pause_opened` existe en 3 y 25; `pause_closed` es nuevo ‡ y lo declara 25) |
    | Avisos de cambio de Ajustes | 6 | `vol_*`, `reducir_sobresaltos` (H) |
 
    Más la **señal directa** `paso(superficie, intensidad)` de 2 (regla 31 de 2). 23 **lee** solo `caja_completa` y `llamada_completada`, solo al reanudar (R43). No lee `carta_variante`, `t4_decision` ni `respuesta_llamada`: quien pide la línea elige su variante.
@@ -85,6 +85,7 @@ MDA: **Sensation** (silencio como lenguaje) y **Narrative** (la llamada). SDT: *
    | «línea fallida» | Fichero existente que no carga o no decodifica, fallo al empezar o a mitad, o cola llena (R10) | `{line_id, t_lectura_s}` |
 
    Se emiten como avisos encolados (regla 11 de 3), nunca dentro de la entrega de la petición: como máximo **un fotograma** después. «Sin audio» y «fallida» salen **al momento**; quien las recibe espera su propio tiempo (9 y 22: `fallback_s`; 21 y 26 pueden usar `t_lectura_s`). Nunca dos señales por línea: tras «fallida» a mitad no hay «terminada».
+7b. **«Línea pedida» solo acepta IDs de línea de 18.** Un `line_id` `SFX_*` (o cualquier ID del catálogo de sonidos) **no es una línea**: se rechaza con registro, sin señal de respuesta y sin «fallida» (que supondría texto en 18). Los `SFX_*` se piden **solo** por «sonido pedido» ‡ (R5). 22 debe pedir sus `SFX_*` por ese aviso (Cambios requeridos). La OQ 7 (aviso nuevo en 3) **debe resolverse antes de cerrar el lote**: sin ella 23 no tiene contrato para los SFX de 7, 8, 10, 15, 19 y 22.
 8. **Nada bloquea.** Si 23 no emite nada, los consumidores siguen por sus topes (`fallback_s + line_grace_s` en 9 y 22; `t_linea_max_s` en 21). 23 no espera a 26.
 9. **Tres canales por prefijo, simultáneos.** `VO_V_*` → `Voice_Vera` (interior, 2D, seca); `MEGA_*` → `Voice_Mega` (diegética); `VO_G_*` → `Voice_Guardian`. Sin espera entre canales (slice C.1 y C.8; DT-18 de 21).
 10. **Un canal, una línea.** Una segunda petición al mismo canal se **encola** (cola de 1) con tope `t_cola_canal_s` (8,0†, como `t_espera_voz_s` de 21); con cola ocupada o tope superado, «línea fallida» (`canal_ocupado`, registrado). Es una defensa: 21 ya aplaza. Una petición con el **mismo `line_id`** que la activa o encolada se ignora y registra; la señal única llega a todos.
@@ -127,7 +128,7 @@ MDA: **Sensation** (silencio como lenguaje) y **Narrative** (la llamada). SDT: *
     | P4 | `Fx_Steps` | Sí; además `t_paso_min_s` |
     | P5 | Lazos de ambiente y drone | Nunca (reservados) |
 
-    Reservas: 6 lazos (drone, lluvia, realce, ventilador, teléfono, giro de P5), 4 voces (tres canales y muestra), 8 efectos puntuales, 2 pasos. `max_voces_total` = 20†.
+    **Protección de P2:** un P2 solo lo roba otro P2 (el más antiguo) cuando hay más de `max_sfx_p2` activos; por debajo de ese número, no se roba. Reservas: 6 lazos (drone, lluvia, realce, ventilador, teléfono, giro; **«lazos P5» incluye a los lazos P2** `SFX_PHONE_BUZZ` y `SFX_FRAME_TURN`, que cuentan una sola vez), 4 voces (tres canales y muestra), 8 efectos puntuales, 2 pasos = 20. `max_voces_total` = **24†** (4 de holgura para picos de P2 simultáneos: bucle de teléfono, respiración y feedback; D23-23).
 24. **Pasos (F5).** `paso(superficie, intensidad)` reproduce una variante de `SFX_STEP_<superficie>` sin repetir la anterior, con ganancia de F5 y tono ±3 %†. Superficies: `moqueta` (planta 9), `baldosa` (Recepción), `default` (D23-14, OQ 5). Suenan con cualquier `balanceo_camara`.
 25. **Muestra de referencia del volumen (cierra la OQ 8 de 6).** Con el menú abierto y un cambio de `vol_voces` o `vol_efectos`, suena una muestra del bus, como mucho una cada `t_muestra_min_s` (0,4†): `SFX_CLICK_SUBTLE` para efectos; `UI_VOL_MUESTRA` ‡ (frase neutra grabada, sin subtítulo, fuera del §12; la pide 23 a 18) para voces. Para `vol_musica` no hace falta: el drone sigue en pausa (R41). Sin `UI_VOL_MUESTRA`, se usa `SFX_CLICK_SUBTLE` y se registra.
 
@@ -157,28 +158,28 @@ MDA: **Sensation** (silencio como lenguaje) y **Narrative** (la llamada). SDT: *
 
     | Fuente | Tipo | Tratamiento |
     |---|---|---|
-    | `SPK_D01C` | 3D en la caja (10) | Pasabanda 250–5.000 Hz, saturación suave, cercana; a 2 m cae −6 dB y se oye en toda `D`; respeta `vol_voces` |
-    | `SPK_V02` ‡ | Auricular 2D en la llamada; 3D al sonar | Pasabanda 300–3.400 Hz, mono, sin reverberación; cubre `VO_G_12*`, `13*`, `14_*`, `SFX_CALL_BREATH`, `SFX_BREATH_BROKEN`, `SFX_PHONE_END` |
+    | `SPK_D01C` | 3D en la caja (10) | Banda 250–5.000 Hz **horneada en la grabación**, **sin saturación** (D23-22, OQ 10), cercana; a 2 m cae −6 dB y se oye en toda `D`; respeta `vol_voces` |
+    | `SPK_V02` ‡ | Auricular 2D en la llamada; 3D al sonar | Banda 300–3.400 Hz **horneada**, mono, sin reverberación; cubre `VO_G_12*`, `13*`, `14_*`, `SFX_CALL_BREATH`, `SFX_BREATH_BROKEN`, `SFX_PHONE_END` |
     | `C01` | 3D, techo del pasillo | Plana, paso bajo suave; atenuación máxima −12 dB (`piso_mega_db`) para entenderse en cualquier sala |
     | (ninguna) | 2D | Seca, centrada: `VO_V_*` |
 
-    El timbre convertido del Guardián lo da la grabación; 23 no aplica *pitch* ni distorsión (R30).
+    El timbre y el filtro de banda de cada fuente los da la **grabación** (ficheros ya filtrados): así `Voice_Guardian` sigue siendo un único bus y el árbol de R3 es implementable sin bus por fuente. 23 no aplica *pitch*, saturación ni distorsión (R30). Un filtro en ejecución por fuente (efecto de bus hijo o por reproductor) queda **no verificado** y se decide en el ADR de audio; el paso bajo de `C01` y de `lp_sala_hz` (R28) sigue esa misma regla.
 34. **Bucle del teléfono.** `SFX_PHONE_BUZZ` en `V02`: empieza con `vibrando` o `TELEFONO_SUENA`; se para con `reposo`, `en_llamada` (fundido 0,1 s†), `stop` o `interrupt`. Idempotente. Se oye desde el pasillo (slice C.7). 23 no inventa el sonido del descolgar (`SFX_PHONE_PICKUP` ‡, sin pedidor).
 35. **Llamada sin voz.** 22 sigue con las tres señales y nunca depende de que exista audio (AC-22-19).
 
 ### H. Ajustes y accesibilidad
 
 36. **Volúmenes (F1).** 23 recibe de 6 `vol_db` (−38…0 con valores †) o la marca de silencio y lo aplica al bus de su grupo con rampa lineal en dB de `rampa_vol_s` (0,05†; cierra la OQ 8 de 6). En silencio, la rampa llega a −80 dB y el bus se silencia; **nunca −inf** ni `log(0)`. En «ajustes aplicados» aplica los tres valores **sin rampa** antes de arrancar capa alguna.
-37. **Silenciar no acorta.** Con un bus en silencio, las líneas **siguen mudas** con la misma duración y señales (D23-2): la línea de tiempo con subtítulos es idéntica a la de quien oye. «Sin audio» solo existe cuando falta el audio.
+37. **Silenciar no acorta.** Con un bus en silencio, las líneas **siguen mudas** con la misma duración y señales (D23-2): las **señales de 23** y los tiempos de 9, 22 y 21 son idénticos a los de quien oye. El tiempo de *subtítulo* que decide 26 (`max(duración + t_cola_sub_s, t_lectura_s)` con audio; `fallback_s` sin él) puede diferir: no es una señal de 23. «Sin audio» solo existe cuando falta el audio.
 38. **`reducir_sobresaltos` (cierra la parte de audio de la OQ 12 de 6).** Activa: (a) golpe inicial de `SFX_PHONE_BUZZ` −6 dB† y ataque `t_ataque_buzz_s` (0,25†); (b) `SFX_BREATH_BROKEN` −6 dB†; (c) `SFX_CHAIRS_ROLL` y `SFX_TYPING_FAR` −6 dB† con la rampa de R20; (d) limitador en `VO_G_07` (R39). Nada más (ni voces ni feedback). Se aplica en el fotograma del aviso, con rampa. 19 y 15 no la leen.
 39. **Golpe en `VO_G_07`.** Con la opción, la línea pasa por un limitador de techo `techo_limitador_dbfs` (−10†): se **limita**, no se elimina (OQ 2). Responde a 15 (regla 26).
 40. **Accesibilidad.** Ningún acierto depende solo del sonido (9) y toda voz tiene subtítulo (26).
 
 ### I. Pausa, carga y reanudación
 
-41. **Pausa.** Con `pause_opened` ‡ se **pausan** voces y efectos puntuales en su posición; lazos y drone **siguen** a `pausa_amb_db` (−6†), lo que permite oír el efecto de los deslizadores. Con «pausa cerrada» ‡ (o, si falta, al dejar el árbol de estar pausado) se reanuda. Los relojes de línea son **tiempo de juego** (regla 9 de 21; AC-54 de 9): no avanzan en pausa, y una «terminada» ocurrida en pausa sale al reanudar.
+41. **Pausa.** Con `pause_opened` se **pausan** voces y efectos puntuales en su posición; lazos y drone **siguen** a `pausa_amb_db` (−6†), lo que permite oír el efecto de los deslizadores. Con `pause_closed` ‡ se reanuda. **Sin fallback por el árbol:** 25 solo detiene el tiempo de juego (Δ_juego = 0) y no declara que pause el `SceneTree`; si `pause_closed` no llega, un watchdog de pausa (`t_pausa_max_s`, 600†, solo en desarrollo: advertencia) no reanuda por su cuenta, y la voz pausada se descarta en la siguiente «carga de escena iniciada» (R42). 23 debe tener `process_mode` siempre activo (nodo persistente que no hereda la pausa); la pausa de voces y efectos es **propia** (por reproductor, `stream_paused`, **no verificado en 4.7**, ADR). **Excepción:** la muestra de volumen de R25 (`UI_VOL_MUESTRA` / `SFX_CLICK_SUBTLE`) suena con el menú abierto y no se pausa (AC-23-32). Los relojes de línea son **tiempo de juego** (regla 9 de 21; AC-54 de 9): no avanzan en pausa, y una «terminada» ocurrida en pausa sale al reanudar.
 42. **Carga iniciada.** (a) Cancela **sin señal** líneas en curso o encoladas y efectos puntuales, con fundido `t_fade_carga_s` (0,3†); quien esperaba ya canceló o resuelve por su tope (regla 11 de 21); (b) `Ambience` y `Music` −`atenuacion_carga_db` (18†) durante la cortina; (c) descarta el índice de marcadores. Sin señal por las canceladas, para que una señal tardía no adelante la línea de tiempo de la escena nueva (D23-6).
-43. **Escena lista / reanudación.** Indexa marcadores, recupera `Ambience` y `Music` en `t_entrada_capa_s` y **deriva las capas de los hechos**: destino `planta` con `caja_completa` ∧ ¬`llamada_completada` → lluvia en `lluvia_apagon_db`; resto, nivel de estancia. Destino `recepcion`: lluvia y drone, sin ventilador. El bucle del teléfono de la reanudación lo piden 21 (`ESC7_TIMBRE`) o 22; 23 no lo infiere.
+43. **Escena lista / reanudación.** Indexa marcadores, recupera `Ambience` y `Music` en `t_entrada_capa_s` y reajusta las capas **sin inferir el apagón**: `apagon_activo` es memoria volátil de 21 (no un hecho de 3) y entre `caja_completa` y `ESC7_APAGON` aún no hay apagón, así que derivarlo de `caja_completa` ∧ ¬`llamada_completada` pondría la lluvia a −60 dB sin apagón. Regla: la lluvia arranca al **nivel de estancia**; si procede el apagón, 21 reconstruye la escena de los hechos y **reemite `LUCES_APAGON` con duración 0** (reanudación, R22), lo que lleva la lluvia a `lluvia_apagon_db` al instante (‡ 21, Cambios requeridos). Sin reemisión, la lluvia queda a su nivel normal (desfase aceptado, no bloquea; AC-23-20). Destino `recepcion`: lluvia y drone, sin ventilador. El bucle del teléfono de la reanudación lo piden 21 (`ESC7_TIMBRE`) o 22; 23 no lo infiere.
 44. **Nunca repite una voz.** 23 no persiste nada. Una línea suena solo si alguien la pide; la llamada pendiente empieza desde el principio por diseño (D.3 del slice) y la pide 22. La línea de tiempo la reconstruye 21 de los hechos.
 45. **Estado restablecido/restaurado.** Descartan la cola y reajustan capas como R43.
 
@@ -188,7 +189,7 @@ MDA: **Sensation** (silencio como lenguaje) y **Narrative** (la llamada). SDT: *
 47. **Stub de lectura.** Una línea sin audio no suena, no hace ducking ni ocupa canal; su `t_lectura_s` (F3) es el tiempo de subtítulo para quien no declare el suyo. 9 y 22 siguen con su `fallback_s` (D23-1).
 48. **Fallo a mitad.** Detiene el sonido en `t_interrupt_s` y emite «fallida» (no «terminada»).
 49. **Efecto ausente o corrupto.** No suena, una línea de registro, sin señal (nadie la espera).
-50. **Presupuesto (F7).** Voces ≤ 20†; efectos residentes ≤ 10 MB†; audio en ejecución ≤ 24 MB†; disco ≤ 40 MB†. Voces y lazos largos en *streaming*; efectos < 1,0 s precargados. En desarrollo, superar un tope escribe una advertencia.
+50. **Presupuesto (F7).** Voces ≤ 24†; efectos residentes ≤ 10 MB†; audio en ejecución ≤ 24 MB†; disco ≤ 40 MB†. Voces y lazos largos en *streaming*; efectos < 1,0 s precargados. En desarrollo, superar un tope escribe una advertencia.
 
 ## Formulas
 
@@ -232,7 +233,7 @@ Valores † a validar. Datos en `assets/data/audio/audio_settings.json`.
 | `n_car` | 1–300 | 18 | Caracteres del texto renderizado (nombres sustituidos, espacios incluidos) |
 | `t_min_lect_s` | 1,0–3,0 | datos, 1,5† | Mínimo |
 | `cps_lect` | 10–25 | datos, 15† | Caracteres por segundo (norma de subtitulado ≈ 15–17) |
-| `t_max_lect_s` | 6–20 | datos, 14,0† | Tope de la parte proporcional |
+| `t_max_lect_s` | 6–20 | datos, 14,0† | Tope de `t_min_lect_s + n_car/cps_lect` (sin pausas; las pausas se suman después del `clamp`) |
 | `pausa_segmento_s` | 0–3,0 | datos, 1,2† | Por cada segmento con pausa previa en 18 |
 
 **Ejemplos:** `VO_G_13B` «Lo sé» (5) → 1,5 + 0,33 = **1,83 s**; `VO_G_13D` (63) → 1,5 + 4,2 = **5,70 s**; `VO_V_12E` «La V no me convence» (19) → 1,5 + 1,27 = **2,77 s**. Es una estimación de subtítulo, no la duración del audio; a 9 y 22 los gobierna su `fallback_s`.
@@ -252,7 +253,7 @@ Valores † a validar. Datos en `assets/data/audio/audio_settings.json`.
 
 ### F5 · Pasos
 
-`paso_db = db_paso_ref + 20 · log10(intensidad)`, con `intensidad = lerp(i_paso_min, 1, r)` (2; `i_paso_min` 0,4†).
+`paso_db = db_paso_ref + 20 · log10(intensidad)`. 23 **recibe `intensidad` ya calculada** por 2 (regla 31 de 2: `lerp(i_paso_min, 1, r)`); `i_paso_min` (0,4†) es de 2 y 23 no lo aplica ni lo conoce, para no aplicarlo dos veces.
 
 | Variable | Rango | Valor † |
 |---|---|---|
@@ -264,7 +265,7 @@ Valores † a validar. Datos en `assets/data/audio/audio_settings.json`.
 
 ### F6 · Robo de voces
 
-`candidato = argmax (prioridad_num, edad_s)` entre voces no protegidas (no P1, no P5, no los P2 hasta `max_sfx_p2`). Con `voces_activas ≥ max_voces_total` y candidato con `prioridad_num ≥` la del nuevo, se le aplica fundido de `t_interrupt_s` y entra el nuevo; si no, el nuevo P3 o P4 se descarta (log). Un P1 o P2 nunca se descarta. **Ejemplo:** 20 activas, llega `SFX_DOOR_SWING` (P3): se roba el P3 más antiguo.
+`candidato = argmax (prioridad_num, edad_s)` entre voces no protegidas (no P1, no P5, no los P2 hasta `max_sfx_p2`). Con `voces_activas ≥ max_voces_total` y candidato con `prioridad_num ≥` la del nuevo, se le aplica fundido de `t_interrupt_s` y entra el nuevo; si no, el nuevo P3 o P4 se descarta (log). Un P1 nunca se descarta ni se roba; un P2 se protege hasta `max_sfx_p2` y por encima solo lo roba otro P2 (el más antiguo), nunca un P3 o P4 (R23). **Ejemplo:** 24 activas, llega `SFX_DOOR_SWING` (P3): se roba el P3 más antiguo.
 
 ### F7 · Memoria
 
@@ -278,7 +279,7 @@ Valores † a validar. Datos en `assets/data/audio/audio_settings.json`.
 |---|---|---|
 | `perfil_dB` | −12…0 | A 0, C 0, V −6, B −9, D −9, R −6 |
 | `realce_dB` | 0…+3 | +3,0 con `LLUVIA_REALCE` |
-| `apagon_dB` | −60…0 | −60 en apagón y llamada |
+| `apagon_dB` | −60…0 | −60 desde `LUCES_APAGON` (21, incluida su reemisión en la reanudación) hasta `LLUVIA_VUELVE`; no se deriva de hechos (R43) |
 | `t_estancia_s` | 0,5–3,0 | 1,5 |
 
 **Ejemplo:** del pasillo (0 dB) a `B` (−9 dB): −6 dB a 1,0 s, −9 dB a 1,5 s.
@@ -290,7 +291,7 @@ Valores † a validar. Datos en `assets/data/audio/audio_settings.json`.
 - **Audio más largo/corto que `techo_s`:** corte con fundido (F4) / «terminada» en `finished`. **`finished` perdido:** watchdog (R13).
 - **Elegir durante `SENAL` (22):** `interrupt` corta en 0,2 s y «terminada» (`interrumpida`).
 - **Línea pedida con la pausa abierta:** se acepta y arranca al reanudar; los relojes no avanzan.
-- **Carga con línea en curso:** cancelada sin señal (R42). **«Continuar» durante la llamada:** R42 corta todo, R43 deriva el apagón de los hechos y 22 rehace la llamada desde el principio; nada suena «porque sonaba antes».
+- **Carga con línea en curso:** cancelada sin señal (R42). **«Continuar» durante la llamada:** R42 corta todo, 21 reconstruye la escena de los hechos y reemite `LUCES_APAGON` con duración 0 (R43; 23 no lo infiere) y 22 rehace la llamada desde el principio; nada suena «porque sonaba antes».
 - **Volumen en silencio:** líneas mudas con los mismos tiempos (R37). **Sin dispositivo:** todo «sin audio», sin aviso (R46).
 - **`reducir_sobresaltos` a mitad de sonido:** rampa; el bucle de `SFX_PHONE_BUZZ` se atenúa sin reiniciarse; el limitador de `VO_G_07` se aplica a partir de su siguiente reproducción.
 - **Sin oyente (pruebas):** origen, sin pasos, lluvia a nivel `C`. **Estancia sin etiqueta:** `C` y registro. **Fuente ausente** (`C01`, `SPK_D01C`, `SPK_V02`): 2D con el perfil de la fuente y registro.
@@ -303,17 +304,17 @@ Valores † a validar. Datos en `assets/data/audio/audio_settings.json`.
 
 | Sistema | Tipo | Recibe / entrega | Contrato |
 |---|---|---|---|
-| 3 Estado y bus | **Dura** | Se suscribe (R5); emite las cuatro señales; lee `caja_completa` y `llamada_completada` al reanudar | 3 ya lista a 23 como emisor; faltan «sonido pedido», «línea iniciada», «pausa cerrada» |
+| 3 Estado y bus | **Dura** | Se suscribe (R5); emite las cuatro señales; lee `caja_completa` y `llamada_completada` al reanudar | 3 ya lista a 23 como emisor; faltan «sonido pedido», «línea iniciada», `pause_closed` |
 | 6 Ajustes | **Dura** | `vol_voces`, `vol_efectos`, `vol_musica`, `reducir_sobresaltos`, «ajustes aplicados», avisos de cambio | Regla 1 de 6; cierra OQ 7, 8, 12 |
 | 18 Contenido | **Dura** | Texto renderizado y pausas por `line_id`; campo `audio`; `UI_VOL_MUESTRA` ‡ | Reglas 16 y 17 de 18 |
 | 2 Jugador | Blanda | `paso`; posición y orientación del oyente | Reglas 31 de 2; sin 2, sin pasos |
 | 9 Marco de puzles | Blanda (avisos) | «Feedback de puzle»; «línea pedida» (`VO_G_07`, `fallback_s`) | Reglas 20 y 37 de 9 |
 | 21 Director de escenas | Blanda (avisos) | «Línea pedida» (`VO_V_*`, `MEGA_*`), efectos y estado de objeto | Reglas 6, 7, 9 de 21; 21 no depende de 23 |
 | 22 Llamada | Blanda (avisos) | «Línea pedida» (`VO_G_12*`, `13*`, `14_*`), sonidos de llamada ‡, `interrupt` ‡ | Reglas 5, 14, 15, 25 de 22 |
-| 26 Subtítulos | Blanda (avisos) | Señales, `t_lectura_s`, «línea iniciada» ‡ | ‡ (sin GDD) |
+| 26 Subtítulos | Blanda para 23 (23 no depende de 26, R8) · **Dura** para 26 (`subtitulos.md` declara a 23 Dura): asimetría deliberada | Señales, `t_lectura_s`, «línea iniciada» (opcional: 26 tiene fallback, regla 8 de 26; D23-18) | `subtitulos.md` (reglas 5, 6, 8, 12) |
 | 8, 10, 7, 19, 15 | Blanda (avisos) | «Sonido pedido» ‡: `SFX_CARD_OK`, `SFX_DOOR_SWING`, `SFX_DRAWER_OPEN`, `MEGA_03` (8); `SFX_BOX_WOOD_*`, `SPK_D01C` (10); `SFX_CLICK_SUBTLE` (7); `SFX_KEY`, `SFX_PRINTER` (19); `SFX_FRAME_TURN` (15) | Catálogo en «Datos» |
 | 4 Escena de planta | Blanda | Avisos de carga; marcadores, estancias, superficies | Regla 1 de 4; ‡ |
-| 25 Pausa · 28 Atmósfera · 27 Título | Blanda / informativa | `pause_opened` ‡, «pausa cerrada» ‡ · comparten `LLUVIA_*` y `reducir_sobresaltos` · audio del título (OQ 3) | ‡ |
+| 25 Pausa · 28 Atmósfera · 27 Título | Blanda / informativa | `pause_opened`, `pause_closed` ‡ · comparten `LLUVIA_*` y `reducir_sobresaltos` · audio del título (OQ 3) | ‡ |
 
 Ningún dependiente depende de que 23 responda (R8). Sin ciclos: 23 solo se suscribe y responde por el bus.
 
@@ -342,7 +343,7 @@ Ningún dependiente depende de que 23 responda (R8). Sin ciclos: 23 solo se susc
 | `d_no_llega_m` | 6,0 | 3–12 | R20 |
 | `db_paso_ref` / `t_paso_min_s` | −6 / 0,18 | −12…0 / 0,1–0,4 | F5 |
 | `t_muestra_min_s` / `t_dedup_s` | 0,4 / 0,05 | 0,2–1 / 0–0,1 | R25, R18 |
-| `max_voces_total` / `max_sfx_p2` | 20 / 4 | 12–32 / 2–8 | F6 |
+| `max_voces_total` / `max_sfx_p2` | 24 / 4 | 12–32 / 2–8 | F6 |
 | Memoria efectos / total / disco (MB) | 10 / 24 / 40 | — | F7 |
 
 ## Acceptance Criteria
@@ -351,6 +352,7 @@ L = lógica (reloj falso, reproductores simulados) · I = integración · V = me
 
 - **AC-23-01 (R7, L):** **GIVEN** una línea con audio, **WHEN** el reproductor emite `finished`, **THEN** «línea terminada» (`fin`) con su `line_id` ≤ 1 fotograma después y ninguna otra señal.
 - **AC-23-02 (R7, F3, L):** **GIVEN** `audio` nulo, **THEN** «línea sin audio» ≤ 1 fotograma con `t_lectura_s`: `VO_G_13B` 1,83 s, `VO_G_13D` 5,70 s, `VO_V_12E` 2,77 s (±0,01).
+- **AC-23-02b (F3, L):** **GIVEN** una línea sin audio de 300 caracteres y sin pausas, **THEN** `t_lectura_s` = 14,0 s (el `clamp` de `t_min + n/cps` = 21,5 s se limita a `t_max_lect_s`); con 2 pausas previas, 16,4 s (±0,01). **GIVEN** un `line_id` `SFX_*` en «línea pedida», **THEN** se rechaza con registro y sin señal de respuesta (R7b).
 - **AC-23-03 (R7, R48, L):** **GIVEN** un fichero corrupto, **THEN** «fallida» al empezar; **GIVEN** fallo a los 3 s, **THEN** «fallida» a ese instante y ninguna «terminada».
 - **AC-23-04 (R12, F4, L):** **GIVEN** `VO_G_07` con `fallback_s` 14,0 y audio de 17,0 s, **THEN** «terminada» (`corte`) a 16,0 s ±0,05 con fundido de 0,3 s; con audio de 13,2 s, a 13,2 s.
 - **AC-23-05 (R13, L):** **GIVEN** un reproductor sin `finished`, **THEN** «terminada» (`watchdog`) a `duración + 1,0 s`.
@@ -360,26 +362,28 @@ L = lógica (reloj falso, reproductores simulados) · I = integración · V = me
 - **AC-23-09 (R11, L):** **GIVEN** `VO_G_07` sin `fuente`, **THEN** suena desde `SPK_D01C` (3D); `MEGA_03` desde `C01`; `VO_G_12A` por `SPK_V02`; `VO_V_01` en 2D.
 - **AC-23-10 (F1, R36, L):** **GIVEN** `vol_efectos` en el paso 15 de 20, **THEN** `Effects` y `Ambience` a −10 dB ±0,1; en el paso 0, buses silenciados sin calcular −inf; el cambio recorre 0,05 s ±0,01; «ajustes aplicados» aplica sin rampa antes de arrancar capas.
 - **AC-23-11 (F2, L):** **GIVEN** `VO_V_08` (6 s), **THEN** `Music` a −6 dB en 0,15 s ±0,02, 0 dB a 7,1 s ±0,1; con `VO_V_01` y `MEGA_01` solapadas, −6 (no −9); `Fx_Puzzle`/`Fx_Steps` no se bajan; una línea sin audio no hace ducking.
-- **AC-23-12 (R37, L):** **GIVEN** `vol_voces` en silencio, **THEN** las líneas se reproducen mudas con la misma duración y señales a los mismos tiempos.
+- **AC-23-12 (R37, L):** **GIVEN** `vol_voces` en silencio, **THEN** las líneas se reproducen mudas con la misma duración y las **mismas señales de 23 a los mismos tiempos** que con audio (el tiempo de subtítulo de 26 no forma parte de este AC).
 - **AC-23-13 (R29, L):** **GIVEN** «vista cercana abierta», **THEN** `Ambience` −4 y `Music` −3 en 1,0 s ±0,1; al cerrar, vuelven; voces y feedback intactos.
 - **AC-23-14 (R38, R39, V):** **GIVEN** `reducir_sobresaltos`, **THEN** el pico de `SFX_PHONE_BUZZ`, `SFX_BREATH_BROKEN`, `SFX_CHAIRS_ROLL` y `SFX_TYPING_FAR` baja 6 dB ±0,5, el ataque del timbre es 0,25 s, `VO_G_07` no supera −10 dBFS ±0,5 y se oye completa; nada más cambia.
 - **AC-23-15 (R28, F8, L):** **GIVEN** el oyente pasa de `C` a `B`, **THEN** la lluvia pasa de 0 a −9 dB (±0,5) en 1,5 s ±0,1.
 - **AC-23-16 (R21, R22, L):** **GIVEN** `LUCES_APAGON`, **THEN** lluvia a −60 dB en 0,4 s; con `LLUVIA_VUELVE`, al nivel de la estancia en 2,0 s ±0,1; `LLUVIA_REALCE` (8,0 s): +3 dB durante 8,0 s ±0,2; `LLUVIA_CESA` (6,0 s): silencio a 6,0 s ±0,2.
 - **AC-23-17 (R27, L):** **GIVEN** `planta` → `recepcion`, **THEN** drone y lluvia no se reinician y el ventilador se detiene; **GIVEN** «descarga total solicitada», todas las capas a silencio en 1,5 s ±0,1 y ningún reproductor activo tras «completada».
-- **AC-23-18 (R41, L):** **GIVEN** `pause_opened` con una línea a mitad, **THEN** voces y efectos pausados en posición, drone y lluvia siguen a −6 dB; tras «pausa cerrada» continúan, el techo no avanzó en pausa y una «terminada» ocurrida en pausa sale al reanudar.
+- **AC-23-18 (R41, L):** **GIVEN** `pause_opened` con una línea a mitad, **THEN** voces y efectos pausados en posición, drone y lluvia siguen a −6 dB; tras `pause_closed` continúan, el techo no avanzó en pausa y una «terminada» ocurrida en pausa sale al reanudar.
 - **AC-23-19 (R42, L):** **GIVEN** una línea en curso y «carga de escena iniciada», **THEN** fundido de 0,3 s y **ninguna** señal; `Ambience`/`Music` −18 dB en la cortina y recuperación en 3,0 s ±0,2 tras «escena lista».
-- **AC-23-20 (R43, R44, L):** **GIVEN** «Continuar» con `caja_completa` ∧ ¬`llamada_completada`, **THEN** al «escena lista» lluvia a −60 dB, drone sonando, ninguna voz no pedida y ningún bucle de teléfono inferido.
-- **AC-23-21 (R23, F6, L):** **GIVEN** 20 voces activas, **THEN** un P3 nuevo roba el P3 más antiguo; con solo P1/P2/P5, se descarta con registro; una voz P1 y un feedback P2 no se roban nunca.
+- **AC-23-20 (R43, R44, L):** **GIVEN** «Continuar» con `caja_completa` ∧ ¬`llamada_completada`, **THEN** al «escena lista» la lluvia está al nivel de estancia, 23 no la baja por su cuenta, drone sonando, ninguna voz no pedida y ningún bucle de teléfono inferido; **WHEN** llega `LUCES_APAGON` con duración 0 (reemitido por 21), **THEN** lluvia a −60 dB en el mismo fotograma. **GIVEN** `caja_completa` sin `LUCES_APAGON`, **THEN** la lluvia no baja de su nivel.
+- **AC-23-21 (R23, F6, L):** **GIVEN** 24 voces activas, **THEN** un P3 nuevo roba el P3 más antiguo; con solo P1/P2/P5, se descarta con registro; una voz P1 no se roba nunca; con ≤ `max_sfx_p2` (4) P2 activos ninguno se roba, y con 5 solo otro P2 roba el más antiguo.
 - **AC-23-22 (F5, L):** **GIVEN** `paso(moqueta, 0,4)`, **THEN** −13,96 dB ±0,1 (0,7: −9,10; 1,0: −6); dos pasos en < 0,18 s dejan sonar uno; la variante no repite la anterior.
 - **AC-23-23 (R34, L):** **GIVEN** `V02` en `vibrando`, **THEN** bucle de `SFX_PHONE_BUZZ` en `V02`, sin duplicarse al pedirlo otra vez; `reposo` o `en_llamada` lo cortan en 0,1 s; `TELEFONO_PULSOS` da 3 pulsos de 1,0 s ±0,1.
-- **AC-23-24 (R19, R33, I):** **GIVEN** el oyente en `D`, **THEN** `VO_G_07` se oye en toda la estancia desde el altavoz (3D); `MEGA_02` se entiende en las salas cerradas con ≤ 12 dB de atenuación.
+- **AC-23-24 (R19, R33, I):** **GIVEN** el oyente en `D`, **THEN** `VO_G_07` se oye en toda la estancia desde el altavoz (3D); `MEGA_02` llega al oyente en cada sala cerrada (`B`, `D`, `R`) con una atenuación medida ≤ 12 dB (`piso_mega_db`) respecto a su nivel en el pasillo, y con un SNR ≥ +6 dB† sobre la lluvia de esa sala (medición con ruido de lluvia a su nivel de estancia); la inteligibilidad percibida se valida en AC-23-33.
 - **AC-23-25 (R20, V):** **GIVEN** el apagón, **THEN** sillas y tecleo no se acercan a menos de 6,0 m del oyente en `D` y entran con rampa de 1,0 s.
 - **AC-23-26 (R25, L):** **GIVEN** el menú abierto y un cambio de `vol_voces`, **THEN** suena la muestra como mucho cada 0,4 s (con `SFX_CLICK_SUBTLE` si falta `UI_VOL_MUESTRA`); para `vol_musica` no suena muestra.
 - **AC-23-27 (R46, R49, L):** **GIVEN** el controlador ficticio, **THEN** toda línea da «sin audio» ≤ 1 fotograma y la llamada y P5 completan con los tiempos de 22 y 9; **GIVEN** un `sound_id` con fichero ausente, no suena, una línea de registro, sin error.
-- **AC-23-28 (R50, F7, I):** **GIVEN** el slice completo, **THEN** voces ≤ 20, audio residente ≤ 24 MB y disco ≤ 40 MB.
+- **AC-23-28 (R50, F7, I):** **GIVEN** el slice completo, **THEN** voces ≤ 24, audio residente ≤ 24 MB y disco ≤ 40 MB.
 - **AC-23-29 (R1, I):** **GIVEN** `planta` → `recepcion`, **THEN** `get_instance_id()` de 23 es idéntico y no queda suscripción colgante (parte de AC-01 de 4).
-- **AC-23-30 (R30, P):** **GIVEN** un recorrido completo, **THEN** ningún sonido de acierto, error o decisión es musical ni cambia el drone, y 5 de 5 testers no pueden deducir de los sonidos si una decisión de P4 o P6 era «correcta».
-- **AC-23-31 (loudness, V):** **GIVEN** los buses al 100 %, **THEN** voces −18 LUFS ±2, efectos de puzle −22 ±2, lluvia −34 ±3, drone −36 ±3 (corto plazo, †) y pico real ≤ −1 dBTP.
+- **AC-23-30 (R30, P):** **GIVEN** un recorrido completo, **THEN** ningún sonido de acierto, error o decisión es musical ni cambia el drone, y en el playtest (protocolo: 5 testers que no conocen el juego, un recorrido completo con auriculares y volumen por defecto; tras cada decisión de P4 y P6 se pregunta «¿qué opción crees que era la correcta?» sin ver la pantalla de resultado) las respuestas no superan el azar: ningún tester (0 de 5) cita un sonido como razón de su juicio.
+- **AC-23-31 (loudness, V):** **GIVEN** los buses al 100 %, **THEN** voces `VO_*` −18 LUFS ±2, megafonía `MEGA_*` −21 ±2, efectos de puzle −22 ±2, efectos de mundo −26 ±2, pasos −30 ±2, lluvia −34 ±3, ventilador −38 ±3, drone −36 ±3 (corto plazo, †) y pico real ≤ −1 dBTP.
+- **AC-23-32 (R41, R25, L):** **GIVEN** el menú abierto (`pause_opened`) y un cambio de `vol_efectos`, **THEN** la muestra suena (23 con `process_mode` activo) mientras una línea en curso permanece pausada en su posición; `pause_closed` reanuda la línea desde esa posición.
+- **AC-23-33 (R33, P):** **GIVEN** 5 testers (protocolo de AC-23-30), **THEN** al menos 4 de 5 repiten correctamente el sentido de `MEGA_02` oído desde una sala cerrada.
 
 ## Datos
 
@@ -404,6 +408,8 @@ Un registro por sonido: `id`, `bus`, `prioridad`, `archivos` (variantes), `lazo`
 | `AMB_RAIN` ‡, `AMB_FAN` ‡ (3D en `V`) | `Ambience` · P5 | **sí** | 23 |
 | `MUS_DRONE` ‡ | `Music` · P5 | **sí** · 2D | 23 |
 | `UI_VOL_MUESTRA` ‡ | `Voice` · P1 | no | 23 (clave en 18) |
+
+**Afirmaciones de motor no verificadas (Godot 4.7):** rampa lineal en dB, limitador de techo por línea (AC-23-14 mide dBFS con él), filtro por fuente, `finished` como único evento de fin, pausa por posición y `AudioListener3D` en la cámara. Pendientes de ADR/prototipo; se validan contra `docs/engine-reference/godot/modules/audio.md` (OQ 12). Este GDD no cita ninguna API que no figure allí.
 
 `audio_settings.json`: todos los números de «Tuning Knobs» (clave = nombre del knob).
 
@@ -442,9 +448,14 @@ Decisiones por defecto de este lote, revisables; las que tocan tono o alcance es
 | D23-16 | Sin dispositivo: modo `sin_dispositivo`, todo «sin audio» | Error visible | El juego no se detiene por audio (*Tensión sin castigo*) |
 | D23-17 | Estancia deducida del oyente en volúmenes `audio_room` | Usar «zona activada» `T-…` | `T-…` son disparadores de escena, no un modelo de estancias |
 | D23-18 | «Línea iniciada» ‡ opcional | 26 deduce el arranque de «línea pedida» | La línea puede esperar en cola |
-| D23-19 | Silencio parcial en cualquier vista cercana | Solo en puzles | 7 no distingue puzles en el aviso; documentos se benefician igual |
+| D23-19 | Silencio parcial en cualquier vista cercana | Solo en puzles | 7 no distingue puzles en el aviso; documentos se benefician igual. El slice §14 lo limita a puzles: elevado a la OQ 11 (defecto: cualquier vista) |
 | D23-20 | `fuente_defecto` en el catálogo; la del aviso gana | Que cada pedidor pase siempre la fuente | 9 pide `VO_G_07` sin fuente; el altavoz es dato del catálogo |
 | D23-21 | Pausa de `VO_G_07` dentro del fichero; 1,2 s† sin audio | 23 inserta pausa propia | Es una grabación continua. Responde la OQ 3 de 18 |
+| D23-22 | (Ronda 1, B-4) Sin saturación en `SPK_D01C`; los filtros de banda de `SPK_D01C`/`SPK_V02` van **horneados en la grabación**; árbol de buses de R3 sin cambios | Saturación suave en ejecución; un bus hijo por fuente | La saturación es distorsión sobre la voz del Guardián y roza *Ambivalencia* (OQ 10). Un bus por fuente rompe el árbol «fijo» y el filtro por fuente en ejecución no está verificado en 4.7 |
+| D23-23 | (Ronda 1, W-1/W-2) `max_voces_total` 24†; P2 protegido hasta `max_sfx_p2` y robable solo por otro P2 por encima; P5 incluye lazos P2 | Mantener 20 con reservas = 20 | Reservas sumaban 20 sin holgura; 4 de margen para P2 simultáneos |
+| D23-24 | (Ronda 1, B-3) El apagón de la lluvia lo gobierna solo `LUCES_APAGON` de 21 (reemitida con duración 0 al reanudar); 23 no lo deriva de hechos | Derivar de `caja_completa` ∧ ¬`llamada_completada` | `apagon_activo` es memoria volátil de 21 y entre `caja_completa` y `ESC7_APAGON` no hay apagón; derivarlo desincroniza con 28 |
+| D23-25 | (Ronda 1, B-1) Par único `pause_opened`/`pause_closed`; sin fallback por el árbol; 23 con `process_mode` activo y pausa propia por reproductor | Fallback «al dejar el árbol de estar pausado» | 25 solo detiene el tiempo de juego y no declara pausar el `SceneTree` |
+| D23-26 | (Ronda 1, B-2) «Línea pedida» solo acepta IDs de 18; los `SFX_*` van por «sonido pedido» | Aceptar `SFX_*` como línea | Evita «fallida» espuria por falta de texto en 18 |
 
 ## Open Questions
 
@@ -457,8 +468,11 @@ Decisiones por defecto de este lote, revisables; las que tocan tono o alcance es
 | 5 | **Superficies de suelo:** materiales `moqueta`/`baldosa` por confirmar | Art-director | Las tres; cierra la OQ 6 de 2 |
 | 6 | **`UI_VOL_MUESTRA`:** frase neutra grabada y clave en 18 | Narrative-director / 18 | `SFX_CLICK_SUBTLE` mientras tanto |
 | 7 | **«Sonido pedido» como aviso del bus (3):** cambio de arquitectura de avisos | Technical-director / 3 | Adoptarlo; si no, 23 deduce de cada sistema |
-| 8 | **Objetivos de loudness y presupuestos (20 voces, 24 MB):** †, a medir con audio real y hardware objetivo | Audio-director / technical-director | AC-23-28 y AC-23-31 |
+| 8 | **Objetivos de loudness y presupuestos (24 voces, 24 MB):** †, a medir con audio real y hardware objetivo | Audio-director / technical-director | AC-23-28 y AC-23-31 |
 | 9 | **Segmentos de `VO_G_07` para 26:** 23 solo da la duración total en «línea iniciada» | 26 | Solo duración; marcas por segmento en el catálogo si hace falta |
+| 10 | **Voz del Guardián en `SPK_D01C`: saturación sí/no** (**decide el usuario**). Retirada por defecto en la ronda 1 (B-4): roza el pilar *Ambivalencia* | Usuario / audio-director | Sin saturación; el timbre lo da la grabación (D23-22) |
+| 11 | **Silencio parcial (R29): ¿en cualquier vista cercana o solo en puzles?** (**decide el usuario**). El slice §14 dice «en puzles»; 7 no distingue el tipo de vista | Usuario / 7 | Cualquier vista (D23-19); si solo puzles, 7 debe incluir el tipo de vista en el aviso |
+| 12 | **Pendientes de motor (no verificado en Godot 4.7; ADR de audio):** rampa en dB, limitador de techo por línea, filtro por fuente, `finished` como único fin, pausa por posición (`stream_paused`), `AudioListener3D` en la cámara | Technical-director | Se validan contra `docs/engine-reference/godot/modules/audio.md` (solo cubre `AudioStreamPlayer`, `AudioStreamPlayer3D`, `AudioServer.set_bus_volume_db`, `set_bus_mute`) |
 
 ## Cambios requeridos en otros GDDs
 
@@ -467,15 +481,17 @@ Este GDD no ha editado ningún archivo existente. Los coordina `producer`.
 | GDD | Cambio | Motivo |
 |---|---|---|
 | `systems-index.md` | Fila 23: «Borrador (lote autónomo)», ruta `design/gdd/director-de-audio.md`; deps «3, 6, 18 (duras) · blanda 2» | Existe el GDD |
-| `estado-y-bus-de-eventos.md` (3) | Regla 10: a 23, añadir «línea iniciada» ‡ y las cargas extendidas; añadir «sonido pedido» ‡ `{sound_id, fuente?, accion, valor?}` (emisores 7, 8, 10, 15, 19; 22 como alias) y «pausa cerrada» ‡ (25); quitar ‡ de las tres señales | Contratos de 23 |
+| `estado-y-bus-de-eventos.md` (3) | Regla 10: a 23, añadir «línea iniciada» ‡ y las cargas extendidas; añadir «sonido pedido» ‡ `{sound_id, fuente?, accion, valor?}` (emisores 7, 8, 10, 15, 19; 22 como alias) y `pause_closed` ‡ (25); quitar ‡ de las tres señales | Contratos de 23 |
 | `ajustes-persistentes.md` (6) | Cerrar OQ 7 (lluvia y ventilador a `vol_efectos`, drone a `vol_musica`), 8 (rampa 0,05 s y muestra) y 12 (parte de audio); anotar que no hay `vol_maestro` | R3, R25, R36, R38 |
 | `base-de-contenido-narrativo.md` (18) | Pedir `UI_VOL_MUESTRA` ‡ (fuera del §12, sin subtítulo); cerrar OQ 3 (pausa de `VO_G_07`); exponer texto renderizado y pausa previa por `line_id`; fijar que `audio` nulo o ausente = «sin audio» y fichero roto = «fallida» | R16, R25, F3 |
-| `director-de-escenas.md` (21) | Usar `t_lectura_s` de «sin audio/fallida» como duración del subtítulo; emitir `LLUVIA_CESA` en `ESC7_APAGON` o confirmar que 23 la deriva de `LUCES_APAGON`; quitar ‡ de la mezcla en la regla 7; pausa por `pause_opened`/«pausa cerrada» | R7, R22, R41 |
-| `llamada-telefonica.md` (22) | «Sonido de llamada pedido» = «sonido pedido» con `accion` ∈ `play`, `stop`, `interrupt`; declarar `SPK_V02`; quitar ‡ de la interrupción (23: 0,2 s); usar `t_lectura_s` si 18 no da `fallback_s` | R14, R33 |
+| `director-de-escenas.md` (21) | Usar `t_lectura_s` de «sin audio/fallida» como duración del subtítulo; en la reanudación con apagón (de los hechos) **reemitir `LUCES_APAGON` con duración 0** (23 ya no lo deriva, D23-24); emitir `LLUVIA_CESA` en `ESC7_APAGON` o confirmar que 23 la deriva de `LUCES_APAGON`; quitar ‡ de la mezcla en la regla 7; pausa por `pause_opened`/`pause_closed` | R7, R22, R41 |
+| `llamada-telefonica.md` (22) | «Sonido de llamada pedido» = «sonido pedido» con `accion` ∈ `play`, `stop`, `interrupt`; **pedir sus `SFX_*` por «sonido pedido» y no por «línea pedida»** (la tabla de la l. 193 de 22 los lista en «línea pedida»; R7b); declarar `SPK_V02`; quitar ‡ de la interrupción (23: 0,2 s); usar `t_lectura_s` si 18 no da `fallback_s` | R14, R33 |
 | `marco-de-puzles.md` (9) | Confirmar el corte en `fallback_s + line_grace_s` con «terminada» (`corte`); «feedback de puzle» lleva `sound_id` del catálogo de 23; quitar ‡ | R12, F4 |
 | `control-de-acceso.md` (8) · `caja-y-compartimentos.md` (10) · `interaccion-e-inspeccion.md` (7) · `ordenador-correo-impresora.md` (19) · `puzle-5-espejo-de-la-diferencia.md` (15) | Emitir «sonido pedido» ‡ para sus `SFX_*` (8: `SFX_CARD_OK`, `SFX_DOOR_SWING`, `SFX_DRAWER_OPEN`; 10: `SFX_BOX_WOOD_*` con `D01`; 7: `SFX_CLICK_SUBTLE`; 19: `SFX_KEY`, `SFX_PRINTER`; 15: `SFX_FRAME_TURN` con velocidad). 8 sigue pidiendo `MEGA_03` por «línea pedida» | D23-4 |
 | `escena-de-planta.md` (4) · `jugador-en-primera-persona.md` (2) | 4: marcadores de audio, volúmenes `audio_room` y etiquetas de superficie. 2: confirmar `moqueta`/`baldosa`/`default` y que el oyente es un `AudioListener3D` en la cámara | R19, R24 |
-| 25, 26, 27, 28 (sin GDD) | 25: `pause_opened` y «pausa cerrada» ‡. 26: consumir las señales, `t_lectura_s` y «línea iniciada». 27: audio del título (OQ 3). 28: coordinar `LLUVIA_*` y `reducir_sobresaltos` | R41, D23-18 |
+| 25 (`menu-de-pausa.md`), 26 (`subtitulos.md`), 27, 28 | 25: **definir `pause_closed`** (sin datos, una vez por cierre) además de `pause_opened`, y declarar que detiene el tiempo de juego sin pausar el `SceneTree` (o que lo pausa, y 23 queda con `process_mode` activo). 26: sustituir «pausa abierta/cerrada» por `pause_opened`/`pause_closed`; alinear la dureza con 23 (arriba). 3: mismo par en su tabla. 27: audio del título (OQ 3). 28: coordinar `LLUVIA_*` y `reducir_sobresaltos` | R41, D23-18, D23-25 |
+| `estado-y-bus-de-eventos.md` (3) | (añadido ronda 1) Resolver la OQ 7 de 23 **antes de cerrar el lote**: «sonido pedido» y `pause_closed` en la tabla de avisos; 3 no lista `apagon_activo` (memoria volátil de 21): no hace falta | B-1, B-2 |
+| `jugador-en-primera-persona.md` (2) | (añadido ronda 1) 2 envía `intensidad` ya calculada (`lerp(i_paso_min, 1, r)`); 23 no la recalcula | F5 |
 
 ## Entradas para el registro
 
@@ -488,14 +504,14 @@ Solo lo **nuevo**; no se repiten `MEGA_03`, `SFX_CARD_OK`, `SFX_DOOR_SWING`, `SF
 | constante | `AUDIO_RAMP_S` † | 0,05 s | R36 |
 | constante | `DUCK_DB` † | Vera/Guardián −6/−4/−4 (Music/Ambience/Fx_World); megafonía −3/−2/−2; ataque 0,15, retención 0,3, liberación 0,8 s | R31, F2 |
 | constante | `LINE_REPLY_SIGNALS` | «línea terminada» (`fin`, `corte`, `watchdog`, `interrumpida`), «línea sin audio» y «línea fallida» (`t_lectura_s`) | R7 |
-| aviso | «línea iniciada» ‡ · «sonido pedido» ‡ · «pausa cerrada» ‡ | `{line_id, duracion_s, canal}` · `{sound_id, fuente?, accion, valor?}` · sin datos | R15, R5 |
+| aviso | «línea iniciada» ‡ · «sonido pedido» ‡ · `pause_closed` ‡ | `{line_id, duracion_s, canal}` · `{sound_id, fuente?, accion, valor?}` · sin datos | R15, R5 |
 | fórmula | `t_lectura_s` · `techo_s` · `paso_db` | `clamp(1,5 + n_car/15, 1,5, 14,0) + n_pausas·1,2` · `fallback_s + line_grace_s` (16,0 s en `VO_G_07`) · `-6 + 20·log10(intensidad)` (†) | F3, F4, F5 |
 | constante | `LINE_CHANNELS` | `VO_V_*`→`Voice_Vera`; `MEGA_*`→`Voice_Mega`; `VO_G_*`→`Voice_Guardian` | R9 |
 | constante | `LINE_DEFAULT_SOURCE` | `VO_G_07`→`SPK_D01C`; `MEGA_*`→`C01`; `VO_G_12/13/14*`→`SPK_V02`; `VO_V_*`→2D | R11 |
 | constante | `SPK_V02` ‡ | Auricular y altavoz del teléfono de Vera | R33 |
 | constante | `AUDIO_ROOMS` ‡ · `RAIN_ROOM_DB` † | `V`, `C`, `A`, `B`, `D`, `R` · A 0, C 0, V −6, B −9, D −9, R −6 | R28 |
 | constante | `FOOT_SURFACES` ‡ | `moqueta`, `baldosa`, `default` | R24 |
-| constante | `AUDIO_BUDGET` † | 20 voces; 10 MB efectos; 24 MB total; 40 MB disco | R50 |
+| constante | `AUDIO_BUDGET` † | 24 voces; 10 MB efectos; 24 MB total; 40 MB disco | R50 |
 | fichero | `audio_catalog.json`, `audio_settings.json` | `assets/data/audio/` (propiedad de 23) | Datos |
 | sonidos ‡ | `SFX_CHAIRS_ROLL`, `SFX_TYPING_FAR`, `SFX_ELEVATOR_DOORS`, `SFX_PHONE_PICKUP`, `SFX_PAGE_TURN`, `SFX_STEP_*`, `SFX_KEY`, `SFX_PRINTER`, `SFX_FRAME_TURN`, `AMB_RAIN`, `AMB_FAN`, `MUS_DRONE`, `UI_VOL_MUESTRA` | Propuestas (los de 8, 15 y 19 ya los proponen sus GDD) | Datos |
 
@@ -504,3 +520,4 @@ Solo lo **nuevo**; no se repiten `MEGA_03`, `SFX_CARD_OK`, `SFX_DOOR_SWING`, `SF
 | Fecha | Cambio |
 |---|---|
 | 2026-11-09 | Primer borrador (lote autónomo, sistema 23), por el audio-director: reglas R1 a R50, F1 a F8, edge cases, dependencias bidireccionales, knobs, 31 AC, catálogo de sonidos, 21 decisiones (D23-1 a D23-21), 9 preguntas abiertas. Sin cambios en ningún archivo existente. Estado: Borrador (lote autónomo). |
+| 2026-11-09 | Ronda de corrección 1 (informe `reviews/director-de-audio-review.md`). Bloqueantes B-1 a B-4 y avisos W-1 a W-11 tratados: par `pause_opened`/`pause_closed` sin fallback de árbol (R41, D23-25); R7b y SFX por «sonido pedido» (D23-26; OQ 7 sigue abierta en 3); apagón de la lluvia solo por `LUCES_APAGON` reemitida (R43, D23-24); sin saturación y filtros horneados (R33, D23-22); P2/reservas y `max_voces_total` 24† (D23-23); F3, F5, F6, AC-23-02b/12/20/21/24/30/31, nuevos AC-23-32/33; OQ 10 a 12; Cambios requeridos actualizados. Estado: Revisado (ronda de corrección 1) — pendiente de re-review. |
