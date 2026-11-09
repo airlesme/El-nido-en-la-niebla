@@ -1,6 +1,6 @@
 # Base de contenido narrativo
 
-> **Status**: Revisado (ronda 6) — pendiente de re-review (ronda 6 aplica A-3 y A-4 de `gdd-cross-review-2026-11-09-r4.md`)
+> **Status**: Revisado (ronda de propagación 1) — pendiente de re-review (ronda 6 aplicó A-3 y A-4 de `gdd-cross-review-2026-11-09-r4.md`; la ronda de propagación 1 aplica los cambios requeridos por 8, 19, 20 y 21)
 > **Author**: Álvaro + agentes
 > **Last Updated**: 2026-11-09
 > **Last Verified**: 2026-11-09
@@ -29,7 +29,7 @@ Existe por cuatro razones: (1) el nombre de Vera es provisional (D-04), así que
 1. **Tipos de contenido.** Ocho tipos, cada uno con sus campos:
    - **Línea** (voz de Vera, voz del Guardián, megafonía o voz interior): identificador, hablante, escena (1 a 8), uno o más segmentos de texto y una referencia opcional a su audio.
    - **Documento** (memorando, formulario, nota, carta, lista de tareas, libro de visitas, impresión): identificador, tipo, cuerpo (en uno o más fragmentos ordenados), estilo de presentación (`impreso`, `manuscrito_vera`, `manuscrito_guardian`, `cristal_espejo`, `pantalla`, `libro`) y, si procede, el ítem que representa (`I-01` a `I-07`).
-   - **Correo**: referencia (1 a 4 o sin numerar), remitente, cuerpo, día, hora de envío y etiquetas de búsqueda.
+   - **Correo**: referencia (1 a 4 o sin numerar), remitente, asunto, cuerpo, día, hora de envío y etiquetas de búsqueda.
    - **Ficha de tarea** (T1 a T4): título, descripción y marcas de edición (el nombre tachado y reemplazado por «G» en T4).
    - **Pista**: puzle, nivel (1 a 3) y texto. Solo existen como entrada las pistas cuyo efecto muestra texto (regla 20); las demás son efectos de los datos del puzle (9) y no llevan clave.
    - **Texto de interfaz y mensaje del sistema**: botones («Estoy bien», «La verdad», «Todavía no»), opciones de la llamada, mensajes del teléfono, sellos del tablero, advertencias de la pantalla de inicio, avisos de megafonía del sistema, etc.
@@ -78,6 +78,7 @@ Existe por cuatro razones: (1) el nombre de Vera es provisional (D-04), así que
     - Que los marcadores de nombre son válidos.
     - Que ningún texto contiene literalmente el nombre o la inicial vigentes de la tabla de nombres (regla 8).
     - Que el conjunto de claves `PISTA_*` es exactamente el de la regla 20 (8).
+    - Que toda entrada de la regla 23 con texto provisional lleva el marcador de pendiente (aviso; error con `--hito=calidad`) y que `MEGA_03` (`fuente: propuesta_slice_v0.4`) no se compara con el §12, igual que las entradas `propuesta_D-B1`.
     - Que cada clave `SUB_…` tiene el formato `SUB_<EVENTO>` con el evento en mayúsculas y que, si su texto es provisional, lleva el marcador de pendiente (regla 22).
     - Que las entradas marcadas `fuente: slice_§12` coinciden con el §12: todo identificador del §12 existe y su texto coincide, y toda entrada marcada sin fila en el §12 falla; las líneas audibles fuera del §12 (mensajes del teléfono, megafonía del sistema, `UI_…`) no llevan la marca y no se comparan. El texto de comparación es el contenido entre « » de cada celda del §12 (el punto final queda fuera de las comillas y no se exige); los cuatro marcadores de nombre (regla 8) se sustituyen con la tabla de nombres antes de comparar; una celda con `[pausa]` se parte en segmentos y se compara segmento a segmento, y la pausa cuenta como «pausa previa mayor que 0»; los fragmentos de un documento se unen con un espacio; se normalizan espacios y saltos de línea.
     - Que cada línea audible tiene el campo `audio` (la ruta del fichero, o nulo si aún no está grabado) y que, si la tiene, el fichero existe (se avisa, no falla, mientras el audio no esté grabado; ver «Sin audio»). Toda línea de tipo voz, megafonía o voz interior es audible por definición; `DOC_01`, `NOTA_*` y `CARTA_*` no lo son y no llevan `audio`.
@@ -118,6 +119,25 @@ Existe por cuatro razones: (1) el nombre de Vera es provisional (D-04), así que
 
 22. **Sonido no verbal con subtítulo.** Los eventos sonoros sin palabras que el jugador debe poder leer (el llanto contenido de la llamada en el silencio de 20 s, escena 7; `SFX_BREATH_BROKEN` es solo su audio) llevan una clave `SUB_<EVENTO>` por evento, con un texto breve entre corchetes (forma `[…]`; describe el sonido, no lo que siente nadie, regla 18). Campos: identificador, escena, texto y `audio` opcional (rige la regla 17: sin audio, el subtítulo se muestra igual). No son líneas del §12 (el verificador no las compara con el slice), no pertenecen a ningún grupo y las pide quien emite el evento (22 para el llanto); el sistema de subtítulos (26) decide cómo se muestran. **El texto definitivo de cada `SUB_…` lo escribe el writer/narrative-director** (Open Question 11): este GDD no lo fija. Hasta entonces el dato lleva un marcador de pendiente que el verificador lista como aviso (error con `--hito=calidad`).
 
+23. **Claves pedidas por el lote Feature 1 (8, 19, 20, 21).** Estas entradas no son del §12 (no llevan `fuente: slice_§12`, no cambian el recuento de 27 ni el de 8 claves `PISTA_*`). **El texto de cada una es provisional**: cada entrada lleva el marcador de pendiente de la regla 22 (aviso del verificador; error con `--hito=calidad`) hasta que lo cierre el writer/narrative-director. Este GDD fija el tipo, la clave y quién la pide; no inventa el texto definitivo. Excepción: cuando el GDD pedidor o el slice ya dan el literal, se anota como texto provisional.
+
+    | Clave | Tipo | Pide | Contenido / nota |
+    |---|---|---|---|
+    | `OBJ_C06`, `OBJ_C07`, `OBJ_D06` | Texto de objeto (pie) | 8 (regla 16) | Lector «cerrada sin tarjeta» de B, de D por fuera y de D por dentro (`D06` es espejo de `C07`). Pie breve, ambiente y estado, nunca información necesaria para avanzar; tono neutro sin confirmar intención (regla 18). **No existe un mensaje distinto para «tarjeta equivocada»**: el lector no dice al jugador si tiene la tarjeta |
+    | `OBJ_C08` | Texto de objeto (pie) | 8 (regla 16) | Ascensor inactivo (objetivo con `SIN_EFECTO`, slice §13.3). Mismo criterio |
+    | `UI_MAIL_BUSCAR`, `UI_MAIL_BUSCAR_BTN`, `UI_MAIL_VACIO`, `UI_MAIL_SIN_RESULTADOS`, `UI_MAIL_COINCIDE`, `UI_MAIL_IMPRIMIR`, `UI_MAIL_YA_ENVIADO`, `UI_MAIL_TECLADO` | Interfaz | 19 (R5, R12, R13, R20, R22, R23) | Rótulos de la pantalla del ordenador: campo de búsqueda y botón, estados vacío y sin resultados, aviso de coincidencia, botón «Imprimir», aviso de ya impreso y rótulo del teclado en pantalla. Distancia de lectura y tamaño mínimo: ux del ordenador |
+    | `OBJ_V01`, `OBJ_V08` | Texto de objeto (etiqueta) | 19 | Etiquetas del ordenador y de la impresora |
+    | `OBJ_V08_SIN_RESULTADOS`, `OBJ_V08_YA_IMPRESA` | Texto de objeto (pie) | 19 | Pies de la impresora sin búsqueda previa y con la hoja ya impresa |
+    | `DOC_I01` | Documento, plantilla de composición (estilo `impreso`) | 19 (R20, R30, D19-11) | **No es un documento de 20 ni un ítem relegible.** 18 posee solo la **cabecera** de la hoja; el contenido lo compone 19 (`compose_i01()`) a partir de los registros de los seis correos (regla 11) y del pie `PISTA_P1_N2` (regla 20). Sin fragmentos ni `audio` |
+    | Asunto y remitente de `MAIL_1` a `MAIL_4` | Campos del correo | 19 | El tipo **correo** (regla 1) gana el campo **asunto** (los de `MAIL_X1`/`MAIL_X2` ya están en la regla 12). Asuntos y remitentes de los cuatro numerados: provisionales (el slice B.1 fija día, hora y firma, no el asunto) |
+    | `DOC_FORMULARIO`, `DOC_LISTA_TAREAS` | Documento con estilo | 20 (R2, tabla de ítems) | Propuestas de clave: formulario del Anexo A.4 (`I-04`, estilo `impreso`) y lista de tareas (`I-05`, `manuscrito_guardian`, nombre de Vera tachado y reemplazado por la inicial del Guardián, regla 1). Estilo de `NOTA_01` (`I-06a`): `manuscrito_guardian`. 20 exige que el estilo salga de este catálogo; el arte puede cambiarlo, el campo es de 18 |
+    | `UI_BOLSILLO_AYUDA` | Interfaz (pie no bloqueante) | 20 (R23), 24 | Texto de 20: «Atrás: revisar los papeles». **Condicionada a Q1 de 20** (acción `atrás` en `exploración`): ver «Pendiente de decisión» en Open Questions |
+    | Mensajes del teléfono de la escena 1: «¿Jugamos esta noche?», «Ahora no», «Este número ya no está disponible» | Interfaz (mensajes del sistema) | 21 (escena 1) | Tres entradas `UI_…` (nombres definitivos al poblar los datos). El texto del mensaje inicial es el que cita el slice; «Ahora no» depende de PA-9 de 21 (ver pendiente) |
+    | Rótulo «Continuará» | Interfaz | 21, 27 | Rótulo de la tarjeta final; lo pinta 27. Distribución del tiempo título/rótulo: PA-4 de 21 |
+    | `MEGA_03` | Línea (megafonía) | 8 (único pedidor); 21 no la pide | **Entrada provisional** («Planta en modo de ahorro energético», texto de slice §13.3), marcada `fuente: propuesta_slice_v0.4` y «pendiente de slice v0.4». **No cuenta entre las 27 del §12** ni cambia AC-02; el verificador no la compara con el §12 (regla 16). Ver «Pendiente de decisión» |
+
+    Sin `SUB_…` nuevas en este lote.
+
 ### States and Transitions
 
 | Estado | Qué ocurre | Sale hacia |
@@ -134,19 +154,19 @@ El idioma activo es `es` en todo el slice y no cambia durante la partida.
 
 | Sistema | Qué lee de la base de contenido |
 |---|---|
-| 19 Ordenador, correo e impresora | Los 6 correos con día, hora, etiquetas y orden de presentación; el pie «Ordena por hora de envío» |
-| 20 Documentos y bolsillo | Formulario, memorando, notas, cartas, lista de tareas, libro de visitas, con su estilo de presentación |
+| 19 Ordenador, correo e impresora | Los 6 correos con día, hora, remitente, asunto, etiquetas y orden de presentación; el pie «Ordena por hora de envío»; claves `UI_MAIL_*`, `OBJ_V01`/`OBJ_V08`/`OBJ_V08_*` y la cabecera de `DOC_I01` (regla 23) |
+| 20 Documentos y bolsillo | Formulario, memorando, notas, cartas, lista de tareas, libro de visitas, con su estilo de presentación; `UI_BOLSILLO_AYUDA` (regla 23). No lee `DOC_I01` (lo posee 19) |
 | 11 Puzle 1 | Textos del panel y de la impresión (a través de 19) |
 | 12 Puzle 2 | `DOC_01` por fragmentos (F1, F2, F3), el sello, `NOTA_02` y las pistas |
 | 14 Puzle 4 | Fichas T1 a T4, regla del tablero, sellos «ACEPTADA» y «DEVUELTA» y el mensaje «No corresponde» (solo para T1–T3: T4 acepta devolver o asignar, D-B1) |
 | 16 Puzle 6 | Los tres botones, `CARTA_A/B/C` y `CARTA_CUERPO` |
 | 17 Sistema de pistas | Textos de pista de los 6 puzles: 3 niveles en P1 a P5 y 2 en P6 |
-| 21 Director de escenas | `MEGA_*`, `VO_V_*`, los mensajes del teléfono de la escena 1 y los de sistema |
+| 21 Director de escenas | `MEGA_*`, `VO_V_*`, los mensajes del teléfono de la escena 1, el rótulo «Continuará» y los de sistema (regla 23) |
 | 22 Llamada telefónica | `VO_G_12A/B/C`, `VO_G_13A–D`, `VO_G_14_RET`/`VO_G_14_ASG` (según `t4_decision`) y las cuatro opciones de respuesta |
 | 23 Director de audio | La referencia de audio y los segmentos de cada línea |
 | 26 Subtítulos | El texto y los segmentos de cada línea |
 | 27 Pantalla de título | Título, advertencias de contenido (slice §17) y el rótulo «Continuará» |
-| 7 Interacción · 8 Control de acceso · 24 Prompt · 25 Pausa | Etiquetas de acción («Abrir», «Girar», «Examinar», «Leer»), textos de objeto, mensajes de puerta cerrada y textos de menú |
+| 7 Interacción · 8 Control de acceso · 24 Prompt · 25 Pausa | `OBJ_C06`, `OBJ_C07`, `OBJ_D06`, `OBJ_C08` y la línea provisional `MEGA_03` (regla 23); etiquetas de acción («Abrir», «Girar», «Examinar», «Leer»), textos de objeto, mensajes de puerta cerrada y textos de menú |
 | 3 Estado del juego | Nada (este sistema no lee el estado; los consumidores eligen la variante) |
 
 ## Edge Cases
@@ -190,9 +210,9 @@ El idioma activo es `es` en todo el slice y no cambia durante la partida.
 | 11 Puzle 1 · 12 Puzle 2 · 14 Puzle 4 · 16 Puzle 6 | Dura | Textos de panel, fragmentos, fichas, botones y pistas |
 | 9 Marco de puzles | Dura en validación, blanda en ejecución | Las 8 claves `PISTA_*` con texto (regla 20) y textos de feedback; **la carga de `puzzles.json` falla si falta una clave referenciada** (GDD 9, regla 29) |
 | 17 Sistema de pistas | Dura | Las 8 claves `PISTA_*` con texto; los efectos no textuales no pasan por aquí (regla 20) |
-| 19 Ordenador, correo e impresora | Dura | Correos con hora, etiquetas y orden de presentación |
-| 20 Documentos y bolsillo | Dura | Documentos con estilo de presentación |
-| 21 Director de escenas | Dura | Líneas de voz y megafonía; mensajes de sistema |
+| 19 Ordenador, correo e impresora | Dura | Correos con hora, asunto, etiquetas y orden de presentación; claves `UI_MAIL_*`, `OBJ_V*` y cabecera de `DOC_I01` (regla 23) |
+| 20 Documentos y bolsillo | Dura | Documentos con estilo de presentación; `UI_BOLSILLO_AYUDA` (regla 23) |
+| 21 Director de escenas | Dura | Líneas de voz y megafonía; mensajes de sistema; mensajes del teléfono y rótulo «Continuará» (regla 23) |
 | 22 Llamada telefónica | Dura | Líneas del Guardián y opciones de respuesta |
 | 23 Director de audio | Dura | Referencia de audio de cada línea |
 | 26 Subtítulos | Dura | Texto y segmentos de cada línea |
@@ -247,6 +267,7 @@ Revisados por `qa-lead`. **Evidencia:** **L** = test unitario automático (gdUni
 - **AC-02 (R2, T)**: **GIVEN** los datos del slice, **WHEN** corre el verificador, **THEN** cuenta 27 entradas del §12 (20 líneas audibles: 8 de Vera, 10 del Guardián —incluidas `VO_G_14_RET` y `VO_G_14_ASG`— y 2 `MEGA_`; y 7 de documento: 1 `DOC_`, 2 `NOTA_`, 4 `CARTA_`), 6 correos (4 numerados y 2 sin numerar) y las fichas T1 a T4.
 - **AC-03 (R3, T)**: **GIVEN** los datos, **WHEN** se listan los identificadores, **THEN** los 27 del §12 existen con las mayúsculas exactas, las claves `PISTA_*` son exactamente las 8 de la regla 20 (ninguna `PISTA_P6_N3`) y los demás nuevos cumplen `UI_…`, `SUB_<EVENTO>`, `OBJ_…`, `MAIL_1` a `MAIL_4` o `MAIL_X1` y `MAIL_X2`; el orden de presentación de los correos referencia exactamente esos seis identificadores.
 - **AC-03a (R22, T)**: **GIVEN** los datos con una clave `SUB_BREATH_BROKEN` válida y otra `sub_llanto` o `SUB_Llanto`, **WHEN** corre el verificador, **THEN** la primera pasa el formato `SUB_<EVENTO>` y las otras dos fallan; **GIVEN** una `SUB_…` con texto provisional y sin marcador de pendiente, **THEN** el verificador falla; con el marcador, la lista como aviso (error con `--hito=calidad`); y una `SUB_…` sin `audio` se muestra igual (regla 17).
+- **AC-22 (R23, T)**: **GIVEN** los datos con las entradas de la regla 23 (texto provisional, marcador de pendiente), **WHEN** corre el verificador, **THEN** las lista como aviso con código 0 (error con `--hito=calidad`); **GIVEN** `MEGA_03` con `fuente: propuesta_slice_v0.4`, **THEN** AC-02 sigue contando 27 entradas del §12 (20 audibles y 7 de documento) y las claves `PISTA_*` siguen siendo 8; **GIVEN** `MEGA_03` marcada `fuente: slice_§12` sin fila en el §12, **THEN** el verificador falla; **GIVEN** `DOC_I01`, **THEN** no tiene fragmentos ni ítem de 20 asociado.
 - **AC-04 (R4, L + T)**: **GIVEN** un identificador marcado inactivo, **WHEN** se pide, **THEN** se trata como «no encontrado»; **GIVEN** una referencia de otro fichero a un identificador que no existe ni está inactivo, **THEN** el verificador falla.
 - **AC-05 (R5, L + T)**: **GIVEN** los grupos `CARTA_` (A–C), `VO_G_12` (A–C), `VO_G_13` (A–D), `VO_G_14` (`RET`, `ASG`) y `VO_V_12` (A–D), **WHEN** se quita una letra o sufijo de cualquiera, **THEN** el verificador falla; **WHEN** se pide `VO_G_12D`, **THEN** devuelve «no encontrado»; `CARTA_CUERPO` y `VO_V_12E` se piden como líneas simples.
 
@@ -300,7 +321,20 @@ Revisados por `qa-lead`. **Evidencia:** **L** = test unitario automático (gdUni
 | 10 | **Línea que cambia con `t4_decision` (D-B1):** `VO_G_14_ASG` es una propuesta mínima; texto, hablante (¿Guardián o Vera?) y escena definitivos. El texto retirado del REJECT de T4 era «No corresponde» (1,5 s, ficha a neutra). | Narrative-director / usuario | GDD 22 y actualización del slice |
 | 11 | **Texto del subtítulo del llanto contenido** (regla 22, D-W7): clave `SUB_…` y texto breve entre corchetes de cada sonido no verbal con subtítulo. No se inventa aquí. | Writer / narrative-director | GDD 22 y 26 (y antes del hito de calidad) |
 
+**Pendiente de decisión (lote Feature 1).** No se aplican como definitivas; el valor por defecto es el provisional indicado.
+
+| # | Pregunta | Pide | Valor provisional |
+|---|---|---|---|
+| 12 | **`MEGA_03` y slice v0.4.** Añadirla al §12 pasa de 27 a 28 entradas y de 2 a 3 de megafonía, y exige slice v0.4 y actualizar AC-02, AC-03 y el verificador (regla 15). Decisión única compartida con 21 (PA-6); el único pedidor es 8 | 8, 21 | Entrada provisional `propuesta_slice_v0.4`; el recuento oficial sigue en 27 |
+| 13 | **«Ahora no» como mensaje del teléfono** (PA-9 de 21): si el verbo «Responder» de `V02` sustituye la opción en pantalla del slice, hace falta `UI_VERBO_RESPONDER`; si no, «Ahora no» sigue siendo opción de pantalla | 21, 7 | Mensajes de la regla 23; sin `UI_VERBO_RESPONDER` |
+| 14 | **`UI_BOLSILLO_AYUDA` depende de Q1 de 20** (acción `atrás` en `exploración`; el slice D.1 dice «No hay menú de inventario»). Si se rechaza, la clave se retira | 20, 1 | Entrada provisional |
+| 15 | **`I-01` relegible fuera de `C05` (PA-9 de 19)**, hoja y hora visibles (PA-1/PA-2), 4 o 6 resultados (PA-4), correos de ruido dentro del alcance (PA-8): cambian el contenido de `DOC_I01` y de los correos, no las claves | 19 | Valores provisionales de 19 |
+| 16 | **Textos de lectura de `I-05`/`I-06a` al resolver P4/P3** (Q2 de 20, pregunta 7 de 10): sin cambio de claves | 9, 10, 20 | No se presentan |
+
+
 ## Decisiones tomadas
+
+*Ronda de propagación 1 (2026-11-09): ver D18-16 a D18-19 al final de esta sección.*
 
 Ronda 2 (2026-11-09), por lotes; la re-review está en `design/gdd/reviews/base-de-contenido-narrativo-re-review.md`.
 
@@ -328,7 +362,18 @@ Ronda 3 (2026-11-09), tras `/review-all-gdds` (informe `gdd-cross-review-2026-11
 | D18-14 | **(Ronda 5, F-1)** Dependencias con la numeración del índice (2 Jugador en primera persona, 4 Escena de planta, 5 Guardado y carga) y «contribuye a» la OQ 11 del GDD 6. | Seguir diciendo que la cierra. | La pregunta sigue abierta en 6; 18 solo aporta las claves `UI_…`. |
 | D18-15 | **(Ronda 6, A-3/A-4)** `SUB_` entra en la lista de prefijos (regla 3, AC-03), el verificador (regla 16) comprueba su formato y el marcador de pendiente (nuevo AC-03a); Dependencies completadas y nota del índice actualizada; Overview con la distribución real de niveles. | Dejar `SUB_` fuera de la lista de prefijos. | Evita que el verificador rechace un tipo que la regla 22 ya define. |
 
+Ronda de propagación 1 (2026-11-09), cambios requeridos por los GDD 8, 19, 20 y 21 (lote Feature 1).
+
+| # | Decisión | Alternativa descartada | Motivo |
+|---|---|---|---|
+| D18-16 | Regla 23: las claves `OBJ_C06/C07/D06/C08`, `UI_MAIL_*`, `OBJ_V01/V08/V08_*`, `UI_BOLSILLO_AYUDA`, los mensajes del teléfono y el rótulo «Continuará» entran como entradas con tipo, pedidor y marcador de pendiente; sin texto definitivo. No tocan el recuento de 27 ni el de 8 `PISTA_*`. | Redactar aquí el texto definitivo; subir el recuento. | El texto es del writer/narrative-director; el recuento oficial es el del §12. |
+| D18-17 | `DOC_I01` es una plantilla de composición cuya cabecera es de 18 y cuyo contenido compone 19; no es documento de 20 ni ítem relegible. El tipo correo gana el campo `asunto`. No hay mensaje distinto para «tarjeta equivocada» (regla 16 de 8). | `DOC_I01` como documento de 20 con fragmentos fijos; mensaje específico de tarjeta equivocada. | `I-01` se compone de los registros de correo (regla 11); un mensaje distinto diría al jugador si tiene la tarjeta. |
+| D18-18 | `MEGA_03` se añade solo como entrada provisional `fuente: propuesta_slice_v0.4`, pedida por 8; no cuenta en AC-02. | Pasar a 28 entradas ahora. | Exige slice v0.4 y es decisión de alcance (pregunta abierta, bloque «Pendiente de decisión»). |
+| D18-19 | Claves propuestas `DOC_FORMULARIO` y `DOC_LISTA_TAREAS`; estilo de `NOTA_01` y lista: `manuscrito_guardian`. | Dejar la clave «por asignar». | 20 exige que clave y estilo salgan del catálogo. |
+
 ## Historial de cambios
+
+- **2026-11-09 (ronda de propagación 1, lote Feature 1):** regla 23 (claves pedidas por 8, 19, 20 y 21 con marcador de pendiente), campo `asunto` en el correo, bullet del verificador, AC-22, filas de Interacciones y Dependencies de 7·8, 19, 20 y 21, `MEGA_03` provisional y bloque «Pendiente de decisión (lote Feature 1)». No cambian los recuentos (27 entradas del §12; 8 `PISTA_*`). Estado: pendiente de re-review.
 
 - **2026-11-09 (D-B1):** hueco de contenido por la decisión de T4: grupo provisional `VO_G_14_RET`/`VO_G_14_ASG` (propuesta, `fuente: propuesta_D-B1`), texto del REJECT de T4 retirado (D18-9) y referencias a `t4_decision`. Cambia contenido propuesto: pendiente de re-review y de narrative-director.
 
