@@ -1,11 +1,11 @@
 # El Nido en la Niebla · Documento de referencia del vertical slice «Turno de noche»
 
-**Versión:** 0.3
-**Fecha:** 2026-11-08
+**Versión:** 0.4
+**Fecha:** 2026-11-09
 **Estado:** base para desarrollo. Sujeta a revisión tras el primer playtest.
 **Alcance:** vertical slice de 25 a 30 minutos.
 
-> Este documento es la fuente de verdad para el slice. Prevalece sobre el GDD general (v0.1, 26 de octubre de 2026) y sobre las versiones 0.1 y 0.2 de este documento. Donde el GDD general diga tercera persona, el slice usa **primera persona** (decisión D-01). Los anexos A a D contienen el detalle de implementación de espacios, puzles, eventos e inventario.
+> Este documento es la fuente de verdad para el slice. Prevalece sobre el GDD general (v0.1, 26 de octubre de 2026) y sobre las versiones 0.1, 0.2 y 0.3 (con sus ajustes 0.3.1 y 0.3.2) de este documento. Donde el GDD general diga tercera persona, el slice usa **primera persona** (decisión D-01). Los anexos A a D contienen el detalle de implementación de espacios, puzles, eventos e inventario.
 
 ---
 
@@ -300,6 +300,7 @@ Cada línea tiene un ID para que audio, localización y QA puedan referenciarla.
 | `VO_V_01` | Vera | «Tres días en esta unidad y todavía no sé dónde está el archivo de transición. Solo sé que me toca a mí». | 1 |
 | `VO_V_04` | Vera | «Hace nueve días estaba en un avión a Lisboa. Me acuerdo porque no pude dormir. Y la firma es mía. O se parece tanto que da igual». | 3 |
 | `MEGA_02` | Megafonía | «Reunión de dirección en la sala nueve B». | 4 |
+| `MEGA_03` | Megafonía | «Planta en modo de ahorro energético». (texto de §13.3; redacción final pendiente del writer) | 8 (ascensor inactivo) |
 | `VO_V_08` | Vera | «Ratificación pendiente. Llevo tres días aquí. Da igual si está firmada». | 5 |
 | `DOC_01` | Memorando | «Traslado de Vera: aprobado a petición de la interesada. Ratificación pendiente de firma del responsable». | 5 |
 | `VO_G_07` | El Guardián | «Venga, que somos un equipo». [pausa] «No. Esa toma no. Lo pedí sin preguntarte, Vera. Lo pedí y después te lo conté como si fuera tuyo». | 6 |
@@ -324,7 +325,9 @@ Cada línea tiene un ID para que audio, localización y QA puedan referenciarla.
 | `VO_V_12D` | Vera | «No dije nada. Él habló por los dos». | 8 |
 | `VO_V_12E` | Vera | «La V no me convence». | 8 |
 
-**Nota sobre `VO_G_14`:** `VO_G_14_RET` y `VO_G_14_ASG` sustituyen a la antigua `VO_G_14` única. `_RET` conserva su texto; `_ASG` es una **propuesta provisional pendiente de narrative-director**. La tabla pasa de 26 a 27 entradas; el GDD base-de-contenido-narrativo (D18-12) mantiene 27 entradas (incluye `VO_G_14_RET`/`VO_G_14_ASG`).
+**Nota sobre `VO_G_14`:** `VO_G_14_RET` y `VO_G_14_ASG` sustituyen a la antigua `VO_G_14` única. `_RET` conserva su texto; `_ASG` es una **propuesta provisional pendiente de narrative-director**. La tabla pasó de 26 a 27 entradas (incluye `VO_G_14_RET`/`VO_G_14_ASG`) y, con `MEGA_03` (v0.4), pasa a **28 entradas**: 21 audibles (3 de megafonía: `MEGA_01`, `MEGA_02`, `MEGA_03`) y 7 de documento.
+
+**Nota sobre `MEGA_03` (v0.4):** megafonía de ahorro energético que suena por C01 cuando el jugador intenta usar el ascensor C08 antes de que esté activo (§13.3). La pide el sistema de control de acceso; tiene enfriamiento propio (propuesta: 8 s) y no suena durante el apagón ni la llamada. Su ID es nuevo en v0.4; el texto es el de §13.3 y queda **pendiente del writer** para la redacción final.
 
 **Regla de escritura:** las líneas del Guardián nunca explican por qué pasó algo. Pueden contradecirse con los documentos. Ningún personaje confirma intenciones.
 
@@ -357,7 +360,7 @@ Cada línea tiene un ID para que audio, localización y QA puedan referenciarla.
 - Si el jugador sale de la Sala B sin cuadrar las lámparas, quedan en la última posición. Puede volver cuando quiera.
 - Si el jugador deja «Carta a Dirección» sin decidir, la ficha permanece en la mesa y el compartimento 2 no se resuelve hasta decidirla.
 - Si el jugador sale de D sin completar la caja, la llamada no se activa. Puede volver a D en cualquier momento. Ningún compartimento depende de otro para ser resoluble.
-- Si el jugador intenta salir del edificio antes de la llamada, el ascensor no responde y la megafonía indica «Planta en modo de ahorro energético».
+- Si el jugador intenta salir del edificio antes de la llamada, el ascensor no responde y la megafonía (`MEGA_03`) indica «Planta en modo de ahorro energético».
 
 ## 14. Audio
 
@@ -566,7 +569,7 @@ El slice se considera aceptable cuando:
 
 | ID | Objeto | Posición | Función |
 |---|---|---|---|
-| C01 | Altavoz de megafonía | Techo, (10,0; 0,0; Y 2,55) | Emite `MEGA_01` y `MEGA_02` |
+| C01 | Altavoz de megafonía | Techo, (10,0; 0,0; Y 2,55) | Emite `MEGA_01`, `MEGA_02` y `MEGA_03` |
 | C02 | Patio de luces | Muro sur, X 12,0 … 20,0 | Efecto de reflejo retardado (escena 4) |
 | C03 | Luminarias | Techo, X = 3, 7, 11, 15, 19, 23 | Parpadeo (escena 4) y apagón (escena 7) |
 | C04 | Cartel de planta | Muro sur, (0,3; Y 1,5) | Texto: «Planta 9 · Proyectos Nuevos» |
@@ -581,6 +584,8 @@ El slice se considera aceptable cuando:
 |---|---|---|
 | T-PAS-1 | X entre 9,0 y 10,0 (escena 4) | Inicia `MEGA_02` |
 | T-PAS-2 | X entre 14,0 y 18,0 (escena 4) | Activa el reflejo retardado de C02 durante 3 s |
+| T-D-OUT | Volumen en el pasillo, ante la puerta de D (escena 7). **Coordenadas propuestas:** X 20,0 … 23,0, Z −1,3 … 1,3, pendientes de confirmar al construir el blocking. | Con `caja_completa` y sin `apagon_activo`, inicia el apagón (C.7, t = 0,0) y escribe `apagon_activo`. Solo dispara una vez. |
+| T-OFI-IN | Umbral del despacho de Vera (escena 7). **Coordenadas propuestas:** X −0,5 … 0,5, Z −0,5 … 0,5 (el umbral de A.1), pendientes de confirmar al construir el blocking. | Con `apagon_activo` y sin `llamada_iniciada`, hace que V02 suene (`SFX_PHONE_BUZZ`). |
 
 ### A.4 Archivo (A)
 
@@ -729,6 +734,8 @@ El orden de impresión es 3, 1, 4, 2, con los dos correos sin numerar intercalad
 1. Nivel 1: resaltado de la impresión (`HIGHLIGHT`), 3 s, sin mover la cámara.
 2. Nivel 2: el pie de la impresión muestra «Ordena por hora de envío».
 3. Nivel 3: la hora de envío aparece en letra pequeña al pie de cada correo.
+
+**Confirmado en v0.4 (literal):** la hoja del P1 lleva **siempre** `Enviado: hh:mm` en cada bloque y el pie «Ordena por hora de envío», tal como figura arriba. Por tanto, las pistas 2 y 3 **no añaden información nueva** sobre la hora de envío (la escalera de pistas es más corta; aceptado). Solo la pista 1 orienta realmente (guía hacia la impresión).
 
 ### B.2 Puzle 2 · Memorando en el cristal
 
@@ -1037,7 +1044,7 @@ S6 queda vacío.
 | I-06b | Nota «No te quites la carga. Yo tampoco» | B05 | Lectura in situ. No es ítem. |
 | I-07 | Carta de Vera | D01d (puzle 6) | Según `carta_variante` |
 
-Vera lleva los ítems en un bolsillo visual. No hay menú de inventario en el slice.
+Vera lleva los ítems en un bolsillo visual. **No hay menú de inventario** ni pantalla de selección en el slice. Sí hay una acción de **repasar el bolsillo**: `atrás` (pulsación corta) en `exploración` abre la lectura del siguiente documento releíble que Vera lleva, **un documento por pulsación** y sin menú. Son releíbles I-04, I-05, I-06a e I-07 (I-05 e I-06a son lo que revelan al resolver los puzles 4 y 3; no tienen presentación nueva en la caja ni en el tablero). I-01 no se relee desde el bolsillo (se consulta en el ordenador/papel) y las tarjetas I-02 e I-03 no son documentos. El orden del repaso y su ciclo los fija el GDD de documentos y bolsillo.
 
 ### D.2 Banderas
 
@@ -1083,7 +1090,7 @@ Son 20 hechos en total (los de la tabla, contando `pos_L`, `pos_C` y `pos_R` por
 | R | Recepción | R01 (libro) |
 | C | Pasillo y elementos comunes | C05 (panel del puzle 1) |
 | I | Ítem | I-01 (impresión) |
-| T | Disparador de zona | T-PAS-1 |
+| T | Disparador de zona | T-PAS-1, T-D-OUT, T-OFI-IN |
 | VO | Voz | `VO_G_12A` |
 | SFX / ANIM | Sonido y animación | `SFX_UNLOCK` |
 
@@ -1093,6 +1100,7 @@ Son 20 hechos en total (los de la tabla, contando `pos_L`, `pos_C` y `pos_R` por
 
 | Versión | Fecha | Cambio |
 |---|---|---|
+| 0.4 | 2026-11-09 | Versión mayor que integra cinco decisiones del usuario surgidas de los GDDs de la capa Feature: (1) `MEGA_03`, megafonía de ahorro energético del ascensor inactivo, entra en §12 (27→28 entradas; 21 audibles, 3 de megafonía) con el texto de §13.3, redacción final pendiente del writer; (2) zonas `T-D-OUT` y `T-OFI-IN` añadidas al Anexo A.3 y D.4 con coordenadas propuestas; (3) `atrás` corta en `exploración` = «repasar bolsillo» (un documento por pulsación, sin menú), matiza D.1; (4) I-05 e I-06a releíbles desde el bolsillo; (5) B.1 confirmado literal (hoja con `Enviado: hh:mm` y pie «Ordena por hora de envío»; pistas 2 y 3 sin información nueva). Afecta a §12, §13.3, A.3, B.1, D.1 y D.4. |
 | 0.3.2 | 2026-11-09 | Ajustes autorizados por el usuario sobre v0.3 (sin cambiar de versión): la ficha T4 «Carta a Dirección» acepta Devolver o resolverla con los selectores (cualquier combinación), sin respuesta incorrecta ni «No corresponde»; la elección se guarda en `t4_decision` (`returned`/`assigned`, escrito antes de `caja_c2`); `VO_G_14` pasa a `VO_G_14_RET`/`VO_G_14_ASG` (propuesta provisional pendiente de narrative-director); D.2 pasa de 19 a 20 hechos. Afecta a B.4, 10.4, 11, 12, 13.3 y D.2. |
 | 0.3.1 | 2026-11-09 | Ajustes autorizados por el usuario sobre v0.3 (sin cambiar de versión): P1 nivel 1 pasa de gesto de cámara a resaltado; D.2 `llamada_iniciada` no evita repetir la llamada y `pendiente_revelacion` se escribe al iniciar la revelación; tras llegar a Recepción la partida queda sellada y el título ofrece solo «Nueva partida»; «reducir movimiento» entra en la accesibilidad del MVP. |
 | 0.3 | 2026-11-08 | Añadidos los anexos A (espacios), B (puzles), C (eventos y tiempos) y D (inventario, banderas e índice). Ajustes en v0.2: la impresión de correos sustituye a la búsqueda como fuente de referencias; el silencio en la llamada pasa a ser el botón «No responder» y no hay elección automática a los 20 s; se elimina el temporizador de la ficha «Carta a Dirección». Decisiones D-14 a D-16. |
