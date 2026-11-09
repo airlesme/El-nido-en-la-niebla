@@ -1,6 +1,6 @@
 # Puzle 5 · Espejo de la diferencia
 
-> **Estado:** Borrador (lote Feature 3) — pendiente de review
+> **Estado:** Revisado (ronda de corrección 7) — pendiente de re-review
 > **Sistema:** 15 (capa Feature, MVP) · **Autor:** game-designer · **Fecha:** 2026-11-09
 > **Fuente de verdad:** `design/slice/slice-v0.3.md` (contenido v0.4.2): §10.5, §19.5, Anexo B.5, C.6, D.2 · **Marco:** `design/gdd/marco-de-puzles.md` (9), que este GDD **instancia, no redefine**.
 > **Pilares:** Información incompleta (P5), Tensión sin castigo (P4), Autonomía como progresión (P3), El espacio expresa la emoción (P2); anti-pilar *NOT una historia explicada*.
@@ -19,7 +19,7 @@ El puzle tiene dos mitades de diseño distintas:
 1. **El giro (mecánica).** Un único gesto continuo (`rotar`) sobre un único elemento (`D01c/frame`). El jugador observa cómo el reflejo de la foto de la pared se desplaza y se desalinea respecto a la foto de la caja, y busca el ángulo en el que ambas coinciden figura por figura. No hay penalización, ni reinicio, ni veredicto negativo (marco, regla 15): la política es `SUSTAINED` (regla 12 de 9) y solo existen `HOLDING` y `NONE`.
 2. **La revelación (presentación).** Superposición, contorno de Vera y grabación. Es el momento narrativo del puzle y está al servicio del pilar *Información incompleta* y del anti-pilar *NOT una historia explicada*: la imagen enseña **un hecho observable** (una figura que existe en una foto y no en la otra) y la línea del Guardián no se acompaña de texto, flecha ni comentario de Vera.
 
-Este GDD define: cómo se gira y cuándo cuenta la alineación; el contenido y los tiempos de la revelación; qué ocurre al interrumpirla y al cargar; las tres pistas; la accesibilidad; y los datos (`puzzles.json`, entrada `P5`). **No** define: el ciclo de vida, la escritura de hechos ni los avisos (9); la tapa y la fuente de audio de `D01c` (10); la foto del Puzle 3 (13, sin redactar: ‡); la superposición y el contorno como efecto visual (29); la reproducción y el corte de la línea (23); los subtítulos (26); el reparto de pistas (17).
+Este GDD define: cómo se gira y cuándo cuenta la alineación; el contenido y los tiempos de la revelación; qué ocurre al interrumpirla y al cargar; las tres pistas; la accesibilidad; y los datos (`puzzles.json`, entrada `P5`). **No** define: el ciclo de vida, la escritura de hechos ni los avisos (9); la tapa y la fuente de audio de `D01c` (10); la foto del Puzle 3 (13, regla 23 de 13: recurso de arte reutilizable); la superposición y el contorno como efecto visual (29); la reproducción y el corte de la línea (23); los subtítulos (26); el reparto de pistas (17).
 
 **Bucle.** Micro (30 s): girar, ver el reflejo acercarse o alejarse, ajustar. Meso (1,5 a 3 min, F7): llegar a la caja con `caja_c1`, comparar las dos fotos, alinear, ver la revelación. Macro: `caja_c3` es una de las tres dependencias de `P6` (la caja completa dispara el apagón y la llamada).
 
@@ -55,7 +55,7 @@ El jugador **descubre por sí mismo** que Vera estaba en la foto. No recibe la n
    | `D01c/mark_40` | visual | La marca de 40°; solo se ilumina con la pista nivel 3. |
    | `D01c/speaker` | visual/audio | El altavoz del compartimento; la fuente de audio 3D la ofrece 10 (`SPK_D01C`). |
 
-   Los elementos visuales no son objetivo de puntero. Sus IDs deben existir en el catálogo de 7 para que `HIGHLIGHT` los referencie (Cambios requeridos).
+   Los elementos visuales no son objetivo de puntero. Sus IDs deben existir en el catálogo de 7 y declararse en `solution.visual_elements` para que `HIGHLIGHT` y `MARK_LIT` los referencien: admitir `HIGHLIGHT` sobre elementos visuales no interactivos y el campo `solution.visual_elements` lo define el esquema v2 de 9 (Cambios requeridos; hasta que 9 lo publique, ‡).
 5. **Entrada.** El gesto aceptado es `rotar` (nombre y fases de 7: `inicio`, `actualización`, `fin`, `cancelación`) sobre `D01c/frame`. Con ratón, 1 px = 0,25° (`delta_grados`, Entrada); con mando, velocidad angular × Δt. El controlador suma `delta_grados` a θ y **limita θ a [0°, 90°]** (regla 9 de 9): no hay vuelta completa ni envoltura. Sentido: `delta_grados` positivo aumenta θ (el reflejo gira hacia su posición de solución al aumentar θ desde 0°). Se admite el modo «alternar» de Entrada (pulsar para empezar a rotar y pulsar para soltar, en lugar de mantener).
 6. **θ inicial y persistencia.** θ parte de `theta_initial_deg` = 0° al cargar la escena. Al cerrar la vista **conserva** θ durante la sesión de la escena (regla 21b de 9, `KEEP`); no se guarda en disco (regla 22 de 9: solo `pendiente_revelacion`). Tras cargar vuelve a 0°.
 7. **Aspecto del reflejo.** El reflejo es **puramente geométrico**: la foto de `D04` rota con θ respecto a la foto de la caja, y solo en θ* ± tolerancia las figuras coinciden una a una. No hay ayuda de coherencia (sin brillo, enfoque, zumbido ni «imán» que crezca al acercarse a θ*): lo que el jugador ve es la única señal. Mientras θ está en tolerancia **no suena nada** (`HOLDING` no emite feedback, regla 13 de 9).
@@ -76,8 +76,8 @@ El jugador **descubre por sí mismo** que Vera estaba en la foto. No recibe la n
 
     | Paso | Inicio | Fin | Qué se ve | Audio |
     |---|---|---|---|---|
-    | `FADE` | 0,0 s | 1,2 s | La superficie refleja la foto de `D04` y se **superpone** a la foto de la caja (fundido de opacidad). Con `reducir_movimiento`: fundido fijo de 100 ms y la imagen final se mantiene hasta 1,2 s (regla 14b de 9). | Sin sonido de acierto. Silencio parcial (slice §14): solo el ambiente de la sala. |
-    | `OUTLINE` | 1,2 s | 2,0 s | Las figuras coincidentes quedan como una sola foto; **solo la silueta de Vera** (presente en la foto de `D04`, no en la de la caja) recibe un contorno. Con `reducir_movimiento`, aparece en 100 ms. | Ídem. |
+    | `FADE` | 0,0 s | 1,2 s | La superficie refleja la foto de `D04` y se **superpone** a la foto de la caja (fundido de opacidad). Con `reducir_movimiento`: fundido fijo de 100 ms y la imagen final se mantiene hasta 1,2 s (regla 14b(b) de 9). | Sin sonido de acierto. Silencio parcial (slice §14): solo el ambiente de la sala. |
+    | `OUTLINE` | 1,2 s | 2,0 s | Las figuras coincidentes quedan como una sola foto; **solo la silueta de Vera** (presente en la foto de `D04`, no en la de la caja) recibe un contorno. Con `reducir_movimiento`, aparece en 100 ms (extensión de 14b(b) de 9 de `FADE` a `OUTLINE`, definida en el esquema v2 de 9). | Ídem. |
     | `LINE` | 2,0 s | 16,0 s nominal (F8) | La imagen superpuesta con el contorno se **mantiene fija**; no hay más animación, cámara ni texto salvo el subtítulo de 26. | `VO_G_07` desde `SPK_D01C` (el altavoz del compartimento, 10). El paso termina por las señales de la regla 20 de 9. |
 
 16. **Qué muestra y qué no** (pilares *Información incompleta* y anti-pilar *NOT una historia explicada*). La revelación **muestra un hecho observable**: existe una figura en una foto que no está en la otra. **No** hay: texto en pantalla, nombre, flecha, etiqueta, destello, zoom, movimiento de cámara, comentario de Vera ni música. El contorno es la única marca y rodea la silueta, no la interpreta. No usa rojo ni verde ni ningún código cromático moral (pilar *Ambivalencia sin moral binaria*): su color y brillo los fija el art bible; 15 exige solo que se distinga por **forma y luminancia**, no solo por tono. En `D04`, Vera está «al margen» (slice, Anexo A); en el reflejo debe ocupar la posición del hueco S6 de la foto de la caja (‡ requisito de contenido para 13 y arte; Open Questions).
@@ -98,15 +98,15 @@ El jugador **descubre por sí mismo** que Vera estaba en la foto. No recibe la n
     |---|---|---|---|
     | 1 | `TEXT` + `HIGHLIGHT` | `PISTA_P5_N1` | «El reflejo muestra algo que la foto de la caja no muestra». Resalta `D01c/reflection` 3,0 s†. |
     | 2 | `TEXT` + `HIGHLIGHT` | `PISTA_P5_N2` | «Compara las dos fotos con atención». Resalta `D01c/reflection` y `D01c/box_photo` 3,0 s†. |
-    | 3 | `AFFORDANCE` (`MARK_LIT`) | — (efecto visual) | La marca de 40° (`D01c/mark_40`) se ilumina y **permanece** iluminada mientras la vista esté abierta y en las siguientes aperturas de la sesión. **No** mueve el marco ni resuelve el puzle: el jugador debe girar hasta ella y mantener. |
+    | 3 | `AFFORDANCE` (`MARK_LIT`, definido en el esquema v2 de 9) | — (efecto visual) | La marca de 40° (`D01c/mark_40`) se ilumina y **permanece** iluminada mientras la vista esté abierta y en las siguientes aperturas de la sesión. **No** mueve el marco ni resuelve el puzle: el jugador debe girar hasta ella y mantener. |
 
     Los `HIGHLIGHT` de los niveles 1 y 2 son una adición de 15 a los textos del slice (Decisiones tomadas); no introducen claves nuevas (las 8 claves de 18 son un conjunto cerrado).
-23. **Reglas.** Las pistas se piden desde la pausa (25) vía 17; `request_hint` valida que `P5` esté `ACTIVO`. Con la vista cerrada, el efecto se aplica al estado y se muestra al abrir. Durante `RESOLVING` no se aplican (la alineación ya se hizo). El nivel alcanzado vive solo en memoria y es monótono (regla 26 de 9). Con `pendiente_revelacion` verdadero la marca de 40° ya no tiene función.
+23. **Reglas.** Las pistas se piden desde la pausa (25) vía 17; `request_hint` valida que `P5` esté `ACTIVO`. Con la vista cerrada, el efecto se aplica al estado y se muestra al abrir. **Durante `RESOLVING` `request_hint` se ignora** (sin efecto visible) **y no cuenta como nivel alcanzado** (el estado `RESOLVING` en `request_hint` lo define el esquema v2 de 9; D15-18): la alineación ya se hizo y el nivel no avanza. El nivel alcanzado vive solo en memoria y es monótono (regla 26 de 9). Con `pendiente_revelacion` verdadero la marca de 40° ya no tiene función.
 
 ### G. Accesibilidad
 
 24. **`asistencia_rotacion`** (Ajustes 6): bool, falso por defecto; con verdadero la tolerancia pasa de ±3° a ±6° (ventana 12°). Se confirma el nombre provisional de 6 (Decisiones tomadas).
-25. **`reducir_movimiento`** (6, regla 14b de 9): fundido de `FADE` y aparición de `OUTLINE` a 100 ms fijos con **los mismos `duration_s`** (F8 no cambia); recolocación de θ a θ* instantánea; entreabierto y cierre de C3 los resuelve 10. El giro del jugador no se altera (es entrada del jugador, no animación). Un cambio con la secuencia en curso afecta al **siguiente** paso o apertura.
+25. **`reducir_movimiento`** (6, regla 14b de 9): fundido de `FADE` y aparición de `OUTLINE` a 100 ms fijos con **los mismos `duration_s`** (F8 no cambia); recolocación de θ a θ* instantánea; el entreabierto y el cierre de C3 con `reducir_movimiento` los resuelve 10 (quién lo resuelve lo fija 14b(c) del esquema v2 de 9; 15 asume 10 hasta entonces). El giro del jugador no se altera (es entrada del jugador, no animación). Un cambio con la secuencia en curso afecta al **siguiente** paso o apertura.
 26. **`reducir_sobresaltos`** (6): 15 **no lo lee** (Ajustes lo entrega solo a 23 y 28). La secuencia no contiene destellos ni cambios bruscos de luminancia (solo un fundido de opacidad ≥ 1,2 s o 100 ms fijo). Si el «golpe» de la puerta dentro de `VO_G_07` debe atenuarse con la opción, lo decide 23 (Open Questions).
 27. **Otras ayudas.** Subtítulos de `VO_G_07` (26, `fallback_s` 14,0 s); modo «alternar» y velocidad de mando de Entrada; ninguna pista depende solo del color ni del sonido; sin tiempo límite en ninguna fase (S3 de 9); el reintento tras interrumpir no penaliza.
 
@@ -171,16 +171,16 @@ Esta capa **no redefine** F2 (condición mantenida), F4 (cierre) ni F8 (duració
 
 | Término | Mín. | Máx. | Fuente |
 |---|---|---|---|
-| `T_ent` (entrada de la vista de cierre) | 1,0 s† | 1,0 s† | Estimado como la vista de `D01a` (B.3, 1,0 s); lo fija 10 |
+| `T_ent` (apertura de la tapa y entrada de la vista) | 2,4 s† | 2,4 s† | `BOX_C3_OPEN` 1,4 s† (10, F1 de 10; C3 parte entreabierta de 2 cm) + vista de entrada 1,0 s (B.3, 7). Para C1 serían 2,6 s (`BOX_C1_OPEN` 1,6 s, slice B.3) |
 | `T_obs` (mirar `D04`, la foto de la caja y el reflejo) | 20 s† | 90 s† | Estimación de playtest |
 | `T_giro` (buscar el ángulo) | 15 s† | 75 s† | Estimación; F-P5-3 da la cota de 5,7 s sin comprensión |
 | `hold_s` | 0,8 s | 0,8 s | datos |
 | `T_seq` | 16,0 s | 18,0 s | F-P5-4 |
 | `T_sal` | 2,0 s | 2,0 s | F4 de 9 |
-| **Total** | **54,8 s ≈ 0,9 min** | **186,8 s ≈ 3,1 min** | |
+| **Total** | **56,2 s ≈ 0,94 min** | **188,2 s ≈ 3,14 min** | 2,4 + 20 + 15 + 0,8 + 16,0 + 2,0 = 56,2; 2,4 + 90 + 75 + 0,8 + 18,0 + 2,0 = 188,2 |
 
-**Contraste con F7 de 9** (objetivo 1,5–3 min): la banda objetivo cae dentro de la del modelo (0,9–3,1 min); los extremos del modelo son colas, no objetivos. Con pistas (cada nivel añade ~0,5–1 min de espera y lectura) el tiempo puede superar 3 min sin ser un fallo de tuning. **Decisión D15-7:** los 1,5–3 min **incluyen** los ~16 s de revelación; F7 de 9 dice «más ~16 s» y F9 suma 1,5 y 3 sin añadirlos (10,5–22 min): para que F9 sea coherente, 9 debe aclarar «incluida» (Cambios requeridos). Si no se aclarase, el rango de F9 subiría 0,27 min en ambos extremos (14,83 → 15,10 min y 33,09 → 33,36 min).
-**Reparto:** la revelación pesa 16/54,8 = 29 % del tiempo mínimo y 16/186,8 = 8,6 % del máximo.
+**Contraste con F7 de 9** (objetivo 1,5–3 min): la banda objetivo cae dentro de la del modelo (0,94–3,14 min); los extremos del modelo son colas, no objetivos. Con pistas (cada nivel añade ~0,5–1 min de espera y lectura) el tiempo puede superar 3 min sin ser un fallo de tuning. **Decisión D15-7:** los 1,5–3 min **incluyen** los ~16 s de revelación; F7 de 9 dice literalmente «más ~16 s» y F9 suma 1,5 y 3 sin añadirlos (10,5–22 min): 15 **interpreta F7 de 9 con la revelación incluida** (así AC-P5-19 y F9 son coherentes) y pide a 9 que lo escriba en la nota de F7 y F9 (Cambios requeridos); hasta que 9 lo acepte, AC-P5-19 se mide contra esa lectura y no contra el literal. Si 9 no la aceptase, el rango de F9 subiría 0,27 min en ambos extremos (14,83 → 15,10 min y 33,09 → 33,36 min).
+**Reparto:** la revelación pesa 16/56,2 = 28,5 % del tiempo mínimo y 16/188,2 = 8,5 % del máximo.
 
 ## Edge Cases
 
@@ -203,7 +203,7 @@ Cada caso dice **qué ocurre** y quién lo garantiza.
 15. **Cierre entre las dos escrituras finales** (`caja_c3` verdadero y `pendiente_revelacion` verdadero): `P5` `RESUELTO` y el marco limpia el hecho en silencio (regla 8.1 de 9; AC-41 de 9).
 16. **`VO_G_07` sin archivo, con fallo o sin señal.** La secuencia dura 16,0 s (sin audio o fallida) o 18,0 s (señal perdida) y nunca se atasca ni se interrumpe (F-P5-4; AC-20 de 9); el subtítulo dispone de `fallback_s`.
 17. **Pista nivel 3 antes de alinear, con el marco en cualquier θ.** La marca de 40° se ilumina; el marco no se mueve; el jugador puede ignorarla. Un jugador que ve la marca y la sigue resuelve en pocos segundos (válido: la pista es un énfasis).
-18. **Pista pedida durante `RESOLVING` o con `P5` `RESUELTO`.** `request_hint` la rechaza (puzle no `ACTIVO` en el segundo caso) o no aplica efecto visible (en `RESOLVING` la alineación ya está hecha); sin consecuencia.
+18. **Pista pedida durante `RESOLVING` o con `P5` `RESUELTO`.** `request_hint` la rechaza con `RESUELTO` (puzle no `ACTIVO`) y, durante `RESOLVING`, **se ignora**: sin efecto visible y **sin contar como nivel alcanzado** (D15-18); sin consecuencia.
 19. **Abrir `D01c` con `P5` `BLOQUEADO`.** Lo impide Caja (10) con `SIN_EFECTO` (regla 7 de 9). La red de seguridad cierra una vista abierta por otra vía (consola).
 20. **Resolver `P5` antes que `P4`, o `P4` antes.** Ambos órdenes son válidos (AC-05 de 9); `P6` espera a `caja_c1`, `caja_c2` y `caja_c3`.
 21. **El jugador nunca ha mirado `D04`.** El puzle sigue siendo resoluble (no hay puerta por inspección); la revelación muestra las dos fotos juntas. La pista nivel 1 (`PISTA_P5_N1`) y el reflejo lo llevan a compararlas.
@@ -214,7 +214,7 @@ Cada caso dice **qué ocurre** y quién lo garantiza.
 
 ## Dependencies
 
-Bidireccional. **La dureza la declara el dependiente**: la columna «Dureza» de la primera tabla es la de 15 como dependiente (15 depende de 6, 9, 10 y 13 según el índice, fila 15); la segunda tabla recoge a quienes dependen de 15, que declaran su propia dureza en su GDD (aquí solo se anota qué les entrega 15).
+Bidireccional. **La dureza la declara el dependiente**: la columna «Dureza» de la primera tabla es la de 15 como dependiente (15 depende de 6, 9, 10 y 13 según el índice, fila 15; dura en 9 y 10, blanda en 6 y 13); la segunda tabla recoge a quienes dependen de 15, que declaran su propia dureza en su GDD (aquí solo se anota qué les entrega 15).
 
 ### Sistemas de los que depende 15
 
@@ -222,7 +222,7 @@ Bidireccional. **La dureza la declara el dependiente**: la columna «Dureza» de
 |---|---|---|---|---|
 | 9 Marco de puzles | **Dura** | Ciclo de vida, `evaluate()` por fotograma, acumulador F2, secuencia diferida (reglas 12, 17 a 20), escritura de `caja_c3` y `pendiente_revelacion`, pistas, avisos | Controlador `P5Controller`, entrada `P5` de `puzzles.json`, veredictos `HOLDING`/`NONE` | Veredicto, no acción (regla 10 de 9) |
 | 10 Caja y compartimentos | **Dura** | Vista `D01c` y su anclaje de cámara, fuente `SPK_D01C`, entreabierto de 2 cm al activarse, `set_final_pose(3)`, cierre de la tapa, estado `ENTREABIERTO` en interrupción y carga | `get_view_gate` se lo da 9 a 10; 15 entrega a 10, vía 9, `ajar_cm` = 2 y el aviso «compartimento completado» (3) | 10 posee la tapa; 15 no la anima |
-| 13 Puzle 3 · Encaje de la foto ‡ | **Dura (contenido)** | `caja_c1` (vía 9) y la **foto de la caja ya completa** (cinco figuras y el hueco S6) como textura reutilizable para `D01c/box_photo` | — | 13 **no está redactado** (índice: Not Started): el contrato es ‡ (Cambios requeridos). Sin 13 no hay `box_photo` ni se puede probar la coincidencia figura por figura |
+| 13 Puzle 3 · Encaje de la foto | **Blanda (contenido)** | La **foto de la caja ya completa** (cinco figuras y el hueco S6) como recurso de arte reutilizable para `D01c/box_photo` (regla 23 de 13: `slot_6` vacío, «la imagen que reutiliza la secuencia del P5»). `caja_c1` llega vía 9, no de 13 | — | No es un contrato de lógica: 13 no ejecuta nada de 15. Sin ese recurso el puzle funciona con una foto provisional, pero no se puede validar la coincidencia figura por figura (AC-P5-18). 15 pide a 13 que la liste como dependiente (Cambios requeridos) |
 | 6 Ajustes persistentes | Blanda | `asistencia_rotacion` (±6°), `reducir_movimiento` (vía 9: lectura al configurar y al cambiar) | — | Sin 6, ambos son falso (tolerancia ±3°, fundidos normales) |
 | 7 Interacción e inspección (vía 9) | Indirecta | Gesto `rotar` y sus fases, `delta_grados` (0,25°/px), captura del elemento al iniciar, `cancelación`; catálogo de elementos de `D01c` | `elements()` = [`D01c/frame`] | Regla 11 y 11b de 9 |
 | 23 Director de audio ‡ · 26 Subtítulos ‡ (vía 9) | Blanda | Reproducción y corte de `VO_G_07` desde `SPK_D01C`, señales de línea; subtítulo durante `fallback_s` | «línea pedida» (por 9); la petición de lazo `SFX_FRAME_TURN` ‡ | Regla 20 de 9; sin audio la secuencia dura igual 16,0 s |
@@ -274,7 +274,7 @@ Tipos: **L** = prueba lógica automática (reloj falso, `GameClock` de la regla 
 - **AC-P5-01 (R1, R2, L)**: **GIVEN** `caja_c1` falso, **THEN** `P5` está `BLOQUEADO` y la vista no se abre; **WHEN** `caja_c1` pasa a verdadero, **THEN** `P5` pasa a `ACTIVO`, «puzle activado» lleva `ajar_cm` = 2 y suena `SFX_UNLOCK_SOFT` una vez.
 - **AC-P5-02 (R5, R6, L)**: **GIVEN** `P5` `ACTIVO`, **THEN** θ = 0°; **WHEN** llegan `delta_grados` que sumarían 120° o −30°, **THEN** θ queda en 90° o 0°, sin envoltura; **WHEN** se cierra y reabre la vista, **THEN** θ se conserva; **WHEN** se carga la partida, **THEN** θ = 0°.
 - **AC-P5-03 (R9, R10, F-P5-1, L)**: **GIVEN** tol 3, **THEN** `evaluate()` = `HOLDING` para θ ∈ [37°, 43°] y `NONE` fuera (43,5° → `NONE`); **GIVEN** `asistencia_rotacion` activa, 43,5° → `HOLDING` y 46,1° → `NONE`; **THEN** `evaluate()` nunca devuelve `PARTIAL`, `REJECT` ni `SOLVED`.
-- **AC-P5-04 (R11, F-P5-2, L)**: **GIVEN** reloj falso a 60 fps y tol 3, **WHEN** θ barre la ventana a 7,4°/s, **THEN** `SOLVED` (48 o 49 fotogramas); a 7,6°/s y a 30°/s, **THEN** no resuelve y el acumulador vuelve a 0; **GIVEN** tol 6, a 14,8°/s resuelve y a 15,2°/s no.
+- **AC-P5-04 (R11, F-P5-2, L)**: **GIVEN** reloj falso a 60 fps, `dt` = 1/60 y **fase fijada** (θ(n) = θ_inicio + v·n/60, con θ_inicio = θ* − tol − 1°, es decir 36° con tol 3 y 33° con tol 6, n = 0 el primer fotograma), **WHEN** θ barre la ventana a velocidad constante con tol 3, **THEN** a 7°/s `SOLVED` (51 o 52 fotogramas dentro, ≥ 48 = 0,8 s); a 8°/s no resuelve (45 fotogramas, 0,75 s < 0,8 s) y a 30°/s tampoco (12 fotogramas), y el acumulador vuelve a 0 al salir; **GIVEN** tol 6 (θ_inicio 33°), a 14°/s resuelve (51 fotogramas) y a 16°/s no (45 fotogramas). Márgenes ≥ 3 fotogramas respecto al umbral de 48: no depende del redondeo de coma flotante en los bordes (7,5°/s y 15°/s son el límite teórico de F-P5-2 y no se prueban).
 - **AC-P5-05 (R11, edge 6, L)**: **GIVEN** `dt` = 0,5 s con θ dentro de la ventana, **THEN** el acumulador suma 0,1 s (`dt_max`), no 0,5 s; con 8 fotogramas de 0,5 s seguidos, `SOLVED`.
 - **AC-P5-06 (R12, L)**: **GIVEN** θ fuera de tolerancia durante 10 min de reloj falso, **THEN** θ no cambia, no hay sonido, no hay `REJECT`, no hay contador ni cambio de estado.
 - **AC-P5-07 (R14, L)**: **GIVEN** un `rotar` activo cuando el acumulador llega a 0,8 s, **THEN** en el mismo fotograma: `cancel_gesture()` en silencio, θ = θ*, `pendiente_revelacion` = verdadero, `caja_c3` sigue falso, y toda entrada salvo `atrás` se descarta.
@@ -282,14 +282,14 @@ Tipos: **L** = prueba lógica automática (reloj falso, `GameClock` de la regla 
 - **AC-P5-09 (R18, L)**: **GIVEN** el último paso terminado, **THEN** en este orden: `caja_c3` = verdadero, `pendiente_revelacion` = falso, `P5` `RESUELTO`, `EV_PUZZLE_SOLVED_P5` con `rewards` vacío, «compartimento completado» (3); a +1,5 s, `cerrar_vista('D01c', 'resuelto')`. 15 no escribe ningún hecho (el controlador no recibe referencia de escritura).
 - **AC-P5-10 (R19, R20, L)**: **GIVEN** `RESOLVING` a 5 s, **WHEN** `atrás`, **THEN** se emite «resolución de puzle interrumpida», `caja_c3` falso, `pendiente_revelacion` verdadero, `P5` `ACTIVO`/`IDLE`, C3 `ENTREABIERTO`; **WHEN** se reabre, **THEN** no se evalúa la alineación, θ = θ* y la secuencia empieza en `FADE` (0 s).
 - **AC-P5-11 (R21, L)**: **GIVEN** una carga con `caja_c3` falso y `pendiente_revelacion` verdadero, **THEN** `P5` `ACTIVO`, el hecho sigue verdadero y no se emite ningún aviso; **GIVEN** ambos verdaderos, **THEN** `P5` `RESUELTO` y el hecho queda falso por escritura silenciosa.
-- **AC-P5-12 (R22, R23, L)**: **GIVEN** la entrada `P5` de `puzzles.json`, **THEN** hay tres pistas, todas `REQUEST`, sin `idle_s`; N1 y N2 referencian `PISTA_P5_N1` y `PISTA_P5_N2` (existentes en 18); N3 es `AFFORDANCE` `MARK_LIT` sobre `D01c/mark_40`; **WHEN** `request_hint(P5, 3)`, **THEN** la marca se ilumina, θ no cambia, `P5` no se resuelve y el nivel persiste al reabrir la vista; `request_hint(P5, k)` durante `RESOLVING` no tiene efecto.
+- **AC-P5-12 (R22, R23, L)**: **GIVEN** la entrada `P5` de `puzzles.json`, **THEN** hay tres pistas, todas `REQUEST`, sin `idle_s`; N1 y N2 referencian `PISTA_P5_N1` y `PISTA_P5_N2` (existentes en 18); N3 es `AFFORDANCE` `MARK_LIT` sobre `D01c/mark_40`; **WHEN** `request_hint(P5, 3)`, **THEN** la marca se ilumina, θ no cambia, `P5` no se resuelve y el nivel persiste al reabrir la vista; **GIVEN** `RESOLVING`, **WHEN** `request_hint(P5, k)`, **THEN** se ignora: sin efecto visible, el nivel alcanzado no cambia y no se emite aviso (D15-18; el comportamiento de `request_hint` en `RESOLVING` lo define el esquema v2 de 9).
 - **AC-P5-13 (R24, R25, L)**: **GIVEN** `asistencia_rotacion` y `reducir_movimiento` en falso por defecto, **WHEN** se activa la primera durante la vista, **THEN** la tolerancia es 6° desde el siguiente gesto; **WHEN** se activa `reducir_movimiento`, **THEN** el siguiente `FADE` y `OUTLINE` duran 100 ms visuales (los pasos conservan 1,2 s y 0,8 s) y la recolocación de θ es instantánea.
 - **AC-P5-14 (R28, L)**: **GIVEN** una carga con `caja_c3` verdadero, **THEN** `P5` `RESUELTO`, `set_final_pose(3)` se llama una vez, sin sonido ni avisos; **WHEN** el jugador pulsa sobre C3, **THEN** `SIN_EFECTO` (`NO_VIEW`).
 - **AC-P5-15 (R3, I)**: **GIVEN** la prueba de resolubilidad de 9 (regla 30, `N_fuzz` = 1.000) con acciones de giro, pistas, cancelaciones, cierres/reaperturas y guardar/cargar a mitad, **THEN** el solucionador de referencia llega siempre a `caja_c3` = verdadero.
 - **AC-P5-16 (R16, R17, PV)**: **GIVEN** la revelación en ejecución, **THEN** una captura retenida de cada paso (`FADE` a 0,6 s, `OUTLINE` a 2,0 s, `LINE` a 8 s) muestra: las dos fotos superpuestas y coincidentes, **solo** la silueta de Vera con contorno, y **ningún** texto, flecha, etiqueta ni cambio de cámara; el contorno se distingue en escala de grises (no depende del tono) y no usa rojo ni verde moral.
 - **AC-P5-17 (R17, I)**: **GIVEN** `VO_G_07` en `LINE`, **THEN** suena desde `SPK_D01C` (no 2D) y el subtítulo permanece visible 14,0 s con y sin audio.
 - **AC-P5-18 (R7, PV)**: **GIVEN** `D01a` completado y `D04` visto o no, **THEN** en θ* las cinco figuras de la foto de la caja coinciden con las de la foto de `D04` y la figura sobrante ocupa la posición del hueco S6; en θ* + 10° la desalineación es visible a simple vista.
-- **AC-P5-19 (F-P5-5, PV)**: **GIVEN** ≥ 6 testers nuevos con el registro de la regla 32 de 9, **THEN** el tiempo mediano de `P5` (incluida la revelación) cae en 1,5–3,0 min; **y** ≥ 50 % identifica la diferencia sin pista de nivel 3 (slice §19.5, AC-X3 de 9); **y** se pregunta a cada tester después de la revelación «¿qué había cambiado?» para separar identificación de alineación (Open Questions 1); **y** ninguno describe haber «fallado» o «perdido el progreso» al salir en mitad de la revelación (AC-X4 de 9).
+- **AC-P5-19 (F-P5-5, PV)**: **GIVEN** ≥ 6 testers nuevos con el registro de la regla 32 de 9, **THEN** el tiempo mediano de `P5` (incluida la revelación de ~16 s, lectura de F7 de 9 de D15-7, no su literal «más ~16 s») cae en 1,5–3,0 min; **y** ≥ 50 % identifica la diferencia sin pista de nivel 3 (slice §19.5, AC-X3 de 9); **y** se pregunta a cada tester después de la revelación «¿qué había cambiado?» para separar identificación de alineación (Open Questions 1); **y** ninguno describe haber «fallado» o «perdido el progreso» al salir en mitad de la revelación (AC-X4 de 9).
 - **AC-P5-20 (R5, R7, PV)**: **GIVEN** ratón y mando, **THEN** ≥ 5 de 6 testers sitúan el marco en la ventana y lo mantienen sin quejarse de no poder dejarlo quieto; si no, se revisa `hold_s` y la ganancia (Tuning Knobs).
 
 ## Datos del puzle
@@ -352,7 +352,7 @@ Entrada canónica de `assets/data/puzzles/puzzles.json` (esquema de la regla 4 d
 }
 ```
 
-Notas: `on_solved` no declara `sfx` (no hay sonido de acierto; D15-9). `on_reject` es nulo (el fallo no existe). `idle_s` no aparece en ninguna pista (todas `REQUEST`). Los campos enteros (`level`, `ajar_cm`, `compartment`, `theta_*_deg`, `mark_step_deg`) se cargan como `int` y `tol_deg`, `hold_s`, `settle_s`, `duration_s` como `float` (regla 29 de 9). `MARK_LIT` y los IDs visuales de `D01c` son ‡ (Cambios requeridos en 9 y 7).
+Notas: `on_solved` no declara `sfx` (no hay sonido de acierto; D15-9). `on_reject` es nulo (el fallo no existe). `idle_s` no aparece en ninguna pista (todas `REQUEST`). Los campos enteros (`level`, `ajar_cm`, `compartment`, `theta_*_deg`, `mark_step_deg`) se cargan como `int` y `tol_deg`, `hold_s`, `settle_s`, `duration_s` como `float` (regla 29 de 9). `MARK_LIT`, `HIGHLIGHT` sobre elementos no interactivos, `on_reject: null`, `solution.visual_elements`, `request_hint` en `RESOLVING`, `OUTLINE` a 100 ms con `reducir_movimiento` y quién resuelve el entreabierto (14b(b) y (c)) los define el esquema v2 de `puzzles.json` de 9 (otro agente; ‡ hasta que se publique); los IDs visuales de `D01c` van además al catálogo de 7.
 
 ## Decisiones tomadas
 
@@ -377,13 +377,18 @@ Modo por lotes autónomo: se decide con la recomendación propia y se registra. 
 | D15-15 | **15 no lee `reducir_sobresaltos`.** | Leerlo para suavizar el fundido. | Ajustes lo entrega solo a 23 y 28; la secuencia no contiene destellos; el «golpe» de la puerta de la grabación lo gestiona 23. |
 | D15-16 | **Se confirma `asistencia_rotacion`** (bool, falso, ±6°) como nombre del ajuste (Open Questions 5 de 6, asignada a 15). | Reutilizar `asistencia_encaje`. | Son tolerancias de unidades distintas (° y m) y puzles distintos. |
 | D15-17 | **La marca de 40° queda iluminada** el resto de la sesión una vez pedido el nivel 3. | Que se apague a los 3 s como `HIGHLIGHT`. | «Se ilumina la marca» (B.5) es un estado, no un destello; el jugador debe poder girar hacia ella. |
+| D15-18 | **`request_hint` durante `RESOLVING` se ignora y no cuenta como nivel alcanzado.** | Aceptarlo y avanzar el nivel sin efecto, o rechazarlo con aviso. | La alineación ya está hecha; avanzar el nivel sin efecto gastaría una pista (regla 26 de 9, monótono) y un aviso sería ruido. Lo define el esquema v2 de 9 (ronda 7). |
+| D15-19 | **Del «solo queda visible Vera» de §10.5 a B.5: superposición de las dos fotos más contorno de Vera.** | Hacer desaparecer las figuras coincidentes y dejar solo la silueta de Vera (§10.5). | B.5 (más reciente, especificación de implementación) pide superposición; mostrar las dos fotos coincidentes y marcar la única figura sobrante enseña el hecho observable por comparación, sin ocultar el resto (*Información incompleta*, *Autonomía*), y evita una animación de desaparición. |
+| D15-20 | **Velocidades de AC-P5-04 con margen (7/8°/s y 14/16°/s) y fase fijada**; los fotogramas se recalculan. | Mantener 7,4/7,6°/s y 14,8/15,2°/s (47 o 48 fotogramas según la fase; 48 ya resuelve). | Revisión de la ronda 6: prueba inestable. Con margen ≥ 3 fotogramas el resultado es independiente de la fase. |
+| D15-21 | **13 es dependencia blanda de contenido, no ‡.** 15 pide a 13 y a 10 que la listen como dependiente. | Mantener la marca «13 sin redactar» (dura, ‡). | 13 existe y su regla 23 ya reserva `slot_6` vacío y la imagen para la secuencia de P5; lo que 15 necesita es un recurso de arte, no un contrato de lógica. |
+| D15-22 | **`T_ent` = 2,4 s** (`BOX_C3_OPEN` 1,4 s† de 10 + vista de entrada 1,0 s), no 1,0 s. | Ignorar la animación de la tapa. | La tapa de C3 se abre antes de ver `D01c` (F1 de 10); el total del modelo pasa a 56,2–188,2 s. |
 
 ## Open Questions
 
 Lo que cambia pilares, tono o alcance del slice, o contradice el slice, **no se decide aquí**.
 
 1. **Criterio 5 del slice (§19.5): ¿mide identificación o alineación?** Un giro lento resuelve sin comprender (D-W3, F-P5-3). Propuesta: medir el criterio con una pregunta posterior a la revelación («¿qué había cambiado?») y no con «sin pista nivel 3». Cambiar la redacción del slice requiere decisión del usuario. *Responsable:* usuario / creative-director.
-2. **`VO_G_07` y el pilar *Información incompleta*.** La línea («Lo pedí sin preguntarte, Vera. Lo pedí y después te lo conté como si fuera tuyo», slice §12) afirma un acto del Guardián; los pilares 1 y 5 prohíben confirmar su **intención**. Este GDD no toca la línea (la revelación muestra, no explica), pero conviene decidir si es un hecho observable o una confirmación de intención. *Responsable:* narrative-director / creative-director.
+2. **`VO_G_07` y el pilar *Información incompleta*.** La línea («Lo pedí sin preguntarte, Vera. Lo pedí y después te lo conté como si fuera tuyo», slice §12) afirma un acto del Guardián; los pilares 1 y 5 prohíben confirmar su **intención**. Este GDD no toca la línea (la revelación muestra, no explica), pero conviene decidir si es un hecho observable o una confirmación de intención. **Abierta: no la decide 15** (pilares 1 y 5); mientras tanto la secuencia no depende del texto de la línea (solo de su duración, `fallback_s`). *Responsable:* creative-director (con narrative-director).
 3. **Composición de las fotos.** Que la figura sobrante de `D04` caiga en el hueco S6 de la foto de la caja (D15-10) y que, a θ*, las otras cinco coincidan figura por figura, es un requisito de contenido para 13 y arte que no está en el slice («Vera al margen», Anexo A). *Responsable:* art-director / 13.
 4. **Sonido del giro y de los pasos `FADE`/`OUTLINE`.** `SFX_FRAME_TURN` (lazo de giro) no existe en B.7; el sonido de los dos primeros pasos es silencio parcial (D15-9). *Responsable:* audio / 23.
 5. **`reducir_sobresaltos` y el «golpe» de la puerta de `VO_G_07`.** ¿Debe 23 atenuarlo con la opción? 15 no lo lee (D15-15). *Responsable:* 23 (aún sin GDD).
@@ -392,25 +397,25 @@ Lo que cambia pilares, tono o alcance del slice, o contradice el slice, **no se 
 
 ## Cambios requeridos en otros GDDs
 
-Ningún archivo existente se ha editado; lo siguiente debe hacerlo el dueño de cada documento.
+Esta ronda solo edita este GDD; lo siguiente debe hacerlo el dueño de cada documento.
 
 | Documento | Cambio |
 |---|---|
-| 9 `marco-de-puzles.md` | (a) F7/F9: aclarar que los 1,5–3 min de `P5` **incluyen** la revelación de ~16 s (D15-7); de lo contrario F9 sube a 15,10–33,36 min. (b) Añadir al catálogo de `AFFORDANCE` el efecto `MARK_LIT` (marca de 40° del P5). (c) Declarar que la entrada `P5` de «Datos del puzle» de 15 sustituye al ejemplo ilustrativo de la regla 5. (d) La regla 29 debe aceptar como `targets` de `HIGHLIGHT` elementos **visuales no interactivos** de una vista (`D01c/reflection`, `D01c/box_photo`, `D01c/mark_40`). |
+| 9 `marco-de-puzles.md` | (a) **Nota en F7 y F9**: F7 se interpreta con la revelación de ~16 s **incluida** en los 1,5–3 min de `P5` (D15-7; el literal «más ~16 s» contradice AC-P5-19); de lo contrario F9 sube a 15,10–33,36 min. (b) El **esquema v2** de `puzzles.json` (otro agente) debe cubrir lo que 15 usa: 14b(b) `reducir_movimiento` con `OUTLINE` a 100 ms (no solo `FADE`); 14b(c) quién resuelve el entreabierto (15 asume 10); efecto `MARK_LIT` en `AFFORDANCE`; `HIGHLIGHT` sobre elementos visuales no interactivos (regla 29); `on_reject: null`; `solution.visual_elements`; `request_hint` en `RESOLVING` ignorado y sin contar como nivel (D15-18). (c) Declarar que la entrada `P5` de «Datos del puzle» de 15 sustituye al ejemplo ilustrativo de la regla 5. |
 | 6 `ajustes-persistentes.md` | Cerrar la Open Question 5: `asistencia_rotacion` (bool, falso, ±6°) confirmada por 15 (D15-16). |
 | 7 `interaccion-e-inspeccion.md` | Catálogo de `D01c`: `D01c/frame` (`rotar`, `atraccion` falso) y los elementos visuales no interactivos de «Datos del puzle»; comprobar que «alternar en lugar de mantener» cubre `rotar`. |
-| 10 `caja-y-compartimentos.md` | Añadir 15 como dependiente (bidireccional); confirmar `SPK_D01C` y `ANC_D01C` perpendicular al plano de `D01c` y que la tapa de C3 no se cierra durante `RESOLVING`. |
-| 13 Puzle 3 (sin redactar) ‡ | Exponer la **foto completa** de la caja (cinco figuras y el hueco S6) como recurso reutilizable por `D01c/box_photo`; fijar la composición de S6 (Open Questions 3). El índice debe mantener 13 entre las dependencias de 15. |
+| 10 `caja-y-compartimentos.md` | **Listar a 15 como dependiente** (hoy no lo menciona); corregir la contradicción interna (una línea deja C3 `ABIERTO` y otras dos `ENTREABIERTO` en la interrupción de `RESOLVING`; 15 usa `ENTREABIERTO`, regla 4 y AC-34 de 10); confirmar `SPK_D01C` y `ANC_D01C` perpendicular al plano de `D01c` y que la tapa de C3 no se cierra durante `RESOLVING`. |
+| 13 `puzle-3-encaje-de-la-foto.md` | **Listar a 15 como dependiente** (blanda, de contenido: hoy no figura); su regla 23 ya deja `slot_6` vacío y la imagen para la secuencia de P5: nombrar el recurso exportado como la foto completa reutilizable por `D01c/box_photo` y fijar la composición de S6 (Open Questions 3). El índice mantiene 13 entre las dependencias de 15 (blanda). |
 | 17 Sistema de pistas ‡ | `P5`: tres niveles, todos `REQUEST`, sin `IDLE`; el nivel 3 no resuelve. |
 | 23 Director de audio ‡ · 26 Subtítulos ‡ | `VO_G_07` desde `SPK_D01C`; subtítulo de 14,0 s con y sin audio; `SFX_FRAME_TURN` (opcional); decisión sobre `reducir_sobresaltos` (Open Questions 5). |
 | 29 Shaders y efectos de superficie ‡ | Superposición con coincidencia figura por figura en θ*, contorno solo en Vera (forma y luminancia, no rojo/verde), fundido de 100 ms con `reducir_movimiento`. |
-| `systems-index.md` | Fila 15: estado «Borrador (lote Feature 3) — pendiente de review» y ruta `design/gdd/puzle-5-espejo-de-la-diferencia.md`; dependencias 6, 9, 10, 13 (dura en 9, 10 y 13; blanda en 6). |
+| `systems-index.md` | Fila 15: estado «Borrador (lote Feature 3) — pendiente de review» y ruta `design/gdd/puzle-5-espejo-de-la-diferencia.md`; dependencias 6, 9, 10, 13 (dura en 9 y 10; blanda en 6 y 13). |
 | `design/slice/slice-v0.3.md` | §19.5: ver Open Questions 1 (no se cambia sin decisión del usuario). |
 | Registro | Ver «Entradas para el registro». |
 
 ## Entradas para el registro
 
-Ya existen en `design/registry/entities.yaml` (no duplicar; todas con fuente 9): `theta_solution_deg_P5`, `tol_deg_P5`, `asistencia_rotacion_deg`, `hold_s_P5`, `reveal_fade_s_P5`, `reveal_outline_s_P5`, `line_fallback_s_P5`, `line_grace_s`, `close_view_after_s`. Se propone añadir (fuente: este GDD) o hacer que este GDD sea fuente secundaria de:
+Ya existen en `design/registry/entities.yaml` (no duplicar; la fuente es la de cada fila del registro: 9, el slice o 6 según la constante, p. ej. `asistencia_rotacion_deg` viene de 6 y las de B.5 del slice; comprobar `source:` antes de citarlas): `theta_solution_deg_P5`, `tol_deg_P5`, `asistencia_rotacion_deg`, `hold_s_P5`, `reveal_fade_s_P5`, `reveal_outline_s_P5`, `line_fallback_s_P5`, `line_grace_s`, `close_view_after_s`. Se propone añadir (fuente: este GDD) o hacer que este GDD sea fuente secundaria de:
 
 | Tipo | Nombre | Valor | Unidad / rango | Nota |
 |---|---|---|---|---|
@@ -423,7 +428,7 @@ Ya existen en `design/registry/entities.yaml` (no duplicar; todas con fuente 9):
 | constante | `ajar_cm_P5` | 2 | cm · 1–4 | Entreabierto (slice B.5; si no está ya registrado desde 9) |
 | fórmula | `v_max_deg_s_P5` | `W / hold_s`: 7,5 (normal) / 15 (asistido) | °/s | F-P5-2 |
 | fórmula | `T_seq_P5` | 1,2 + 0,8 + T_line: nominal 16,0; rango 2,0 + t_terminada a 18,0 | s | F-P5-4 (instancia de F8 de 9) |
-| fórmula | `T_P5_modelo` | 54,8–186,8 | s | F-P5-5; contrastar con F7 (1,5–3 min) |
+| fórmula | `T_P5_modelo` | 56,2–188,2 | s | F-P5-5 (con `T_ent` 2,4 s); contrastar con F7 (1,5–3 min, revelación incluida, D15-7) |
 | entidad | `D01c/frame`, `D01c/reflection`, `D01c/box_photo`, `D01c/marks`, `D01c/mark_40`, `D01c/speaker` | — | — | Elementos de la vista de `P5` (IDs con prefijo de vista) |
 | entidad | `MARK_LIT` ‡ · `SFX_FRAME_TURN` ‡ | — | — | Afordancia de pista nivel 3 · lazo de giro opcional |
 
@@ -435,3 +440,4 @@ Ya existen en `design/registry/entities.yaml` (no duplicar; todas con fuente 9):
 |---|---|---|
 | 2026-11-09 | 0.1 | Esqueleto (lote Feature 3). |
 | 2026-11-09 | 0.2 | Borrador completo: 29 reglas, F-P5-1 a F-P5-5, 25 edge cases, 20 AC, datos de `P5`, 17 decisiones, 7 preguntas abiertas. Pendiente de review independiente. |
+| 2026-11-09 | 0.3 | Ronda de corrección 7 (review: 0 bloqueantes, 10 avisos): AC-P5-04 con 7/8 y 14/16°/s y fase fijada (45 vs 51-52 fotogramas); 13 pasa a dependencia blanda de contenido (regla 23 de 13) y 15 se pide como dependiente en 10 y 13; extensiones de 9 referidas al esquema v2; `request_hint` en `RESOLVING` ignorado (D15-18); D15-19 a D15-22 (§10.5 a B.5, AC-04, 13 blanda, `T_ent` 2,4 s, total 56,2–188,2 s); lectura de F7 con revelación incluida; fuente real de constantes del registro; `VO_G_07` queda abierta para creative-director. Pendiente de re-review. |
