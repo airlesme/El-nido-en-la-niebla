@@ -29,9 +29,9 @@ Se excluyen a propósito combate, IA de enemigos, economía, progresión, red y 
 | 5 | Guardado y carga | Persistence | MVP | Revisado (ronda 5) — sin bloqueantes | design/gdd/guardado-y-carga.md | 3, 4 (blanda: 18) |
 | 6 | Ajustes persistentes (inferred) | Persistence | MVP | Revisado (ronda 5) — sin bloqueantes | design/gdd/ajustes-persistentes.md | 1 (blanda: 18) |
 | 7 | Interacción e inspección | Gameplay | MVP | Revisado (ronda 5) — sin bloqueantes | design/gdd/interaccion-e-inspeccion.md | 1, 2, 4, 18 (blanda: 3) |
-| 8 | Control de acceso (puertas, tarjetas, lectores) | Gameplay | MVP | Borrador (lote Feature 1) | design/gdd/control-de-acceso.md | 3, 7, 18 |
+| 8 | Control de acceso (puertas, tarjetas, lectores) | Gameplay | MVP | Needs Revision | design/gdd/control-de-acceso.md | 3, 7, 18 |
 | 9 | Marco de puzles (inferred) | Gameplay | MVP | Revisado (ronda 5) — sin bloqueantes | design/gdd/marco-de-puzles.md | 3, 4, 7, 18 (dura en validación) · blandas 2, 6, 20, 23, 25, 26 |
-| 10 | Caja y compartimentos | Gameplay | MVP | Borrador (lote Feature 1) | design/gdd/caja-y-compartimentos.md | 3, 7, 9 |
+| 10 | Caja y compartimentos | Gameplay | MVP | Needs Revision | design/gdd/caja-y-compartimentos.md | 3, 7, 9 |
 | 11 | Puzle 1 · Cronología | Gameplay | MVP | Not Started | — | 9, 18, 19, 20 |
 | 12 | Puzle 2 · Memorando en el cristal | Gameplay | MVP | Not Started | — | 7, 9, 18 |
 | 13 | Puzle 3 · Encaje de la foto | Gameplay | MVP | Not Started | — | 6, 9, 10 |
@@ -40,9 +40,9 @@ Se excluyen a propósito combate, IA de enemigos, economía, progresión, red y 
 | 16 | Puzle 6 · Decisión | Gameplay | MVP | Not Started | — | 9, 10, 18 |
 | 17 | Sistema de pistas (hasta 3 niveles; 2 en el puzle 6) | Gameplay | Vertical Slice | Not Started | — | 3, 9, 18 |
 | 18 | Base de contenido narrativo (líneas, documentos, claves de traducción) | Narrative | MVP | Revisado (ronda 5) — sin bloqueantes | design/gdd/base-de-contenido-narrativo.md | — |
-| 19 | Ordenador, correo e impresora | Narrative | MVP | Borrador (lote Feature 1) | design/gdd/ordenador-correo-impresora.md | 1, 3, 7, 18, 20 (blanda: 2) |
-| 20 | Documentos y bolsillo visual | Narrative | MVP | Borrador (lote Feature 1) | design/gdd/documentos-y-bolsillo.md | 3, 7, 18 (blanda: 2) |
-| 21 | Director de escenas (escenas 1–8, disparadores, eventos temporizados) | Narrative | MVP | Borrador (lote Feature 1) | design/gdd/director-de-escenas.md | 1, 3, 4, 18 (blanda: 5) |
+| 19 | Ordenador, correo e impresora | Narrative | MVP | Needs Revision | design/gdd/ordenador-correo-impresora.md | 1, 3, 7, 18, 20 (blanda: 2) |
+| 20 | Documentos y bolsillo visual | Narrative | MVP | Needs Revision | design/gdd/documentos-y-bolsillo.md | 3, 7, 18 (blanda: 2) |
+| 21 | Director de escenas (escenas 1–8, disparadores, eventos temporizados) | Narrative | MVP | Needs Revision | design/gdd/director-de-escenas.md | 1, 3, 4, 18 (blanda: 5) |
 | 22 | Llamada telefónica | Narrative | MVP | Not Started | — | 1, 3, 5, 7, 18 (blanda: 2) |
 | 23 | Director de audio | Audio | Vertical Slice | Not Started | — | 3, 6, 18 (blanda: 2) |
 | 24 | Prompt de interacción y feedback | UI | MVP | Not Started | — | 1, 7, 18 |
