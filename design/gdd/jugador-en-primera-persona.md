@@ -1,6 +1,6 @@
 # Jugador en primera persona (movimiento, cámara, manos)
 
-> **Status**: Revisado (ronda de propagación 1) — pendiente de re-review (la ronda de propagación 1 aplica los cambios requeridos por 8, 19 y 20 sobre gestos de tarjeta, cajón, teclear y lectura: D-37 a D-39; ronda 3 aplica C-B1 y C-W1 de `gdd-cross-review-2026-11-09.md`: el Jugador mueve el objeto inspeccionado, D-35; ronda 2: H-01 a H-15, B-01, B-02, I-01 a I-05 y M-01 a M-04; este GDD es la fuente de verdad del contrato 2↔7)
+> **Status**: Revisado (ronda de decisiones 1) — pendiente de re-review (la ronda de decisiones 1 cierra la relectura del bolsillo con `atrás`, D-40; la ronda de propagación 1 aplica los cambios requeridos por 8, 19 y 20 sobre gestos de tarjeta, cajón, teclear y lectura: D-37 a D-39; ronda 3 aplica C-B1 y C-W1 de `gdd-cross-review-2026-11-09.md`: el Jugador mueve el objeto inspeccionado, D-35; ronda 2: H-01 a H-15, B-01, B-02, I-01 a I-05 y M-01 a M-04; este GDD es la fuente de verdad del contrato 2↔7)
 > **Author**: Álvaro + agentes
 > **Last Updated**: 2026-11-09
 > **Last Verified**: 2026-11-09
@@ -491,6 +491,7 @@ El Jugador no tiene pantalla. Requisitos a las pantallas de 25 (menú de pausa) 
 | D-37 | **(Propagación 1; 8, 20)** `gesto_terminado`, `objeto_sujeto` y `objeto_soltado` son señales sin destinatario fijo que filtra por `id` quien las escucha (7, 8, 20); `HAND_CARD_SWIPE` no lleva parámetro de ítem y usa el objeto sujeto, sustituyendo a `HAND_HOLD_ITEM` mientras dura; sin objeto se reproduce igualmente | `HAND_CARD_SWIPE(item_id)` o una variante por tarjeta; que 7 pase `tarjeta_item`; `HAND_HOLD_ITEM` encadenado antes del swipe | 8 (D8-16) y 20 (D20-17): dos poses encadenadas dibujarían una tarjeta fantasma y la apertura de 8 no puede depender del gesto |
 | D-38 | **(Propagación 1; 20)** `sostener(item_id, izquierda)` admite IDs del catálogo de 20, no solo de escena; se rechaza el ID desconocido; el orden con una lectura es `reposo()` → `objeto_soltado` → `HAND_READ`, y 20 nunca llama a `reposo()` | Ampliar la lista de sostenibles de escena con las tarjetas; que 20 llame a `reposo()` antes de `HAND_READ` | D-34 ya reserva la lista de escena a `V05`; `reposo()` es de 7 (cancelación y lectura) y quien lo llama no debe ser el dueño del ítem |
 | D-39 | **(Propagación 1; 8, 19)** 8 pasa a dependencia blanda de 2 (alineada con su GDD); `HAND_TYPE` (19) y `HAND_DRAWER` de `A05` (8) quedan confirmados sin cambios de API | Mantener «Indirecta» en la tabla | 8 ya lista a 2 como blanda; la tabla debe coincidir (bidireccionalidad) |
+| D-40 | **(ronda de decisiones 1, aprobada por el usuario, 2026-11-09)** La acción `atrás` en `exploración` es «repasar bolsillo» (un documento por pulsación, sin menú; Q1 de 20). Para el Jugador no hay API nueva: la relectura entra por `abrir_lectura` de 7, que llama a `reposo()` y reproduce `HAND_READ` como en cualquier lectura; el repaso no mueve la cámara ni la cápsula. | Una API propia `repasar()` en el Jugador, o un menú de inventario | El repaso es una lectura más; el slice D.1 descarta el menú y la API actual ya cubre el gesto. |
 
 ## Acceptance Criteria
 
@@ -578,9 +579,11 @@ Ninguna contradice el slice ni cambia pilares o alcance; son verificaciones téc
 | 8 | **Cambios a otros GDDs:** los de Ajustes, Entrada y Escena de planta (reglas 1, 8 y 18) ya están aplicados; queda abierto el 4 (regla 18(c) del sensor, C-W10) y las cláusulas para 20 y 28 al diseñarse (Dependencies). 7 se alineó en la ronda 3. Godot sin cobertura en `docs/engine-reference/godot/` queda marcado como pendiente de verificación | autores de cada GDD del lote | Antes de la siguiente re-review |
 | 9 | **Animación de `HAND_CARD_SWIPE` con la tarjeta en la mano izquierda** (la tarjeta la sujeta 20 en la izquierda y el gesto es de la derecha, tabla de gestos) y gesto sin tarjeta visible cuando `sostener_item` es `RECHAZADA`: confirmar con el art director y el ADR de manos | technical-artist + art-director | ADR del Jugador |
 
-**Pendiente de decisión (lote Feature 1).** La relectura del bolsillo con `atrás` (Q1 de 20, `repasar_bolsillo()`) es decisión de alcance de 20 y 1; no cambia la API de este GDD (7 llama a `reposo()` y `HAND_READ` como en cualquier lectura), por lo que no se aplica aquí nada definitivo hasta que se resuelva.
+**Decidido (ronda de decisiones 1):** la relectura del bolsillo con `atrás` («repasar bolsillo», R18 a R22 de 20) es firme y no cambia la API de este GDD (7 llama a `reposo()` y `HAND_READ` como en cualquier lectura): D-40. No queda ninguna pregunta de este bloque abierta.
 
 ## Historial de cambios
+
+- **2026-11-09 (ronda de decisiones 1):** el bloque «Pendiente de decisión» de la relectura con `atrás` pasa a decidido (D-40); sin cambio de API ni de reglas. Estado: pendiente de re-review.
 
 - **2026-11-09 (ronda de propagación 1, lote Feature 1):** regla 24 con el párrafo de gestos y objetos pedidos por 8, 19 y 20, tablas de gestos e interacciones, dependencia 8 blanda, colisión de la hoja en el primer paso de `ABRIÉNDOSE`, D-37 a D-39, AC-49 y AC-50, Open Question 9. Estado: pendiente de re-review.
 
