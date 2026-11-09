@@ -1,6 +1,6 @@
 # Caja y compartimentos
 
-> **Status**: Revisado (ronda de corrección 2) — pendiente de re-review
+> **Status**: Revisado (ronda de corrección 3) — pendiente de re-review
 > **Author**: Game Designer (lote autónomo)
 > **Last Updated**: 2026-11-09
 > **Implements Pillar**: Autonomía como progresión (el jugador abre los compartimentos en el orden que quiera dentro de las dependencias) · Tensión sin castigo (la caja nunca falla, nunca se atasca y nunca bloquea más de 3 s) · El espacio expresa la emoción (madera, cerraduras y un altavoz dentro de la caja dicen lo que nadie explica) · Información incompleta (la caja guarda objetos y una voz, no confirma intenciones)
@@ -13,7 +13,7 @@ La caja de nogal del despacho del Guardián (`D01`) tiene cuatro compartimentos 
 
 ## Overview
 
-Caja y compartimentos es la capa de escenificación entre los puzles 3 a 6 y el mundo físico. Tiene un manejador por cada `D01a`–`D01d` que Interacción e inspección (7) consulta (`can_interact`) y activa (`interact`). Al pulsar sobre un compartimento disponible, la caja bloquea el contexto con un token (`bloquear_contexto`), anima la apertura (`BOX_Cn_OPEN`) y, al terminar, pide a 7 la vista cercana (`abrir_vista(id, desde_token)`), de modo que el jugador percibe un único gesto continuo: mano, tapa, acercamiento y puzle. Si el puzle no está disponible o ya está resuelto, la caja no anima ninguna tapa y contesta `SIN_EFECTO`, según lo que diga `get_view_gate` del Marco (9) (7 puede reproducir su propio gesto de mano, `HAND_REACH`; no es de la caja).
+Caja y compartimentos es la capa de escenificación entre los puzles 3 a 6 y el mundo físico. Tiene un manejador por cada `D01a`–`D01d` que Interacción e inspección (7) consulta (`can_interact`) y activa (`interact`). Al pulsar sobre un compartimento disponible, la caja bloquea el contexto con un token (`bloquear_contexto`), anima la apertura (`BOX_Cn_OPEN`, notación genérica de `BOX_C1_OPEN`…`BOX_C4_OPEN`) y, al terminar, pide a 7 la vista cercana (`abrir_vista(id, desde_token)`), de modo que el jugador percibe un único gesto continuo: mano, tapa, acercamiento y puzle. Si el puzle no está disponible o ya está resuelto, la caja no anima ninguna tapa y contesta `SIN_EFECTO`, según lo que diga `get_view_gate` del Marco (9) (7 puede reproducir su propio gesto de mano, `HAND_REACH`; no es de la caja).
 
 La caja **no guarda hechos** ni escribe ninguno. Lee `caja_c1`–`caja_c4` y el estado público de cada puzle para saber qué postura (pose) enseñar, escucha los avisos de 9 («puzle activado» con `ajar_cm`, «compartimento completado» n) para saber cuándo entreabrir o cerrar, y presenta lo que cada compartimento contiene: una nota, una lista de tareas, una voz y una carta. La combinación «caja completa» (`caja_completa`) es un hecho derivado del Estado (3); la caja no lo emite ni reacciona a él.
 
@@ -113,7 +113,7 @@ Convención: «regla N de X» remite a la regla numerada del GDD del sistema X. 
 
 ### H. Tiempos
 
-21. **Duraciones.** Valores por defecto y rango en Tuning Knobs. `BOX_Cn_OPEN` es **por compartimento** con **tope 1,6 s** (reconciliación del slice con 7, en Decisiones tomadas D10-1). Validación en datos: `BOX_Cn_OPEN[n] + t_vista_entrada_s(n) ≤ T_tope − margen_min` para n = 1–3 (F1); un valor fuera de rango es error de datos. Sin fuente en el slice y por tanto **propuestas (†) a validar en playtest**: `BOX_C3_OPEN`, `BOX_Cn_CLOSE`, `close_delay_s`, `ajar_s`, `ajar_visible_dist_m`, los vigilantes de la regla 4 y los `t_vista_entrada_s` de `D01b`–`D01d` (el slice solo da 1,0 s para `D01a`).
+21. **Duraciones.** Valores por defecto y rango en Tuning Knobs. `BOX_Cn_OPEN` (notación genérica de `BOX_C1_OPEN`…`BOX_C4_OPEN`; no es una constante del registro) es **por compartimento** con **tope 1,6 s** (reconciliación del slice con 7, en Decisiones tomadas D10-1). Validación en datos: `BOX_Cn_OPEN[n] + t_vista_entrada_s(n) ≤ T_tope − margen_min` para n = 1–3 (F1); un valor fuera de rango es error de datos. Sin fuente en el slice y por tanto **propuestas (†) a validar en playtest**: `BOX_C3_OPEN`, `BOX_Cn_CLOSE`, `close_delay_s`, `ajar_s`, `ajar_visible_dist_m`, los vigilantes de la regla 4 y los `t_vista_entrada_s` de `D01b`–`D01d` (el slice solo da 1,0 s para `D01a`).
 22. **Reloj.** Las animaciones de la caja y los vigilantes de la regla 4 corren con el tiempo de juego. **NOT SOURCEABLE:** si `SceneTree.paused` detiene `AnimationPlayer`, sus señales de fin y los sonidos en Godot 4.7 no está cubierto por `docs/engine-reference/godot/` (Open Question 4 de 9; Pregunta abierta 4 aquí). Evitar `Tween` y `SceneTreeTimer` **no elimina** esa dependencia (`AnimationPlayer` depende de lo mismo); solo evita sumar otra incógnita. Hasta verificarlo, AC-21 y el contrato de pausa de las reglas 9 y 14 quedan **sin confirmar**; no se asume ningún comportamiento del motor.
 23. **Sin persistencia ni peticiones de guardado.** La caja no guarda ni pide guardar. El guardado por `compartment_done:<n>` (regla 6 de 5) lo dispara el aviso de 9; la instantánea espera a que la cola de avisos esté vacía (regla 5 de 5).
 
@@ -125,7 +125,7 @@ Convención: «regla N de X» remite a la regla numerada del GDD del sistema X. 
 `T_entrada(n) = min(t_vista_entrada_s(n), t_transicion_max)` (F4 de 7)
 `Margen(n) = T_tope − T_cadena(n)` · **Restricción de datos:** `Margen(n) ≥ margen_min`
 
-**Variables:** `BOX_Cn_OPEN[n]` (s; 1,2–1,6), `t_vista_entrada_s(n)` (s; 0,6–1,2 en las vistas encadenadas, valor de 7), `T_tope` = tope único de transición de Entrada (F8 de Entrada; 3 s por defecto, rango seguro 3–5), `margen_min` = 0,2 s (rango 0,1–0,2; con 0,2 el peor caso C1 queda justo en el margen). El token de `bloquear_contexto` caduca a 3 s de tiempo de juego (regla 30 de 7); `BOX_Cn_OPEN` < 3 s siempre.
+**Variables:** `BOX_Cn_OPEN[n]` (notación genérica de `BOX_C1_OPEN`…`BOX_C4_OPEN`; s; 1,2–1,6), `t_vista_entrada_s(n)` (s; 0,6–1,2 en las vistas encadenadas, valor de 7), `T_tope` = tope único de transición de Entrada (F8 de Entrada; 3 s por defecto, rango seguro 3–5), `margen_min` = 0,2 s (rango 0,1–0,2; con 0,2 el peor caso C1 queda justo en el margen). El token de `bloquear_contexto` caduca a 3 s de tiempo de juego (regla 30 de 7); `BOX_Cn_OPEN` < 3 s siempre.
 
 | n | `BOX_Cn_OPEN` | `T_entrada` 1,0 s (defecto) → `T_cadena` / margen | `T_entrada` 1,2 s (peor caso) → `T_cadena` / margen | Reapertura |
 |---|---|---|---|---|
@@ -140,7 +140,7 @@ Convención: «regla N de X» remite a la regla numerada del GDD del sistema X. 
 
 `BOX_OPEN_MAX = T_tope_mín − t_entrada_máx − margen_min = 3,0 − 1,2 − 0,2 = 1,6 s` (con `margen_min` en su rango 0,1–0,2 el tope sería 1,6–1,7 s; se fija 1,6 s por coherencia con 7 y el registro)
 
-El slice da valores por compartimento (B.3: `BOX_C1_OPEN` = 1,6 s; B.4: `BOX_C2_OPEN` = 1,4 s); 7 modela **un único** `BOX_Cn_OPEN` = 1,6 s con rango [1,2; 1,6]. Se reconcilian así: **el 1,6 s de 7 es el tope (`BOX_OPEN_MAX`), no el valor de cada compartimento**; los valores reales son por compartimento y todos ≤ 1,6 s. Los de C1 y C2 vienen del slice; los de C3 (1,4 s†) y C4 (1,6 s, slice B.6) los fija este GDD como propuesta (D10-1, D10-2). Si Entrada sube su tope a 4 s, `BOX_OPEN_MAX` sube a 2,6 s pero **no** se usa: el rango de 7 y del registro sigue [1,2; 1,6].
+El slice da valores por compartimento (B.3: `BOX_C1_OPEN` = 1,6 s; B.4: `BOX_C2_OPEN` = 1,4 s); 7 modelaba **un único** valor (`BOX_Cn_OPEN` = 1,6 s, rango [1,2; 1,6]), sustituido en 7 por `BOX_C1_OPEN`…`BOX_C4_OPEN` y `BOX_OPEN_MAX` (D7-62). Se reconcilian así: **el 1,6 s de 7 es el tope (`BOX_OPEN_MAX`), no el valor de cada compartimento**; los valores reales son por compartimento y todos ≤ 1,6 s. Los de C1 y C2 vienen del slice; los de C3 (1,4 s†) y C4 (1,6 s, slice B.6) los fija este GDD como propuesta (D10-1, D10-2). Si Entrada sube su tope a 4 s, `BOX_OPEN_MAX` sube a 2,6 s pero **no** se usa: el rango de 7 y del registro sigue [1,2; 1,6].
 
 ### F3 · Entreabierto de C3
 
@@ -197,9 +197,9 @@ Tipos: **Dura** = no funciona sin ella; **Blanda** = mejora la experiencia. «�
 | 20 Documentos y bolsillo | Blanda | ← decorado `NOTA_01`, papel de `I-05` y carta plegada (no interactivos); 20 deriva los ítems de los hechos (R5, R24) y es dueño de `tarjeta_B`, `tarjeta_D`, `formulario_leido`; la caja no consulta `has_item`. `I-05`/`I-06a` no tienen presentación nueva (R13 y D20-19 de 20; Pregunta abierta 7, cerrada) | Reglas 17, 18 | R5, R6, R13, R24 y Q2 de 20 (fila de 9 y fila «10 Caja y compartimentos» en su tabla, Blanda; ronda 5) |
 | 23 Director de audio | Blanda | ← fuente 3D `SPK_D01C`, `SFX_BOX_WOOD_OPEN` y `SFX_BOX_WOOD_CLOSE`; 23 reproduce `VO_G_07` en el altavoz | Reglas 17, 22 | Pendiente |
 | 13–16 Puzles 3 a 6 | Dura | ← anclajes y nodos de cada puzle; → los controladores llaman a `play_open(4)` (P6) | Reglas 10, 11 | Pendiente |
-| 21 Director de escenas | Blanda | No hay llamada directa: 21 lee `caja_completa` de 3 | Regla 19 | Regla 7 de 3 (fila de 21) |
+| 21 Director de escenas | Indirecta (no hay llamada ni aviso de 10 a 21; 21 no la lista) | No hay llamada directa: 21 lee `caja_completa` de 3 | Regla 19 | Regla 7 de 3 (fila de 21) |
 | 1 Entrada y controles | Indirecta (10 la declara; 1 no lista a 10; antes «Dura (indirecta)», etiqueta incoherente) | El token de `bloquear_contexto` declara una transición bloqueante de Entrada; el tope de 3 s es el de Entrada | Reglas 9, 21; F1 | Regla 8 y F8 de Entrada; tope 3–5 s |
-| 2 Jugador en primera persona | Blanda (indirecta) | La cámara la cede 7 (`ceder_camara`); la caja no la toca | Regla 10 | Contrato de cesión de cámara de 2 |
+| 2 Jugador en primera persona | Indirecta (así la lista el índice; 2 no lista a 10) | La cámara la cede 7 (`ceder_camara`); la caja no la toca | Regla 10 | Contrato de cesión de cámara de 2 |
 | 17 Sistema de pistas | — | Sin relación: las pistas no mueven la caja salvo por `AUTO_SOLVE_ELEMENT` vía 9 | Edge case 6 | AC-43 de 9 |
 
 ## Tuning Knobs
@@ -304,6 +304,7 @@ Tipos: **L** = lógica (prueba automática, `tests/unit/box/`), **I** = integrac
 | D10-13 | La caja no es dueña de ningún hecho ni aviso nuevo | Hecho `box_pose_*` | Evita estado duplicado (regla 3 de 7/3); la pose es reconstruible de `caja_cn` y 9 |
 | D10-21 | **(Ronda de corrección 2, N5-1)** C3 interrumpido en la secuencia de P5 y C3 cargado quedan en el mismo estado, `ENTREABIERTO` (decisión del autor del lote). | Dejar `ABIERTO` en sesión y `ENTREABIERTO` al cargar. | La pose visible no debe depender de haber cargado; la secuencia de P5 se repite desde el principio (regla 19 de 9) y necesita la tapa a medio abrir. Salir de la vista de C1–C3 por `atrás` sin resolver sigue dejando `ABIERTO` (regla 9.5, Edge 7). |
 | D10-22 | **(W-9)** `BOX_OPEN_MAX` tiene fila propia en Tuning Knobs, dueño 10; 7 lo consume. | Constante de 7 (Tuning Knobs de 7, l. 458 anterior). | El registro lo asigna a 10 y el valor sale de F2 de 10. |
+| D10-23 | **(Ronda de corrección 3, R6-1, R6-2)** `BOX_Cn_OPEN` se escribe siempre como «notación genérica de `BOX_C1_OPEN`…`BOX_C4_OPEN`» (no es constante del registro) y se retira el «actualizar» del registro, ya aplicado. Durezas de la tabla alineadas con lo que declaran los demás: 7, 9, 4 y 13–16 Dura; 20 Blanda (así la declara 20); 1 Indirecta (10 la declara; 1 la lista como «Dura (indirecta)»); 21 y 2 Indirectas (no hay llamada directa; el índice las trata así). 5 queda Blanda (así la declara 5) y el índice la lista como indirecta: pendiente de alinear en el índice | Mantener «Blanda» con 21 y 2 y «Dura (indirecta)» en la fila de 1 | Regla común: manda el GDD dependiente; una etiqueta «Blanda» sin llamada directa duplicaba lo que el índice llama indirecta |
 
 ## Preguntas abiertas
 
@@ -333,7 +334,7 @@ No se ha editado ninguno. Para el siguiente paso del lote:
 - **21 Director de escenas:** la rama «nunca abierta» de F4 solo ocurre por orden de consola/21.
 - **23 Director de audio (futuro):** fuente `SPK_D01C` y los dos `SFX_BOX_WOOD_*`.
 - **13 a 16 (futuros):** sus elementos cuelgan de los nodos de la caja; P6 llama a `play_open(4)`.
-- **Registro (`design/registry/entities.yaml`):** `BOX_Cn_OPEN` activo (fuente 7, `referenced_by` Entrada y 9) se sustituye por `BOX_C1_OPEN`…`BOX_C4_OPEN` y `BOX_OPEN_MAX`: actualizar `source`/`referenced_by` y el texto de Entrada F8 que cita 1,6 s (pasa a «tope `BOX_OPEN_MAX` 1,6 s»).
+- **Registro (`design/registry/entities.yaml`):** `BOX_Cn_OPEN` es solo notación genérica de `BOX_C1_OPEN`…`BOX_C4_OPEN`; el valor único queda sustituido por esas cuatro constantes y `BOX_OPEN_MAX` (aplicado en 7, D7-62, y citado por Entrada F8 como «tope `BOX_OPEN_MAX` 1,6 s»). Sin cambios pendientes para 10 en el registro.
 - **`systems-index.md`:** fila 10 ya figura en borrador/revisión; dependencias de 10: 3, 4, 7, 9 (duras), blandas 20, 23 (añadir 4, 20, 23).
 
 ## Entradas para el registro
@@ -425,3 +426,4 @@ No se proponen hechos, avisos ni flags nuevos (D10-13).
 | 2026-11-09 | Ronda de corrección 1 tras la revisión independiente (1 bloqueante, 14 avisos): P5 alineado con 9 (reglas 17 a 19, 8.1; D10-14), dependencia con 20 actualizada y lista `I-05`/`I-06a` resuelta (D10-17, Pregunta abierta 7), regla 8 sin `feedback_sfx` dinámico, bandeja de C1 definida, máquina de poses completa con recuperación, reconsulta en el paso 4, «visible» definido, `margen_min` 0,1–0,2, valores † como propuesta, ACs reescritos y ampliados (AC-06b, AC-26 a AC-33), `restore_solved_presentation` → `set_final_pose`, Cambios requeridos ampliados. Estado: Revisado, pendiente de re-review. |
 | 2026-11-09 | Ronda de decisiones 1: D-B aprobada por el usuario: `I-05` e `I-06a` sin presentación nueva (decorado en 10), releíbles con el repaso del bolsillo (20); D10-17 pasa de desviación del slice C.6 a decisión confirmada con el slice v0.4; Pregunta abierta 7 cerrada. Sin otros cambios. Estado: pendiente de re-review. |
 | 2026-11-09 | Ronda de corrección 2 (informe cruzado ronda 5: W-4, W-9, N5-1): fila propia de `BOX_OPEN_MAX` en Tuning Knobs, Dependencies de 1 y 20 corregidas, C3 interrumpido = `ENTREABIERTO` como al cargar (regla 4, Edge 9, AC-12, AC-34), D10-21 y D10-22. Estado: Revisado (ronda de corrección 2) — pendiente de re-review. |
+| 2026-11-09 | Ronda de corrección 3 (informe cruzado ronda 6: R6-1, R6-2): `BOX_Cn_OPEN` como notación genérica de `BOX_C1_OPEN`…`BOX_C4_OPEN`, sin «actualizar» el registro (ya aplicado), 21 y 2 pasan a Indirecta (D10-23). Estado: Revisado (ronda de corrección 3) — pendiente de re-review. |
