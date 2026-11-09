@@ -324,7 +324,7 @@ Cada línea tiene un ID para que audio, localización y QA puedan referenciarla.
 | `VO_V_12D` | Vera | «No dije nada. Él habló por los dos». | 8 |
 | `VO_V_12E` | Vera | «La V no me convence». | 8 |
 
-**Nota sobre `VO_G_14`:** `VO_G_14_RET` y `VO_G_14_ASG` sustituyen a la antigua `VO_G_14` única. `_RET` conserva su texto; `_ASG` es una **propuesta provisional pendiente de narrative-director**. La tabla pasa de 26 a 27 entradas; el GDD base-de-contenido-narrativo (D18-9) mantiene 26 hasta que recoja estas dos.
+**Nota sobre `VO_G_14`:** `VO_G_14_RET` y `VO_G_14_ASG` sustituyen a la antigua `VO_G_14` única. `_RET` conserva su texto; `_ASG` es una **propuesta provisional pendiente de narrative-director**. La tabla pasa de 26 a 27 entradas; el GDD base-de-contenido-narrativo (D18-12) mantiene 27 entradas (incluye `VO_G_14_RET`/`VO_G_14_ASG`).
 
 **Regla de escritura:** las líneas del Guardián nunca explican por qué pasó algo. Pueden contradecirse con los documentos. Ningún personaje confirma intenciones.
 

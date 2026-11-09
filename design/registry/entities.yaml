@@ -724,6 +724,15 @@ constants:
     note: "Ajuste de accesibilidad (float, paso 0,25), duenio GDD 6 (regla 1). Multiplica la duracion del pie de texto (7 F5, regla 12). 7 lo lee. Ronda 5, C-W6"
     added: 2026-11-09
     revised: ""
+  - name: atraccion_desactivada
+    status: active
+    source: design/gdd/interaccion-e-inspeccion.md
+    referenced_by: [design/gdd/marco-de-puzles.md]
+    value: false
+    unit: bool
+    note: "Excepcion de la separacion minima de elementos (por vista o zona de elementos, defecto falso), duenio GDD 7, referenciada por 9 (D9-46, AC-30a/b, AC-35). Ronda 6, G-1"
+    added: 2026-11-09
+    revised: ""
   - name: pie_persistente
     status: active
     source: design/gdd/ajustes-persistentes.md
