@@ -110,3 +110,15 @@ Corregir B-01 y B-02 en este GDD y en el Marco. Resolver I-01 a I-05 en una pasa
 ## Preguntas para el usuario
 
 1. **Pista de nivel 1 del P1 («gesto de cámara», slice líneas 136 y 724):** ¿puede el juego mover la cámara del jugador durante 3 s cuando **el propio jugador pide la pista** desde el menú de pausa? Esto contradice la regla 14 del Jugador («ningún evento mueve la cámara») y el espíritu del pilar *Autonomía como progresión*. Opciones: (a) sí, solo bajo petición explícita y con la cámara devuelta por el Jugador a su pose; (b) no, la pista se hace con un resaltado (`HIGHLIGHT`) y el «gesto de cámara» del slice se reinterpreta. Recomendación: (b), por coherencia con los pilares y porque no añade una operación a la API del Jugador. Cambia el slice si se elige (b).
+
+## Cambios requeridos en otros GDDs
+
+Derivados de la ronda 2 del GDD 2 (2026-11-09). El GDD 2 es la fuente de verdad del contrato 2↔7 (D-30 a D-34).
+
+- **Interacción (7):** (1) para objetos de escena (V05, A03, tarjetas) pedir `reproducir_gesto(HAND_REACH)` y, al `gesto_terminado`, llamar a `sostener(obj_id, izquierda)` y luego `reproducir_gesto(HAND_HOLD_ITEM)` (que exige objeto sujeto); 7 no mueve el objeto. (2) Eliminar `t_mano_s` y la solicitud ‡ (la duración del fundido es `t_item_dentro/fuera`, 0,3 s). (3) `fov_vigente()` pasa a `fov_actual()`. (4) Sin `CAMERA_NUDGE`; AC-20b y la fila de dependencias se ajustan. (5) Puede pedir `ANIM_PAGE_TURN` con `HAND_READ` activo y `HAND_PLACE` con `HAND_POINT` y pieza sostenida (regla 24, D-33).
+- **Marco de puzles (9):** el efecto `CAMERA_NUDGE` (target I-01, 3,0 s) se sustituye por `HIGHLIGHT`; quitar la dependencia dura del Jugador «vía 7» para ese efecto.
+- **Slice (`design/slice/slice-v0.3.md`, líneas ~136 y ~724):** reinterpretar el «gesto de cámara» de P1 nivel 1 como resaltado de la impresión (sin mover la cámara).
+- **Escena de planta (4), regla 18(c):** el sensor activa la zona con el centro entre X = 9,0 − radio − [0, 0,027] (8,923 a 8,95 con radio 0,05), no hasta 9,00.
+- **Índice de sistemas:** añadir el 2 como dependencia blanda en las filas de 19, 20, 22 y 23.
+- **Registro (`design/registry/entities.yaml`):** corregir la nota de `player_effective_fov` a `fov_actual()`; volcar las constantes de la «Propuesta de registro» del GDD 2 al cerrar el lote.
+- **Ajustes (6) / Escena de planta (4):** `reducir_movimiento` no lo lee el Jugador (D-32); sin cambio en 2.
