@@ -1,6 +1,6 @@
 # Puzle 2 · Memorando en el cristal
 
-> **Status**: Revisado (ronda de corrección 9) — pendiente de re-review
+> **Status**: Revisado (ronda de corrección 10) — pendiente de re-review (ronda 10: D12-26)
 > **Author**: Álvaro + agentes (`game-designer`)
 > **Last Updated**: 2026-11-09 (ronda de corrección 7)
 > **Sistema**: 12 (índice: `design/gdd/systems-index.md`) · Layer `Feature` · Categoría `Gameplay` · Prioridad `MVP`
@@ -12,7 +12,7 @@
 
 En la Sala de Reuniones hay tres lámparas de escritorio (`B01` izquierda, `B02` central, `B03` derecha) y un ventanal de cristal (`B04`) con un memorando escrito al revés. Cada lámpara tiene cuatro posiciones y, en cada una, su haz apunta a un punto distinto del cristal; solo **un** punto por lámpara contiene un fragmento del memorando (F1, F2 o F3). Cuando el haz cae sobre su fragmento, el texto se vuelve legible; cuando las tres lámparas iluminan su fragmento a la vez, el memorando queda completo y permanente. No hay fallo, ni contador, ni llave: la recompensa es **leer la versión oficial de Dirección** («aprobado a petición de la interesada» pero «ratificación pendiente de firma del responsable»), que contradice el formulario del Archivo. Este GDD instancia el contrato de `marco-de-puzles.md` (9) para el P2: modo `WORLD`, política `ON_CHANGE`, feedback `PARTIAL` por fragmento, `persist` de `pos_L`, `pos_C` y `pos_R`.
 
-> **Quick reference** — Layer: `Feature` · Priority: `MVP` · Key deps: `7 Interacción e inspección` (verbo `Girar`, manejador de `B01`–`B03`), `9 Marco de puzles` (ciclo de vida, hechos, pistas), `18 Base de contenido` (`DOC_01` por fragmentos, `PISTA_P2_N1`) · lo leen: `17` (`memo_leido`), `21` (`EV_PUZZLE_SOLVED_P2` → `VO_V_08`), `28`/`29` (reflejo del cristal) · espacio de estados: 4³ = 64 combinaciones, una solución (3, 1, 4)
+> **Quick reference** — Layer: `Feature` · Priority: `MVP` · Key deps: `7 Interacción e inspección` (verbo `Girar`, manejador de `B01`–`B03`), `9 Marco de puzles` (ciclo de vida, hechos, pistas), `18 Base de contenido` (`DOC_01` por fragmentos, `PISTA_P2_N1`) · lo consumen: `21` (`EV_PUZZLE_SOLVED_P2` → `VO_V_08`), `28`/`29` (reflejo del cristal; 29 Dura, la declara 29); `17` **no** lee `memo_leido` (solo `request_hint`, D17-10) · espacio de estados: 4³ = 64 combinaciones, una solución (3, 1, 4)
 
 ## Overview
 
@@ -247,7 +247,7 @@ La **dureza la declara el dependiente**. El índice (`systems-index.md`, fila 12
 | 2 Jugador | Blanda (vía 7) | `HAND_TURN` (≤ 0,8 s) | — |
 | 6 Ajustes | Blanda (vía 9) | `reducir_movimiento` | — |
 
-**Dependen de 12** (la dureza la declara el dependiente): **17** (`sistema-de-pistas.md`) **no** lee `memo_leido` (solo pide las pistas por `request_hint`; D17-10); **21** reacciona a `EV_PUZZLE_SOLVED_P2` (`ESC5_MEMORANDO`, `VO_V_08`; indirecta, vía bus); **5** guarda `pos_*` y `memo_leido` (causa `puzzle_solved:P2`); **29** (fila 29 del índice) y **28** presentan el reflejo; **23** reproduce `SFX_GLASS_HUM`. La sección «Matriz de encaje: los seis puzles frente al marco» de 9 (columna «P2 Memorando») recoge al P2. 21 no declara a 12 (relación indirecta vía bus).
+**Dependen de 12** (la dureza la declara el dependiente): **17** (`sistema-de-pistas.md`) **no** lee `memo_leido` (solo pide las pistas por `request_hint`; D17-10); **21** reacciona a `EV_PUZZLE_SOLVED_P2` (`ESC5_MEMORANDO`, `VO_V_08`; indirecta, vía bus); **5** guarda `pos_*` y `memo_leido` (causa `puzzle_solved:P2`); **29** (`shaders-y-efectos.md`; **Dura**, la declara 29 y la repite 12; fila 29 del índice) y **28** (Blanda, la declara 28) presentan el reflejo; **23** reproduce `SFX_GLASS_HUM`. La sección «Matriz de encaje: los seis puzles frente al marco» de 9 (columna «P2 Memorando») recoge al P2. 21 no declara a 12 (relación indirecta vía bus).
 
 ## Tuning Knobs
 
@@ -389,6 +389,7 @@ Notas: **esquema v2 de 9 (regla 4b, D9-67 a D9-79; `schema_version: 2` es de la 
 | D12-23 | (Ronda 7, A6/A7) Dependencies: duras 7, 9 y 18 (como el índice); 3, 4, 2 y 6 blandas; la «matriz de encaje» existe en 9 y se cita por su título | Subir 3, 4, 2, 6 a duras | La dureza la declara el dependiente y ninguna impide arrancar el P2. A7 (Q12-3/Q12-6 frente al slice) ya está abierta |
 | D12-24 | (Ronda 8) Alineado con el esquema v2 (regla 4b de 9): `schema_version: 2`; `affordance` en lugar de `kind`; `B08` como `{ "id": "B08", "decor": true }` dentro de `elements` (sustituye al `decor_elements` provisional) | Mantener `kind` y `decor_elements` | Un nombre por concepto y validación única (D9-71, D9-72); sin cambio de diseño ni de tiempos |
 | D12-25 | (Ronda de corrección 9, `sistema-de-pistas.md` Cambios requeridos nº 5) 17 **no** lee `memo_leido` (D17-10): se quita a 17 como lector de R4, R22b, la lista de dependientes, AC-P2-09 y las entradas de registro; el `TEXT` de la pista 1 pierde su `duration_s` y el knob `hint_text_s` (la nota la dura F2 de 17, ≈ 6 s) | Mantener a 17 como lector «por si acaso»; mantener los 2,0 s de la pista | Un lector que no lee confunde al verificador de hechos; 2,0 s no bastan para leer la nota (F2 de 17) |
+| D12-26 | **(Ronda de corrección 10)** La Quick reference ya no dice que 17 lee `memo_leido` (17 no lo lee: D17-10, `sistema-de-pistas.md`); 29 se lista como dependiente Dura (la declara 29) y 28/29 dejan de ser «al redactarse» | Dejar a 17 como lector | Contradecía el contrato que declara 17 | 
 
 ## Open Questions
 
@@ -413,7 +414,7 @@ No se ha editado ningún archivo existente. Pendiente:
 - **21 Director de escenas:** nota sobre Q12-8.
 - **4 Escena de planta:** requisitos de nivel de R10 (12 puntos sin solape, haces independientes, orden izquierda-centro-derecha) y que `B08` esté siempre presente (geometría; no hace falta que esté en el catálogo de 7).
 - **Datos / registro (`assets/data`, `design/registry/entities.yaml`):** `cobertura_anexo_a.json` **no existe** (solo lo cita el registro): crearlo con `B04` y `B08` como `interactuable: false`, o corregir la referencia (R1).
-- **28/29 (al redactarse):** película del cristal y fundido de 0,8 s (Visual/Audio Requirements).
+- **28 (`atmosfera-reactiva.md`) y 29 (`shaders-y-efectos.md`), que ya existen:** película del cristal y fundido de 0,8 s (Visual/Audio Requirements).
 - **`systems-index.md`:** fila 12 → «Borrador (lote Feature 3) — pendiente de review», ruta de este GDD.
 - **Slice (decide el usuario):** Q12-3, Q12-5, Q12-6 y el §22 (Q12-2).
 
@@ -434,4 +435,5 @@ Hechos (sin cambios): `pos_L/C/R` (owner 9), `memo_leido` (owner 9; sin lector e
 | 2026-11-09 | Review independiente: NEEDS REVISION (1 bloqueante, 7 avisos). |
 | 2026-11-09 (ronda de corrección 8) | Alineación mecánica con el esquema v2 de `puzzles.json` (regla 4b de 9): `schema_version: 2`, `kind` → `affordance`, `decor_elements` → `decor: true` en `elements`; petición a 9 marcada como absorbida; D12-24. Sin cambio de diseño. Estado: Revisado (ronda 8), pendiente de re-review. |
 | 2026-11-09 | Ronda de corrección 7: B1 (`B08` con `decor: true`, petición a 9 esquema v2 y a 4; se quita la petición a 7); A1 (`MIRROR_PREVIEW` sin `targets`); A2 (`cobertura_anexo_a.json` planificado, no existe); A3 (F4: se declara qué pulsaciones usa cada cálculo; Q12-2 «medir antes»; F7 no se toca); A4 (F3 con `t_clic` 0,8 s, `t_paso` 3,6 s; F4 recalculada: 66,6 / 122,4 / 270,6 s, ≈ 1,1–4,5 min); A5 (R19 reescrita; Q12-1 abierta); A6/A7 (Dependencies; matriz de encaje verificada en 9). D12-18 a D12-23. Estado: pendiente de re-review. |
+| 2026-11-10 (ronda de corrección 10) | Quick reference alineada con D17-10 (17 no lee `memo_leido`); 29 como dependiente Dura (la declara 29) en Dependencies; «al redactarse» de 28/29 sustituido por sus ficheros; D12-26. Estado: Revisado (ronda de corrección 10) — pendiente de re-review. |
 | 2026-11-10 (ronda de corrección 9) | Lector de `memo_leido`: 17 retirado (D17-10); pista 1 sin `duration_s` ni `hint_text_s` (F2 de 17); fila de 17 con su GDD; D12-25. Estado: Revisado (ronda de corrección 9) — pendiente de re-review. |
