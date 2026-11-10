@@ -1,6 +1,6 @@
 # Ordenador, correo e impresora (sistema 19)
 
-> **Status**: Revisado (ronda de corrección 8) — pendiente de re-review (ronda de corrección 8: `ts_envio` en `compose_i01()` para el AC-3 de 11, 11 listado como dependiente, D19-20 y D19-21)
+> **Status**: Revisado (ronda de corrección 9) — pendiente de re-review (ronda de corrección 8: `ts_envio` en `compose_i01()` para el AC-3 de 11, 11 listado como dependiente, D19-20 y D19-21)
 > **Author**: ux-designer (lote autónomo, sin aprobación por archivo)
 > **Last Updated**: 2026-11-09
 > **Implements Pillar**: Autonomía como progresión (el jugador decide qué buscar y qué leer) · Información incompleta (hechos de los correos fijos y comprobables) · Tensión sin castigo (nada falla; la impresión es repetible)
@@ -183,13 +183,13 @@ Dependencias recíprocas con regla o AC citado de la otra parte. `‡` = la cont
 | 7 Interacción e inspección | Dura | Modo `ordenador`, `ViewReceiver` (`registrar_receptor`, `elements()`, `handle_pointer`, `on_open`, `on_close(motivo)`), `pick_min_px` (44†), manejador de `V01` y `V08` | Reglas 20 (PointerEvent), 22 (tamaños), 23 (cierre), 24 (ordenador); tabla de objetos (`V01`, `V08`); D7-34 |
 | 11 Puzle 1 · Cronología | Dura (la declara 11) | 11 consume `compose_i01()` (`ref`, `ts_envio`, `dia`; D19-20), el objetivo resaltable `V08` (pista de nivel 1, `targets_if_missing_items`) y la impresión repetible (R23) | R19/AC-3, AC-6 y AC-8 de 11 |
 | 9 Marco de puzles | Dura (9 → 19) | 9 **llama a `compose_i01()`** (R30) para dibujar `C05/paper` y los 4 elementos de referencia; `needs_items: ['I-01']` y `has_item` los evalúa 9 contra 20; pista de nivel 1 sobre `V08`. 9 **no lee `correos_leidos`** (su `requires` es `all: []`) | Reglas 7, 34 y 35; AC-39 y AC-39b; D9-33; JSON de P1 (`needs_items`, `C05/paper`) ‡ |
-| 17 Sistema de pistas | Blanda | Expone `V08` como objetivo resaltable; las pistas 2 y 3 del P1 no añaden información sobre la hora de envío (D19-16: la hoja ya la lleva) | Pistas del P1 (slice 10.1, B.1) ‡ |
+| 17 Sistema de pistas | Blanda | Expone `V08` como objetivo resaltable; las pistas 2 y 3 del P1 no añaden información sobre la hora de envío (D19-16: la hoja ya la lleva) | Pistas del P1 (slice 10.1, B.1; `sistema-de-pistas.md` regla 32) |
 | 18 Base de contenido | Dura | Seis correos con día, hora, remitente, asunto, cuerpo, etiquetas y orden de presentación; claves `UI_MAIL_*`, `OBJ_V08_*`, `MAIL_1`–`MAIL_4`, `MAIL_X1`, `MAIL_X2`; pie `PISTA_P1_N2` | Reglas 3, 8, 11, 12, 13, 17; AC-11; filas «19» de las tablas de dependencias |
 | 20 Documentos y bolsillo | Dura (de 19 hacia 20; la declara 19, el dependiente) | `otorgar_sesion("I-01")` (acordado: 20, R8 fila `I-01` e Interfaz) y `has_item("I-01")`. 20 solo guarda la pertenencia al conjunto de sesión (`I-01`, Relegible = No); **no** guarda ni muestra el contenido | 20, R8, R9, AC-05; «19 Ordenador (futuro)» en Interactions de 20 |
 | 21 Director de escenas | Indirecta (vía 7; la declara 19 y 21 la repite; D19-18). Ni 19 consume API de 21 ni 21 depende de 19; sin camino en el slice | 19 solo recibe `on_close(sistema)` si 21 pide `cerrar_modos()`; no depende de 21 para nada más | `cerrar_modos()` de 7 (regla 27a); 21 reglas 13 y 20 (verificado: `cerrar_modos()` incluye `ordenador`, pero solo se pide en `ESC8_CIERRE`, en Recepción; el apagón no cierra modos); el contrato real es 21 → 7 |
 | 26 Subtítulos | Ninguna | 19 no genera voz; los sonidos de la impresora llevan subtítulo no verbal si 26 lo decide | — |
-| 23 Audio | Blanda | `SFX_PRINTER`, `SFX_KEY`, `SFX_CLICK_SUBTLE` | Catálogo de efectos ‡ |
-| 25 Pausa / 30 Accesibilidad | Blanda | Pantalla de opciones (escala de texto, PA-3) | ‡ |
+| 23 Audio | Blanda | `SFX_PRINTER`, `SFX_KEY`, `SFX_CLICK_SUBTLE` | Catálogo de efectos (`director-de-audio.md`) |
+| 25 Pausa / 30 Accesibilidad | Blanda | Pantalla de opciones (escala de texto, PA-3) | `menu-de-pausa.md` y `opciones-de-accesibilidad.md` |
 
 ---
 
@@ -283,6 +283,7 @@ Tipos: **L** = lógica (test automático), **I** = integración (incluye inyecci
 Reclasificadas como preguntas abiertas en la ronda de corrección 1 (alcance del slice, no decisiones): D19-1 (hoja no sostenible) y D19-2 (hoja en bandeja y botón de pantalla) → PA-7; D19-3 (sin Recibidos) → PA-5; D19-5 (sin ordenar) → PA-6. La implementación provisional no cambia.
 
 ---
+| D19-22 | **(Ronda de corrección 9, `gdd-cross-review-2026-11-10.md`)** Las ‡ de la fila de 17 (pistas del P1: `sistema-de-pistas.md` regla 32), 23 (`SFX_PRINTER`, `SFX_KEY`, `SFX_CLICK_SUBTLE`: `director-de-audio.md`) y 25/30 (escala de texto: `menu-de-pausa.md`, `opciones-de-accesibilidad.md`) se sustituyen por el fichero. 17 lee `correos_leidos` (blanda, vía 3) | Dejar las ‡ | Los contratos ya están en esos GDD |
 
 ## Preguntas abiertas
 
@@ -339,3 +340,4 @@ Reclasificadas como preguntas abiertas en la ronda de corrección 1 (alcance del
 | 0.5 | 2026-11-09 | Ronda de corrección 4 (informe cruzado ronda 6: R6-1, `reviews/cross-review-r6-2.md`): 19 ↔ 21 declarada Indirecta (vía 7) una sola vez (D19-18); fila de 20 con quién la declara. Estado: Revisado (ronda de corrección 4) — pendiente de re-review. |
 | 0.6 | 2026-11-09 | Ronda de corrección 5 (GDD 22 y `reviews/dependencias-r7-review.md`): comprobadas las citas a 22 (ninguna) y la dirección 9 → 19; D19-19. Sin cambios de reglas. Estado: Revisado (ronda de corrección 5) — pendiente de re-review. |
 | 0.7 | 2026-11-09 | Ronda de corrección 8 (propagación del GDD 11): `ts_envio` entero en `SheetI01` de R30 (D19-20, AC-31), `hora_envio` null con `hora_visible` falso, 11 como dependiente (D19-21). Sin cambios en 18 (`dia` en la tabla Lunes–Domingo). Estado: Revisado (ronda de corrección 8) — pendiente de re-review. |
+| 0.8 | 2026-11-10 | Ronda de corrección 9: ‡ de 17, 23, 25 y 30 sustituidas por sus ficheros; D19-22. Estado: Revisado (ronda de corrección 9) — pendiente de re-review. |
