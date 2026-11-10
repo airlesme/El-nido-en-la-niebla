@@ -54,7 +54,7 @@
 #   in any other shape is reported as unsupported layout, with its number.
 
 version: 1
-last_updated: "2026-11-09"
+last_updated: "2026-11-10"
 
 # ─── ENTITIES ────────────────────────────────────────────────────────────────
 # Named game-world objects: enemies, NPCs, characters, factions, bosses.
@@ -389,6 +389,277 @@ formulas:
     note: "F3; minimo plausible 11,4 s; tipico ~ 28 s"
     added: 2026-11-09
     revised: ""
+# --- Lote 2026-11-10 (R9-B2: GDDs 17, 23 a 30) ---
+  - name: audio_gain_db
+    status: active
+    source: design/gdd/director-de-audio.md
+    referenced_by: [design/gdd/ajustes-persistentes.md]
+    variables: ["trim_dB", "bus_db", "duck_dB", "sobresalto_dB", "silencio_parcial_dB", "pausa_dB", "espacial_dB"]
+    output_range: "ver variables (suma en dB)"
+    expression: "ganancia_dB = trim_dB + bus_db + duck_dB + sobresalto_dB + silencio_parcial_dB + pausa_dB + espacial_dB; bus_db = vol_db(grupo) o silencio"
+    notes: "F1 de 23. vol_db −38…0 (db_min −40†, N_pasos 20†, de 6); duck −12…0; sobresalto −6…0; silencio_parcial −4…0; pausa −6…0"
+    added: 2026-11-10
+    revised: ""
+  - name: audio_duck_db
+    status: active
+    source: design/gdd/director-de-audio.md
+    referenced_by: []
+    variables: ["d_k(bus)", "t_duck_ataque_s", "t_duck_ret_s", "t_duck_lib_s"]
+    output_range: [-12, 0]
+    expression: "duck_obj = min sobre canales activos de d_k(bus); ataque |duck_obj|/t_duck_ataque_s dB/s; liberación tras t_duck_ret_s a |d|/t_duck_lib_s dB/s"
+    notes: "F2 de 23. No suma ducking de canales simultáneos (VO_V_01 −6 con MEGA_01 −3 = −6)"
+    added: 2026-11-10
+    revised: ""
+  - name: line_read_time_s
+    status: active
+    source: design/gdd/director-de-audio.md
+    referenced_by: [design/gdd/subtitulos.md]
+    variables: ["n_car", "t_min_lect_s", "cps_lect", "t_max_lect_s", "n_pausas", "pausa_segmento_s"]
+    output_range: [1.5, 14.0]
+    expression: "t_lectura_s = clamp(t_min_lect_s + n_car/cps_lect, t_min_lect_s, t_max_lect_s) + n_pausas·pausa_segmento_s"
+    notes: "F3 de 23 (DUEÑO; 26 la cita). Rango sin pausas. Ejemplos: «Lo sé» 1,83 s; VO_G_13D 5,70 s; 300 car. = 14,0 s"
+    added: 2026-11-10
+    revised: ""
+  - name: line_ceiling_s
+    status: active
+    source: design/gdd/director-de-audio.md
+    referenced_by: [design/gdd/marco-de-puzles.md, design/gdd/llamada-telefonica.md]
+    variables: ["fallback_s", "line_grace_s", "t_fade_corte_s", "t_watchdog_s", "t_linea_audio_max_s"]
+    output_range: [2.0, 34.0]
+    expression: "techo_s = fallback_s + line_grace_s (el fundido empieza en techo_s − t_fade_corte_s); sin corte: finished o duración + t_watchdog_s; máximo absoluto t_linea_audio_max_s"
+    notes: "F4 de 23. Ejemplo VO_G_07: 14,0 + 2,0 = 16,0 s"
+    added: 2026-11-10
+    revised: ""
+  - name: footstep_db
+    status: active
+    source: design/gdd/director-de-audio.md
+    referenced_by: [design/gdd/jugador-en-primera-persona.md]
+    variables: ["db_paso_ref", "intensidad"]
+    output_range: [-13.96, -6]
+    expression: "paso_db = db_paso_ref + 20·log10(intensidad)"
+    notes: "F5 de 23; intensidad 0,4–1,0 ya calculada por 2 (i_paso_min de 2, no se aplica dos veces). 0,4→−13,96; 0,7→−9,10; 1,0→−6"
+    added: 2026-11-10
+    revised: ""
+  - name: rain_room_db
+    status: active
+    source: design/gdd/director-de-audio.md
+    referenced_by: [design/gdd/atmosfera-reactiva.md]
+    variables: ["ref", "perfil_dB(estancia)", "realce_dB", "apagon_dB", "silencio_parcial_dB", "t_estancia_s"]
+    output_range: "ver F8 de 23"
+    expression: "lluvia_dB = ref + perfil_dB(estancia) + realce_dB + apagon_dB + silencio_parcial_dB, interpolando en t_estancia_s"
+    notes: "F8 de 23; 28 deriva base_zona de este perfil (F5 de 28)"
+    added: 2026-11-10
+    revised: ""
+  - name: sub_visible_time_s
+    status: active
+    source: design/gdd/subtitulos.md
+    referenced_by: [design/gdd/director-de-audio.md]
+    variables: ["duracion_audio_s", "t_cola_sub_s", "t_lectura_s", "fallback_s", "t_sub_max_s"]
+    output_range: "≥ t_lectura_s"
+    expression: "con audio: t_visible_linea = max(duracion_audio_s + t_cola_sub_s, t_lectura_s), sin tope por línea, paginada en ceil(t/t_sub_max_s) páginas (cada una 1,0–8,0 s); sin audio: fallback_s (o t_lectura_s)"
+    notes: "F1 de 26. t_lectura_s es la de 23 (no se redefine)"
+    added: 2026-11-10
+    revised: ""
+  - name: sub_page_split_s
+    status: active
+    source: design/gdd/subtitulos.md
+    referenced_by: []
+    variables: ["T", "P", "n_i", "pausa_segmento_s"]
+    output_range: "≥ 1,0 por segmento"
+    expression: "t_i = (T − P) · n_i / Σ n"
+    notes: "F2 de 26. Ejemplo VO_G_07: A 2,73 s, pausa 1,2 s, B 10,07 s en 2 páginas"
+    added: 2026-11-10
+    revised: ""
+  - name: sub_text_height_px
+    status: active
+    source: design/gdd/subtitulos.md
+    referenced_by: [design/gdd/opciones-de-accesibilidad.md]
+    variables: ["base_px", "s", "alto_viewport", "sub_alto_min_px"]
+    output_range: "≥ 20"
+    expression: "alto_px = max(round(base_px · s), sub_alto_min_px), s = alto_viewport/1080; car_linea = floor(sub_car_linea · base_medio / base_tam)"
+    notes: "F3 de 26. 720p medio = 21 px; pequeno 20 px; car/línea 56/42/30"
+    added: 2026-11-10
+    revised: ""
+  - name: sub_reserved_band_px
+    status: active
+    source: design/gdd/subtitulos.md
+    referenced_by: [design/gdd/prompt-de-interaccion.md, design/gdd/llamada-telefonica.md]
+    variables: ["sub_lineas_max", "sub_bloques_max", "alto_px", "sub_hueco_px", "sub_margen_inf_pct", "alto_viewport"]
+    output_range: [260, 320]
+    expression: "alto_banda_px = sub_lineas_max·sub_bloques_max·alto_px·1,25 + 2·sub_hueco_px; alto_reservado_px = alto_banda_px + round(sub_margen_inf_pct·alto_viewport)"
+    notes: "F4 de 26. medio 1080p: 184/260 px; grande: 244/320 px. Tope del contenido de 22 y 24"
+    added: 2026-11-10
+    revised: ""
+  - name: ui_text_size_px
+    status: active
+    source: design/gdd/opciones-de-accesibilidad.md
+    referenced_by: [design/gdd/menu-de-pausa.md, design/gdd/pantalla-de-titulo.md, design/gdd/prompt-de-interaccion.md]
+    variables: ["tam_base_px", "escala_texto_ui", "alto_ventana_px", "tam_min_px"]
+    output_range: "≥ 16 px reales (suelo)"
+    expression: "tam_px = round(tam_base_px × escala_texto_ui × alto_ventana_px/1080), con suelo tam_min_px lógico"
+    notes: "F1 de 30. tam_base 24–44; escala {1,00; 1,25; 1,50}; ventana 720–2160. Si el proyecto usa content_scale_mode el factor de ventana se omite (no decidido)"
+    added: 2026-11-10
+    revised: ""
+  - name: pause_repeat_steps
+    status: active
+    source: design/gdd/menu-de-pausa.md
+    referenced_by: [design/gdd/entrada-y-controles.md]
+    variables: ["t", "pausa_repeticion_inicial_s", "pausa_repeticion_s"]
+    output_range: "≥ 0"
+    expression: "pasos(t) = (t < t_ini) ? 0 : 1 + floor((t − t_ini)/t_rep)"
+    notes: "F1 de 25. Un volumen de 20 pasos ≈ 2,56 s de mantener"
+    added: 2026-11-10
+    revised: ""
+  - name: pause_capture_window
+    status: active
+    source: design/gdd/menu-de-pausa.md
+    referenced_by: [design/gdd/entrada-y-controles.md]
+    variables: ["t", "t_soltar", "pausa_guarda_captura_s", "pausa_t_captura_s"]
+    output_range: "escucha efectiva = t_captura_s − t_escucha"
+    expression: "t_escucha = max(t_soltar, 0) + guarda_captura_s; activa ⇔ t ≥ t_escucha ∧ t < t_captura_s; restante = ceil(t_captura_s − t)"
+    notes: "F2 de 25; t_captura_s cuenta desde la apertura"
+    added: 2026-11-10
+    revised: ""
+  - name: pause_veil_alpha
+    status: active
+    source: design/gdd/menu-de-pausa.md
+    referenced_by: [design/gdd/ajustes-persistentes.md]
+    variables: ["t", "pausa_t_velo_s", "reduce_motion_fade_s"]
+    output_range: [0, 1]
+    expression: "alfa(t) = min(t/t_velo, 1); t_velo = pausa_t_velo_s (0,35 s) o reduce_motion_fade_s (0,1 s) con reducir_movimiento"
+    notes: "F3 de 25. El cierre usa la misma duración"
+    added: 2026-11-10
+    revised: ""
+  - name: pause_open_guard
+    status: active
+    source: design/gdd/menu-de-pausa.md
+    referenced_by: []
+    variables: ["t", "pausa_guarda_apertura_s"]
+    output_range: "bool"
+    expression: "ignorar_menú ⇔ t < pausa_guarda_apertura_s"
+    notes: "F4 de 25 (tiempo real)"
+    added: 2026-11-10
+    revised: ""
+  - name: flash_frequency_hz
+    status: active
+    source: design/gdd/atmosfera-reactiva.md
+    referenced_by: [design/gdd/opciones-de-accesibilidad.md, design/gdd/shaders-y-efectos.md]
+    variables: ["N", "t_caida_s", "pausa_min_s"]
+    output_range: "≤ 2,0 Hz"
+    expression: "T_parpadeo = N·t_caida + (N−1)·pausa_min_s; f_destello = 1/(t_caida + pausa_min_s)"
+    notes: "F1 de 28. Nominal 1,15 s y 2,0 Hz; invariante f ≤ FLASH_MAX_HZ"
+    added: 2026-11-10
+    revised: ""
+  - name: reflection_delay_s
+    status: active
+    source: design/gdd/atmosfera-reactiva.md
+    referenced_by: [design/gdd/jugador-en-primera-persona.md]
+    variables: ["retardo_reflejo_s", "t_entrada_reflejo_s", "t_salida_reflejo_s", "t_activo_min_s"]
+    output_range: [0, 1.0]
+    expression: "τ(t) = retardo·s(clamp((t−t0)/t_entrada,0,1)) en ENTRANDO; retardo en ACTIVO; retardo·(1−s(...)) en SALIENDO; s(x)=x²(3−2x)"
+    notes: "F3 de 28; retardo ≤ T_hist de 2"
+    added: 2026-11-10
+    revised: ""
+  - name: light_drop_energy
+    status: active
+    source: design/gdd/atmosfera-reactiva.md
+    referenced_by: []
+    variables: ["E_nom", "f", "d", "s"]
+    output_range: [0, 1]
+    expression: "E(t) = E_nom·lerp(1, f, s(clamp((t−t0)/d,0,1))); restauración lineal monótona (d_restaurar_s)"
+    notes: "F4 de 28"
+    added: 2026-11-10
+    revised: ""
+  - name: reduce_startle_ramps
+    status: active
+    source: design/gdd/atmosfera-reactiva.md
+    referenced_by: [design/gdd/ajustes-persistentes.md, design/gdd/opciones-de-accesibilidad.md]
+    variables: ["d_apagon_s", "f_parpadeo"]
+    output_range: "d_red ≥ 0,3 s; f_red 0,65"
+    expression: "d_apagon_red = 2·d_apagon_s; f_parpadeo_red = f_parpadeo + 0,25; suelo FLASH_DEPTH_FLOOR 0,40"
+    notes: "F7 de 28. ▲ 0,8 s pendiente de decisión del usuario"
+    added: 2026-11-10
+    revised: ""
+  - name: glyph_x_height_min_m
+    status: active
+    source: design/gdd/shaders-y-efectos.md
+    referenced_by: [design/gdd/puzle-2-memorando-en-el-cristal.md, design/gdd/ajustes-persistentes.md]
+    variables: ["x_h", "d", "fov", "H"]
+    output_range: "≥ 0,0311 m"
+    expression: "x_h ≥ 14 · 2 · d · tan(fov/2) / H (h_px ≥ 14 a H = 1080, fov máx 90°, d = 1,2 m)"
+    notes: "F29-3 de 29. Rango inferior de x_h_min = 0,0311 m"
+    added: 2026-11-10
+    revised: ""
+  - name: highlight_pulse_envelope
+    status: active
+    source: design/gdd/shaders-y-efectos.md
+    referenced_by: [design/gdd/marco-de-puzles.md]
+    variables: ["I_base", "I_amp", "f", "E(t)"]
+    output_range: "variación por fotograma < 0,25"
+    expression: "I(t) = I_base + I_amp·0,5·(1 + sin(2π·f·t)); I_final = I_min + (I(t) − I_min)·E(t)"
+    notes: "F29-4 de 29. f ≤ 2,0 Hz (1,25); I_base 0,6; I_amp 0,3; con reducir_movimiento I_amp = 0"
+    added: 2026-11-10
+    revised: ""
+  - name: prompt_ring_fill
+    status: active
+    source: design/gdd/prompt-de-interaccion.md
+    referenced_by: [design/gdd/interaccion-e-inspeccion.md]
+    variables: ["p"]
+    output_range: [0, 360]
+    expression: "relleno_grados = 360·p (solo si anillo_visible); opacidad_pulso aceptada = 0,80 + 0,20·tri(t/0,12), rechazo = 0,80 − 0,40·tri(t/0,12)"
+    notes: "F1 de 24"
+    added: 2026-11-10
+    revised: ""
+  - name: ui_scale
+    status: active
+    source: design/gdd/prompt-de-interaccion.md
+    referenced_by: [design/gdd/opciones-de-accesibilidad.md, design/gdd/subtitulos.md]
+    variables: ["altura_ventana", "ui_escala_min", "ui_escala_max"]
+    output_range: [0.67, 2.0]
+    expression: "s = clamp(altura_ventana/1080, 0,67, 2,0); tamaño_px = base_px · s"
+    notes: "F2 de 24; el pie usa max(pie_alto_texto_px·s, pie_alto_min_px)"
+    added: 2026-11-10
+    revised: ""
+  - name: title_fade_time_s
+    status: active
+    source: design/gdd/pantalla-de-titulo.md
+    referenced_by: [design/gdd/director-de-escenas.md]
+    variables: ["t_fundido_base_s", "reduce_motion_fade_s"]
+    output_range: [0.1, 0.8]
+    expression: "t_fundido = t_fundido_base_s; con reducir_movimiento o reducir_sobresaltos = reduce_motion_fade_s (0,1 s)"
+    notes: "F1 de 27. Tarjeta de cierre visible = t_tarjeta_s + t_fundido (F2): 3,8 s / 3,1 s"
+    added: 2026-11-10
+    revised: ""
+  - name: hint_wait_remaining_s
+    status: active
+    source: design/gdd/sistema-de-pistas.md
+    referenced_by: [design/gdd/marco-de-puzles.md]
+    variables: ["gap(p,k)", "t_ahora", "t_ref(p)"]
+    output_range: "0 a gap"
+    expression: "espera(p,k) = max(0, gap(p,k) − (t_ahora − t_ref(p)))"
+    notes: "F1 de 17. GameClock: en pausa no avanza. gap: 0 / hint_gap_s_L2 / hint_gap_s_L3; P6 L2 hint_gap_s_P6_L2"
+    added: 2026-11-10
+    revised: ""
+  - name: hint_note_duration_s
+    status: active
+    source: design/gdd/sistema-de-pistas.md
+    referenced_by: []
+    variables: ["n_palabras", "hint_reading_wps", "hint_reading_margin_s", "hint_note_min_s", "hint_note_max_s"]
+    output_range: [3.0, 8.0]
+    expression: "t_nota = clamp(n_palabras/hint_reading_wps + hint_reading_margin_s, note_min, note_max); si el efecto TEXT declara duration_s manda el dato"
+    notes: "F2 de 17"
+    added: 2026-11-10
+    revised: ""
+  - name: hint_min_time_to_level
+    status: active
+    source: design/gdd/sistema-de-pistas.md
+    referenced_by: [design/gdd/marco-de-puzles.md]
+    variables: ["gap(p,j)"]
+    output_range: "P6: 0/10 s; resto 0/20/60 s"
+    expression: "T_min(p,k) = Σ_{j=2..k} gap(p,j)"
+    notes: "F3 de 17 (referencia de diseño)"
+    added: 2026-11-10
+    revised: ""
 
 # ─── CONSTANTS ───────────────────────────────────────────────────────────────
 # Named numerical values referenced across multiple systems.
@@ -630,9 +901,11 @@ constants:
   - name: pick_min_px
     status: active
     source: design/gdd/interaccion-e-inspeccion.md
-    referenced_by: [design/gdd/marco-de-puzles.md]
+    referenced_by: [design/gdd/marco-de-puzles.md, design/gdd/opciones-de-accesibilidad.md]
     value: 44
     unit: px
+    range: [44, 64]
+    note: "30 lo cita como alias objetivo_min_px (regla 11); no hay constante nueva"
     added: 2026-11-09
     revised: ""
   - name: r_max_inspeccion_m
@@ -804,10 +1077,10 @@ constants:
   - name: reduce_motion_fade_s
     status: active
     source: design/gdd/ajustes-persistentes.md
-    referenced_by: [design/gdd/escena-de-planta.md, design/gdd/marco-de-puzles.md]
+    referenced_by: [design/gdd/escena-de-planta.md, design/gdd/marco-de-puzles.md, design/gdd/menu-de-pausa.md, design/gdd/subtitulos.md, design/gdd/pantalla-de-titulo.md, design/gdd/shaders-y-efectos.md, design/gdd/prompt-de-interaccion.md, design/gdd/opciones-de-accesibilidad.md, design/gdd/atmosfera-reactiva.md]
     value: 0.1
     unit: s
-    note: "Con la clave reducir_movimiento: fundido fijo de 100 ms y cambio estático en lugar de temblor (art bible §7.4)"
+    note: "Con la clave reducir_movimiento: fundido fijo de 100 ms y cambio estático en lugar de temblor (art bible §7.4). VALOR ÚNICO del proyecto (R9-B6): 25 (t_velo_reducido_s), 26 (t_fundido_sub_s reducido), 27 (t_fundido_reducido_s), 29 (fade_reduced_s), 24 (fade_reducido_ms 100) y 30 (fundido_reducido_ms; rango 50-200 de 15) lo citan y no lo poseen"
     added: 2026-11-09
     revised: ""
   - name: volume_steps
@@ -909,8 +1182,8 @@ constants:
   - name: settings_defaults
     status: active
     source: design/gdd/ajustes-persistentes.md
-    referenced_by: [design/gdd/jugador-en-primera-persona.md, design/gdd/escena-de-planta.md, design/gdd/marco-de-puzles.md]
-    value: "vol_voces 1.0, vol_efectos 1.0, vol_musica 1.0, subtitulos_activos true, reducir_sobresaltos false, asistencia_encaje false, asistencia_rotacion false, balanceo_camara reducido, campo_vision 70, reducir_movimiento false, multiplicador_pie 1.0, pie_persistente false, modo_ventana pantalla_completa (controles: bloque ausente)"
+    referenced_by: [design/gdd/jugador-en-primera-persona.md, design/gdd/escena-de-planta.md, design/gdd/marco-de-puzles.md, design/gdd/menu-de-pausa.md, design/gdd/opciones-de-accesibilidad.md, design/gdd/subtitulos.md, design/gdd/prompt-de-interaccion.md, design/gdd/pantalla-de-titulo.md, design/gdd/atmosfera-reactiva.md]
+    value: "vol_voces 1.0, vol_efectos 1.0, vol_musica 1.0, subtitulos_activos true, reducir_sobresaltos false, asistencia_encaje false, asistencia_rotacion false, balanceo_camara reducido, campo_vision 70, reducir_movimiento false, multiplicador_pie 1.0, pie_persistente false, modo_ventana pantalla_completa (controles: bloque ausente), subtitulos_tamano medio, subtitulos_fondo translucido, subtitulos_hablante true, escala_texto_ui 1_00, icono_grande false, etiqueta_accion_visible false, advertencias_vistas false (dato del jugador, NO restablecible)"
     unit: ""
     note: "Valores iniciales de la regla 1 del GDD 6 (provisionales); consumen 2, 4, 9, 23, 25, 30. Las pistas no son ajustes"
     added: 2026-11-09
@@ -1091,9 +1364,11 @@ constants:
   - name: line_grace_s
     status: active
     source: design/gdd/marco-de-puzles.md
-    referenced_by: [design/gdd/llamada-telefonica.md, design/gdd/puzle-5-espejo-de-la-diferencia.md]
+    referenced_by: [design/gdd/llamada-telefonica.md, design/gdd/puzle-5-espejo-de-la-diferencia.md, design/gdd/director-de-audio.md]
     value: 2.0
     unit: s
+    range: [1, 4]
+    note: "Un solo valor (de 9 y 22); 23 lo usa en F4 (techo_s = fallback_s + line_grace_s)"
     added: 2026-11-09
     revised: ""
   - name: idle_s_P6_N1
@@ -1145,7 +1420,7 @@ constants:
   - name: scene_load_notices
     status: active
     source: design/gdd/escena-de-planta.md
-    referenced_by: [design/gdd/estado-y-bus-de-eventos.md, design/gdd/entrada-y-controles.md, design/gdd/guardado-y-carga.md]
+    referenced_by: [design/gdd/estado-y-bus-de-eventos.md, design/gdd/entrada-y-controles.md, design/gdd/guardado-y-carga.md, design/gdd/director-de-audio.md, design/gdd/subtitulos.md, design/gdd/menu-de-pausa.md, design/gdd/pantalla-de-titulo.md]
     value: "iniciada (destino, motivo, D_carga) · escena lista (destino) · terminada · fallida (destino, motivo, causa) · partida terminada (sin datos; único emisor: 4, tras terminada de recepcion) · descarga total solicitada (sin datos; emite 4 al aceptar volver al título; el 21 queda inactivo hasta «completada») · descarga total completada (sin datos; emite 4 al volver al título; la consume 5)"
     unit: ""
     note: "Avisos de carga emitidos por Escena de planta. «Fallida» es nuevo (ronda 3); Entrada termina carga_en_curso con terminada o fallida. Lo solicita C-W2/S-B1"
@@ -1616,13 +1891,13 @@ constants:
     added: 2026-11-09
     revised: ""
   - name: t_espera_voz_s
-    status: active
+    status: deprecated
     source: design/gdd/director-de-escenas.md
     referenced_by: []
     value: 8.0
     unit: "s"
     range: [2, 15]
-    note: "Aplazamiento de una linea del mismo canal (F4). Dato de scene-config.json"
+    note: "DEPRECATED (2026-11-10, R9-B2): sustituida por t_cola_canal_s (dueño 23, 8,0 s, rango 3-12; 21 la consume). Valor antiguo de 21: 8,0 s, rango 2-15 (aplazamiento de una linea del mismo canal, F4)"
     added: 2026-11-09
     revised: ""
   - name: t_modos_max_s
@@ -1833,13 +2108,13 @@ constants:
     added: 2026-11-09
     revised: ""
   - name: t_corte_senal_s
-    status: active
+    status: deprecated
     source: design/gdd/llamada-telefonica.md
     referenced_by: [design/gdd/marco-de-puzles.md]
     value: 0.3
     unit: "s"
     range: [0.1, 0.6]
-    note: "† (interrupcion de la señal al elegir, regla 15 de 22; contrato ‡ de 23)"
+    note: "DEPRECATED (2026-11-10, R9-B2): sustituida por t_interrupt_s (dueño 23, 0,2 s, rango 0,05-0,3). Valor antiguo de 22: 0,3 s, rango 0,1-0,6 (interrupcion de la señal al elegir, regla 15 de 22)"
     added: 2026-11-09
     revised: ""
   - name: t_putdown_s
@@ -2414,3 +2689,1658 @@ constants:
 #     unit: slots
 #     added: 2026-03-26
 #     revised: ""
+  # --- Lote 2026-11-10 (R9-B2: GDDs 17, 23 a 30) ---
+  - name: rampa_vol_s
+    status: active
+    source: design/gdd/director-de-audio.md
+    referenced_by: [design/gdd/ajustes-persistentes.md]
+    value: 0.05
+    unit: "s"
+    range: [0.02, 0.2]
+    note: "R36 anti-chasquido. † Dato de audio_settings.json"
+    added: 2026-11-10
+    revised: ""
+  - name: duck_vera_guardian_db
+    status: active
+    source: design/gdd/director-de-audio.md
+    referenced_by: []
+    value: "Music -6 / Ambience -4 / Fx_World -4"
+    unit: "dB"
+    range: [-12, -2]
+    note: "R31 ducking de Vera/Guardián. † (en audio_settings.json)"
+    added: 2026-11-10
+    revised: ""
+  - name: duck_mega_db
+    status: active
+    source: design/gdd/director-de-audio.md
+    referenced_by: []
+    value: "Music -3 / Ambience -2 / Fx_World -2"
+    unit: "dB"
+    range: [-8, 0]
+    note: "R31 ducking de megafonía. † El ducking toma el mínimo de los canales activos (no suma)"
+    added: 2026-11-10
+    revised: ""
+  - name: t_duck_ataque_s
+    status: active
+    source: design/gdd/director-de-audio.md
+    referenced_by: []
+    value: 0.15
+    unit: "s"
+    range: [0.05, 0.5]
+    note: "F2 †"
+    added: 2026-11-10
+    revised: ""
+  - name: t_duck_ret_s
+    status: active
+    source: design/gdd/director-de-audio.md
+    referenced_by: []
+    value: 0.3
+    unit: "s"
+    range: [0, 1.0]
+    note: "F2 †"
+    added: 2026-11-10
+    revised: ""
+  - name: t_duck_lib_s
+    status: active
+    source: design/gdd/director-de-audio.md
+    referenced_by: []
+    value: 0.8
+    unit: "s"
+    range: [0.3, 2.0]
+    note: "F2 †"
+    added: 2026-11-10
+    revised: ""
+  - name: duck_total_min_db
+    status: active
+    source: design/gdd/director-de-audio.md
+    referenced_by: []
+    value: -12
+    unit: "dB"
+    range: [-18, -6]
+    note: "Suelo de la suma de ducking y silencio parcial †"
+    added: 2026-11-10
+    revised: ""
+  - name: silencio_parcial_amb_db
+    status: active
+    source: design/gdd/director-de-audio.md
+    referenced_by: []
+    value: -4
+    unit: "dB"
+    range: [-8, 0]
+    note: "R29 Ambience con vista cercana abierta †"
+    added: 2026-11-10
+    revised: ""
+  - name: silencio_parcial_mus_db
+    status: active
+    source: design/gdd/director-de-audio.md
+    referenced_by: []
+    value: -3
+    unit: "dB"
+    range: [-8, 0]
+    note: "R29 Music con vista cercana abierta †"
+    added: 2026-11-10
+    revised: ""
+  - name: pausa_amb_db
+    status: active
+    source: design/gdd/director-de-audio.md
+    referenced_by: []
+    value: -6
+    unit: "dB"
+    range: [-12, 0]
+    note: "R41 drone y lluvia durante la pausa †"
+    added: 2026-11-10
+    revised: ""
+  - name: atenuacion_carga_db
+    status: active
+    source: design/gdd/director-de-audio.md
+    referenced_by: []
+    value: -18
+    unit: "dB"
+    range: [-30, -6]
+    note: "R42 Ambience/Music en la cortina de carga †"
+    added: 2026-11-10
+    revised: ""
+  - name: t_fade_carga_s
+    status: active
+    source: design/gdd/director-de-audio.md
+    referenced_by: []
+    value: 0.3
+    unit: "s"
+    range: [0.1, 0.6]
+    note: "R42 †"
+    added: 2026-11-10
+    revised: ""
+  - name: t_entrada_capa_s
+    status: active
+    source: design/gdd/director-de-audio.md
+    referenced_by: []
+    value: 3.0
+    unit: "s"
+    range: [1, 6]
+    note: "R27 †"
+    added: 2026-11-10
+    revised: ""
+  - name: t_salida_capa_s
+    status: active
+    source: design/gdd/director-de-audio.md
+    referenced_by: []
+    value: 1.5
+    unit: "s"
+    range: [0.5, 3]
+    note: "R27 (también el fundido de «descarga total solicitada») †"
+    added: 2026-11-10
+    revised: ""
+  - name: lluvia_apagon_db
+    status: active
+    source: design/gdd/director-de-audio.md
+    referenced_by: [design/gdd/atmosfera-reactiva.md]
+    value: -60
+    unit: "dB"
+    range: [-60, -24]
+    note: "R22 (OQ 1 de 23); el nivel visual homólogo es lluvia_apagon de 28 †"
+    added: 2026-11-10
+    revised: ""
+  - name: d_lluvia_apagon_s
+    status: active
+    source: design/gdd/director-de-audio.md
+    referenced_by: [design/gdd/atmosfera-reactiva.md]
+    value: 0.4
+    unit: "s"
+    range: [0, 2]
+    note: "R22; = d_apagon_s de 28 †"
+    added: 2026-11-10
+    revised: ""
+  - name: t_lluvia_vuelve_s
+    status: active
+    source: design/gdd/director-de-audio.md
+    referenced_by: [design/gdd/atmosfera-reactiva.md]
+    value: 2.0
+    unit: "s"
+    range: [0.5, 4]
+    note: "R22 (LLUVIA_VUELVE) †"
+    added: 2026-11-10
+    revised: ""
+  - name: realce_lluvia_db
+    status: active
+    source: design/gdd/director-de-audio.md
+    referenced_by: [design/gdd/atmosfera-reactiva.md]
+    value: 3.0
+    unit: "dB"
+    range: [0, 6]
+    note: "LLUVIA_REALCE; el factor visual es realce_lluvia_factor de 28 †"
+    added: 2026-11-10
+    revised: ""
+  - name: rain_room_profile_db
+    status: active
+    source: design/gdd/director-de-audio.md
+    referenced_by: [design/gdd/atmosfera-reactiva.md]
+    value: "A 0, C 0, V -6, B -9, D -9, R -6"
+    unit: "dB"
+    range: [-12, 0]
+    note: "R28, F8: perfil de lluvia por estancia (RAIN_ROOM_DB). 28 deriva base_zona de aquí †"
+    added: 2026-11-10
+    revised: ""
+  - name: lp_sala_hz
+    status: active
+    source: design/gdd/director-de-audio.md
+    referenced_by: []
+    value: 2500
+    unit: "Hz"
+    range: [1500, 6000]
+    note: "F8 filtro de sala cerrada †"
+    added: 2026-11-10
+    revised: ""
+  - name: t_estancia_s
+    status: active
+    source: design/gdd/director-de-audio.md
+    referenced_by: []
+    value: 1.5
+    unit: "s"
+    range: [0.5, 3]
+    note: "F8 interpolación entre estancias †"
+    added: 2026-11-10
+    revised: ""
+  - name: t_cola_canal_s
+    status: active
+    source: design/gdd/director-de-audio.md
+    referenced_by: [design/gdd/director-de-escenas.md, design/gdd/llamada-telefonica.md]
+    value: 8.0
+    unit: "s"
+    range: [3, 12]
+    note: "R10. DUEÑO ÚNICO 23; 21 lo consume. Sustituye a t_espera_voz_s (21, deprecated). Rango según 23 †"
+    added: 2026-11-10
+    revised: ""
+  - name: t_fade_corte_s
+    status: active
+    source: design/gdd/director-de-audio.md
+    referenced_by: [design/gdd/marco-de-puzles.md]
+    value: 0.3
+    unit: "s"
+    range: [0.1, 1]
+    note: "R12 fundido del corte por techo de línea †"
+    added: 2026-11-10
+    revised: ""
+  - name: t_interrupt_s
+    status: active
+    source: design/gdd/director-de-audio.md
+    referenced_by: [design/gdd/llamada-telefonica.md, design/gdd/director-de-escenas.md]
+    value: 0.2
+    unit: "s"
+    range: [0.05, 0.3]
+    note: "R14. DUEÑO ÚNICO 23 del fundido de interrupción; 22 lo cita. Sustituye a t_corte_senal_s (22, deprecated). Rango según 23 †"
+    added: 2026-11-10
+    revised: ""
+  - name: t_watchdog_s
+    status: active
+    source: design/gdd/director-de-audio.md
+    referenced_by: [design/gdd/marco-de-puzles.md, design/gdd/llamada-telefonica.md]
+    value: 1.0
+    unit: "s"
+    range: [0.3, 3]
+    note: "R13 †"
+    added: 2026-11-10
+    revised: ""
+  - name: t_linea_audio_max_s
+    status: active
+    source: design/gdd/director-de-audio.md
+    referenced_by: []
+    value: 20.0
+    unit: "s"
+    range: [10, 40]
+    note: "R13 máximo absoluto de una línea con audio †"
+    added: 2026-11-10
+    revised: ""
+  - name: t_min_lect_s
+    status: active
+    source: design/gdd/director-de-audio.md
+    referenced_by: [design/gdd/subtitulos.md]
+    value: 1.5
+    unit: "s"
+    range: [1, 3]
+    note: "F3 DUEÑO 23 (26 lo cita, no lo duplica) †"
+    added: 2026-11-10
+    revised: ""
+  - name: cps_lect
+    status: active
+    source: design/gdd/director-de-audio.md
+    referenced_by: [design/gdd/subtitulos.md]
+    value: 15
+    unit: "car/s"
+    range: [10, 25]
+    note: "F3 DUEÑO 23 (norma de subtitulado ≈ 15–17) †"
+    added: 2026-11-10
+    revised: ""
+  - name: t_max_lect_s
+    status: active
+    source: design/gdd/director-de-audio.md
+    referenced_by: [design/gdd/subtitulos.md]
+    value: 14.0
+    unit: "s"
+    range: [6, 20]
+    note: "F3 DUEÑO 23: tope de t_min_lect_s + n_car/cps_lect (las pausas se suman después) †"
+    added: 2026-11-10
+    revised: ""
+  - name: pausa_segmento_s
+    status: active
+    source: design/gdd/director-de-audio.md
+    referenced_by: [design/gdd/subtitulos.md]
+    value: 1.2
+    unit: "s"
+    range: [0, 3]
+    note: "F3, F2 de 26: pausa por segmento con pausa previa en 18 †"
+    added: 2026-11-10
+    revised: ""
+  - name: atenuacion_sobresalto_db
+    status: active
+    source: design/gdd/director-de-audio.md
+    referenced_by: [design/gdd/ajustes-persistentes.md]
+    value: -6
+    unit: "dB"
+    range: [-12, 0]
+    note: "R38 con reducir_sobresaltos †"
+    added: 2026-11-10
+    revised: ""
+  - name: t_ataque_buzz_s
+    status: active
+    source: design/gdd/director-de-audio.md
+    referenced_by: [design/gdd/ajustes-persistentes.md]
+    value: 0.25
+    unit: "s"
+    range: [0.05, 0.6]
+    note: "R39 ataque del timbre con reducir_sobresaltos †"
+    added: 2026-11-10
+    revised: ""
+  - name: techo_limitador_dbfs
+    status: active
+    source: design/gdd/director-de-audio.md
+    referenced_by: [design/gdd/ajustes-persistentes.md]
+    value: -10
+    unit: "dBFS"
+    range: [-18, -6]
+    note: "R39 techo de VO_G_07 con reducir_sobresaltos. ▲ depende del limitador de techo no verificado en 4.7 (ADR de audio) †"
+    added: 2026-11-10
+    revised: ""
+  - name: t_entrada_susto_s
+    status: active
+    source: design/gdd/director-de-audio.md
+    referenced_by: []
+    value: 1.0
+    unit: "s"
+    range: [0.3, 2]
+    note: "R20 entrada de sillas/tecleo en el apagón †"
+    added: 2026-11-10
+    revised: ""
+  - name: d_no_llega_m
+    status: active
+    source: design/gdd/director-de-audio.md
+    referenced_by: []
+    value: 6.0
+    unit: "m"
+    range: [3, 12]
+    note: "R20 distancia mínima de sillas/tecleo al oyente en el apagón †"
+    added: 2026-11-10
+    revised: ""
+  - name: db_paso_ref
+    status: active
+    source: design/gdd/director-de-audio.md
+    referenced_by: [design/gdd/jugador-en-primera-persona.md]
+    value: -6
+    unit: "dB"
+    range: [-12, 0]
+    note: "F5 †"
+    added: 2026-11-10
+    revised: ""
+  - name: t_paso_min_s
+    status: active
+    source: design/gdd/director-de-audio.md
+    referenced_by: [design/gdd/jugador-en-primera-persona.md]
+    value: 0.18
+    unit: "s"
+    range: [0.1, 0.4]
+    note: "F5 †"
+    added: 2026-11-10
+    revised: ""
+  - name: t_muestra_min_s
+    status: active
+    source: design/gdd/director-de-audio.md
+    referenced_by: [design/gdd/ajustes-persistentes.md]
+    value: 0.4
+    unit: "s"
+    range: [0.2, 1]
+    note: "R25 muestra de volumen †"
+    added: 2026-11-10
+    revised: ""
+  - name: t_dedup_s
+    status: active
+    source: design/gdd/director-de-audio.md
+    referenced_by: []
+    value: 0.05
+    unit: "s"
+    range: [0, 0.1]
+    note: "R18 †"
+    added: 2026-11-10
+    revised: ""
+  - name: max_voces_total
+    status: active
+    source: design/gdd/director-de-audio.md
+    referenced_by: []
+    value: 24
+    unit: "voces"
+    range: [12, 32]
+    note: "F6 / R50 †"
+    added: 2026-11-10
+    revised: ""
+  - name: max_sfx_p2
+    status: active
+    source: design/gdd/director-de-audio.md
+    referenced_by: []
+    value: 4
+    unit: "voces"
+    range: [2, 8]
+    note: "F6 †"
+    added: 2026-11-10
+    revised: ""
+  - name: audio_budget
+    status: active
+    source: design/gdd/director-de-audio.md
+    referenced_by: []
+    value: "10 MB efectos / 24 MB total residente / 40 MB disco"
+    unit: ""
+    note: "R50, F7 †"
+    added: 2026-11-10
+    revised: ""
+  - name: piso_mega_db
+    status: active
+    source: design/gdd/director-de-audio.md
+    referenced_by: []
+    value: 12
+    unit: "dB"
+    note: "AC-23-24: atenuación máxima de MEGA_02 en sala cerrada respecto al pasillo (≤ 12). SIN fila en Tuning Knobs de 23 y sin rango: sin valor propio en el GDD †"
+    added: 2026-11-10
+    revised: ""
+  - name: AUDIO_BUSES
+    status: active
+    source: design/gdd/director-de-audio.md
+    referenced_by: [design/gdd/ajustes-persistentes.md]
+    value: "Voice (Voice_Vera, Voice_Mega, Voice_Guardian), Effects (Fx_Puzzle, Fx_World, Fx_Steps), Ambience, Music"
+    unit: ""
+    note: "R3. vol_voces→Voice; vol_efectos→Effects+Ambience; vol_musica→Music; sin vol_maestro (D23-3, D23-11)"
+    added: 2026-11-10
+    revised: ""
+  - name: LINE_CHANNELS
+    status: active
+    source: design/gdd/director-de-audio.md
+    referenced_by: [design/gdd/marco-de-puzles.md, design/gdd/llamada-telefonica.md, design/gdd/director-de-escenas.md]
+    value: "VO_V_*→Voice_Vera; MEGA_*→Voice_Mega; VO_G_*→Voice_Guardian"
+    unit: ""
+    note: "R9"
+    added: 2026-11-10
+    revised: ""
+  - name: LINE_DEFAULT_SOURCE
+    status: active
+    source: design/gdd/director-de-audio.md
+    referenced_by: [design/gdd/marco-de-puzles.md, design/gdd/llamada-telefonica.md]
+    value: "VO_G_07→SPK_D01C; MEGA_*→C01; VO_G_12/13/14*→SPK_V02; VO_V_*→2D"
+    unit: ""
+    note: "R11"
+    added: 2026-11-10
+    revised: ""
+  - name: SPK_V02
+    status: active
+    source: design/gdd/director-de-audio.md
+    referenced_by: [design/gdd/llamada-telefonica.md]
+    value: "Auricular y altavoz del teléfono de Vera"
+    unit: ""
+    note: "R33 ‡"
+    added: 2026-11-10
+    revised: ""
+  - name: AUDIO_ROOMS
+    status: active
+    source: design/gdd/director-de-audio.md
+    referenced_by: [design/gdd/atmosfera-reactiva.md]
+    value: "V, C, A, B, D, R"
+    unit: ""
+    note: "R28 ‡"
+    added: 2026-11-10
+    revised: ""
+  - name: FOOT_SURFACES
+    status: active
+    source: design/gdd/director-de-audio.md
+    referenced_by: [design/gdd/jugador-en-primera-persona.md]
+    value: "moqueta, baldosa, default"
+    unit: ""
+    note: "R24 ‡"
+    added: 2026-11-10
+    revised: ""
+  - name: line_terminated_causes
+    status: active
+    source: design/gdd/director-de-audio.md
+    referenced_by: [design/gdd/estado-y-bus-de-eventos.md, design/gdd/marco-de-puzles.md, design/gdd/llamada-telefonica.md, design/gdd/subtitulos.md]
+    value: "fin, corte, watchdog, interrumpida"
+    unit: ""
+    note: "Causas (dato motivo) de «línea terminada». Las otras dos respuestas a «línea pedida»: «línea sin audio» (t_lectura_s) y «línea fallida» (R7)"
+    added: 2026-11-10
+    revised: ""
+  - name: notice_pause_opened
+    status: active
+    source: design/gdd/menu-de-pausa.md
+    referenced_by: [design/gdd/estado-y-bus-de-eventos.md, design/gdd/guardado-y-carga.md, design/gdd/director-de-audio.md, design/gdd/subtitulos.md, design/gdd/atmosfera-reactiva.md]
+    value: "«pausa abierta» (código: pause_opened)"
+    unit: ""
+    note: "Sin datos; emisor 25; una vez por apertura efectiva; consumen 5, 23, 26, 28 (R3 de 25)"
+    added: 2026-11-10
+    revised: ""
+  - name: notice_pause_closed
+    status: active
+    source: design/gdd/menu-de-pausa.md
+    referenced_by: [design/gdd/estado-y-bus-de-eventos.md, design/gdd/director-de-audio.md, design/gdd/subtitulos.md, design/gdd/atmosfera-reactiva.md, design/gdd/guardado-y-carga.md]
+    value: "«pausa cerrada» (código: pause_closed)"
+    unit: ""
+    note: "Sin datos; emisor 25; una vez al reanudar (tras restaurar contexto y tiempo) y al salir al título tras la descarga total; consumen 23 (R41, R42e), 26, 28. ‡ D25-19"
+    added: 2026-11-10
+    revised: ""
+  - name: notice_sound_requested
+    status: active
+    source: design/gdd/director-de-audio.md
+    referenced_by: [design/gdd/estado-y-bus-de-eventos.md, design/gdd/marco-de-puzles.md, design/gdd/interaccion-e-inspeccion.md, design/gdd/ordenador-correo-impresora.md, design/gdd/menu-de-pausa.md, design/gdd/sistema-de-pistas.md]
+    value: "«sonido pedido» {sound_id, fuente?, accion, valor?}"
+    unit: ""
+    note: "Emisores 7, 8, 10, 15, 19, 25 (y 17: SFX_CLICK_SUBTLE; 22 «sonido de llamada pedido» ‡); consumidor 23 (R5). Los SFX nunca van por «línea pedida» (R7b) ‡"
+    added: 2026-11-10
+    revised: ""
+  - name: notice_line_started
+    status: active
+    source: design/gdd/director-de-audio.md
+    referenced_by: [design/gdd/estado-y-bus-de-eventos.md, design/gdd/subtitulos.md]
+    value: "«línea iniciada» {line_id, duracion_s, canal}"
+    unit: ""
+    note: "Emisor 23 cuando el reproductor arranca una «línea pedida» con audio; consumidor 26 (sin ella usa fallback_s) ‡"
+    added: 2026-11-10
+    revised: ""
+  - name: notice_puzzles_configured
+    status: active
+    source: design/gdd/marco-de-puzles.md
+    referenced_by: [design/gdd/estado-y-bus-de-eventos.md, design/gdd/sistema-de-pistas.md]
+    value: "«puzles configurados»"
+    unit: ""
+    note: "Emisor 9 tras cada configure (regla 35 de 17); consumidor 17 (reset()) ‡"
+    added: 2026-11-10
+    revised: ""
+  - name: notice_full_unload_requested
+    status: active
+    source: design/gdd/escena-de-planta.md
+    referenced_by: [design/gdd/estado-y-bus-de-eventos.md, design/gdd/director-de-audio.md, design/gdd/subtitulos.md, design/gdd/menu-de-pausa.md, design/gdd/pantalla-de-titulo.md, design/gdd/director-de-escenas.md, design/gdd/guardado-y-carga.md]
+    value: "«descarga total solicitada»"
+    unit: ""
+    note: "Sin datos; emite 4 al aceptar volver al título (ya listado en scene_load_notices); 21 queda inactivo; 23 silencia capas en t_salida_capa_s y descarta voces pausadas (R42e); 26 retira bloques (R27)"
+    added: 2026-11-10
+    revised: ""
+  - name: t_sub_max_s
+    status: active
+    source: design/gdd/subtitulos.md
+    referenced_by: []
+    value: 8.0
+    unit: "s"
+    range: [5, 12]
+    note: "Tope por página †"
+    added: 2026-11-10
+    revised: ""
+  - name: t_sub_sfx_lazo_s
+    status: active
+    source: design/gdd/subtitulos.md
+    referenced_by: [design/gdd/director-de-audio.md]
+    value: 3.0
+    unit: "s"
+    range: [2, 5]
+    note: "Retirada de un subtítulo de sonido en lazo sin stop †"
+    added: 2026-11-10
+    revised: ""
+  - name: sub_fondo_opacidad_min
+    status: active
+    source: design/gdd/subtitulos.md
+    referenced_by: [design/gdd/opciones-de-accesibilidad.md]
+    value: 70
+    unit: "%"
+    range: [60, 85]
+    note: "Contraste 7:1 con fondo translúcido (R18) †"
+    added: 2026-11-10
+    revised: ""
+  - name: t_cola_sub_s
+    status: active
+    source: design/gdd/subtitulos.md
+    referenced_by: []
+    value: 0.4
+    unit: "s"
+    range: [0, 1.0]
+    note: "Persistencia tras el fin del audio †"
+    added: 2026-11-10
+    revised: ""
+  - name: t_sub_sfx_min_s
+    status: active
+    source: design/gdd/subtitulos.md
+    referenced_by: []
+    value: 1.5
+    unit: "s"
+    range: [1, 3]
+    note: "†"
+    added: 2026-11-10
+    revised: ""
+  - name: t_sub_sfx_espera_s
+    status: active
+    source: design/gdd/subtitulos.md
+    referenced_by: []
+    value: 2.0
+    unit: "s"
+    range: [1, 4]
+    note: "R28 †"
+    added: 2026-11-10
+    revised: ""
+  - name: sub_ancho_pct
+    status: active
+    source: design/gdd/subtitulos.md
+    referenced_by: []
+    value: 60
+    unit: "%"
+    range: [50, 80]
+    note: "†"
+    added: 2026-11-10
+    revised: ""
+  - name: sub_car_linea
+    status: active
+    source: design/gdd/subtitulos.md
+    referenced_by: []
+    value: 42
+    unit: "car"
+    range: [32, 56]
+    note: "†"
+    added: 2026-11-10
+    revised: ""
+  - name: sub_lineas_max
+    status: active
+    source: design/gdd/subtitulos.md
+    referenced_by: []
+    value: 2
+    unit: "líneas"
+    range: [2, 3]
+    note: "†"
+    added: 2026-11-10
+    revised: ""
+  - name: sub_bloques_max
+    status: active
+    source: design/gdd/subtitulos.md
+    referenced_by: []
+    value: 2
+    unit: "bloques"
+    range: [1, 3]
+    note: "†"
+    added: 2026-11-10
+    revised: ""
+  - name: sub_margen_inf_pct
+    status: active
+    source: design/gdd/subtitulos.md
+    referenced_by: []
+    value: 7
+    unit: "%"
+    range: [5, 12]
+    note: "†"
+    added: 2026-11-10
+    revised: ""
+  - name: sub_hueco_px
+    status: active
+    source: design/gdd/subtitulos.md
+    referenced_by: []
+    value: 12
+    unit: "px"
+    range: [8, 24]
+    note: "†"
+    added: 2026-11-10
+    revised: ""
+  - name: sub_base_px
+    status: active
+    source: design/gdd/subtitulos.md
+    referenced_by: [design/gdd/ajustes-persistentes.md]
+    value: "pequeno 24 / medio 32 / grande 44"
+    unit: "px (1080p)"
+    note: "Rangos por tamaño 20–28 / 28–40 / 40–56 †. Independiente de escala_texto_ui (30 regla 10)"
+    added: 2026-11-10
+    revised: ""
+  - name: sub_alto_min_px
+    status: active
+    source: design/gdd/subtitulos.md
+    referenced_by: [design/gdd/opciones-de-accesibilidad.md]
+    value: 20
+    unit: "px"
+    note: "Suelo absoluto (≥ 18) †. ▲ distinto de tam_min_px (24 px LÓGICOS de 30, regla 26): revisar si 26 debe usar 24 lógicos"
+    added: 2026-11-10
+    revised: ""
+  - name: t_fundido_sub_s
+    status: active
+    source: design/gdd/subtitulos.md
+    referenced_by: []
+    value: 0.15
+    unit: "s"
+    range: [0.05, 0.3]
+    note: "Con reducir_movimiento: reduce_motion_fade_s (0,1 s, no se ajusta aquí) †"
+    added: 2026-11-10
+    revised: ""
+  - name: sub_min_antes_de_ceder_s
+    status: active
+    source: design/gdd/subtitulos.md
+    referenced_by: []
+    value: 1.0
+    unit: "s"
+    range: [0.5, 2.0]
+    note: "R15: min(t_lectura_s, 1,0 s) †"
+    added: 2026-11-10
+    revised: ""
+  - name: text_keys_subtitulos
+    status: active
+    source: design/gdd/subtitulos.md
+    referenced_by: [design/gdd/base-de-contenido-narrativo.md]
+    value: "SUB_BREATH_BROKEN; SUB_CHAIRS_ROLL †, SUB_TYPING_FAR †, SUB_PHONE_BUZZ † (OQ 2); UI_SUB_HABLANTE_VERA/_GUARDIAN/_MEGA †; UI_SUB_MUESTRA †"
+    unit: ""
+    note: "Claves de 18 pedidas por 26"
+    added: 2026-11-10
+    revised: ""
+  - name: accessibility_level_slice
+    status: active
+    source: design/gdd/opciones-de-accesibilidad.md
+    referenced_by: []
+    value: "Estándar"
+    unit: ""
+    note: "▲ pendiente de OQ 8 †"
+    added: 2026-11-10
+    revised: ""
+  - name: tope_destellos_s
+    status: active
+    source: design/gdd/opciones-de-accesibilidad.md
+    referenced_by: [design/gdd/atmosfera-reactiva.md, design/gdd/shaders-y-efectos.md, design/gdd/prompt-de-interaccion.md]
+    value: 3
+    unit: "destellos/s"
+    range: [2, 3]
+    note: "Fotosensibilidad; no subir. Definición única (regla 18) †"
+    added: 2026-11-10
+    revised: ""
+  - name: tam_min_px
+    status: active
+    source: design/gdd/opciones-de-accesibilidad.md
+    referenced_by: [design/gdd/menu-de-pausa.md, design/gdd/prompt-de-interaccion.md, design/gdd/subtitulos.md, design/gdd/pantalla-de-titulo.md]
+    value: 24
+    unit: "px lógicos"
+    range: [24, 32]
+    note: "Suelo de texto de UI (regla 26, antes 18): pies, etiquetas, menús, ordenador; 24 × (alto/1080) ≥ 16 px reales. DUEÑO 30; no bajar de 24 †"
+    added: 2026-11-10
+    revised: ""
+  - name: destello_delta_lum
+    status: active
+    source: design/gdd/opciones-de-accesibilidad.md
+    referenced_by: [design/gdd/atmosfera-reactiva.md, design/gdd/shaders-y-efectos.md]
+    value: 0.1
+    unit: "luminancia relativa"
+    note: "Regla 24, definición única de «destello» (WCAG 2.3.1) †"
+    added: 2026-11-10
+    revised: ""
+  - name: destello_area_pct
+    status: active
+    source: design/gdd/opciones-de-accesibilidad.md
+    referenced_by: [design/gdd/atmosfera-reactiva.md, design/gdd/shaders-y-efectos.md]
+    value: 25
+    unit: "% de pantalla"
+    note: "Regla 24 †"
+    added: 2026-11-10
+    revised: ""
+  - name: contraste_texto_min
+    status: active
+    source: design/gdd/opciones-de-accesibilidad.md
+    referenced_by: [design/gdd/subtitulos.md, design/gdd/prompt-de-interaccion.md, design/gdd/menu-de-pausa.md, design/gdd/pantalla-de-titulo.md]
+    value: 4.5
+    unit: ":1"
+    note: "Regla 25: texto sobre fondo. DUEÑO 30 †"
+    added: 2026-11-10
+    revised: ""
+  - name: contraste_ui_min
+    status: active
+    source: design/gdd/opciones-de-accesibilidad.md
+    referenced_by: [design/gdd/menu-de-pausa.md, design/gdd/pantalla-de-titulo.md]
+    value: 3.0
+    unit: ":1"
+    note: "Regla 25: bordes de control y foco. DUEÑO 30 †"
+    added: 2026-11-10
+    revised: ""
+  - name: escala_texto_ui
+    status: active
+    source: design/gdd/ajustes-persistentes.md
+    referenced_by: [design/gdd/opciones-de-accesibilidad.md, design/gdd/menu-de-pausa.md, design/gdd/pantalla-de-titulo.md, design/gdd/prompt-de-interaccion.md, design/gdd/subtitulos.md]
+    value: "1_00 (enum: 1_00, 1_25, 1_50)"
+    unit: "enum"
+    note: "Clave nueva (ronda 9). Un valor desconocido toma el inicial. ▲ provisional: que el slice la dé por cerrada lo decide el usuario (OQ 15 de 6). †"
+    added: 2026-11-10
+    revised: ""
+  - name: icono_grande
+    status: active
+    source: design/gdd/ajustes-persistentes.md
+    referenced_by: [design/gdd/prompt-de-interaccion.md]
+    value: false
+    unit: "bool"
+    note: "Clave nueva: anillo de interacción 48 px (24 regla 4) ‡"
+    added: 2026-11-10
+    revised: ""
+  - name: etiqueta_accion_visible
+    status: active
+    source: design/gdd/ajustes-persistentes.md
+    referenced_by: [design/gdd/prompt-de-interaccion.md]
+    value: false
+    unit: "bool"
+    note: "Clave nueva: etiqueta de acción siempre visible con objetivo (24 regla 11) ‡"
+    added: 2026-11-10
+    revised: ""
+  - name: subtitulos_tamano
+    status: active
+    source: design/gdd/ajustes-persistentes.md
+    referenced_by: [design/gdd/subtitulos.md, design/gdd/menu-de-pausa.md]
+    value: "medio (enum: pequeno, medio, grande)"
+    unit: "enum"
+    note: "Clave nueva (26 regla 19) ‡"
+    added: 2026-11-10
+    revised: ""
+  - name: subtitulos_fondo
+    status: active
+    source: design/gdd/ajustes-persistentes.md
+    referenced_by: [design/gdd/subtitulos.md, design/gdd/menu-de-pausa.md]
+    value: "translucido (enum: ninguno, translucido, opaco)"
+    unit: "enum"
+    note: "Clave nueva (26 regla 19) ‡"
+    added: 2026-11-10
+    revised: ""
+  - name: subtitulos_hablante
+    status: active
+    source: design/gdd/ajustes-persistentes.md
+    referenced_by: [design/gdd/subtitulos.md, design/gdd/menu-de-pausa.md]
+    value: true
+    unit: "bool"
+    note: "Clave nueva (26 regla 16) ‡"
+    added: 2026-11-10
+    revised: ""
+  - name: advertencias_vistas
+    status: active
+    source: design/gdd/ajustes-persistentes.md
+    referenced_by: [design/gdd/pantalla-de-titulo.md]
+    value: false
+    unit: "bool"
+    note: "Dato del jugador, NO restablecible (D-6.7): no entra en «restablecer todos». Lee y escribe 27 †"
+    added: 2026-11-10
+    revised: ""
+  - name: settings_reset_all_keys
+    status: active
+    source: design/gdd/ajustes-persistentes.md
+    referenced_by: [design/gdd/menu-de-pausa.md, design/gdd/opciones-de-accesibilidad.md, design/gdd/pantalla-de-titulo.md]
+    value: "vol_voces, vol_efectos, vol_musica, subtitulos_activos, subtitulos_tamano, subtitulos_fondo, subtitulos_hablante, reducir_sobresaltos, reducir_movimiento, asistencia_encaje, asistencia_rotacion, balanceo_camara, campo_vision, multiplicador_pie, pie_persistente, escala_texto_ui, icono_grande, etiqueta_accion_visible"
+    unit: "claves"
+    note: "«Restablecer todos» = 18 claves (regla 8). No toca modo_ventana, advertencias_vistas ni el bloque controles. AC-01 de 6: 20 claves con valor (18 + modo_ventana + advertencias_vistas)"
+    added: 2026-11-10
+    revised: ""
+  - name: text_keys_pistas
+    status: active
+    source: design/gdd/sistema-de-pistas.md
+    referenced_by: [design/gdd/menu-de-pausa.md, design/gdd/base-de-contenido-narrativo.md]
+    value: "UI_PISTAS_NADA, UI_PISTAS_SIN_LISTA, UI_PISTAS_PEDIR, UI_PISTAS_REPETIR, UI_PISTAS_ESPERA, UI_PISTAS_LISTA, UI_PISTAS_PENDIENTE, UI_PISTAS_YA_VISIBLE, UI_PISTAS_P1..P6"
+    unit: ""
+    note: "Claves de 18 pedidas por 17 ‡. UI_PISTAS_SIN_LISTA = panel vacío con puzles ACTIVOS no descubiertos (nunca UI_PISTAS_NADA)"
+    added: 2026-11-10
+    revised: ""
+  - name: pausa_t_velo_s
+    status: active
+    source: design/gdd/menu-de-pausa.md
+    referenced_by: [design/gdd/jugador-en-primera-persona.md, design/gdd/ajustes-persistentes.md]
+    value: 0.35
+    unit: "s"
+    range: [0.2, 0.6]
+    note: "F3, regla 7 (art bible). Con reducir_movimiento: reduce_motion_fade_s (0,1 s; el rango 0,05–0,2 de 25 es solo informativo, el valor lo fija 6)"
+    added: 2026-11-10
+    revised: ""
+  - name: pausa_guarda_apertura_s
+    status: active
+    source: design/gdd/menu-de-pausa.md
+    referenced_by: []
+    value: 0.15
+    unit: "s"
+    range: [0, 0.3]
+    note: "F4, regla 6 †"
+    added: 2026-11-10
+    revised: ""
+  - name: pausa_repeticion_inicial_s
+    status: active
+    source: design/gdd/menu-de-pausa.md
+    referenced_by: [design/gdd/entrada-y-controles.md]
+    value: 0.4
+    unit: "s"
+    range: [0.2, 1.0]
+    note: "F1, regla 12 †"
+    added: 2026-11-10
+    revised: ""
+  - name: pausa_repeticion_s
+    status: active
+    source: design/gdd/menu-de-pausa.md
+    referenced_by: [design/gdd/entrada-y-controles.md]
+    value: 0.12
+    unit: "s"
+    range: [0.05, 0.3]
+    note: "F1, regla 12 †"
+    added: 2026-11-10
+    revised: ""
+  - name: pausa_guarda_captura_s
+    status: active
+    source: design/gdd/menu-de-pausa.md
+    referenced_by: [design/gdd/entrada-y-controles.md]
+    value: 0.25
+    unit: "s"
+    range: [0.1, 0.5]
+    note: "F2, regla 22 †"
+    added: 2026-11-10
+    revised: ""
+  - name: pausa_t_captura_s
+    status: active
+    source: design/gdd/menu-de-pausa.md
+    referenced_by: [design/gdd/entrada-y-controles.md]
+    value: 8
+    unit: "s"
+    range: [4, 20]
+    note: "F2, regla 22: cuenta desde la apertura †"
+    added: 2026-11-10
+    revised: ""
+  - name: pausa_mostrar_leyendas_gestos
+    status: active
+    source: design/gdd/menu-de-pausa.md
+    referenced_by: []
+    value: true
+    unit: "bool"
+    note: "Regla 20"
+    added: 2026-11-10
+    revised: ""
+  - name: pause_states
+    status: active
+    source: design/gdd/menu-de-pausa.md
+    referenced_by: []
+    value: "cerrado, abierto·raíz, abierto·pantalla, abierto·diálogo, capturando, panel de mando, saliendo"
+    unit: "enum"
+    note: "Estados del menú"
+    added: 2026-11-10
+    revised: ""
+  - name: FLASH_MAX_HZ
+    status: active
+    source: design/gdd/atmosfera-reactiva.md
+    referenced_by: [design/gdd/opciones-de-accesibilidad.md, design/gdd/shaders-y-efectos.md]
+    value: 2.0
+    unit: "Hz"
+    note: "R11, F1: límite propio de frecuencia de destello (≤ 2,0 Hz; por debajo de 3 Hz de WCAG). Constante de código"
+    added: 2026-11-10
+    revised: ""
+  - name: FLASH_PAUSE_MIN_S
+    status: active
+    source: design/gdd/atmosfera-reactiva.md
+    referenced_by: [design/gdd/opciones-de-accesibilidad.md]
+    value: 0.35
+    unit: "s"
+    note: "R11: pausa mínima entre caídas (constante de código, ≥ 0,35)"
+    added: 2026-11-10
+    revised: ""
+  - name: FLASH_DEPTH_FLOOR
+    status: active
+    source: design/gdd/atmosfera-reactiva.md
+    referenced_by: [design/gdd/opciones-de-accesibilidad.md]
+    value: 0.4
+    unit: "fracción de E_nom"
+    note: "R11e: suelo de profundidad de todo parpadeo (constante de código)"
+    added: 2026-11-10
+    revised: ""
+  - name: parpadeo_duracion_s
+    status: active
+    source: design/gdd/atmosfera-reactiva.md
+    referenced_by: [design/gdd/director-de-escenas.md, design/gdd/opciones-de-accesibilidad.md]
+    value: 1.15
+    unit: "s"
+    note: "F1: 3·0,15 + 2·0,35 = 1,15 s, f = 2,0 Hz. ▲ ritmo del parpadeo pendiente de decisión del usuario (OQ 8 de 28); 21 R23 corregida a 1,15 s"
+    added: 2026-11-10
+    revised: ""
+  - name: d_apagon_s
+    status: active
+    source: design/gdd/atmosfera-reactiva.md
+    referenced_by: [design/gdd/director-de-escenas.md, design/gdd/director-de-audio.md, design/gdd/opciones-de-accesibilidad.md]
+    value: 0.4
+    unit: "s"
+    range: [0.3, 1.0]
+    note: "R8, F4"
+    added: 2026-11-10
+    revised: ""
+  - name: d_apagon_red_s
+    status: active
+    source: design/gdd/atmosfera-reactiva.md
+    referenced_by: [design/gdd/ajustes-persistentes.md, design/gdd/opciones-de-accesibilidad.md, design/gdd/director-de-escenas.md]
+    value: 0.8
+    unit: "s"
+    range: [0.3, 2.0]
+    note: "R18, F7: apagón con reducir_sobresaltos (2·d_apagon). ▲ pendiente de decisión del usuario (OQ 11 de 28) †"
+    added: 2026-11-10
+    revised: ""
+  - name: f_apagon
+    status: active
+    source: design/gdd/atmosfera-reactiva.md
+    referenced_by: []
+    value: 0.0
+    unit: "fracción"
+    range: [0.0, 0.1]
+    note: "R8 †"
+    added: 2026-11-10
+    revised: ""
+  - name: ambiente_apagon
+    status: active
+    source: design/gdd/atmosfera-reactiva.md
+    referenced_by: []
+    value: 0.06
+    unit: "fracción"
+    range: [0.03, 0.15]
+    note: "R8 †"
+    added: 2026-11-10
+    revised: ""
+  - name: d_restaurar_s
+    status: active
+    source: design/gdd/atmosfera-reactiva.md
+    referenced_by: [design/gdd/director-de-escenas.md]
+    value: 2.0
+    unit: "s"
+    range: [1.0, 4.0]
+    note: "R12 (slice C.7)"
+    added: 2026-11-10
+    revised: ""
+  - name: parpadeo_veces
+    status: active
+    source: design/gdd/atmosfera-reactiva.md
+    referenced_by: [design/gdd/director-de-escenas.md]
+    value: 3
+    unit: "caídas"
+    range: [1, 3]
+    note: "R9 (dato de la orden)"
+    added: 2026-11-10
+    revised: ""
+  - name: t_caida_s
+    status: active
+    source: design/gdd/atmosfera-reactiva.md
+    referenced_by: []
+    value: 0.15
+    unit: "s"
+    range: [0.08, 0.3]
+    note: "F1"
+    added: 2026-11-10
+    revised: ""
+  - name: f_parpadeo
+    status: active
+    source: design/gdd/atmosfera-reactiva.md
+    referenced_by: [design/gdd/opciones-de-accesibilidad.md]
+    value: 0.4
+    unit: "fracción"
+    range: [0.4, 0.7]
+    note: "F4: profundidad del parpadeo; suelo 0,40 forzado por código (FLASH_DEPTH_FLOOR) †"
+    added: 2026-11-10
+    revised: ""
+  - name: f_parpadeo_red
+    status: active
+    source: design/gdd/atmosfera-reactiva.md
+    referenced_by: [design/gdd/ajustes-persistentes.md, design/gdd/opciones-de-accesibilidad.md]
+    value: 0.65
+    unit: "fracción"
+    range: [0.5, 0.8]
+    note: "F7: con reducir_sobresaltos †"
+    added: 2026-11-10
+    revised: ""
+  - name: f_tubo
+    status: active
+    source: design/gdd/atmosfera-reactiva.md
+    referenced_by: []
+    value: 0.4
+    unit: "fracción"
+    range: [0.4, 0.7]
+    note: "R10 parpadeo del Archivo y Recepción †"
+    added: 2026-11-10
+    revised: ""
+  - name: f_tubo_red
+    status: active
+    source: design/gdd/atmosfera-reactiva.md
+    referenced_by: [design/gdd/ajustes-persistentes.md]
+    value: 0.65
+    unit: "fracción"
+    range: [0.5, 0.8]
+    note: "R10 †"
+    added: 2026-11-10
+    revised: ""
+  - name: retardo_reflejo_s
+    status: active
+    source: design/gdd/atmosfera-reactiva.md
+    referenced_by: [design/gdd/jugador-en-primera-persona.md, design/gdd/director-de-escenas.md]
+    value: 0.6
+    unit: "s"
+    range: [0.2, 1.0]
+    note: "F3 (≤ T_hist de 2 = 1,0 s)"
+    added: 2026-11-10
+    revised: ""
+  - name: t_entrada_reflejo_s
+    status: active
+    source: design/gdd/atmosfera-reactiva.md
+    referenced_by: []
+    value: 0.5
+    unit: "s"
+    range: [0.2, 1.0]
+    note: "F3 †"
+    added: 2026-11-10
+    revised: ""
+  - name: t_salida_reflejo_s
+    status: active
+    source: design/gdd/atmosfera-reactiva.md
+    referenced_by: []
+    value: 0.35
+    unit: "s"
+    range: [0.2, 1.0]
+    note: "F3 †"
+    added: 2026-11-10
+    revised: ""
+  - name: t_activo_min_s
+    status: active
+    source: design/gdd/atmosfera-reactiva.md
+    referenced_by: []
+    value: 1.0
+    unit: "s"
+    range: [0.5, 3.0]
+    note: "R15 †"
+    added: 2026-11-10
+    revised: ""
+  - name: duracion_reflejo_s
+    status: active
+    source: design/gdd/atmosfera-reactiva.md
+    referenced_by: [design/gdd/director-de-escenas.md]
+    value: 3.0
+    unit: "s"
+    range: [1.5, 5.0]
+    note: "R15 (dato de la orden)"
+    added: 2026-11-10
+    revised: ""
+  - name: umbral_giro_deg
+    status: active
+    source: design/gdd/atmosfera-reactiva.md
+    referenced_by: []
+    value: 45
+    unit: "grados"
+    range: [20, 90]
+    note: "R16 †"
+    added: 2026-11-10
+    revised: ""
+  - name: T_giro_s
+    status: active
+    source: design/gdd/atmosfera-reactiva.md
+    referenced_by: []
+    value: 0.5
+    unit: "s"
+    range: [0.3, 1.0]
+    note: "R16 †"
+    added: 2026-11-10
+    revised: ""
+  - name: pulso_resolucion
+    status: active
+    source: design/gdd/atmosfera-reactiva.md
+    referenced_by: [design/gdd/marco-de-puzles.md]
+    value: 0.25
+    unit: "fracción de E_nom"
+    range: [0.1, 0.4]
+    note: "R19 †; con reducir_*: pulso_resolucion_red 0,15 †"
+    added: 2026-11-10
+    revised: ""
+  - name: realce_lluvia_factor
+    status: active
+    source: design/gdd/atmosfera-reactiva.md
+    referenced_by: [design/gdd/director-de-audio.md]
+    value: 1.3
+    unit: "factor"
+    range: [1.0, 1.6]
+    note: "R20 (el audio: realce_lluvia_db de 23) †"
+    added: 2026-11-10
+    revised: ""
+  - name: lluvia_apagon
+    status: active
+    source: design/gdd/atmosfera-reactiva.md
+    referenced_by: [design/gdd/director-de-audio.md]
+    value: 0.0
+    unit: "nivel"
+    range: [0, 0.5]
+    note: "R20 (OQ 1) †"
+    added: 2026-11-10
+    revised: ""
+  - name: n_max_ventanal
+    status: active
+    source: design/gdd/atmosfera-reactiva.md
+    referenced_by: []
+    value: 200
+    unit: "partículas"
+    range: [50, 400]
+    note: "F5, F8 †"
+    added: 2026-11-10
+    revised: ""
+  - name: lluvia_vel_red
+    status: active
+    source: design/gdd/atmosfera-reactiva.md
+    referenced_by: [design/gdd/ajustes-persistentes.md]
+    value: 0.5
+    unit: "factor"
+    range: [0.25, 1.0]
+    note: "R18 velocidad con reducir_movimiento †"
+    added: 2026-11-10
+    revised: ""
+  - name: max_luces_visibles
+    status: active
+    source: design/gdd/atmosfera-reactiva.md
+    referenced_by: [design/gdd/puzle-2-memorando-en-el-cristal.md]
+    value: 8
+    unit: "luces"
+    range: [4, 12]
+    note: "F8"
+    added: 2026-11-10
+    revised: ""
+  - name: max_luces_sombra
+    status: active
+    source: design/gdd/atmosfera-reactiva.md
+    referenced_by: [design/gdd/puzle-2-memorando-en-el-cristal.md]
+    value: 2
+    unit: "luces"
+    range: [1, 3]
+    note: "F8"
+    added: 2026-11-10
+    revised: ""
+  - name: seed_archivo
+    status: active
+    source: design/gdd/atmosfera-reactiva.md
+    referenced_by: []
+    value: 20261109
+    unit: "semilla"
+    note: "R10 desfase determinista del tubo"
+    added: 2026-11-10
+    revised: ""
+  - name: atmosphere_budget
+    status: active
+    source: design/gdd/atmosfera-reactiva.md
+    referenced_by: [design/gdd/puzle-2-memorando-en-el-cristal.md]
+    value: "≤ 1,0 ms GPU, ≤ 0,15 ms CPU (pico 0,5), ≤ 8 luces visibles (≤ 2 con sombra), ≤ 500 partículas †, ≤ 8 MB texturas †"
+    unit: ""
+    note: "F8. 28 posee el presupuesto total e incluye las luces de P2"
+    added: 2026-11-10
+    revised: ""
+  - name: fragment_fade_s
+    status: active
+    source: design/gdd/puzle-2-memorando-en-el-cristal.md
+    referenced_by: [design/gdd/shaders-y-efectos.md, design/gdd/marco-de-puzles.md]
+    value: 0.8
+    unit: "s"
+    range: [0.4, 1.2]
+    note: "Fundido de aparición del texto del cristal (slice B.2). Origen 12; 29 lo cita. Con reducir_movimiento: reduce_motion_fade_s"
+    added: 2026-11-10
+    revised: ""
+  - name: mirror_preview_opacity
+    status: active
+    source: design/gdd/shaders-y-efectos.md
+    referenced_by: [design/gdd/puzle-2-memorando-en-el-cristal.md]
+    value: 0.8
+    unit: "alfa"
+    range: [0.8, 0.9]
+    note: "Con 0,7 falla F29-2 †"
+    added: 2026-11-10
+    revised: ""
+  - name: residue_alpha
+    status: active
+    source: design/gdd/shaders-y-efectos.md
+    referenced_by: [design/gdd/puzle-2-memorando-en-el-cristal.md]
+    value: 0.04
+    unit: "alfa"
+    range: [0.02, 0.06]
+    note: "Regla 18 †"
+    added: 2026-11-10
+    revised: ""
+  - name: reflection_strength_max
+    status: active
+    source: design/gdd/shaders-y-efectos.md
+    referenced_by: [design/gdd/atmosfera-reactiva.md, design/gdd/puzle-2-memorando-en-el-cristal.md]
+    value: 0.15
+    unit: "alfa"
+    range: [0.0, 0.25]
+    note: "Tope de alfa del proxy de reflejo de 28 (F29-2) †"
+    added: 2026-11-10
+    revised: ""
+  - name: L_film_max
+    status: active
+    source: design/gdd/shaders-y-efectos.md
+    referenced_by: [design/gdd/puzle-2-memorando-en-el-cristal.md]
+    value: 0.06
+    unit: "luminancia"
+    range: [0.03, 0.1]
+    note: "Fondo del cristal †"
+    added: 2026-11-10
+    revised: ""
+  - name: x_h_min
+    status: active
+    source: design/gdd/shaders-y-efectos.md
+    referenced_by: [design/gdd/puzle-2-memorando-en-el-cristal.md, design/gdd/jugador-en-primera-persona.md, design/gdd/ajustes-persistentes.md]
+    value: 0.032
+    unit: "m"
+    range: [0.0311, 0.045]
+    note: "F29-3: altura de la «x» del texto del cristal. Rango inferior 0,0311 m = suelo de F29-3 (14 px a 1080p, d = 1,2 m, fov 90°); por debajo AC-4 falla (D29-24) †"
+    added: 2026-11-10
+    revised: ""
+  - name: halo_radius_uv
+    status: active
+    source: design/gdd/shaders-y-efectos.md
+    referenced_by: [design/gdd/puzle-2-memorando-en-el-cristal.md]
+    value: 0.06
+    unit: "uv"
+    range: [0.04, 0.1]
+    note: "†"
+    added: 2026-11-10
+    revised: ""
+  - name: highlight_pulse_hz
+    status: active
+    source: design/gdd/shaders-y-efectos.md
+    referenced_by: [design/gdd/marco-de-puzles.md, design/gdd/opciones-de-accesibilidad.md]
+    value: 1.25
+    unit: "Hz"
+    range: [0.5, 2.0]
+    note: "F29-4 (tope duro 2,0) †"
+    added: 2026-11-10
+    revised: ""
+  - name: outline_width_px
+    status: active
+    source: design/gdd/shaders-y-efectos.md
+    referenced_by: [design/gdd/marco-de-puzles.md]
+    value: 4
+    unit: "px (1080p)"
+    range: [3, 6]
+    note: "F29-5 †"
+    added: 2026-11-10
+    revised: ""
+  - name: film_breath_amp
+    status: active
+    source: design/gdd/shaders-y-efectos.md
+    referenced_by: []
+    value: 0.03
+    unit: "alfa"
+    range: [0, 0.06]
+    note: "†"
+    added: 2026-11-10
+    revised: ""
+  - name: fx_gpu_budget_ms
+    status: active
+    source: design/gdd/shaders-y-efectos.md
+    referenced_by: [design/gdd/atmosfera-reactiva.md]
+    value: 0.5
+    unit: "ms"
+    range: [0.3, 1.0]
+    note: "F29-7 †"
+    added: 2026-11-10
+    revised: ""
+  - name: register_error_px_max
+    status: active
+    source: design/gdd/shaders-y-efectos.md
+    referenced_by: []
+    value: 1.0
+    unit: "px"
+    range: [0.5, 1.5]
+    note: "F29-6 †"
+    added: 2026-11-10
+    revised: ""
+  - name: anillo_px
+    status: active
+    source: design/gdd/prompt-de-interaccion.md
+    referenced_by: [design/gdd/opciones-de-accesibilidad.md]
+    value: 28
+    unit: "px (1080p)"
+    range: [24, 40]
+    note: "F2 (PROMPT_RING_PX estándar)"
+    added: 2026-11-10
+    revised: ""
+  - name: anillo_grande_px
+    status: active
+    source: design/gdd/prompt-de-interaccion.md
+    referenced_by: [design/gdd/ajustes-persistentes.md]
+    value: 48
+    unit: "px (1080p)"
+    range: [40, 64]
+    note: "Con icono_grande (PROMPT_RING_PX grande)"
+    added: 2026-11-10
+    revised: ""
+  - name: anillo_opacidad
+    status: active
+    source: design/gdd/prompt-de-interaccion.md
+    referenced_by: []
+    value: 0.8
+    unit: "alfa"
+    range: [0.6, 1.0]
+    added: 2026-11-10
+    revised: ""
+  - name: fade_in_ms
+    status: active
+    source: design/gdd/prompt-de-interaccion.md
+    referenced_by: []
+    value: 250
+    unit: "ms"
+    range: [100, 400]
+    added: 2026-11-10
+    revised: ""
+  - name: fade_out_ms
+    status: active
+    source: design/gdd/prompt-de-interaccion.md
+    referenced_by: []
+    value: 150
+    unit: "ms"
+    range: [100, 300]
+    added: 2026-11-10
+    revised: ""
+  - name: pulso_ms
+    status: active
+    source: design/gdd/prompt-de-interaccion.md
+    referenced_by: [design/gdd/interaccion-e-inspeccion.md]
+    value: 120
+    unit: "ms"
+    range: [80, 200]
+    note: "PROMPT_PULSE_MS (aceptado y rechazo)"
+    added: 2026-11-10
+    revised: ""
+  - name: pulso_rechazo_min
+    status: active
+    source: design/gdd/prompt-de-interaccion.md
+    referenced_by: []
+    value: 0.4
+    unit: "opacidad"
+    range: [0.3, 0.6]
+    note: "F1 †"
+    added: 2026-11-10
+    revised: ""
+  - name: pulso_min_intervalo_ms
+    status: active
+    source: design/gdd/prompt-de-interaccion.md
+    referenced_by: [design/gdd/opciones-de-accesibilidad.md]
+    value: 340
+    unit: "ms"
+    range: [334, 600]
+    note: "Tope de fotosensibilidad (≤ 3 pulsos/s); no bajar de 334 †"
+    added: 2026-11-10
+    revised: ""
+  - name: etiqueta_offset_px
+    status: active
+    source: design/gdd/prompt-de-interaccion.md
+    referenced_by: []
+    value: 12
+    unit: "px"
+    range: [8, 24]
+    note: "†"
+    added: 2026-11-10
+    revised: ""
+  - name: pie_ancho_max
+    status: active
+    source: design/gdd/prompt-de-interaccion.md
+    referenced_by: []
+    value: 0.6
+    unit: "fracción"
+    range: [0.5, 0.8]
+    note: "†"
+    added: 2026-11-10
+    revised: ""
+  - name: pie_alto_texto_px
+    status: active
+    source: design/gdd/prompt-de-interaccion.md
+    referenced_by: [design/gdd/opciones-de-accesibilidad.md]
+    value: 28
+    unit: "px (1080p)"
+    range: [24, 36]
+    note: "†"
+    added: 2026-11-10
+    revised: ""
+  - name: pie_alto_min_px
+    status: active
+    source: design/gdd/prompt-de-interaccion.md
+    referenced_by: [design/gdd/opciones-de-accesibilidad.md, design/gdd/menu-de-pausa.md]
+    value: 24
+    unit: "px lógicos"
+    note: "Suelo fijo de 25 y 30 (= tam_min_px). ▲ F2 de 24 aún cita 20 en el texto: errata a corregir en 24"
+    added: 2026-11-10
+    revised: ""
+  - name: pie_panel_opacidad
+    status: active
+    source: design/gdd/prompt-de-interaccion.md
+    referenced_by: []
+    value: 0.85
+    unit: "alfa"
+    range: [0.75, 0.95]
+    note: "Contraste del pie ≥ 4,5:1 sobre blanco puro †"
+    added: 2026-11-10
+    revised: ""
+  - name: pie_fade_ms
+    status: active
+    source: design/gdd/prompt-de-interaccion.md
+    referenced_by: []
+    value: 250
+    unit: "ms"
+    range: [100, 400]
+    note: "†"
+    added: 2026-11-10
+    revised: ""
+  - name: ui_escala_min
+    status: active
+    source: design/gdd/prompt-de-interaccion.md
+    referenced_by: []
+    value: 0.67
+    unit: "factor"
+    range: [0.5, 0.75]
+    note: "F2 (PROMPT_UI_SCALE_RANGE)"
+    added: 2026-11-10
+    revised: ""
+  - name: ui_escala_max
+    status: active
+    source: design/gdd/prompt-de-interaccion.md
+    referenced_by: []
+    value: 2.0
+    unit: "factor"
+    range: [1.5, 3.0]
+    note: "F2"
+    added: 2026-11-10
+    revised: ""
+  - name: t_fundido_base_s
+    status: active
+    source: design/gdd/pantalla-de-titulo.md
+    referenced_by: [design/gdd/director-de-escenas.md]
+    value: 0.8
+    unit: "s"
+    range: [0.3, 1.5]
+    note: "F1; mismo valor que el fundido propio de 21, independiente (si 21 cambia, revisar). Con reducir_movimiento/reducir_sobresaltos: reduce_motion_fade_s (0,1 s); t_atenuacion_s RETIRADA (R9-B6) †"
+    added: 2026-11-10
+    revised: ""
+  - name: t_espera_inspeccion_s
+    status: active
+    source: design/gdd/pantalla-de-titulo.md
+    referenced_by: [design/gdd/guardado-y-carga.md]
+    value: 3.0
+    unit: "s"
+    range: [1, 10]
+    note: "Paso al estado desconocido si 5 no responde †"
+    added: 2026-11-10
+    revised: ""
+  - name: creditos_paginas
+    status: active
+    source: design/gdd/pantalla-de-titulo.md
+    referenced_by: []
+    value: 1
+    unit: "páginas"
+    range: [0, 3]
+    note: "▲ condicionada a OQ 7 (créditos) †"
+    added: 2026-11-10
+    revised: ""
+  - name: t_aviso_s
+    status: active
+    source: design/gdd/pantalla-de-titulo.md
+    referenced_by: []
+    value: "sin límite"
+    unit: ""
+    note: "El aviso dura toda la visita al menú. Sin valor numérico en el GDD"
+    added: 2026-11-10
+    revised: ""
+  - name: hint_gap_s_L2
+    status: active
+    source: design/gdd/sistema-de-pistas.md
+    referenced_by: [design/gdd/marco-de-puzles.md]
+    value: 20.0
+    unit: "s"
+    range: [0, 60]
+    note: "F1 †"
+    added: 2026-11-10
+    revised: ""
+  - name: hint_gap_s_L3
+    status: active
+    source: design/gdd/sistema-de-pistas.md
+    referenced_by: [design/gdd/marco-de-puzles.md]
+    value: 40.0
+    unit: "s"
+    range: [0, 120]
+    note: "F1. Protege el criterio 5 del slice (P5 sin nivel 3 ≥ 50 %) †"
+    added: 2026-11-10
+    revised: ""
+  - name: hint_gap_s_P6_L2
+    status: active
+    source: design/gdd/sistema-de-pistas.md
+    referenced_by: [design/gdd/marco-de-puzles.md]
+    value: 10.0
+    unit: "s"
+    range: [0, 30]
+    note: "F1 (P6 tiene dos niveles) †"
+    added: 2026-11-10
+    revised: ""
+  - name: hint_reading_wps
+    status: active
+    source: design/gdd/sistema-de-pistas.md
+    referenced_by: []
+    value: 3.0
+    unit: "palabras/s"
+    range: [2.0, 4.5]
+    note: "F2 †"
+    added: 2026-11-10
+    revised: ""
+  - name: hint_reading_margin_s
+    status: active
+    source: design/gdd/sistema-de-pistas.md
+    referenced_by: []
+    value: 1.0
+    unit: "s"
+    range: [0.5, 2.0]
+    note: "F2 †"
+    added: 2026-11-10
+    revised: ""
+  - name: hint_note_min_s
+    status: active
+    source: design/gdd/sistema-de-pistas.md
+    referenced_by: []
+    value: 3.0
+    unit: "s"
+    range: [2.0, 5.0]
+    note: "F2 †"
+    added: 2026-11-10
+    revised: ""
+  - name: hint_note_max_s
+    status: active
+    source: design/gdd/sistema-de-pistas.md
+    referenced_by: []
+    value: 8.0
+    unit: "s"
+    range: [6.0, 12.0]
+    note: "F2 †"
+    added: 2026-11-10
+    revised: ""
+  - name: hint_note_fade_s
+    status: active
+    source: design/gdd/sistema-de-pistas.md
+    referenced_by: []
+    value: 0.3
+    unit: "s"
+    range: [0.1, 0.6]
+    note: "Regla 21 †"
+    added: 2026-11-10
+    revised: ""
+  - name: hint_note_queue_max
+    status: active
+    source: design/gdd/sistema-de-pistas.md
+    referenced_by: []
+    value: 1
+    unit: "notas"
+    range: [1, 2]
+    note: "Regla 21 †"
+    added: 2026-11-10
+    revised: ""
+  - name: hint_auto_apply
+    status: active
+    source: design/gdd/sistema-de-pistas.md
+    referenced_by: [design/gdd/marco-de-puzles.md]
+    value: true
+    unit: "bool"
+    note: "Regla 15: aplica las tres pistas IDLE del slice (OQ 1) †"
+    added: 2026-11-10
+    revised: ""
