@@ -1,6 +1,6 @@
 # Llamada telefónica (sistema 22)
 
-> **Estado:** Revisado (ronda de corrección 9) — pendiente de re-review
+> **Estado:** Revisado (ronda de corrección 10) — pendiente de re-review
 > **Autor:** narrative-director (lote autónomo, 2026-11-09)
 > **Capa:** Feature · **Categoría:** Narrativa / Gameplay
 > **Fuente de verdad:** `design/slice/slice-v0.3.md` (contenido v0.4.2): §11 escena 7 y 11.1, §8.5/D-03, §13, Anexo C.7, Anexo D.2/D.3.
@@ -110,7 +110,7 @@ Vera descuelga un teléfono que marca su propia extensión y oye respirar a algu
 **F2 · Aparición de las opciones.** `T_opc = T_linea + L12 + t_ante` = 4,8 + 5,0 + 1,0 = **10,8 s** (rango por `L12` de 3 a 8 s: 8,8–13,8).
 
 **F3 · Fin de la llamada para el jugador.** `T_compl(t_e) = T_opc + t_e + L13 + t_cierre`, con `t_e ≥ t_guarda`.
-La espera larga **no suma**: si `t_e > t_espera`, la señal (`T_breath + L14`: 5,0 s con `VO_G_14_RET` ≈ 1 s; 7,0 s con `VO_G_14_ASG` ≈ 3 s; 9,0 s con el `L14` = 5 de la media de 9) ocurre dentro de `t_e`, y elegir durante ella la interrumpe (regla 15): `T_compl` suma además `t_corte_senal_s` (0,3†). Fuera de la señal ese término es 0.
+La espera larga **no suma**: si `t_e > t_espera`, la señal (`T_breath + L14`: 5,0 s con `VO_G_14_RET` ≈ 1 s; 7,0 s con `VO_G_14_ASG` ≈ 3 s; 9,0 s con el `L14` = 5 de la media de 9) ocurre dentro de `t_e`, y elegir durante ella la interrumpe (regla 15): `T_compl` suma además `t_interrupt_s` (0,2 s†, dueño 23). Fuera de la señal ese término es 0.
 Efectos sobre la escena: `llamada_completada` en `T_compl`; luces y lluvia en `T_compl + 2,0` (`retardo_restaurar_s`, 21); `C08` activo en `T_compl + t_ascensor_s` (8); control de vuelta en `T_compl + t_putdown`.
 
 | Caso | `t_e` | `T_compl` | Cálculo |
@@ -118,7 +118,7 @@ Efectos sobre la escena: `llamada_completada` en `T_compl`; luces y lluvia en `T
 | Elige lo antes posible | 0,6 | **16,4 s** | 10,8 + 0,6 + 4,0 + 1,0 |
 | Lectura normal | 8,0 | **23,8 s** | 10,8 + 8,0 + 5,0 |
 | Elige justo antes de la señal | ≈20,0 | **35,8 s** | 10,8 + 20,0 + 5,0 |
-| Elige durante la señal (a 24,0 s) | 24,0 | **40,1 s** | 10,8 + 24,0 + 0,3 + 5,0 |
+| Elige durante la señal (a 24,0 s) | 24,0 | **40,0 s** | 10,8 + 24,0 + 0,2 + 5,0 |
 | Elige tras la señal completa, `VO_G_14_RET` (`L14` ≈ 1) | 25,0 | **40,8 s** | 10,8 + 25,0 + 5,0 |
 | Elige tras la señal completa, `VO_G_14_ASG` (`L14` ≈ 3) | 27,0 | **42,8 s** | 10,8 + 27,0 + 5,0 |
 | Elige tras la señal completa, `L14` = 5 (valor medio de 9; cota del rango práctico) | 29,0 | **44,8 s** | 10,8 + 29,0 + 5,0 |
@@ -291,6 +291,7 @@ Tipos: L = lógica (automática), I = integración, PV = playtest o verificació
 | D22-30 | Ronda 6: 8 y 21 declaran Indirecta (vía 3, por `llamada_completada`); 22 la repite. La vuelta a `INACTIVA` solo la dispara la descarga del despacho (R19). Con el contexto `llamada` rechazado, 22 no repite `SFX_PHONE_BUZZ`. D-15 sigue pendiente de confirmar por el usuario; 21 R15 admite solo la devolución a `reposo` de `V02` con `llamada_iniciada`. | «Escena lista» como disparador; dar D-15 por confirmado. | Regla común: manda el dependiente; el slice no se toca y D-15 está en «Confirmar». |
 | D22-31 | Ronda 8: 22 cita a 14 y 16 en su fila de 9 como proveedores indirectos de `t4_decision` y `carta_variante`, sin cambiar su contrato (lectura de dos hechos de 9; fallos con consola como antes, R16 y Edge Cases). La métrica `p_oir` (cuántos jugadores oyen la línea de 14 antes de elegir) es de playtest de 14 y 22 no la calcula ni la registra. | Que 22 cuente `p_oir`/`r_T4` en un registro propio; abrir la dependencia 22 → 14 como directa. | 14 lo resuelve por observación (P4-F4); 22 solo lee `t4_decision` y no sabe de qué puzle viene. La dependencia sigue siendo indirecta por el estado (vía 3), como la declara 22. |
 | D22-32 | **Ronda de corrección 9 (R9-B1, B2 de la revisión de contratos):** 22 pide los `SFX_*` de la llamada por «sonido pedido» (`accion` `play`/`stop`/`interrupt`) y solo las voces `VO_G_12*`, `VO_G_13*`, `VO_G_14_*` por «línea pedida»; desaparece «sonido de llamada pedido»; 22 **no** emite «estado de objeto pedido» (solo lo recibe de 21 para `V02`); `t_corte_senal_s` se retira y el fundido es `t_interrupt_s` de 23 | Mantener `SFX_*` en «línea pedida» más un alias | 23 R7b rechaza `SFX_*` en «línea pedida»; un solo nombre por aviso (regla 10 de 3, DT-24). |
+| D22-33 | **Ronda de corrección 10 (R15-3 B1):** `T_compl` de F3 usa `t_interrupt_s` (0,2 s†, dueño 23) y no la constante retirada `t_corte_senal_s`; la fila «Elige durante la señal» pasa de 40,1 s a 40,0 s. | Dejar 0,3† | Una constante retirada no puede estar en una fórmula viva (D22-32). |
 
 ## Open Questions
 
@@ -341,3 +342,4 @@ Tipos: L = lógica (automática), I = integración, PV = playtest o verificació
 - 2026-11-09 — Ronda de corrección 6 (avisos de la revisión de dependencias): 8 y 21 Indirecta (vía 3) en Dependencies; vuelta a `INACTIVA` solo por descarga del despacho (R19, AC-22-34, D22-24); rechazo del contexto `llamada` sin repetir `SFX_PHONE_BUZZ` (Edge Case, AC-22-30); D-15 del slice pendiente de confirmar (cambio nº 10, OQ nº 3); cabecera v0.4.2; D22-30. Estado: Revisado (ronda de corrección 6) — pendiente de re-review.
 - 2026-11-09 — Ronda de corrección 8 (propagación de los puzles 11 a 16): fila de 9 en Dependencies cita a 14 (`t4_decision`, escrito por 9 tras el puzle 4) y a 16 (`carta_variante`; la llamada se dispara al salir de `D01d`); se aclara que `p_oir` es métrica de playtest de 14 y no de 22; contrato sin cambios; D22-31. Estado: Revisado (ronda de corrección 8) — pendiente de re-review.
 - 2026-11-10 — Ronda de corrección 9 (`gdd-cross-review-2026-11-10.md` R9-B1 y `reviews/cross-review-r10-*.md`): `SFX_*` por «sonido pedido», «línea pedida» solo voz, fin del alias «sonido de llamada pedido» (reglas 5, 6, 14, 15, 19, 30, filas 23 y 26 de Dependencies, AC-22-16, cambios 1 y 11, registro); `t_corte_senal_s` retirada a favor de `t_interrupt_s` de 23; quitadas las ‡ y «sin GDD» de 23 y 26; D22-32. Estado: Revisado (ronda de corrección 9) — pendiente de re-review.
+- 2026-11-10 — Ronda de corrección 10 (`review-R15-1/3`): F3 y su tabla usan `t_interrupt_s` (0,2 s†) en lugar de `t_corte_senal_s`; `T_compl` = 40,0 s en el caso «durante la señal»; D22-33. Estado: Revisado (ronda de corrección 10) — pendiente de re-review.
