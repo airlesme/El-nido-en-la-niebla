@@ -1,8 +1,8 @@
 # Opciones de accesibilidad (sistema 30)
 
-> **Status**: Revisado (ronda de corrección 1) — pendiente de re-review
+> **Status**: Revisado (ronda de corrección 9) — pendiente de re-review (ronda 9: R9-B5 dureza de 30 hacia 25/27 = Blanda, sin ciclo duro; definiciones únicas de destello, contraste, tamaño de texto y fundido; cuentas de 6; OQ de alcance al usuario)
 > **Author**: Accessibility Specialist (lote autónomo)
-> **Last Updated**: 2026-11-09
+> **Last Updated**: 2026-11-10
 > **Implements Pillar**: Tensión sin castigo (nadie pierde por una limitación física, sensorial o cognitiva; ninguna **solución** exige reaccionar en una ventana de tiempo ni el color como único canal; la precisión motriz se compensa con asistencias, regla 14) · Autonomía como progresión (el jugador ajusta la experiencia, no se le pide justificarse) · Información incompleta (las ayudas rebajan la barrera de manejo, nunca revelan la solución) · El espacio expresa la emoción (las ayudas mantienen el tono: sin banners, sin colores de alarma)
 > **Category**: Meta · **Priority**: Vertical Slice · **Modo**: `standard`
 
@@ -41,7 +41,7 @@ Quien tiene una limitación no se entera de que el juego «tiene un modo para el
    | Alternar en lugar de mantener, `t_hold`, atracción asistida, velocidad de cursor, zonas muertas, sensibilidades, inversión | `controles` (1 regla 18) | 1 | Controles › Manejo | Motricidad |
    | Reasignación | `controles` | 1 | Controles | Motricidad |
 
-   Leyenda: **†** = clave nueva propuesta por 30, aún no existe en 6; **‡** = clave propuesta por otro GDD (24, 26) y aún no existente en 6. Hoy 6 define 12 claves en «restablecer todos»; con las pendientes serían **18**: 12 + `icono_grande` + `etiqueta_accion_visible` + `escala_texto_ui` + `subtitulos_tamano`/`fondo`/`hablante` (la cuenta final la fija 6; ver Cambios requeridos).
+   Leyenda: **†** = clave nueva propuesta por 30, aún no existe en 6; **‡** = clave propuesta por otro GDD (24, 26) y aún no existente en 6. **Desde la ronda 9, 6 define todas estas claves** (6 regla 1, D-6.6) y fija el número de «restablecer todos»: **18** (6 regla 8, AC-01 de 6; 30 lo cita y no lo fija). `advertencias_vistas` (27) no es de accesibilidad ni se restablece (6 D-6.7).
 3. **Qué no es ajuste.** Los sonidos de feedback con equivalente visual, el modo de enfoque a pantalla completa para leer texto necesario (art bible §7.5), el foco sin color, el pausable en cualquier momento (25 regla 1) y el tope de destellos (regla 18) son **garantías de diseño** siempre activas, no opciones.
 4. **Sin perfiles ni preajustes.** Cada ajuste actúa solo y se explica en una línea. «Restablecer todos» (25 regla 18) es la única acción masiva.
 
@@ -88,7 +88,7 @@ Quien tiene una limitación no se entera de que el juego «tiene un modo para el
 ### E. Fotosensibilidad y confort
 
 18. **Tope duro siempre activo.** Ningún efecto del juego produce más de **3 destellos por segundo** (SC 2.3.1) y el parpadeo de luces de 28 se limita a **2 ciclos por segundo con pausas mínimas de 0,35 s** (art bible §7.4), **con o sin** `reducir_movimiento`. El tope lo aplica el sistema emisor; 30 lo verifica (AC-30-13).
-19. **`reducir_movimiento`.** Su efecto es único para todo el slice: fundidos fijos de 100 ms, cambios estáticos en lugar de temblor, y los **tres destellos de `LUCES_PARPADEO`** (orden de 21, Director de escenas, DT-12 y regla 23 de 21) sustituidos por una única atenuación suave (0,6 s); la cortina de carga es de 4 (Escena de planta, regla 11). La leen: 9 (regla 14b; la aplican 13, 15, 11 y otros), 4, 19, 21 y 28. **Pendientes de 6:** 24 (listado como consumidor) y 10 (aperturas; OQ 16 de 6, OQ 5 de 10: no baja `BOX_Cn_OPEN` del rango; 15 R25 «lo resuelve 10 hasta entonces»). 30 no puede crear una segunda clave de movimiento. Alcance abierto: P6 no la lee (D16-3; OQ 6).
+19. **`reducir_movimiento`.** Su efecto es único para todo el slice: fundidos fijos de 100 ms, cambios estáticos en lugar de temblor, y los **tres destellos de `LUCES_PARPADEO`** (orden de 21, Director de escenas, DT-12 y regla 23 de 21) sustituidos por una única atenuación suave (0,6 s); la cortina de carga es de 4 (Escena de planta, regla 11). La leen: 9 (regla 14b; la aplican 13, 15, 11 y otros), 4, 19, 21 y 28. **En 6:** 24 ya figura como consumidor (6 regla 1, ronda 9); **pendiente de 6:** 10 (aperturas; OQ 16 de 6, OQ 5 de 10: no baja `BOX_Cn_OPEN` del rango; 15 R25 «lo resuelve 10 hasta entonces»). 30 no puede crear una segunda clave de movimiento. Alcance abierto: P6 no la lee (D16-3; OQ 6). **Pendiente de decisión del usuario (OQ 10):** esta regla y 28 regla 9 extienden `reducir_movimiento` más allá de lo que fija el slice §14 («feedback de error y cortina de carga»); hasta que decida, se mantiene como está escrito aquí.
 20. **Contrato con 28 (Atmósfera reactiva; verificado en 28 regla 18).** 28 existe y lee **dos** claves: `reducir_sobresaltos` (atenúa lo que sobresalta: caída de luz y parpadeo, una sola atenuación hasta `f_parpadeo_red`, rampas de 0,30 s; regla 9) y `reducir_movimiento` (atenúa lo que se mueve: reflejo retardado con fundido cruzado ≥ 0,5 s, lluvia a `lluvia_vel_red`; regla 17). 30 **no** exige que 28 deje de leer `reducir_sobresaltos` (D30-12). 30 solo verifica de 28: (a) ambas se leen en el fotograma del aviso de cambio; (b) con cualquiera activa, el aviso se atenúa sin eliminarse; (c) el tope de destellos (28 reglas 9 y 11: constantes de código `pausa_min_s` = 0,35 s, 2,0 Hz, 3 destellos/s, limitador no desactivable) vale **con o sin** ellas; (d) con `reducir_movimiento` activa, 28 ejecuta tal cual la atenuación única que envía 21 (28 regla 9, veces = 1). Como 28 está en revisión paralela, estos números se re-verifican en el re-review.
 
 ### F. Cobertura
@@ -105,6 +105,13 @@ Quien tiene una limitación no se entera de que el juego «tiene un modo para el
 22. **Huecos conocidos (fuera de Estándar, registrados):** lector de pantalla (AccessKit existe desde Godot 4.5, VERSION.md; los controles se nombran, regla 23); cursor oculto en la llamada (22 OQ 10; **riesgo para AC-30-08**, OQ 5); espera de pistas (OQ 1); dwell de P5 (OQ 9); P6 sin `reducir_movimiento`. (El teclado en pantalla para mando ya no es hueco: 19 R16.)
 23. **Preparado para lector de pantalla.** Todo control de 25/27 lleva nombre accesible = su texto visible y el orden de foco es el visual. **API no verificado:** `docs/engine-reference/godot/` confirma solo que los `Control` se integran con AccessKit desde 4.5 (`breaking-changes.md`, `current-best-practices.md` § Accessibility) y menciona `Control.accessibility_live` (4.7, `modules/ui.md`); el nombre exacto de la propiedad de nombre accesible y el comportamiento del orden de foco **no están verificados** en la referencia y deben comprobarse antes de implementar. Sin pruebas con lector en el slice.
 
+### G. Definiciones únicas (R9-B5/B6 y avisos de la ronda 9; 25, 24, 26, 27 y 28/29 las citan, no las redefinen)
+
+24. **«Destello».** Par de cambios opuestos de luminancia relativa de **≥ 10 % del rango completo** (con el estado más oscuro por debajo de 0,80) sobre un **área > 25 % del campo de visión** (SC 2.3.1 y su definición de destello general), contado con una ventana deslizante de 1 s. Es la única definición del proyecto: 24 R17, 28 R11 y AC-28-21, 29 R5 y AC-15 la citan; los umbrales propios que usen (0,25 de luminancia en 333 ms, «cruces de ±10 %/s») se alinean a esta o se retiran. El tope de la regla 18 (3 por segundo) se mide con ella (AC-30-13).
+25. **«Contraste».** Texto de UI ≥ **4,5:1** y bordes de control y foco ≥ **3:1** (SC 1.4.3 y 1.4.11), medidos como en AC-30-04. El 7:1 que mencionan 25 R13 y 26 R18 es un objetivo de diseño de esas pantallas (art bible) que supera el mínimo; **el criterio de aceptación es el de esta regla**.
+26. **Tamaño de texto: un solo suelo.** `tam_min_px` = **24 px lógicos a 1080p** (16 px reales a 720 p) para todo texto de lectura de la UI: menús de 25 y 27, **pies de texto y etiquetas de 24 (pie ≥ 24 px; sustituye al 20 de 24 AC-24-14)**, ordenador (19), prompts y créditos; 26 cita el mismo suelo para el subtítulo `pequeno` (sustituye a su `alto_min_px` de 20). Valores propios de 24, 25 y 26 solo pueden ser **mayores**. Con `escala_texto_ui` el tamaño nunca baja de este suelo.
+27. **Fundido con `reducir_movimiento`: 100 ms en todos los sistemas** (R9-B6). Es el valor de 6 (`reduce_motion_fade_s`), 29, 24, 25, 26 y 27 (que pasa de 0,15 s a 100 ms); un knob propio de otro GDD con valor distinto se alinea a 100 ms. 21 `d_cierre` con la clave (0,1 s) ya coincide.
+
 ## Formulas
 
 ### F1 · Tamaño de texto efectivo
@@ -113,11 +120,11 @@ Quien tiene una limitación no se entera de que el juego «tiene un modo para el
 
 | Variable | Rango | Notas |
 |---|---|---|
-| `tam_base_px` | 18–44 (art bible §7.5). **En la pantalla del ordenador (19) el suelo es 24 px lógicos** (19 R18, AC-19; prevalece sobre 18) | A 1080p y escala 1,00. 18 solo aplica a pies y etiquetas |
+| `tam_base_px` | 24–44 (art bible §7.5; **suelo único de 24 px lógicos, regla 26**: el 18 del art bible ya no se usa en UI) | A 1080p y escala 1,00 |
 | `escala_texto_ui` | {1,00; 1,25; 1,50} (enum) | Setting de 6 † |
 | `alto_ventana_px` | 720–2160 | Ventana o pantalla completa |
 
-Ejemplo: texto de ordenador base 24 px, escala 1,50, ventana 1440 p: 24 × 1,5 × 1,333 = 48 px. Ejemplo mínimo: 18 px (pie) a 720 p, escala 1,00: 18 × 1 × 0,667 = 12 px; **se aplica el suelo** `tam_min_px` = 18 px lógicos × (alto/1080) ≥ 12 px reales (solo pies y etiquetas; en 19 el suelo de 24 lógicos da 16 px a 720 p, mitigación PA-3 de 19); por debajo de 720 p no se soporta. El prompt de 24 absorbe esta F1 en su F2.
+Ejemplo: texto de ordenador base 24 px, escala 1,50, ventana 1440 p: 24 × 1,5 × 1,333 = 48 px. Ejemplo mínimo: 24 px (pie o etiqueta) a 720 p, escala 1,00: 24 × 1 × 0,667 = 16 px; **se aplica el suelo** `tam_min_px` = 24 px lógicos × (alto/1080) ≥ 16 px reales en todo texto de UI (regla 26; es la mitigación PA-3 de 19); por debajo de 720 p no se soporta. El prompt de 24 absorbe esta F1 en su F2.
 
 **Interacción con el escalado de ventana (no verificado):** el factor `alto_ventana_px / 1080` de F1 asume que el proyecto **no** estira la UI con el modo de escalado de Godot (`content_scale_mode`/`stretch`). Si el proyecto lo usa (p. ej. `canvas_items` con base 1920×1080), el motor ya aplica ese factor y F1 lo duplicaría: en ese caso F1 se reduce a `tam_base_px × escala_texto_ui`. La configuración de escalado de la UI no está decidida ni cubierta por la referencia de motor (`docs/engine-reference/godot/` no la trata); queda para el ADR/arquitectura de UI antes de implementar.
 
@@ -133,7 +140,7 @@ Ejemplo: texto de ordenador base 24 px, escala 1,50, ventana 1440 p: 24 × 1,5 �
 - **`asistencia_rotacion` / `asistencia_encaje` cambiadas desde la pausa durante el puzle:** valen desde el siguiente gesto (15 regla 10; 13 lo lee al configurar y al cambiar).
 - **Asistencia activada y puzle ya resuelto:** sin efecto; nada se rehace.
 - **Mando desconectado con Accesibilidad abierta:** no modal, línea de cabecera (25 regla 17); los ajustes siguen editables con teclado y ratón.
-- **Restablecer todos:** restablece todas las claves de 6 listadas en 25 regla 18; no toca `modo_ventana` ni `controles`. Hoy son 12 (6 regla 8); con las claves pendientes de la regla 2 serán 18 (24 ya pide pasar a 14). El diálogo cita lo que cubre; la cuenta final la fija 6.
+- **Restablecer todos:** restablece todas las claves de 6 listadas en 25 regla 18; no toca `modo_ventana`, `advertencias_vistas` ni `controles`. Son **18** (6 regla 8, ronda 9; este GDD cita la cuenta, no la fija). `advertencias_vistas` tampoco se restablece (6 D-6.7). El diálogo cita lo que cubre.
 - **Alternar en lugar de mantener activo y gesto de `rotar` en curso:** una pulsación inicia, la siguiente termina; `atrás` cancela (1 regla 14).
 - **Todos los volúmenes a 0 y subtítulos apagados:** permitido (decisión del jugador); no se advierte ni se bloquea. Escena con voz crítica sin subtítulos: ver OQ 4 (aviso opcional; D30-11).
 - **Cambio de ajuste desde título antes de la primera partida:** escritura normal de 6; sin sesión no hay acumulador que cancelar.
@@ -148,18 +155,19 @@ Ejemplo: texto de ordenador base 24 px, escala 1,50, ventana 1440 p: 24 × 1,5 �
 | 15 Puzle 5 | Blanda (ídem) | `asistencia_rotacion` (±6°), `reducir_movimiento`, dwell `hold_s` (OQ 9) | Sin cambios |
 | 23 Director de audio | **Dura para AC-30-11** (blanda para el resto) | Volúmenes y `reducir_sobresaltos` | Tabla «sonido → equivalente»; 23 no menciona aún a 30 (añadir fila de reciprocidad) |
 | 26 Subtítulos | Dura | `subtitulos_*` ‡ | Ubicación en Sonido y pantalla |
-| 25 Menú de pausa / 27 Título | **Dura** (30 no tiene pantalla propia: sin 25 no se muestra ningún ajuste) | Pantalla; orden de filas | Orden de la regla 6 |
+| 25 Menú de pausa / 27 Título | **Blanda** (R9-B5: la dureza la declara el dependiente. 27 lee los ajustes de 30 al mostrar el título y declara a 30 **Dura**; 30 solo aloja sus opciones en pantallas accesibles desde el título y la pausa y declara a 25 y 27 **Blanda**. **No hay ciclo duro**: 27 → 30 es Dura, 30 → 27 es Blanda. 30 no tiene pantalla propia, pero sus reglas siguen siendo válidas si la pestaña la dibuja otro sistema) | Pantalla; orden de filas | Orden de la regla 6 |
 | 28 Atmósfera reactiva | Blanda (verificación) | `reducir_sobresaltos` y `reducir_movimiento` (28 regla 18); tope de destellos (reglas 9 y 11) | Cumplir regla 20 |
 | 19 Ordenador | Blanda | Teclado en pantalla (R16); consume `escala_texto_ui` | Cumplir regla 9 |
 | 24 Prompt, 7 Interacción, 4 Escena, 10 Caja, 21 | Blanda (consumidores) | `escala_texto_ui`, `reducir_movimiento`, `icono_grande` | Cumplir reglas 9, 18 y 19 |
-| 17 Sistema de pistas | Blanda | Espera de pistas (OQ 1) | — |
+| 17 Sistema de pistas | Blanda | Ninguna en esta versión: la espera de pistas es decisión del usuario (OQ 1) | — |
+| 29 Shaders y efectos / 21 Director de escenas | Blanda (verificación) | Tope de destellos (regla 18, AC-30-13) y fundido de 100 ms (regla 27) | Citar las reglas 24 y 27 |
 
 ## Tuning Knobs
 
 | Perilla | Defecto | Rango seguro | Afecta a |
 |---|---|---|---|
 | `escala_texto_ui` pasos | 1,00 / 1,25 / 1,50 (enum) | Añadir 2,00 si se acepta OQ 2 | Legibilidad frente a reflow |
-| `tam_min_px` (lógico) | 18 (pies y etiquetas; 24 en 19) | 18–24 | Suelo de F1 |
+| `tam_min_px` (lógico) | 24 (todo texto de UI: pies, etiquetas, menús, ordenador; regla 26) | 24–32; **no bajar de 24** | Suelo de F1 y de 24, 25, 26 |
 | `objetivo_min_px` | 44 (= `pick_min_px` de 11; alias, ver Registro) | 44–64 | Objetivos de pulsación |
 | `tope_destellos_s` | 3 (siempre) | 2–3; no subir | Fotosensibilidad |
 
@@ -169,10 +177,10 @@ Los valores viven en los datos de cada propietario, no en 30.
 
 ## Acceptance Criteria
 
-- **AC-30-01 (R2, L) — BLOQUEADO hasta aplicar los Cambios requeridos en 6 y 25:** **GIVEN** el catálogo de 6 con las claves †/‡ añadidas (18 en «restablecer todos»), **THEN** cada ajuste de la regla 2 existe en 6 con su tipo y defecto; ninguna clave de accesibilidad aparece en dos pantallas distintas de 25. Hoy falla por diseño (faltan `icono_grande`, `etiqueta_accion_visible`, `escala_texto_ui`, `subtitulos_tamano/fondo/hablante`).
+- **AC-30-01 (R2, L):** **GIVEN** el catálogo de 6 (ronda 9: las claves †/‡ ya están definidas; «restablecer todos» = **18 claves**, número fijado por 6 regla 8 y AC-01 de 6), **THEN** cada ajuste de la regla 2 existe en 6 con su tipo y defecto; ninguna clave de accesibilidad aparece en dos pantallas distintas de 25; el diálogo de 25 «Restablecer todos» cita las mismas 18 (25 AC-25-27).
 - **AC-30-02 (R5-R7, UI, BLOCKING):** **THEN** la pestaña Accesibilidad de 25 muestra los 4 grupos en el orden de la regla 6, con valor en texto y ayuda de una línea; una captura por grupo, en 25 y en título (27), retenida en `production/qa/evidence/`. Sustituye al orden de 25 AC-25-23 y AC-25-12 (30 manda el orden).
 - **AC-30-03 (R8-R11, UI):** **GIVEN** `escala_texto_ui` = 1,50 y ventana 720 p, **THEN** ningún texto de 25, 27, 24, 19 ni del puzle 4 está recortado ni solapado; capturas retenidas.
-- **AC-30-04 (R1, UI):** **THEN** texto sobre fondo ≥ 4,5:1 y bordes de control/foco ≥ 3:1, medidos en capturas de cada pantalla de UI (pares texto/fondo y borde/fondo de la paleta del art bible, listados en la captura); fallo = BLOCKING.
+- **AC-30-04 (R1, UI):** **THEN** (regla 25) texto sobre fondo ≥ 4,5:1 y bordes de control/foco ≥ 3:1, y todo texto ≥ `tam_min_px` (regla 26), medidos en capturas de cada pantalla de UI (pares texto/fondo y borde/fondo de la paleta del art bible, listados en la captura); fallo = BLOCKING.
 - **AC-30-05 (R12, H, BLOCKING):** **GIVEN** cada puzle (incluido P3, solo con contorno) jugado con una simulación de protanopia/deuteranopia/tritanopia (simulador de CVD del editor o Coblis sobre capturas), **THEN** se resuelve sin ambigüedad.
 - **AC-30-06 (R13, L):** **THEN** los datos de los seis puzles no contienen temporizador de solución; los únicos tiempos son las esperas pasivas de la tabla de la regla 13 (bloqueo de rechazo de P1 1,5 s y de P3 0,4 s, dwell de P5 0,8 s, gestos de P2, presentación de P6) y la espera de pistas; ninguna se acorta por debajo de lo declarado ni exige acción del jugador.
 - **AC-30-07 (R14, I):** **GIVEN** `asistencia_encaje` activa, **THEN** una pieza soltada a 0,09 m encaja y a 0,11 m no; **GIVEN** `asistencia_rotacion`, 46,1° → no resuelve y 43,5° sí (15 AC-P5-03).
@@ -180,8 +188,8 @@ Los valores viven en los datos de cada propietario, no en 30.
 - **AC-30-09 (R15, H):** **GIVEN** alternar-en-vez-de-mantener, **THEN** `leer`, `mantener`, `agarrar` y `rotar` se completan sin mantener ningún botón, en los seis puzles y en el pie de objetos.
 - **AC-30-10 (R17, I):** **GIVEN** `vol_*` = 0 y subtítulos activos, **THEN** la información de juego es la misma y no hay silencios sin texto.
 - **AC-30-11 (R17, H):** **THEN** la tabla «sonido → equivalente» de 23 no deja ningún sonido de función de juego sin equivalente visual o texto.
-- **AC-30-12 (R19, I):** **GIVEN** `reducir_movimiento` activa, **THEN** los fundidos duran 100 ms y `LUCES_PARPADEO` se sustituye por una única atenuación (21 DT-12, regla 23); no hay tres destellos.
-- **AC-30-13 (R18, I):** **GIVEN** cualquier secuencia de 28, 29, 24 y 21, capturada en vídeo a 60 fps, **THEN** nunca hay más de 3 destellos en 1 s, con la opción activa y apagada. Criterio de «destello» (WCAG 2.3.1): par de cambios de luminancia relativa ≥ 10 % sobre un área > 25 % del campo de visión (o la que fije el criterio vigente de la herramienta); medida con una herramienta de análisis de destellos (p. ej. PEAT, **no verificada su disponibilidad en el entorno**) sobre el vídeo; luces ≤ 2 ciclos/s con pausas ≥ 0,35 s (constantes de 28).
+- **AC-30-12 (R19, I):** **GIVEN** `reducir_movimiento` activa, **THEN** los fundidos duran 100 ms en todos los sistemas, 27 incluido (regla 27) y `LUCES_PARPADEO` se sustituye por una única atenuación (21 DT-12, regla 23); no hay tres destellos.
+- **AC-30-13 (R18, I):** **GIVEN** cualquier secuencia de 28, 29, 24 y 21, capturada en vídeo a 60 fps, **THEN** nunca hay más de 3 destellos en 1 s, con la opción activa y apagada. Criterio de «destello» = el de la regla 24 (WCAG 2.3.1; la herramienta puede aplicar el criterio vigente equivalente); medida con una herramienta de análisis de destellos (p. ej. PEAT, **no verificada su disponibilidad en el entorno**) sobre el vídeo; luces ≤ 2 ciclos/s con pausas ≥ 0,35 s (constantes de 28).
 - **AC-30-14 (R20, I):** **THEN** 28 lee `reducir_sobresaltos` y `reducir_movimiento` en el fotograma del aviso de cambio y, con cualquiera activa, atenúa el aviso sin parpadeo adicional (28 regla 18).
 - **AC-30-15 (R3, H):** **THEN** ningún ajuste de accesibilidad muestra etiquetas de dificultad, logros ni cambia la historia.
 - **AC-30-16 (R23, I) — pendiente de verificación del API de Godot 4.7 (regla 23):** **THEN** cada control de 25/27 expone nombre accesible igual a su texto y orden de foco visual.
@@ -210,12 +218,14 @@ Capturas UI retenidas en `production/qa/evidence/` (por AC-30-02, -03, -04).
 | D30-14 | (Ronda 1, B-4) La garantía de puzles se redacta como «ninguna solución exige reaccionar en una ventana», con tabla por puzle y excepciones declaradas (P3 color complementario; P5 dwell 0,8 s; bloqueos de rechazo) | Mantener «sin tiempo, precisión ni color» | La afirmación absoluta era falsa; se documenta lo que dicen 11–16 |
 | D30-15 | (Ronda 1, W-14/W-15) 30 no posee knobs ajenos; `objetivo_min_px` es alias de `pick_min_px` (11) | Constante propia duplicada | Evita dos constantes con el mismo valor y dueño distinto |
 | D30-16 | (Ronda 1, W-9) `escala_texto_ui` y `multiplicador_pie` son independientes; F5 de 7 no depende del tamaño | Fórmula de composición | Sin evidencia de que se necesite; se revisa en playtest de lectura |
+| D30-17 | (Ronda 9, R9-B5) 30 declara a 25 y 27 **Blanda**; 27 declara a 30 Dura (27 lee los ajustes de 30 al mostrar el título) | Dura en ambos sentidos (ciclo duro 27↔30 sin declarar) | La dureza la declara el dependiente: 27 no puede mostrar sus ajustes sin 30; 30 solo aloja opciones en pantallas accesibles desde título y pausa. No hay ciclo duro |
+| D30-18 | (Ronda 9) Definiciones únicas en las reglas 24 a 27: destello (WCAG 2.3.1), contraste (4,5:1 y 3:1), suelo de texto 24 px lógicos, fundido 100 ms | Que cada GDD conserve su umbral (cuatro de destello, tres de contraste, cinco suelos, dos fundidos) | Un criterio verificable por AC-30-04/-12/-13; 24 px porque es el mínimo de PA-3 de 19 y de 25 AC-25-18 |
 
 ## Open Questions
 
 | # | Pregunta | Dueño | Valor por defecto |
 |---|---|---|---|
-| 1 | ¿Opción `pistas_sin_espera` para la espera de 20/40 s? (cognitiva; 17 OQ 3) | Usuario, 17 | No; espera corta. Si se quiere: bool en 6, fila en grupo 3 |
+| 1 | **Pendiente de decisión del usuario.** ¿Opción `pistas_sin_espera` para la espera de pistas de 20/40 s? (cognitiva; choca con *Tensión sin castigo*; 17 OQ 3 remite aquí, y 30 ya no remite a 17 sin dueño) | **Dueño: usuario** | No; espera corta (D30-8). Si se quiere: bool en 6 (19 en «restablecer todos»), fila en grupo 3 |
 | 2 | **Decide el usuario.** ¿Subir `escala_texto_ui` a 200 % (SC 1.4.4)? Sin ello, Estándar declara 1.4.4 como excepción | Usuario, UX | No en el slice; se añade un paso si el reflow lo permite |
 | 3 | ~~Teclado en pantalla para mando~~ | — | **Cerrada** (ronda 1): 19 R16 / AC-10a (D30-13). Numeración conservada |
 | 4 | ¿Aviso suave si volúmenes a 0 y subtítulos apagados? | Usuario, UX | No (sin advertencias; D30-11) |
@@ -223,21 +233,22 @@ Capturas UI retenidas en `production/qa/evidence/` (por AC-30-02, -03, -04).
 | 6 | ¿`reducir_movimiento` baja la tapa de 1,9 s del P6? (D16-3) | 10, 16 | No |
 | 7 | ¿Modo de alto contraste/colorblind en el vertical completo? | Usuario, art director | Tras el slice, si el contraste (AC-30-04) o el playtest lo piden |
 | 8 | **Decide el usuario.** ¿Se acepta el nivel «Estándar» (WCAG 2.1 AA parcial, sin 200 %, sin filtros, sin lector) como compromiso de accesibilidad del slice ante financiadores? Cambia la promesa de alcance frente a slice §14/§16 | Usuario | Sí, Estándar (D30-1) |
+| 10 | **Pendiente de decisión del usuario.** ¿Se extiende `reducir_movimiento` más allá del slice §14 (parpadeo del pasillo, reflejo retardado y lluvia; regla 19, 28 R9)? Y ¿se da `escala_texto_ui` por cerrada en el slice (el índice la mantiene pendiente; 6 OQ 15)? | **Dueño: usuario** | Se mantiene lo escrito (regla 19, clave provisional en 6) hasta que decida |
 | 9 | **Decide el usuario.** El dwell de 0,8 s de P5 (`hold_s`) es tiempo y precisión sin ajuste: ¿se ofrece ayuda (acortarlo/quitarlo con `asistencia_rotacion`) o se acepta la excepción? Toca el diseño de P5 | Usuario, 15 | Aceptar la excepción documentada (regla 13); `hold_s` ya es † (0,4–1,5 s) |
 ## Cambios requeridos en otros GDDs
 
 | GDD | Cambio |
 |---|---|
-| **6 Ajustes** | Añadir `escala_texto_ui` (enum `1_00`/`1_25`/`1_50`; defecto `1_00`), `icono_grande`, `etiqueta_accion_visible` y `subtitulos_tamano/fondo/hablante`; cerrar OQ 15; «restablecer todos» pasa de 12 a **18** claves (12 + 6); actualizar regla 8, AC-07/AC-01 y la cuenta; corregir en su OQ 16 y tabla de consumidores de `reducir_movimiento`; y su línea 50: los ajustes de subtítulos los ofrece 25 (Sonido y pantalla) |
-| **25 Menú de pausa** | Fila `escala_texto_ui` en Accesibilidad (cierra su OQ 5); añadir `icono_grande` y `etiqueta_accion_visible`; reordenar en 4 grupos (regla 6); `subtitulos_tamano/fondo/hablante` en «Sonido y pantalla»; reescribir AC-25-23, AC-25-12, D25-7, la captura «Accesibilidad» del resumen de capturas y la cuenta de claves (18) |
-| **27 Pantalla de título** | Confirmar que reutiliza la pestaña con las nuevas filas |
+| **6 Ajustes** | **Aplicado en la ronda 9 de 6 (D-6.6 a D-6.9)**; texto original: añadir `escala_texto_ui` (enum `1_00`/`1_25`/`1_50`; defecto `1_00`), `icono_grande`, `etiqueta_accion_visible` y `subtitulos_tamano/fondo/hablante`; cerrar OQ 15; «restablecer todos» pasa de 12 a **18** claves (12 + 6); actualizar regla 8, AC-07/AC-01 y la cuenta; corregir en su OQ 16 y tabla de consumidores de `reducir_movimiento`; y su línea 50: los ajustes de subtítulos los ofrece 25 (Sonido y pantalla) |
+| **25 Menú de pausa** | **Aplicado en la ronda 9 de 25 (D25-24 a D25-29)**; texto original: fila `escala_texto_ui` en Accesibilidad (cierra su OQ 5); añadir `icono_grande` y `etiqueta_accion_visible`; reordenar en 4 grupos (regla 6); `subtitulos_tamano/fondo/hablante` en «Sonido y pantalla»; reescribir AC-25-23, AC-25-12, D25-7, la captura «Accesibilidad» del resumen de capturas y la cuenta de claves (18) |
+| **27 Pantalla de título** | Confirmar que reutiliza la pestaña con las nuevas filas (hecho, ronda 9); fundido de 100 ms (regla 27, aplicado en 27 AC-18) |
 | **26 Subtítulos** | Confirmar ubicación de `subtitulos_*` en Sonido y pantalla (corregir su línea ≈125 «30 Accesibilidad ofrecen la pantalla» y sus Dependencias); decidir qué sonidos se rotulan (regla 17) |
 | **23 Director de audio** | Tabla «sonido → equivalente visual» (AC-30-11); fila de dependencia hacia 30 (reciprocidad) |
 | **24 Prompt / 7 Interacción** | F2 absorbe `escala_texto_ui`; `multiplicador_pie` es independiente de ella (D30-16); 24 pasa a la lista de lectores de `reducir_movimiento` en 6 |
 | **19 Ordenador** | Solo consumir `escala_texto_ui` y cerrar PA-3 (el teclado en pantalla ya está en R16) |
 | **28 Atmósfera reactiva** | Sin cambios requeridos por 30: ya lee ambas claves y fija el tope (reglas 9, 11, 17, 18). Re-verificar la regla 20 tras la revisión paralela de 28 |
 | **29 Shaders y efectos / 21 Director de escenas** | Verificar tope de destellos (AC-30-13); DT-12 y regla 23 de 21 confirmados |
-| **17 Sistema de pistas** | Decidir OQ 1 |
+| **17 Sistema de pistas** | Ninguno: OQ 1 es del usuario |
 | **10 Caja / 16 Puzle 6** | Cerrar alcance de `reducir_movimiento` (OQ 6; OQ 16 de 6) |
 | **13 Puzle 3** | Declarar que el contorno de borde determina el hueco sin color y ajustar el Implements Pillar («forma y color») en consecuencia |
 | **11, 12, 14, 15, 16** | Declarar «sin color» y las esperas pasivas de la regla 13 en sus AC (AC-30-05/06) |
@@ -250,7 +261,9 @@ Capturas UI retenidas en `production/qa/evidence/` (por AC-30-02, -03, -04).
 | `accessibility_level_slice` † | Constante de diseño | «Estándar» (pendiente de OQ 8) | 30 regla 1 |
 | `tope_destellos_s` † | Constante | 3 | 30 regla 18 |
 | `objetivo_min_px` | **Alias de `pick_min_px`** (ya en `entities.yaml`, dueño 9/11); no se crea constante nueva | 44 | 30 regla 11; verificar valor en el registro antes de citar |
-| `tam_min_px` † | Constante | 18 (lógico) | 30 F1 |
+| `tam_min_px` † | Constante | 24 (lógico; antes 18) | 30 regla 26 y F1 |
+| `destello_delta_lum` † / `destello_area_pct` † | Constantes (definición única) | 0,10 / 25 % | 30 regla 24 |
+| `contraste_texto_min` † / `contraste_ui_min` † | Constantes | 4,5 / 3,0 | 30 regla 25 |
 | `reducir_movimiento`, `icono_grande`, `etiqueta_accion_visible`, `subtitulos_*` | Ajustes (existentes o ‡) | Ver regla 2 | Dueño: 6 |
 
 ## Historial
@@ -259,3 +272,4 @@ Capturas UI retenidas en `production/qa/evidence/` (por AC-30-02, -03, -04).
 |---|---|---|
 | 2026-11-09 | 0.1 | Borrador inicial (lote autónomo). Catálogo, reparto con 25/27, `escala_texto_ui`, auditoría de puzles, fotosensibilidad y matriz de cobertura. No se ha leído el GDD de 28. |
 | 2026-11-09 | 0.2 | Ronda de corrección 1 (informe `reviews/opciones-de-accesibilidad-review.md`). B-1: teclado en pantalla cumplido por 19 R16 (OQ 3 cerrada). B-2: contrato con 28 reescrito según su regla 18 (lee ambas claves; D30-12). B-3: «3» → 21/4; lectores reales de `reducir_movimiento`. B-4: auditoría de puzles con tabla por puzle (P3 color complementario, dwell de P5, bloqueos de rechazo; D30-14, OQ 9). B-5: leyenda †/‡, cuenta de 18 claves, AC-30-01 bloqueado. Avisos: nivel Estándar a OQ 8 y 1.4.4 como excepción; `escala_texto_ui` enum; suelo de 24 px en 19; nota de escalado de ventana y API de accesibilidad «no verificado»; dependencias; knobs ajenos; AC con herramienta/gate. Status: pendiente de re-review. |
+| 2026-11-10 | 0.3 | Ronda de corrección 9 (`gdd-cross-review-2026-11-10.md`: R9-B5, R9-B6, destellos, contraste, suelo de texto, claves de 6). Dureza hacia 25/27 = Blanda sin ciclo duro; reglas 24 a 27 (definiciones únicas); suelo de texto 24 px; cuentas de «restablecer todos» citadas de 6 (18); OQ 1 y 10 «dueño: usuario» (espera de pistas, alcance de `reducir_movimiento` y cierre de `escala_texto_ui`). Estado: Revisado (ronda de corrección 9) — pendiente de re-review. |
