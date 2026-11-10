@@ -1,6 +1,6 @@
 # Puzle 5 · Espejo de la diferencia
 
-> **Estado:** Revisado (ronda de corrección 8) — pendiente de re-review
+> **Estado:** Revisado (ronda de corrección 9) — pendiente de re-review
 > **Sistema:** 15 (capa Feature, MVP) · **Autor:** game-designer · **Fecha:** 2026-11-09
 > **Fuente de verdad:** `design/slice/slice-v0.3.md` (contenido v0.4.2): §10.5, §19.5, Anexo B.5, C.6, D.2 · **Marco:** `design/gdd/marco-de-puzles.md` (9), que este GDD **instancia, no redefine**.
 > **Pilares:** Información incompleta (P5), Tensión sin castigo (P4), Autonomía como progresión (P3), El espacio expresa la emoción (P2); anti-pilar *NOT una historia explicada*.
@@ -225,9 +225,9 @@ Bidireccional. **La dureza la declara el dependiente**: la columna «Dureza» de
 | 13 Puzle 3 · Encaje de la foto | **Blanda (contenido)** | La **foto de la caja ya completa** (cinco figuras y el hueco S6) como recurso de arte reutilizable para `D01c/box_photo` (regla 23 de 13: `slot_6` vacío, «la imagen que reutiliza la secuencia del P5»). `caja_c1` llega vía 9, no de 13 | — | No es un contrato de lógica: 13 no ejecuta nada de 15. Sin ese recurso el puzle funciona con una foto provisional, pero no se puede validar la coincidencia figura por figura (AC-P5-18). 15 pide a 13 que la liste como dependiente (Cambios requeridos) |
 | 6 Ajustes persistentes | Blanda | `asistencia_rotacion` (±6°), `reducir_movimiento` (vía 9: lectura al configurar y al cambiar) | — | Sin 6, ambos son falso (tolerancia ±3°, fundidos normales) |
 | 7 Interacción e inspección (vía 9) | Indirecta | Gesto `rotar` y sus fases, `delta_grados` (0,25°/px), captura del elemento al iniciar, `cancelación`; catálogo de elementos de `D01c` | `elements()` = [`D01c/frame`] | Regla 11 y 11b de 9 |
-| 23 Director de audio ‡ · 26 Subtítulos ‡ (vía 9) | Blanda | Reproducción y corte de `VO_G_07` desde `SPK_D01C`, señales de línea; subtítulo durante `fallback_s` | «línea pedida» (por 9); la petición de lazo `SFX_FRAME_TURN` ‡ | Regla 20 de 9; sin audio la secuencia dura igual 16,0 s |
+| 23 Director de audio (`director-de-audio.md`) · 26 Subtítulos (`subtitulos.md`) (vía 9) | Blanda | Reproducción y corte de `VO_G_07` desde `SPK_D01C`, señales de línea; subtítulo durante `fallback_s` | «línea pedida» (por 9); la petición de lazo `SFX_FRAME_TURN` (la recoge 23) | Regla 20 de 9; sin audio la secuencia dura igual 16,0 s |
 | 3 Estado y bus · 5 Guardado y carga (vía 9) | Indirecta | Lectura de `caja_c1`, `caja_c3`, `pendiente_revelacion`; causa `reveal_pending` | — | Reglas 5 y 7 de 3; regla 6 de 5 |
-| 17 Sistema de pistas ‡ · 18 Base de contenido (vía 9) | Indirecta | `request_hint`; claves `PISTA_P5_N1`, `PISTA_P5_N2` | Datos de las tres pistas | Reglas 25 a 27 de 9 |
+| 17 Sistema de pistas (`sistema-de-pistas.md`) · 18 Base de contenido (vía 9) | Indirecta | `request_hint`; claves `PISTA_P5_N1`, `PISTA_P5_N2` | Datos de las tres pistas | Reglas 25 a 27 de 9 |
 | 1 Entrada y controles · 2 Jugador | Indirecta | Mapeo del giro (ratón, mando, «alternar»), regreso de cámara `t_devolver` 0,5 s | — | Regla 18 de 2 (vía 7 y 9) |
 
 ### Sistemas que dependen de 15 (declaran su dureza ellos)
@@ -236,8 +236,8 @@ Bidireccional. **La dureza la declara el dependiente**: la columna «Dureza» de
 |---|---|
 | 9 Marco de puzles | Los datos y el controlador de `P5` (la matriz de encaje de 9 ya lo prevé) |
 | 10 Caja y compartimentos | El tiempo de la secuencia (para que la tapa de C3 no se cierre durante ella) y `ajar_cm` |
-| 29 Shaders y efectos de superficie ‡ | Instante, duración y contenido de la superposición (`FADE`) y del contorno (`OUTLINE`); el requisito de coincidencia en θ* (índice: 29 depende de 12 y 15) |
-| 17 Sistema de pistas ‡ | Las tres pistas de `P5` (todas `REQUEST`) |
+| 29 Shaders y efectos de superficie (`shaders-y-efectos.md`) | Instante, duración y contenido de la superposición (`FADE`) y del contorno (`OUTLINE`); el requisito de coincidencia en θ* (índice: 29 depende de 12 y 15) |
+| 17 Sistema de pistas (`sistema-de-pistas.md`) | Las tres pistas de `P5` (todas `REQUEST`) |
 | 21 Director de escenas | Nada propio: `caja_completa` se deriva de `caja_c3` y los demás compartimentos |
 
 ## Tuning Knobs
@@ -384,6 +384,7 @@ Modo por lotes autónomo: se decide con la recomendación propia y se registra. 
 | D15-21 | **13 es dependencia blanda de contenido, no ‡.** 15 pide a 13 y a 10 que la listen como dependiente. | Mantener la marca «13 sin redactar» (dura, ‡). | 13 existe y su regla 23 ya reserva `slot_6` vacío y la imagen para la secuencia de P5; lo que 15 necesita es un recurso de arte, no un contrato de lógica. |
 | D15-22 | **`T_ent` = 2,4 s** (`BOX_C3_OPEN` 1,4 s† de 10 + vista de entrada 1,0 s), no 1,0 s. | Ignorar la animación de la tapa. | La tapa de C3 se abre antes de ver `D01c` (F1 de 10); el total del modelo pasa a 56,2–188,2 s. |
 | D15-23 | (Ronda 8) Alineado con el esquema v2 de `puzzles.json` (regla 4b de 9): `schema_version: 2`; `visual_elements` y `MARK_LIT` sin ‡ y fuera del catálogo de 7; peticiones a 9 marcadas como absorbidas | Mantener las ‡ y los IDs visuales en el catálogo de 7 | 9 ya los admite (D9-71, D9-72); sin cambio de diseño ni de tiempos |
+| D15-24 | **(Ronda de corrección 9, `gdd-cross-review-2026-11-10.md`)** Las ‡ de 17, 23, 26 y 29 (Interacciones, Dependencies, Cambios requeridos) se sustituyen por el fichero de cada GDD (`sistema-de-pistas.md`, `director-de-audio.md`, `subtitulos.md`, `shaders-y-efectos.md`), que ya cierran sus contratos (P5 sin `IDLE`, `VO_G_07`, `OUTLINE`/`FADE`, `SFX_FRAME_TURN`); «23 aún sin GDD» (Open Questions 5) apunta a la regla 38 de 23 | Dejar las ‡ | Los contratos ya están en esos GDD; la pregunta de `reducir_sobresaltos` sigue abierta solo en lo que cubre `VO_G_07` |
 
 ## Open Questions
 
@@ -393,7 +394,7 @@ Lo que cambia pilares, tono o alcance del slice, o contradice el slice, **no se 
 2. **`VO_G_07` y el pilar *Información incompleta*.** La línea («Lo pedí sin preguntarte, Vera. Lo pedí y después te lo conté como si fuera tuyo», slice §12) afirma un acto del Guardián; los pilares 1 y 5 prohíben confirmar su **intención**. Este GDD no toca la línea (la revelación muestra, no explica), pero conviene decidir si es un hecho observable o una confirmación de intención. **Abierta: no la decide 15** (pilares 1 y 5); mientras tanto la secuencia no depende del texto de la línea (solo de su duración, `fallback_s`). *Responsable:* creative-director (con narrative-director).
 3. **Composición de las fotos.** Que la figura sobrante de `D04` caiga en el hueco S6 de la foto de la caja (D15-10) y que, a θ*, las otras cinco coincidan figura por figura, es un requisito de contenido para 13 y arte que no está en el slice («Vera al margen», Anexo A). *Responsable:* art-director / 13.
 4. **Sonido del giro y de los pasos `FADE`/`OUTLINE`.** `SFX_FRAME_TURN` (lazo de giro) no existe en B.7; el sonido de los dos primeros pasos es silencio parcial (D15-9). *Responsable:* audio / 23.
-5. **`reducir_sobresaltos` y el «golpe» de la puerta de `VO_G_07`.** ¿Debe 23 atenuarlo con la opción? 15 no lo lee (D15-15). *Responsable:* 23 (aún sin GDD).
+5. **`reducir_sobresaltos` y el «golpe» de la puerta de `VO_G_07`.** ¿Debe 23 atenuarlo con la opción? 15 no lo lee (D15-15). *Responsable:* 23 (`director-de-audio.md`, regla 38: ya atenúa el golpe con `reducir_sobresaltos`; queda solo confirmar si cubre el de `VO_G_07`).
 6. **Relectura de la grabación.** Tras resolver, `VO_G_07` no puede volver a oírse (`NO_VIEW`, sin relectura de audio); solo se vuelve a oír si se interrumpe. ¿Se quiere un repaso en el bolsillo o en el menú? Cambiaría alcance (sistema 20/25). *Responsable:* usuario.
 7. **Nombre del ajuste y rango.** Confirmado en D15-16; pendiente de que 6 lo marque como cerrado.
 
@@ -408,9 +409,9 @@ Esta ronda solo edita este GDD; lo siguiente debe hacerlo el dueño de cada docu
 | 7 `interaccion-e-inspeccion.md` | Catálogo de `D01c`: `D01c/frame` (`rotar`, `atraccion` falso) y los elementos visuales no interactivos de «Datos del puzle»; comprobar que «alternar en lugar de mantener» cubre `rotar`. |
 | 10 `caja-y-compartimentos.md` | **Listar a 15 como dependiente** (hoy no lo menciona); corregir la contradicción interna (una línea deja C3 `ABIERTO` y otras dos `ENTREABIERTO` en la interrupción de `RESOLVING`; 15 usa `ENTREABIERTO`, regla 4 y AC-34 de 10); confirmar `SPK_D01C` y `ANC_D01C` perpendicular al plano de `D01c` y que la tapa de C3 no se cierra durante `RESOLVING`. |
 | 13 `puzle-3-encaje-de-la-foto.md` | **Listar a 15 como dependiente** (blanda, de contenido: hoy no figura); su regla 23 ya deja `slot_6` vacío y la imagen para la secuencia de P5: nombrar el recurso exportado como la foto completa reutilizable por `D01c/box_photo` y fijar la composición de S6 (Open Questions 3). El índice mantiene 13 entre las dependencias de 15 (blanda). |
-| 17 Sistema de pistas ‡ | `P5`: tres niveles, todos `REQUEST`, sin `IDLE`; el nivel 3 no resuelve. |
-| 23 Director de audio ‡ · 26 Subtítulos ‡ | `VO_G_07` desde `SPK_D01C`; subtítulo de 14,0 s con y sin audio; `SFX_FRAME_TURN` (opcional); decisión sobre `reducir_sobresaltos` (Open Questions 5). |
-| 29 Shaders y efectos de superficie ‡ | Superposición con coincidencia figura por figura en θ*, contorno solo en Vera (forma y luminancia, no rojo/verde), fundido de 100 ms con `reducir_movimiento`. |
+| 17 Sistema de pistas (`sistema-de-pistas.md`) | `P5`: tres niveles, todos `REQUEST`, sin `IDLE`; el nivel 3 no resuelve. |
+| 23 Director de audio (`director-de-audio.md`) · 26 Subtítulos (`subtitulos.md`) | `VO_G_07` desde `SPK_D01C`; subtítulo de 14,0 s con y sin audio; `SFX_FRAME_TURN` (opcional); decisión sobre `reducir_sobresaltos` (Open Questions 5). |
+| 29 Shaders y efectos de superficie (`shaders-y-efectos.md`) | Superposición con coincidencia figura por figura en θ*, contorno solo en Vera (forma y luminancia, no rojo/verde), fundido de 100 ms con `reducir_movimiento`. |
 | `systems-index.md` | Fila 15: estado «Borrador (lote Feature 3) — pendiente de review» y ruta `design/gdd/puzle-5-espejo-de-la-diferencia.md`; dependencias 6, 9, 10, 13 (dura en 9 y 10; blanda en 6 y 13). |
 | `design/slice/slice-v0.3.md` | §19.5: ver Open Questions 1 (no se cambia sin decisión del usuario). |
 | Registro | Ver «Entradas para el registro». |
@@ -444,3 +445,4 @@ Ya existen en `design/registry/entities.yaml` (no duplicar; la fuente es la de c
 | 2026-11-09 | 0.2 | Borrador completo: 29 reglas, F-P5-1 a F-P5-5, 25 edge cases, 20 AC, datos de `P5`, 17 decisiones, 7 preguntas abiertas. Pendiente de review independiente. |
 | 2026-11-09 | 0.3 | Ronda de corrección 7 (review: 0 bloqueantes, 10 avisos): AC-P5-04 con 7/8 y 14/16°/s y fase fijada (45 vs 51-52 fotogramas); 13 pasa a dependencia blanda de contenido (regla 23 de 13) y 15 se pide como dependiente en 10 y 13; extensiones de 9 referidas al esquema v2; `request_hint` en `RESOLVING` ignorado (D15-18); D15-19 a D15-22 (§10.5 a B.5, AC-04, 13 blanda, `T_ent` 2,4 s, total 56,2–188,2 s); lectura de F7 con revelación incluida; fuente real de constantes del registro; `VO_G_07` queda abierta para creative-director. Pendiente de re-review. |
 | 2026-11-09 | 0.4 | Ronda de corrección 8: alineación mecánica con el esquema v2 de `puzzles.json` (regla 4b de 9): `schema_version: 2`, quitadas las ‡ de `visual_elements`, `HIGHLIGHT` no interactivo y `MARK_LIT`, peticiones a 9 absorbidas marcadas; D15-23. Sin cambio de diseño. Estado: Revisado (ronda de corrección 8), pendiente de re-review. |
+| 2026-11-10 | 0.5 | Ronda de corrección 9: ‡ y «sin GDD» de 17, 23, 26 y 29 sustituidos por sus ficheros; D15-24. Estado: Revisado (ronda de corrección 9) — pendiente de re-review. |
