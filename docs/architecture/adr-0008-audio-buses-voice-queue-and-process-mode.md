@@ -669,7 +669,7 @@ func _process(_delta: float) -> void:
 		_tick_channel(ch, game_now)                              # queue timeout, ceiling, watchdog, stall
 	_mixer.set_duck_target(DuckModel.target(_voiced_channels(), _cfg))
 	if _index != null:
-		_rooms.update(_index.room_at(_listener_position()), game_dt)
+		_rooms.update(_index.room_at(_player.rayo_vision().origen), game_dt)   # ADR-0012 OI-1
 		_mixer.set_rain_mix(_rooms.open_db(), _rooms.muffled_db())
 		_update_moving_sources(game_dt)
 	_mixer.tick(real_dt, game_dt)
@@ -774,7 +774,8 @@ Ports used (all ‡, owned elsewhere): `SettingsPort.volume_db(group) -> float`,
 `audio_path(id)` over `ContentDB` (18; ADR-0005 for schema); `SceneServices`
 gains `audio_index: AudioSceneIndex` built by the scene root (ADR-0009 D3
 amendment, OI-6); `Player.paso(superficie, intensidad)` signal and
-`listener_position() -> Vector3` (ADR-0012).
+`rayo_vision().origen` / `.direccion` as the listener pose (ADR-0012 D10,
+OI-1: closed API, no `listener_position()`).
 
 ### Implementation Guidelines
 
