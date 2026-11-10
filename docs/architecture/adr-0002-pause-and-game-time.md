@@ -940,6 +940,8 @@ Run with Godot 4.7.2.stable.official.ed1daf0bf (same as the pin) from `prototype
 | SB1, SB2 | Option B (tree not paused) `Tween.pause()` and `AnimationPlayer.pause()` / `speed_scale = 0` | **PASS** (B is viable as fallback) |
 | SB3 | Option B particles `speed_scale = 0` | **PASS** (pixel part) |
 
+**S4 manual (2026-11-10):** the interactive harness `s4_manual.tscn` was handed to the developer, who answered «está bien, continúa» without attaching a log. Treated as a *provisional* OK: the ADR stays `Proposed` until a log (or a one-line PASS/FAIL per point 3, 4, 5 of the README) is recorded here.
+
 **Decision rule check:** core tests S1, S2, S3, S9, S13 PASS; S4 is only partially verified. Presentation tests S5, S6, S7, S11 PASS. **Option A (tree paused + explicit `process_mode`) holds. Status stays `Proposed` until the manual S4 run (keyboard and gamepad focus under pause, pad disconnect) is recorded.**
 
 New facts for the design: (1) shader `TIME` is not paused, so ADR-0015's `film_phase`/`GameClock` uniforms are required, not optional; (2) `SceneTree.create_timer` fires in pause by default, so the CI grep ban is load-bearing; (3) no need for guard G-4 on `CharacterBody3D`.
