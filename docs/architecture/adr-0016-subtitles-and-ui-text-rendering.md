@@ -1000,7 +1000,7 @@ constants/data; reverting to Alternative 1 changes `UiLayers` and removes
 | ID | Item | Owner | Close when |
 |---|---|---|---|
 | OI-1 | `architecture.md` Shell tree: add `PauseVeil` and the layer numbers of D1; § Required ADRs row 0016 → this ADR | technical-director | `/architecture-review` |
-| OI-2 | ADR-0007 D8.3 amendment: hover moves the options cursor (C2) | technical-director | ADR-0007 revised |
+| OI-2 | **Applied 2026-11-10 (OI-2, OI-3, OI-4 applied in ADR-0007, -0006, -0017).** ADR-0007 D8.3 amendment: hover moves the options cursor (C2) | technical-director | ADR-0007 revised |
 | OI-3 | ADR-0006 D9 amendment: `PointerCursor` bounds = `ViewportMapper.logical_rect()`; `zone_rect()` default from the mapper (C3) | technical-director | ADR-0006 revised |
 | OI-4 | Lines under the curtain are invisible: ADR-0017 must state that 21 does not start lines while `Curtain` covers the screen (C5) | ADR-0017 | ADR-0017 drafted |
 | OI-5 | GDD 26 F3/TR-subs-014 and GDD 24 F2/TR-prompt-015/-018 still carry the window factor; re-read per ADR-0007 D7 (G18, user QQ-10) (C1) | game-designer / user | GDD 24/26 next round |
