@@ -1037,7 +1037,7 @@ Player story needs to touch an NP-3 API.
 
 | # | Item | Owner | Before |
 |---|---|---|---|
-| OI-1 | ADR-0008 amendment: replace the requested `listener_position()` with `rayo_vision().origen` / `.direccion` (closed API, C1) | ADR-0008 | ADR-0008 accepted |
+| OI-1 | **Applied 2026-11-10 (OI-1, OI-2, OI-4, OI-5 applied in ADR-0008, -0009, -0002, -0003).** ADR-0008 amendment: replace the requested `listener_position()` with `rayo_vision().origen` / `.direccion` (closed API, C1) | ADR-0008 | ADR-0008 accepted |
 | OI-2 | ADR-0009 D4 amendment: add 2 to the allowed direct calls of **8** (`reproducir_gesto(HAND_CARD_SWIPE)`, `sostener` via 20), **19** (`HAND_TYPE`), **22** (`ANIM_PHONE_PICKUP`, `HAND_PHONE_PUTDOWN`, `reposo()`), and **23** (`rayo_vision()` read, bind window); all are downward to C2 and already signed in GDD 2 § Interactions (C3) | ADR-0009 | ADR-0009 accepted |
 | OI-3 | Sign convention of `consume_look_delta()` (+yaw = right? +pitch = up after inversion) against D4's radians convention; resolve in `_look_sign` | ADR-0006 / GDD 1 F2–F3 | First look story |
 | OI-4 | ADR-0002 OI-4 can be marked *Resolved by ADR-0012 D2* (own interpolator, engine interpolation off; S11 runs as S-0012-F) | ADR-0002 | Reconciliation round |
