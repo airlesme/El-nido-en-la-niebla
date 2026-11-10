@@ -1,0 +1,22 @@
+; PROTOTYPE - NOT FOR PRODUCTION
+; Question: ADR-0002 pause spike (S1-S16, SB1-SB3) on Godot 4.7.2
+; Date: 2026-11-10
+
+config_version=5
+
+[application]
+
+config/name="pause-spike"
+run/main_scene="res://main.tscn"
+config/features=PackedStringArray("4.7")
+
+[display]
+
+window/size/viewport_width=1152
+window/size/viewport_height=648
+
+[physics]
+
+3d/physics_engine="Jolt Physics"
+common/physics_ticks_per_second=60
+common/physics_interpolation=true
