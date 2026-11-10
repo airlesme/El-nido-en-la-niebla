@@ -1,6 +1,6 @@
 # Documentos y bolsillo
 
-> **Estado:** Revisado (ronda de corrección 8) — pendiente de re-review (ronda de corrección 8: 11, 14 y 16 listados en Dependencies; relectura de `I-05`/`I-06a` y de la carta alineada con 14 y 16, D20-27 y D20-28)
+> **Estado:** Revisado (ronda de corrección 9) — pendiente de re-review (ronda de corrección 9: 17 ya no figura como lector de `formulario_leido`, D20-29; ronda de corrección 8: ronda de corrección 8: 11, 14 y 16 listados en Dependencies; relectura de `I-05`/`I-06a` y de la carta alineada con 14 y 16, D20-27 y D20-28)
 > **Sistema:** 20 del índice (`design/gdd/systems-index.md`) · Categoría: Narrative · Prioridad: MVP
 > **Autor:** game-designer (lote autónomo, 2026-11-09)
 > **Fuente de verdad del slice:** `design/slice/slice-v0.3.md` (D.1 ítems, D.2 banderas, A.4/A.5/A.6 objetos, C.3/C.6 escenas)
@@ -144,7 +144,7 @@ No hay sonido de «recompensa»: solo el foley de papel/plástico del Jugador/23
 
 | Dato | Dueño (escribe) | Lee |
 |---|---|---|
-| `formulario_leido`, `tarjeta_B`, `tarjeta_D` | **20** | 8 (puertas), 17 (pistas), 7 (`habilitado_si`) |
+| `formulario_leido`, `tarjeta_B`, `tarjeta_D` | **20** | 8 (puertas), 7 (`habilitado_si`); 17 **no** lo lee (`sistema-de-pistas.md` D17-10) |
 | `caja_c1`, `caja_c2`, `caja_c4`, `carta_variante` | 9 | 20 (deriva `has_item`, elige la carta) |
 | conjunto de sesión (`I-01`) | **20** (lo rellena 19) | 9 (`needs_items`, `has_item`) |
 | texto y estilo de documentos | 18 | 20 (dibuja) |
@@ -218,7 +218,7 @@ Con `repaso_cerrar_ciclo = false`: si `c` es el último de `L`, `i_siguiente` = 
 | 14 Puzle 4 · Tablero de tareas | Blanda | `I-05` · `DOC_LISTA_TAREAS` · origen: 14 Puzle 4 (`caja_c2`): 20 lo deriva de `caja_c2` (R5) y **no lo presenta al resolver** (D20-19); se relee con `repasar_bolsillo` (P4-R19 de 14) | `caja_c2` y `rewards: [I-05]` informativo, vía 9; sin cambio de reglas |
 | 16 Puzle 6 · Decisión | Blanda | `I-07` (`CARTA_<carta_variante>` + `CARTA_CUERPO`): 16 es el dueño del puzle que escribe `caja_c4` y `carta_variante` (vía 9, D9-68); 20 deriva la carta de esos hechos (R5) y la relee con `repasar_bolsillo` (regla 15 de 16, D9-57) | `caja_c4`, `carta_variante` y la petición `abrir_lectura(I-07)` de 9 (regla 14 de 16: apilada sobre la vista, aplazada o descartada, R20); sin cambio de reglas |
 | 10 Caja y compartimentos | Blanda | Nada (deriva `I-06a`, `I-05`, `I-07` de `caja_c1`, `caja_c2`, `caja_c4`, R5) | Decorado `NOTA_01`, papel de `I-05` y carta plegada (no interactivos); 10 no presenta la lectura de `I-05`/`I-06a` (D20-19) ni consulta `has_item` (10 reglas 17, 18; Dependencies de 10) |
-| 17 Pistas (sin GDD) | Blanda | `formulario_leido` | Lee el hecho |
+| 17 Pistas (`sistema-de-pistas.md`) | Blanda | — (17 **no** lee `formulario_leido`: solo `correos_leidos`, y la hoja de P1 no pasa por 20) | Sin lectura de hechos de 20 |
 | 1 Entrada | Blanda (así la declaran 20 y 1) | La acción `repasar_bolsillo()` (R18); 20 no define mando propio | La acción derivada `repasar_bolsillo` de `atrás` corta con el contexto en `exploración` (1, regla 23; AC-E15 a AC-E17) |
 | 5 Guardado | Indirecta (la declara 20, el dependiente; 5 repite «Indirecta»; D20-25) | — | Persiste los hechos; causa `card_acquired` (regla 14, AC-04b) |
 | 24 Prompt | Blanda | Pie `UI_BOLSILLO_AYUDA` (R23) | Dibuja el pie |
@@ -309,6 +309,7 @@ Tipos: **L** lógica (prueba unitaria), **I** integración, **PV** playtest/visu
 | D20-26 | **(Ronda de corrección 5, dependencias R7 y GDD 22)** Comprobado: 20 no cita a 22 como «sin GDD/pendiente» y la llamada no le pide cambios (22 D22-14: la llamada no cierra modos). 20 ↔ 9: **Blanda de 9 hacia 20**, la declara 9 (consume `has_item` y `abrir_lectura`); **20 no depende de 9** (20 no consume nada de 9; la fila 9 de abajo solo lo repite). Así 20 ↔ 9 tiene una única dureza y no es circular. 10 ↔ 20: Blanda (la declara 20; 10 no consume nada de 20). Cambio requerido en el índice (fila 20: 9 como dependiente, no como dependencia) | Dejar 9 a ambos lados de la fila 20 del índice | R6-1: una sola dureza declarada por el dependiente; evita el par bidireccional que señala A8 |
 | D20-27 | **(Ronda de corrección 8, de 9 OQ2 y de 16)** La lectura de `I-07` apilada sobre la vista `D01d` se cierra con `atrás` dejando la vista abierta; el cursor de repaso no cambia (`repaso_pendiente` vacío, D20-21) | Cerrar también la vista; avanzar el cursor | Es lo que dicen 7 (regla 27b) y 16 (AC-16-12); sin estado nuevo en 20 |
 | D20-28 | **(Ronda de corrección 8, de 14 y 16)** 11, 14 y 16 listados en Dependencies como Blandas (sin cambio de reglas); `I-05`, `I-06a` e `I-07` solo se releen con `repasar_bolsillo` y 9 no reabre la carta al volver ni al cargar | Declararlos duros; reabrir la carta al cargar | 20 deriva ítems de hechos (R5) y la reapertura es del jugador |
+| D20-29 | **(Ronda de corrección 9, `sistema-de-pistas.md` Cambios requeridos nº 5, D17-10)** 17 **no** lee `formulario_leido` (ni `memo_leido`): se quita su fila de Dependencies (queda sin lectura de hechos de 20), la mención como lector en la tabla de hechos y en «Cambios requeridos»; R17 sin cambio | Dejar a 17 como lector «futuro» | 17 declara que solo lee `correos_leidos` (de 19); un lector inexistente engaña al verificador de hechos | 
 
 ## Preguntas abiertas
 
@@ -331,7 +332,7 @@ Tipos: **L** lógica (prueba unitaria), **I** integración, **PV** playtest/visu
 | 19 Ordenador, correo e impresora | Sustituir `entregar_item('I-01')` por `otorgar_sesion("I-01")`; 19 posee `DOC_I01` y su contenido; 20 no lo lee ni lo ofrece al repaso; la vista de `C05` (R27 de 19) obtiene las referencias de `I-01` de 19, no de 20; pasar la dependencia con 20 a «de 19 hacia 20 (dura)». |
 | 10 Caja | Hecho (ronda 5): fila de 10 en Dependencies de 20 (Blanda); `I-05`/`I-06a` sin presentación nueva (D20-19). |
 | 24 Prompt | Mostrar el pie `UI_BOLSILLO_AYUDA`. |
-| 17 Pistas (futuro) | Leer `formulario_leido`. |
+| 17 Pistas (`sistema-de-pistas.md`) | Ninguno: 17 no lee `formulario_leido` (D17-10); 20 deja de listarlo como lector. |
 | 11, 14 y 16 Puzles | Ronda 8: 20 los lista en Dependencies (hecho). Sin cambio de reglas; 11 y 16 deben mantener «Blanda»/«no depende de 20» según declaren y 14 confirma que la fila de `I-05` coincide con P4-R16. |
 | `systems-index.md` | Estado de la fila 20 a «Revisado (ronda de corrección 1)»; «Depende de» con 1, 3, 7, 8, 9, 18, 19 (blandas: 2); nombre «Documentos y bolsillo» (sin «visual»). |
 
@@ -371,3 +372,4 @@ Tipos: **L** lógica (prueba unitaria), **I** integración, **PV** playtest/visu
 | 2026-11-09 | Ronda de corrección 4 (informe cruzado ronda 6: R6-1, `reviews/cross-review-r6-2.md`): 5 pasa a Indirecta, 8↔20 sin «recíproca», filas de 4, 9 y 21 con quién las declara (D20-25). Estado: Revisado (ronda de corrección 4) — pendiente de re-review. |
 | 2026-11-09 | Ronda de corrección 5 (GDD 22 y `reviews/dependencias-r7-review.md`, A8): comprobadas las citas a 22 (ninguna); 20 ↔ 9 única (Blanda de 9 hacia 20, 20 no depende de 9) y 10 ↔ 20 aclaradas; D20-26. Sin cambios de reglas. Estado: Revisado (ronda de corrección 5) — pendiente de re-review. |
 | 2026-11-09 | Ronda de corrección 8 (propagación de 11, 14, 16 y de 9, D9-67 a D9-79): filas de 11, 14 y 16 en Dependencies (Blandas); `ACEPTADA` apilada sobre la vista de P6 en R20 y coherencia de la relectura de `I-05`/`I-06a`/`I-07` con 14 y 16; D20-27 y D20-28. Sin cambio de reglas. Estado: Revisado (ronda de corrección 8) — pendiente de re-review. |
+| 2026-11-10 | Ronda de corrección 9: 17 retirado como lector de `formulario_leido` (Dependencies, tabla de hechos, Cambios requeridos); D20-29. Estado: Revisado (ronda de corrección 9) — pendiente de re-review. |
