@@ -1,6 +1,6 @@
 # Puzle 6 · Decisión (sistema 16)
 
-> **Status**: Revisado (ronda de corrección 8) — pendiente de re-review
+> **Status**: Revisado (ronda de corrección 9) — pendiente de re-review
 > **Author**: Narrative Director (lote autónomo)
 > **Last Updated**: 2026-11-09
 > **Implements Pillar**: Ambivalencia sin moral binaria (ninguna opción es incorrecta) · Autonomía como progresión (la elección es del jugador y es definitiva) · Información incompleta (la carta no explica por qué firmó Vera) · Tensión sin castigo (sin fallo, sin temporizador de solución)
@@ -135,7 +135,7 @@ Convención (como en 22): **la dureza la declara el dependiente**; el proveedor 
 | 22 Llamada telefónica | Indirecta (vía 3) | 22 (dependiente) | — | `carta_variante` (A–C): elige `VO_G_12A/B/C` | reglas 7 y 21 de 22; D22-12 |
 | 3 Estado y bus de eventos | Indirecta (vía 9) | 9 | — (P6 no lee ni escribe en 3) | `caja_c4` y `carta_variante` los escribe 9; `caja_completa` lo recalcula 3 | regla 7 de 3 |
 | 6 Ajustes persistentes | **Ninguna** | — | P6 no lee `reducir_sobresaltos` ni `reducir_movimiento` (reglas 21 y 22); 9 sí lee `reducir_movimiento` para los rechazos (que P6 no tiene) | — | tabla de consumidores de 6 |
-| 17 Sistema de pistas (sin GDD) | Blanda (la declarará 17) | 17 | — | Dos niveles `IDLE` con texto, para que 17 asuma el reparto | reglas 25 y 26 de 9 |
+| 17 Sistema de pistas (`sistema-de-pistas.md`) | Blanda (la declara 17) | 17 | — | Dos niveles `IDLE` con texto, para que 17 asuma el reparto | reglas 25 y 26 de 9 |
 
 **Bidireccionalidad.** 9 y 10 ya listan «11 a 16» / «13 a 16» como dependientes (índice, fila 9; regla 24 de 9; 10, tabla de Dependencies); 18 lista «16 Puzle 6 | Los tres botones, `CARTA_A/B/C` y `CARTA_CUERPO`»; 20 y 22 ya describen su lectura de `carta_variante`/`I-07`. Lo que falta por reflejar está en «Cambios requeridos en otros GDDs».
 
@@ -267,6 +267,7 @@ Decisiones **del usuario** ya firmes (se recogen, no se discuten): P6 con **dos*
 | D16-15 | `t_lectura` y las 21–25 palabras† quedan como estimación de playtest sin fuente; se pide a 18 el conteo real | Dar la cifra como dato de 18 | No se inventa una fuente; las cifras de F3 son anclajes (†). El cálculo (6,3–10,0 s) cae dentro del rango 6–12 s |
 | D16-16 | El rehacer la elección tras un cierre antes de guardar (Edge Case 6, regla 8, D16-10) **se eleva a Open Question 12 sin decidirse**; mientras tanto rige el defecto de D16-10 | Prohibir la rehecha (guardado síncrono al pulsar) o aceptarla como firme | Roza D-14 («definitiva») en el momento más íntimo del slice; toca pilares y tono, y la decide el usuario. La revisión (aviso 5) pedía elevarlo |
 | D16-17 | (Ronda 8) Alineado con el esquema v2 de `puzzles.json` (regla 4b de 9): `schema_version: 2`; `commit_on` = `SELECT_END_SAME_ELEMENT` (nombre de 9; sustituye al `SELECT_SAME_ELEMENT` provisional); `on_reject: null` explícito; sin ‡ en los campos absorbidos; R = 64 px de los botones ‡ 7 | Mantener el nombre provisional y las ‡ | Un nombre por concepto (D9-68, D9-73, D9-70, D9-78); sin cambio de diseño ni de tiempos |
+| D16-18 | **(Ronda de corrección 9, `gdd-cross-review-2026-11-10.md`)** La fila de 17 pasa de «(sin GDD) · la declarará 17» a `sistema-de-pistas.md` («la declara 17»). Sin cambios de reglas | Dejar el texto hasta el próximo lote | Un «sin GDD» obsoleto sugiere un contrato abierto que ya está cerrado |
 
 ## Open Questions
 
@@ -332,3 +333,4 @@ Solo lo **nuevo**; lo ya registrado por 9, 10, 18, 20 y 22 (`P6`, `caja_c4`, `ca
 | 2026-11-09 | Primer borrador (lote Feature 3, sistema 16), por el narrative-director en modo autónomo: reglas A–F (25), F1–F3, 17 edge cases, dependencias bidireccionales (16 → 9, 10, 18), knobs, 23 AC, entrada de `puzzles.json`, 12 decisiones (D16-1 a D16-12), 11 preguntas abiertas. Sin cambios en ningún archivo existente. Estado: Borrador (lote Feature 3) — pendiente de review. |
 | 2026-11-09 | **Ronda de corrección 7** (revisión independiente `reviews/puzle-6-decision-review.md`: 0 bloqueantes, 6 avisos; revisión parcial). (1) Regla 5, Edge Case 3, D16-2 y AC-16-04 sin la hipótesis de `inicio`/`fin` separados: `seleccionar` llega único al soltar (regla 20 de 7); pide a 7 definir `elemento_bajo`. (2) Campos de datos remitidos al esquema v2 de 9 (D16-13; `commit_on` = `SELECT_SAME_ELEMENT`; ‡ conservado: 9 aún no los publica). (3) Rehacer la elección tras un cierre antes de guardar elevado a Open Question 12 (regla 8, Edge Case 6, D16-10, D16-16). (4) Reapertura de la vista: nivel alcanzado no sale por umbral pero su texto se reaplica una vez (regla 18, F1, Edge Case 4, D16-14, AC-16-24; OQ 8 ampliada). (5) `t_lectura`: 21–25 palabras† sin fuente, pedida a 18 (D16-15); recalculado 6,3–10,0 s dentro de 6–12 s. (6) Preguntas de tono (OQ 1 y 2) intactas. F2: redacción del Output Range aclarada. Fórmulas recomprobadas (F2 1,9 s; F3 11,4 / 28,4 / 104,6 s). Estado: Revisado (ronda de corrección 8) — pendiente de re-review. |
 | 2026-11-09 | **Ronda de corrección 8:** alineación mecánica con el esquema v2 de `puzzles.json` (regla 4b de 9): `schema_version: 2`, `commit_on` = `SELECT_END_SAME_ELEMENT`, `on_reject: null`, quitadas las ‡ de `value_from`, `presentation`, `request_reading` e `idle_reset`, peticiones a 9 absorbidas marcadas, R = 64 px ‡ 7; D16-17. Sin cambio de diseño. Estado: Revisado (ronda de corrección 8) — pendiente de re-review. |
+| 2026-11-10 | **Ronda de corrección 9:** fila de 17 con su GDD; D16-18. Estado: Revisado (ronda de corrección 9) — pendiente de re-review. |
