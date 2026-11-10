@@ -257,8 +257,9 @@ already deadzoned is S-0006-A; if they do, F1 still holds for `dz_in` above
 the engine's floor and the floor is recorded.
 
 **D9 — Virtual cursor and pointer targets.** In `VISTA_CERCANA`, `ORDENADOR`,
-`LLAMADA` and `MENU`, `PointerCursor` (pure) holds `p` in logical 1920×1080
-pixels. With mouse it mirrors the real cursor (position from the adapter,
+`LLAMADA` and `MENU`, `PointerCursor` (pure) holds `p` in logical pixels
+bounded by `ViewportMapper.logical_rect()` (1920×1080 is the 16:9 reference;
+wider/taller under `expand` — ADR-0016 OI-3, ADR-0011 C1). With mouse it mirrors the real cursor (position from the adapter,
 converted to logical pixels by `ViewportMapper` ‡, owned by ADR-0016's
 resolution decision). With gamepad it integrates F5a (stick of greater
 magnitude in close-up/computer; right stick only in `llamada`/`menú`) and F5b
@@ -464,6 +465,8 @@ func transfer_no_control(new_owner: StringName, declared_s: float) -> bool
 func request_exploration(owner: StringName) -> bool
 func restore_menu() -> void
 func reset_stack_on_unload() -> void
+## margen_E of the sin-control cap, read by 21 for GDD 21 F5 (ADR-0017 A3) ‡
+func no_control_margin_s() -> float
 
 # Delivery (D6, D9, D10)
 func bind_sink(ctx: InputTypes.Context, action: StringName, sink: Callable) -> void
@@ -529,7 +532,10 @@ in the diagram and the method list is the same type.)
 class_name PointerTargetProvider extends RefCounted
 func targets() -> Array[Dictionary]: return []   # [{id, center_px, tolerance_px, gestos_aceptados, focus_order}]
 func on_hover(_target_id: StringName) -> void: pass   # GUI providers call grab_focus() here
-func zone_rect() -> Rect2: return Rect2(0, 0, 1920, 1080)
+func zone_rect() -> Rect2: return Rect2()   # default: ViewportMapper.logical_rect() (ADR-0016 OI-3)
+## Target under p_px; default = nearest centre within tolerance_px, &"" if none.
+## GestureRecognizer calls it at press so ActionEvent.target_id equals 7's pick (ADR-0011 A-1).
+func target_at(p_px: Vector2) -> StringName: return &""
 
 # src/input/engine_input_adapter.gd — the only NOT SOURCEABLE surface (signatures ours)
 class_name EngineInputAdapter extends Node
