@@ -91,7 +91,12 @@ Orden recomendado en una sesión de Claude Code abierta en la raíz del repo:
 ## 7. Qué necesito de ti para arrancar
 
 1. **D-16 (orden de la caja):** ¿cadena c1→c3→c4 con c2 libre (Anexo B) o libre del todo (§8/§13.3)?
+   — **Respondida 2026-11-10:** cadena c1→c3→c4 con c2 libre (el diseño actual, Anexo B).
 2. **Lenguaje:** ¿GDScript (propuesto) o C#?
+   — **De facto (2026-11-10):** GDScript, fijado en `project.yaml`; no hubo respuesta explícita en la ronda del 2026-11-10 (QQ-02).
 3. **Equipo:** ¿cuántas personas y qué perfiles (código, arte, audio)? Determina `modes.rigor`, `team.size` y el calendario.
+   — **Respondida 2026-11-10:** una persona, con agentes de Claude.
 4. **Equipo de referencia** para pruebas (CPU/GPU/RAM mínimos).
+   — **Respondida 2026-11-10:** el portátil de desarrollo (Intel Core Ultra 7 265H, GPU integrada Intel Graphics, 15,4 GB de RAM compartida, pantalla 1920×1200 a 60 Hz). Presupuestos y método de medida: ADR-0019.
 5. **Fecha objetivo** de la demo de financiación, para ajustar S4–S5.
+   — **Respondida 2026-11-10:** sin fecha fija; se planifica por hitos con plazos relativos y orden de recorte. Las 6–7 semanas de § 4 quedan como estimación, sin fecha.
