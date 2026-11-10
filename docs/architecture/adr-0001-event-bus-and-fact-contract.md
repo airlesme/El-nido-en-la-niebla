@@ -325,6 +325,12 @@ func write_silent(fact: StringName, value: Variant, owner_id: int) -> bool: retu
 
 # Snapshot / lifecycle (5)
 func is_queue_empty() -> bool: return true                           # GDD: cola_vacía()
+## True while the channel is inside a synchronous drain. Wrapper over NoticeChannel (ADR-0004 OI-1).
+func is_draining() -> bool: return false
+## Run `job` once, when the current synchronous drain ends (same logical frame,
+## before further input); immediately if idle. Used by 5 for the seal capture
+## and `request_save` deferral. Wrapper over NoticeChannel (ADR-0004 OI-1).
+func run_after_drain(job: Callable) -> void: pass
 ## {} = "no disponible" (pending notices). Never waits.
 func request_snapshot() -> Dictionary: return {}                     # GDD: petición de instantánea
 ## Sync + atomic. Inside a drain: deferred to drain end (rule 11).
@@ -393,11 +399,11 @@ may change only through that ADR.
 | «estado restaurado» | `&"state_restored"` | 3 | — |
 | «avisos descartados» | `&"notices_dropped"` | 3 (and 6's channel, own instance) | — |
 | «dispositivo de entrada cambiado» | `&"input_device_changed"` | 1 | `dispositivo: SN` ‡ (`teclado_raton` / `mando`; ADR-0006) |
-| «contexto de entrada cambiado» | `&"input_context_changed"` | 1 | `contexto: SN` ‡ (ADR-0006) |
-| «`sin control` absorbido» | `&"no_control_absorbed"` | 1 | `dueno: SN` ‡ (the discarded holder, e.g. `&"21"`) |
-| «carga de escena iniciada» | `&"scene_load_started"` | 4 | `destino: SN`, `motivo: SN`, `D_carga: F` |
+| «contexto de entrada cambiado» | `&"input_context_changed"` | 1 | `anterior: SN` (previous context), `contexto: SN` (ADR-0006; GDD 1 rule 6) |
+| «`sin control` absorbido» | `&"no_control_absorbed"` | 1 | `dueno: SN` (the discarded holder, e.g. `&"scene_director"`; ADR-0006) |
+| «carga de escena iniciada» | `&"scene_load_started"` | 4 | `destino: SN`, `motivo: SN`, `control_final: SN` ‡, `D_carga: F` (ADR-0003 O1) |
 | «escena lista» | `&"scene_ready"` | 4 | `destino: SN` |
-| «carga de escena terminada» | `&"scene_load_finished"` | 4 | — |
+| «carga de escena terminada» | `&"scene_load_finished"` | 4 | `destino: SN`, `motivo: SN`, `control_final: SN` ‡, `t_since_started_s: F` ‡ (ADR-0003 O1; GDD 3/4/21 to confirm) |
 | «carga de escena fallida» | `&"scene_load_failed"` | 4 | `destino: SN`, `motivo: SN`, `causa: SN` |
 | «descarga total solicitada» | `&"full_unload_requested"` | 4 | — |
 | «descarga total completada» | `&"full_unload_completed"` | 4 | — |
@@ -862,7 +868,7 @@ CA-29 (demo export without console) is validated by ADR-0018's CI script.
 | OI-3 | **Interpretation:** GDD 3 says the cap is "por fotograma"; this ADR applies it per synchronous drain (D5). Equivalent for any single chain; GDD 3 Tuning Knobs text should say "por entrega encadenada" | game-designer (GDD 3) | GDD 3 re-review |
 | OI-4 | **Interpretation:** I-9 checks `owner` for `write_silent` in release too, while GDD 3 rule 2 skips owner checks in release for normal writes. Rule 16(a) makes ownership part of the silent-write contract, so the stricter reading is used | technical-director | GDD 3 re-review (confirm) |
 | OI-5 | Revisit typed payload classes (Alt. 3) if integration finds payload bugs that the debug schema did not catch | technical-director | M2 retrospective |
-| OI-6 | Proposed payload keys ‡ (`dispositivo`, `contexto`, `dueno`, `zona`, `vista`, `doc`, `lista`, `puerta`, `puzzle` in `puzzle_resolution_interrupted`) must be confirmed by GDDs 1, 4, 7, 8, 9 or by ADR-0006/-0003/-0011/-0010 | owners of those ADRs | Each ADR |
+| OI-6 | Proposed payload keys ‡ (`dispositivo`, `contexto`, `dueno`, `zona`, `vista`, `doc`, `lista`, `puerta`, `puzzle` in `puzzle_resolution_interrupted`) must be confirmed by GDDs 1, 4, 7, 8, 9 or by ADR-0006/-0003/-0011/-0010. Closed for system 1 by ADR-0006 (`anterior`/`contexto`, `dueno`; reconciliation 2026-11-10); `dispositivo` still ‡ | owners of those ADRs | Each ADR |
 | OI-7 | Payload schemas of `scene_effect_requested`, `object_state_requested`, `end_card_requested` | ADR-0017 | M3 |
 | OI-8 | GDD 3 internal inconsistency (minor): its Dependencies row for 7 lists four notices; rule 10 lists eleven. The registry follows rule 10 | game-designer (GDD 3) | GDD 3 re-review |
 | OI-9 | `architecture.md` § API Boundaries "Bus y estado (3)" keeps `escribir_silencioso`/`cola_vacía` as identifiers; update to G-13 names on acceptance | technical-director | `Accepted` |
