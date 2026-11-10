@@ -6,7 +6,7 @@ Each agent owns a specific domain, enforcing separation of concerns and quality.
 ## Proyecto: El Nido en la Niebla
 
 Aventura/puzles en **primera persona 3D** (Godot). Alcance actual: vertical slice
-«Turno de noche» (25–30 min) para enseñar y conseguir financiación.
+«Turno de noche» (~15–30 min según el jugador, a medir en playtest) para enseñar y conseguir financiación.
 
 - **Fuente de verdad del slice:** `design/slice/slice-v0.3.md` (prevalece sobre cualquier GDD general).
 - **Plan técnico:** `docs/PLAN-TECNICO.md` · **Mapa de carpetas:** `README.md`.
