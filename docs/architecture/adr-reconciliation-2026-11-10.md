@@ -83,3 +83,104 @@ Ninguna queda sin resolver. Resueltas en esta ronda: nombre del reloj, firmas
 de `FileStore` (0004 frente a 0007; manda 0004), idioma de las claves de carga
 útil (0003 frente a 0001; manda el registro de 0001) y `request_save` desde 22
 (0009 frente a 0004).
+
+---
+
+# Ronda 2 (ADR 0010–0017)
+
+Misma metodología que la ronda 1: Edit mínimo en el ADR **destino** y marca
+«Resolved» en el Open Item de origen cuando existe. Sin tocar GDDs ni
+`architecture.md`.
+
+## R2.1 Enmiendas entre ADRs
+
+| # | ADR destino | Enmienda (origen) | Estado |
+|---|---|---|---|
+| R1 | ADR-0009 | `SceneServices.puzzle_writer: FactWriter` (9), construido por la raíz de escena con `GameState.writer_for(9)` (0010 OI-1) | aplicada |
+| R2 | ADR-0009 | D3 regla 5: excepción para restaurar en `configurar` llamando a `BoxPresenter` (0010 C4 / D12) | aplicada |
+| R3 | ADR-0003 | Nota en el pseudocódigo: `configure_all` decide el fallo con la consulta `configuration_failed()` porque `configurar()` devuelve `void` (0010 C6 / D13) | aplicada |
+| R4 | ADR-0006 | `PointerTargetProvider.target_at(p_px) -> StringName`; `GestureRecognizer` lo usa al pulsar (0011 A-1 / C3) | aplicada |
+| R5 | ADR-0009 | Fila D4 de 7: añadir 3 (solo lectura) y 6 (lectura) (0011 A-2 / C2) | aplicada |
+| R6 | ADR-0009 | Ejemplo D3 `registrar_manejador(&"A03", …)` pasa un adaptador `InteractionHandler` (0011 A-3) | aplicada |
+| R7 | ADR-0006 | D9: límites de `PointerCursor` = `ViewportMapper.logical_rect()`; `zone_rect()` toma el valor por defecto del mapper; 1920×1080 es la referencia 16:9 (0016 OI-3 / C3, 0011 C1) | aplicada |
+| R8 | ADR-0008 | `listener_position()` → `rayo_vision().origen` / `.direccion` (0012 OI-1 / C1) | aplicada |
+| R9 | ADR-0009 | Fila D4: añadir 2 a las filas de 8, 19, 22 y 23 (0012 OI-2 / C3) | aplicada |
+| R10 | ADR-0002 | OI-4 resuelto por ADR-0012 D2 (0012 OI-4) | aplicada |
+| R11 | ADR-0003 | O6 y R5 resueltos por ADR-0012 D2/D4; `colocar` antes de `configurar` deja una colocación pendiente (0012 OI-5 / C2) | aplicada |
+| R12 | ADR-0007 | D9: `LIGHT_FLICKER_DEPTH_FLOOR = 0.40`; quitar el alias `FLASH_MAX_HZ`; unidad del destello; 28 llama a `try_flash()` tras su limitador; cierra OI-6 (0014 OI-1, 0013 C3) | aplicada |
+| R13 | ADR-0009 | `FlashGuard` inyectado por `ServiceContext` (0014 OI-5) | aplicada |
+| R14 | ADR-0014 | Umbral de glow ≥ 1,0 (o pase SH5); D7 cita el tope medido `ΔL_refl` de ADR-0015 D2 (0015 OI-1) | aplicada |
+| R15 | ADR-0009 | Fila D6 de `SurfaceFx`: 10 → 11 operaciones (+ `set_floor_marks`), firmas en ADR-0015; cierra O2 para `SurfaceFx` (0015 OI-3) | aplicada |
+| R16 | ADR-0007 | D8.3: el hover mueve el cursor/foco de opciones (0016 OI-2 / C2) | aplicada |
+| R17 | ADR-0017 | 21 no arranca líneas mientras la cortina cubre la pantalla (0016 OI-4 / C5) | aplicada |
+| R18 | ADR-0007 | OI-5 cerrado: la pantalla de 19 es un overlay del lienzo raíz (0016 OI-10) | aplicada |
+| R19 | ADR-0009 | `SceneDirector` recibe `settings` (`SettingsReader`, `reducir_movimiento`) (0017 A1) | aplicada |
+| R20 | ADR-0003 | `SceneLoader.fade_duration_s(reason) -> float` ‡ (0017 A2) | aplicada |
+| R21 | ADR-0006 | `InputContexts.no_control_margin_s() -> float` ‡ (`margen_E`) (0017 A3) | aplicada |
+| R22 | ADR-0001 | Filas «‡ ADR-0017» del registro → ADR-0017 D5; esquema `SceneEffects` (0017 A4, 0014 OI-7) | aplicada |
+| R23 | ADR-0005 | D2.5: `scenes.json` + `al_disparar`, `cadena`, campos de cue; `call.json` `times` sin `fallback_s`, con `t_pick_s`, `t_breath_s` (0017 A5 / C2 / C8) | aplicada |
+| R24 | ADR-0008 | Forma de la petición de interrupción de voz que usa 22 para `VO_G_14_*` (0017 A6) | pendiente |
+| R25 | ADR-0011 | `ViewReceiver` como puerto `RefCounted` (0010 OI-2) | ya estaba hecha (0011 D6: `@abstract … extends RefCounted`) |
+| R26 | ADR-0011 | Nombres de campo de `ViewElement` / `PointerEvent` (0010 OI-5) | pendiente |
+| R27 | ADR-0015 | Operación de `SurfaceFx` para el `HIGHLIGHT` en el mundo (0010 OI-4) | ya estaba hecha (0015: pulso `HIGHLIGHT` + `stop_highlight`) |
+| R28 | ADR-0005 | Claves de `puzzles.json` añadidas por 0010 (`idle_hints_auto_apply`) (0010 OI-6) | pendiente |
+| R29 | ADR-0012 | Tipo que devuelve `rayo_vision()`, `fov_actual()`, `reserve` (0011 OI-4); `pose_con_retardo`, `giro_acumulado` (0014 OI-4); objetos en mano en `HANDS_BIT` (0013 OI-8) | parcial: `rayo_vision`, `fov_actual`, `pose_con_retardo`, `giro_acumulado` ya existen; `reserve` y `HANDS_BIT` pendientes |
+| R30 | ADR-0016 | Aviso de cambio de `ViewportMapper` (0011 OI-5); capa de `HandsComposite` (0013 OI-4); anfitrión de la tarjeta final por encima de la cortina (0017 OI-4); el texto del mundo usa F29-3 (0015 OI-9) | parcial: `logical_rect()` ya existe; aviso de cambio, capa de manos, anfitrión de la tarjeta y F29-3 pendientes |
+| R31 | ADR-0011 | Números de capa de colisión `player_body` / `zone_sensor` (0012 OI-9, 0003 O7); colisión del objeto en mano (0012 OI-6) | parcial: capas 2 `player_body` y 4 `zone_sensor` ya en 0011; colisión de `V05` pendiente |
+| R32 | ADR-0014 | Luz del teléfono `V02` en mano (0013 OI-3) | pendiente |
+| R33 | ADR-0010 | Quién reenvía los efectos de pista a `SurfaceFx` (0015 OI-6); parada de `VO_G_07` (0017 OI-6, con 0008) | pendiente |
+
+## R2.2 Cambios requeridos en GDDs / architecture.md (deduplicados; **[U]** = decisión del usuario)
+
+| # | Destino | Cambio | ADR origen |
+|---|---|---|---|
+| H1 | GDD 9 r9 | Atracción de las referencias de P1: prevalece la anulación por zona | 0010 C1 |
+| H2 | GDD 9 r9, r13; `architecture.md` | `PARTIAL(progress)` + `element`/`action` opcionales | 0010 C2 |
+| H3 | GDD 17 R11.4/R13; `architecture.md` | `request_hint -> int` (`HintOutcome`, `!= REFUSED`); R13 sin aviso nuevo | 0010 C3/C7 |
+| H4 | GDD 9 r7, GDD 11 Dependencias | `missing_items` es una lista; el controlador de P1 llama a `compose_i01()` en `on_open()` | 0010 C5/C10 |
+| H5 | GDD 9 Tuning Knobs, r4b, r14a; TR-puzzles-008 | `idle_hints_auto_apply` = false en los datos; llamadas internas `reject`/`begin`; nota sobre los hooks | 0010 C8/C9/C11 |
+| H6 | GDD 7 r31, GDD 13 | `distancia_m` (obligatoria) y `centro_m` en `vista`/`modo`; 13 deja de usar `view_distance_m` | 0011 OI-2 |
+| H7 | GDD 7 r20, F2/r32 | `pos_px_inicio`; `seleccionar` = un solo `FIN`; nota sobre la pulsación larga | 0011 OI-3/C4 |
+| H8 | GDD 14 OQ 1 | Tamaño del tablero `D01b` y su `distancia_m` (diseño / arte) | 0011 OI-6 |
+| H9 | `architecture.md` § Interacción (7) | `ViewReceiver` = puerto `RefCounted`; `PIE_PERSISTENTE = -1.0` | 0011 A-4/C5 |
+| H10 | GDD 1 F2–F3 | Convención de signos de `consume_look_delta()` | 0012 OI-3 |
+| H11 | GDD 2 OQ 4, OQ 9, r22 | Rig de las manos / `HAND_CARD_SWIPE`; r22 consulta por sondeo, no por el bus | 0012 OI-8/C4 |
+| H12 | `architecture.md` filas ADR-0012/0013 | TR-player-010 repartido (contrato del nodo / técnica) | 0012 C5 |
+| H13 | GDD 28 traspaso fila 2; TR-atmos-010 | Capa de render `HANDS` con suelo emisivo, luces compartidas; separar técnica y mecanismo | 0013 C1/C2 |
+| H14 | GDD 28 R7, R22, OQ 12; TR-atmos-008/-018 | `Tween` → envolvente sobre `GameClock` | 0014 OI-2 |
+| H15 | GDD 28 F8, AC-28-02, Tuning Knobs; TR-atmos-016/-005 | ≤ 14 habilitadas por instancia (activación por sala); AC ≤ 2; nombres de `A11yConstants`; `zone_visibility`, `shadow_allowlist` | 0014 OI-3 |
+| H16 | GDD 29 R7, R11, R13/AC-16, R33, R35, R41, R5; TR-shaders-004/-006/-017/-020, TR-puzzle2-007 | Película + texto; material por instancia; tope de luminancia; 11 operaciones; sin `Tween`; prioridad del texto del cristal; citar la definición de destello de ADR-0007 D9 | 0015 OI-2/OI-5 |
+| H17 | GDD 30 | El texto del mundo se mide con F29-3, no con `TEXT_MIN_PX`; `a11y_tab.json` e ids del atlas de glifos por `PadFamily` | 0015 OI-9, 0016 OI-8 |
+| H18 | `architecture.md` árbol del Shell, § Required ADRs | `PauseVeil`, números de capa (D1), fila 0016 | 0016 OI-1/C4 |
+| H19 | GDD 26 R22 | Las líneas en `sin control` quedan bajo la cortina (las retiene 21) | 0016 C5 |
+| H20 | GDD 18 | Claves `UI_ACCION_<ID>`, `UI_SUB_HABLANTE_*`, `UI_SUB_MUESTRA`, `TEL_MENSAJE_*`, `UI_TITULO_JUEGO`, `UI_CONTINUARA` (`seg_b_inicio_s` = G23) | 0016 OI-7, 0017 OI-2/OI-3 |
+| H21 | GDD 19 | La pantalla del ordenador es un overlay del lienzo raíz en `SceneUi` | 0016 OI-10 |
+| H22 | GDD 8, 21 | Id y estados de las puertas del ascensor de recepción (`ASCENSOR_RECEPCION` ‡) | 0017 OI-1 |
+| H23 | GDD 7, 21 | Quién ejecuta `TELEFONO_PULSOS` / `TELEFONO_MENSAJE` sobre `V02` | 0017 OI-2 |
+| H24 | GDD 21 r4, r7, Tuning Knobs | Estados de objeto en lugar de efectos; 23 posterga las líneas; ruta y ubicación de los ajustes (ruta = G14) | 0017 G-a/G-b/G-c |
+| H25 | GDD 22 Tuning Knobs | `t_pick_s`, `t_breath_s`; `fallback_s` por línea desde 18; `t_corte_senal_s` retirado | 0017 G-d/C1 |
+| H26 | GDD 27 r24 | Anfitrión de la tarjeta final en el Shell, por encima de la cortina | 0017 G-e/C7 |
+| H27 | GDD 24 F2, GDD 26 F3 (TR-subs-014, TR-prompt-015/-018) | = G18 de la ronda 1 **[U]** QQ-10 | 0016 OI-5 |
+| H28 | GDD 24 R14 / TR-prompt-010 | = G16 de la ronda 1 | 0016 OI-6 |
+| H29 | GDD 28 OQ 8, OQ 11, OQ 1 | **[U]** Ritmo del parpadeo (1,15 s), apagón reducido de 0,8 s, lluvia durante el apagón | 0013 OI-7, 0014 OI-8 |
+| H30 | GDD 29 Q1 | **[U]** Vistas de P2/P5 como superficies 3D del mundo (asumido) frente a `SubViewport` | 0015 OI-7 |
+| H31 | GDD 29 Q7 | **[U]** Orientación del texto (espejo) | 0015 OI-8 |
+| H32 | QQ-04 / ADR-0019 | **[U]** Hardware de referencia; los presupuestos siguen provisionales | 0014 OI-9, 0015 OI-4 |
+| H33 | QQ-23 | **[U]** Herramienta de análisis de destellos (no se ha verificado que PEAT esté disponible) | 0014 OI-6 |
+| H34 | ADR-0019 / arte | **[U]** Salida HDR (desactivada en el slice) y modo de AA | 0013 OI-5/OI-6, 0015 OI-10 |
+| H35 | Arte (sin cambio de GDD) | `luz_minima_manos`, suelo plano, `sub_fondo_opacidad_min`, contrastes 7:1 / 4.5:1 | 0013 OI-2, 0016 OI-9 |
+
+## R2.3 Contradicciones entre ADRs
+
+Ninguna queda sin resolver. Resueltas en esta ronda:
+
+- **Hover y foco:** el hover no movía el cursor (0007 D8.3) frente a que sí lo mueve (0006 D9, 0016). Manda 0016 y el hover mueve el foco; la G-9 de 0007 (el hover no es selección) sigue siendo compatible.
+- **Cursor de 1920×1080 fijo frente al rectángulo lógico del mapper** (0006 frente a 0007 / 0011 / 0016). Manda el mapper; 1920×1080 queda como referencia 16:9.
+- **`listener_position()` frente a la API cerrada del Jugador** (0008 frente a 0012). Manda 0012.
+- **`configurar() -> void` frente a `ConfigureResult`** (0009 frente a 0003). Se resuelve con la consulta `configuration_failed()` de 0010.
+- **`fallback_s` y `t_corte_senal_s` en `call.json`** (0005 frente a 0017). Manda 0017, en línea con los GDD 22 y 23.
+- **Tabla D4 de 0009 incompleta** (faltaban 2, 3 y 6) frente a 0011 y 0012: filas ampliadas.
+
+Quedan abiertas pero no son contradicciones: R24, R26, R28, R32 y R33 (decisiones que corresponden al ADR destino o a su historia), y las partes pendientes de R29, R30 y R31.
+
+Nota de proceso: el hook `write-guard` avisa en cada Edit de un subagente sobre un fichero existente. Son avisos y no bloquean; las ediciones se hicieron según el modo por lotes de `CLAUDE.md`.
