@@ -89,3 +89,10 @@ FAIL en S5/S6/S7/S11/S12 → B parcial de ese tipo; S14 FAIL → 25 reanuda ante
 - Cada prueba nace de un `_reset()` que despausa y libera todo.
 - Se imprime `API Clase.miembro OK|MISSING` (vía `ClassDB`) para los nombres de API dudosos.
 - S16 usa `create_timer`/`Timer` solo porque está en `prototypes/` (permitido por D6).
+
+## S4 manual (arnés interactivo)
+
+`godot --path prototypes/pause-spike res://s4_manual.tscn`. P pausa/reanuda. Con la pausa activa:
+flechas/Tab/Enter y mando deben mover el foco y pulsar los botones (capa ALWAYS); el contador de
+frames y el de eventos PAUSABLE deben quedarse quietos; conectar y desconectar un mando debe
+registrarse en el log. Anotar PASS/FAIL de cada punto.
