@@ -454,8 +454,9 @@ The slice ships without screen-reader testing (30 D30-2); it ships **ready**:
    (30 rule 6), never from tree order.
 3. **Dual focus (4.6).** The options cursor (`OptionsComponent`, 25) is the
    source of truth for the selected row; it calls `grab_focus()` (keyboard/
-   gamepad focus, sourced) so AccessKit follows it. Mouse hover highlights but
-   **must not** move the cursor; click moves it and activates. The visible
+   gamepad focus, sourced) so AccessKit follows it. Mouse hover **moves the
+   cursor** (and thus focus) without activating; click activates (GDD 25 R9,
+   TR-pause-009, ADR-0006 D9; amended by ADR-0016 OI-2). The visible
    focus ring is drawn from the cursor (non-colour: border ≥ 3:1 plus shape,
    30 rule 25), not from hover.
 4. Disabled controls stay focusable-and-announced as «no disponible»
@@ -475,13 +476,14 @@ and not data: a data edit must never be able to raise a photosensitivity cap
 class_name A11yConstants extends RefCounted
 ## Project-wide accessibility limits (GDD 30 rules 18, 24-27). Code, not data.
 
-const FLASH_MAX_PER_S: int = 3            # 30 R18 (SC 2.3.1); "FLASH_MAX_HZ"
+const FLASH_MAX_PER_S: int = 3            # 30 R18 (SC 2.3.1); one flash = one onset, counted in a half-open 1000 ms window, integer ms (ADR-0014 OI-1)
 const FLASH_WINDOW_MS: int = 1000         # 30 R24 sliding window
 const FLASH_LUMA_DELTA: float = 0.10      # 30 R24 >= 10 % of full range
 const FLASH_DARK_MAX: float = 0.80        # 30 R24 darker state below 0.80
 const FLASH_AREA_MIN: float = 0.25        # 30 R24 > 25 % of the field of view
 const LIGHT_FLICKER_MAX_HZ: float = 2.0   # owner 28 (R9/R11), here for audit
 const LIGHT_FLICKER_MIN_PAUSE_S: float = 0.35  # owner 28
+const LIGHT_FLICKER_DEPTH_FLOOR: float = 0.40  # owner 28 (ADR-0014 OI-1), here for audit
 const TEXT_MIN_PX: int = 24               # 30 R26, logical px at 1080 base
 const CONTRAST_TEXT_MIN: float = 4.5      # 30 R25
 const CONTRAST_NON_TEXT_MIN: float = 3.0  # 30 R25
@@ -496,7 +498,9 @@ const MIN_WINDOW: Vector2i = Vector2i(1280, 720)
 flashes already happened in the last `FLASH_WINDOW_MS`; emitters 21, 24, 28,
 29 call it before any effect that meets the R24 definition. It is the
 run-time limiter; the video analysis of AC-30-13 is the verification. The
-rendering ADRs of 28/29 decide *which* effects count as a flash.
+rendering ADRs of 28/29 decide *which* effects count as a flash: hands none
+(ADR-0013); 28 calls `try_flash()` after its own local limiter (ADR-0014);
+29 per ADR-0015. Injected as `ctx.flash_guard` (ADR-0009 D3).
 
 ### D10 — Window mode
 
@@ -921,8 +925,8 @@ on 25/27/19 → screenshots (AC-30-03, UI, BLOCKING); T-I4 AC-13 on the real
 | OI-2 | **USER (QQ-08)** — `escala_texto_ui` closed for the slice? Default here: yes, 18 keys. If no: remove key from `defaults.json`, `RESET_ALL_KEY_COUNT` = 17. `reducir_movimiento` scope beyond slice §14 is not decided here (one key; consumers decide) | User |
 | OI-3 | `FileStore.write_atomic` / `rename` platform sequence: **resolved 2026-11-10** — ADR-0004 `FileStore` gains `read_text`/`write_atomic` (delete-then-rename, D7 rule); primitives return `Error` (ADR-0004 shape adopted here). JSON behaviour still open (shared SP-6) | ADR-0004 (shared SP-6) |
 | OI-4 | Container/reflow rules, `SafeArea169`, font choice and crispness fallback | ADR-0016 |
-| OI-5 | Whether 19's computer screen is a root-canvas overlay (scaled by D7) or a `SubViewport` on a 3D mesh (needs its own scaling) | ADR-0016 / 19 |
-| OI-6 | Which effects count as "flash" for `FlashGuard` | Rendering ADRs of 28/29 |
+| OI-5 | **Resolved for the slice (ADR-0016 OI-10): root-canvas overlay in `SceneUi`, scaled by D7.** Whether 19's computer screen is a root-canvas overlay (scaled by D7) or a `SubViewport` on a 3D mesh (needs its own scaling) | ADR-0016 / 19 |
+| OI-6 | **Resolved: ADR-0013 (hands: none), ADR-0014 (28), ADR-0015 (29).** Which effects count as "flash" for `FlashGuard` | Rendering ADRs of 28/29 |
 | OI-7 | Spikes SP-1…SP-5 results written back to `docs/engine-reference/godot/modules/ui.md` | Implementation, first UI story |
 
 ### Contradictions detected (for `/architecture-review`)
