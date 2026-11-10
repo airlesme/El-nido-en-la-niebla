@@ -915,6 +915,35 @@ We will know this was right if: the spike's core set passes, V-1…V-7 pass in
 CI, and no playtest report shows a timer advancing, a voice resuming over the
 title, or a visible jump on resume.
 
+## Spike Results (2026-11-10)
+
+Run with Godot 4.7.2.stable.official.ed1daf0bf (same as the pin) from `prototypes/pause-spike/`; raw output in `prototypes/pause-spike/results-2026-11-10.md`, retained captures in `production/qa/evidence/pause-spike/`.
+
+| Test | Claim | Result |
+|---|---|---|
+| S1 | `SceneTree.paused` stops `_process`/`_physics_process` of pausable nodes; resumes | **PASS** (0 calls in window) |
+| S2 | `process_mode` values, inheritance, root default | **PASS** (INHERIT under PAUSABLE does not run; under ALWAYS runs) |
+| S3 | `ALWAYS` node receives real, non-zero `delta` in pause | **PASS** (ratio 0.9996 vs wall clock) |
+| S4 | Input/focus under pause | **PARTIAL**: simulated events reach ALWAYS probes (3/3) and not PAUSABLE ones (0). Keyboard/gamepad focus navigation and gamepad connect/disconnect still need a manual run with a window and a pad |
+| S5 | `Tween` under pause | **PASS** with `TWEEN_PAUSE_BOUND` and `STOP`; `PROCESS` mode on a world node does not freeze (expected) |
+| S6 | `AnimationPlayer` under pause | **PASS** (position constant, no method-track marks fired in pause) |
+| S7 | `GPUParticles3D` under pause | **PASS** (0 differing bytes across paused frames; no density burst on resume by eye, retained capture) |
+| S8 | `AudioStreamPlayer.stream_paused` hold and resume | **PASS** (position held, resumed at held position); audible check still manual |
+| S9 | `ALWAYS` audio player keeps playing | **PASS** |
+| S10 | Shader `TIME` in pause | **TIME keeps advancing during pause** (informative): shaders must use a phase uniform driven by `GameClock`, as ADR-0015 already decides |
+| S11 | Camera interpolation under pause | **PASS** numeric part (identical origin over 120 paused frames, no jump on resume); visual pop still to be eyeballed |
+| S12 | `CharacterBody3D` freezes, velocity kept | **PASS** (guard G-4 not load-bearing) |
+| S13 | Bus drain while paused | **PASS** |
+| S14 | `queue_free` while paused frees in 1 frame | **PASS** (0 orphans) |
+| S15 | Autoload order and `process_priority` | **PASS** (lower value first) |
+| S16 | `create_timer` / `Timer` in pause | **PASS** informative: `create_timer` defaults to `process_always = true`, and fires in pause; confirms the ban on `SceneTreeTimer` for game time |
+| SB1, SB2 | Option B (tree not paused) `Tween.pause()` and `AnimationPlayer.pause()` / `speed_scale = 0` | **PASS** (B is viable as fallback) |
+| SB3 | Option B particles `speed_scale = 0` | **PASS** (pixel part) |
+
+**Decision rule check:** core tests S1, S2, S3, S9, S13 PASS; S4 is only partially verified. Presentation tests S5, S6, S7, S11 PASS. **Option A (tree paused + explicit `process_mode`) holds. Status stays `Proposed` until the manual S4 run (keyboard and gamepad focus under pause, pad disconnect) is recorded.**
+
+New facts for the design: (1) shader `TIME` is not paused, so ADR-0015's `film_phase`/`GameClock` uniforms are required, not optional; (2) `SceneTree.create_timer` fires in pause by default, so the CI grep ban is load-bearing; (3) no need for guard G-4 on `CharacterBody3D`.
+
 ## Open Items
 
 | # | Item | Owner |

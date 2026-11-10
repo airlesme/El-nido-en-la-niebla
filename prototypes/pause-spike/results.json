@@ -1,0 +1,45 @@
+{
+  "api_probe": [
+    "Tween.pause() OK",
+    "Tween.play() OK",
+    "Tween.set_pause_mode() OK",
+    "AnimationPlayer.pause() OK",
+    "AudioStreamPlayer.get_playback_position() OK",
+    "Node3D.get_global_transform_interpolated() OK",
+    "Node.can_process() OK",
+    "SceneTree.create_timer() OK",
+    "Viewport.push_input() OK",
+    "RenderingServer.particles_request_process_time() OK",
+    "AudioStreamPlayer.stream_paused (property) OK",
+    "Node.process_priority (property) OK",
+    "Node.process_mode (property) OK",
+    "Node.physics_interpolation_mode (property) OK",
+    "GPUParticles3D.speed_scale (property) OK"
+  ],
+  "core_ids": [
+    "S1",
+    "S2",
+    "S3",
+    "S4",
+    "S9",
+    "S13"
+  ],
+  "core_pending_manual": [],
+  "counts": {
+    "FAIL": 0,
+    "NEEDS_WINDOWED": 0,
+    "PASS": 1,
+    "UNVERIFIED_API": 0
+  },
+  "display": "Windows",
+  "exit_code": 0,
+  "godot": "4.7.2-stable (official)",
+  "results": [
+    {
+      "core": false,
+      "detail": "bytes differing in centre region (of 160000) paused f+1 vs f+60=0 vs f+120=0; max consecutive-frame diff after resume=32781. Pixel part only: REVIEW user://pause_spike_sb3_*.png by eye for a burst/density jump on resume (path: C:/Users/airlesme/AppData/Roaming/Godot/app_userdata/pause-spike)",
+      "id": "SB3",
+      "status": "PASS"
+    }
+  ]
+}
