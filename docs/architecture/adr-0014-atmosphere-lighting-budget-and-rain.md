@@ -327,7 +327,8 @@ T-AT05 asserts ≤ 2, and GDD 28 should tighten the AC (OI-3).
   grows and shrinks with energy before compression, enlarging the visual area
   of a flicker. This is why D4 assumes the area criterion is met. Glow
   intensity and threshold are art data; S0b-6 captures blackout and flicker
-  with glow on.
+  with glow on. Constraint from ADR-0015 OI-1(a): the shipped glow threshold
+  **must** be ≥ 1,0, or ADR-0015's SH5 pass is re-run with the shipped value.
 - **Exposure:** fixed; **no auto-exposure** in the game scenes. Auto exposure
   would rescale luminance after a blackout and could turn a monotone change
   into a flash, breaking D4's proxy.
@@ -386,7 +387,9 @@ T-AT05 asserts ≤ 2, and GDD 28 should tighten the AC (OI-3).
   pause does not open a hole in the buffer: contract for ADR-0012 (OI-4).
 - The `ReflectionProbe` of `sala_reuniones` (for `B04`, no delay) is set by 28
   to intensity `min(data, reflection_strength_max)`; the cap is published by
-  29 as data (ADR-0015). 28 never touches `mat_glass_memo`, and only `C02` is
+  29 as data (ADR-0015). The intensity cap is the knob; the acceptance
+  criterion is ADR-0015 D2's **measured** `ΔL_refl ≤ 0,045` on the film —
+  28 does not read 0,15 as the only test (ADR-0015 OI-1(b)). 28 never touches `mat_glass_memo`, and only `C02` is
   in group `reflejo_retardado` (TR-atmos-013, AC-28-11).
 
 ### D8 — Pause behaviour (TR-atmos-018, AC-28-16)
@@ -870,7 +873,7 @@ Doubles: `GameClock` driven by `advance()` with `NullPauseBackend` (ADR-0002), `
 
 | ID | Item | Owner / where |
 |---|---|---|
-| OI-1 | **Amend ADR-0007 D9**: add `LIGHT_FLICKER_DEPTH_FLOOR: float = 0.40`; replace the `"FLASH_MAX_HZ"` alias comment on `FLASH_MAX_PER_S` (C2); state the flash unit (onset, half-open 1000 ms, integer ms) and that 28 calls `try_flash()` after its local limiter (closes ADR-0007 OI-6) | ADR-0007 (next reconciliation) |
+| OI-1 | **Applied 2026-11-10 (OI-1 in ADR-0007 D9; OI-5 as `ctx.flash_guard` in ADR-0009 D3).** **Amend ADR-0007 D9**: add `LIGHT_FLICKER_DEPTH_FLOOR: float = 0.40`; replace the `"FLASH_MAX_HZ"` alias comment on `FLASH_MAX_PER_S` (C2); state the flash unit (onset, half-open 1000 ms, integer ms) and that 28 calls `try_flash()` after its local limiter (closes ADR-0007 OI-6) | ADR-0007 (next reconciliation) |
 | OI-2 | GDD 28 R7, R22 and TR-atmos-008/-018: "`Tween`" → "envelope evaluated on `GameClock` (ADR-0014 D3)"; R22's ‡ on `TWEEN_PAUSE_STOP` removed for 28; OQ 12 closed by ADR-0002 + D8 | `/propagate-design-change` |
 | OI-3 | GDD 28 F8 / TR-atmos-016: "≤ 14 cargadas por escena" → "≤ 14 habilitadas por instancia de escena (activación por sala)" (C1); AC-28-02 "≤ 3" → "≤ 2" (C3); DT-1 → scene node (reconciliation G25); TR-atmos-005 names → `A11yConstants` names (C2); `zone_visibility` and `shadow_allowlist` added to Tuning Knobs | `/propagate-design-change` |
 | OI-4 | `pose_con_retardo(τ)` indexes history by game time; `giro_acumulado(window_s)` signature; hand-light mechanism counts in the light budget | ADR-0012 |
