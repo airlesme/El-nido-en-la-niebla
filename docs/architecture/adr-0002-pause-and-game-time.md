@@ -921,11 +921,11 @@ title, or a visible jump on resume.
 |---|---|---|
 | OI-1 | `architecture.md` § Required ADRs row ADR-0002: `WHEN_PAUSED` for 25 → `ALWAYS` (§ D2 note); § Module Ownership `GameClock` row: add `RealClock`, `schedule`/`cancel`/`deadline`; § Data Flow pause: add T1–T6 and the «Nueva partida» resume point | technical-director, at `/architecture-review` |
 | OI-2 | GDD text changes after the spike: 23 D23-25 rationale (§ D3); 28 R22 "in A the tree freezes, handler is the B seam"; 29 R35 close ‡ with the S5 value; 26 OQ 8 close; 25 OQ 2 / D25-28 close; 28 OQ 12, 29 OQ 11 close | `/propagate-design-change` |
-| OI-3 | «Nueva partida» from pause: confirm in ADR-0003 that 4 instantiates only after 25's `resume()` (G-11) and who calls `GameClock.reset_session()` (proposed: 4, before instantiating) | ADR-0003 |
+| OI-3 | **Resolved 2026-11-10 (ADR-0003 step 4: G-11 assert; 4 calls `reset_session()` before instantiating).** «Nueva partida» from pause: confirm in ADR-0003 that 4 instantiates only after 25's `resume()` (G-11) and who calls `GameClock.reset_session()` (proposed: 4, before instantiating) | ADR-0003 |
 | OI-4 | Physics interpolation hold/reset on pause in partial or full B | ADR-0012 |
 | OI-5 | Consumers of «pausa cerrada»: 3 lists 5, 23, 26, 28; `architecture.md` § Data Flow adds 24 (glyphs) and 5 has no use for it. Align GDD 3 / 24 / 25 table l. 447 | GDD 3 owner |
 | OI-6 | Record verified pause behaviour in `docs/engine-reference/godot/modules/` (25 OQ 2) | engine-programmer, spike report |
-| OI-7 | Injection of `GameClock` / `RealClock` via `ServiceContext` and backend choice in `Boot` | ADR-0009 |
+| OI-7 | **Resolved: ADR-0009 D3 (`ctx.clock: GameClock`, `ctx.real_clock: RealClock`, built in Boot steps 0/3).** Injection of `GameClock` / `RealClock` via `ServiceContext` and backend choice in `Boot` | ADR-0009 |
 
 ## Related
 - ADR-0001 Event bus and fact contract — carries «pausa abierta» / «pausa cerrada»; its NS-1 (`Callable.is_valid()` on freed owner) and NS-7 (main-loop order) also apply here.
