@@ -1,7 +1,7 @@
 # Test Infrastructure
 
 **Engine**: Godot 4.7 (4.7.2 installed locally and pinned in CI)
-**Test Framework**: GdUnit4 — **NOT INSTALLED in this repo yet** (see below)
+**Test Framework**: GdUnit4 6.2.3 (installed in `addons/gdUnit4/`; 3 example tests PASS with Godot 4.7.2 headless on 2026-11-10; CI not yet run on GitHub)
 **CI**: `.github/workflows/tests.yml`
 **Setup date**: 2026-11-10
 
@@ -77,3 +77,8 @@ tests exist.
 
 Tests run on every push to `main` and every pull request. A failed suite blocks
 merging. The workflow has not been executed yet.
+
+
+## Verified 2026-11-10
+
+GdUnit4 **6.2.3** (`godot-gdunit-labs/gdUnit4`, tag v6.2.3, copied from the source `addons/gdUnit4`) runs on Godot 4.7.2.stable: `Overall Summary: 3 test cases | 0 errors | 0 failures | 0 orphans`, exit code 0. The line `Remote Debugger: Unable to connect to host '127.0.0.1:0'` printed by the documented command is expected noise (port 0) and does not affect the result. The addon is not enabled in `project.godot` (the command-line tool works without it).
