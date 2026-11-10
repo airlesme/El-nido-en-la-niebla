@@ -360,6 +360,8 @@ func setup(ctx: ServiceContext, source: SceneSource, curtain: Curtain,
 func request_load(destination: Destination, reason: Reason, final_control: FinalControl) -> bool
 ## «descarga total». Accepted from READY and ERROR only.
 func request_full_unload() -> bool
+## d_out of `reason` as this load would use it (0,1 s with reducir_movimiento); 21 reads d_cierre here (ADR-0017 A2) ‡
+func fade_duration_s(reason: Reason) -> float
 ## Own fade for 21 (`cierre`): darkens only, no load, no D_carga, never lifts.
 func request_fade_out(fade_reason: StringName = &"cierre") -> void
 ## Holds: valid only between step 6 start and «escena lista»; otherwise ignored + logged.
@@ -392,6 +394,8 @@ func get_zone_hub() -> ZoneHub
 func validate_required_nodes() -> PackedStringArray   # empty = OK (TR-scene-003, -005)
 ## Calls configurar(ctx) on configure_first in order, then on ELEMENT_GROUP in tree order,
 ## skipping the ones already configured. Synchronous. Stops at 9's validation failure.
+## configurar() returns void (ADR-0009): after 9's call the root asks
+## PuzzleFramework.configuration_failed() and maps true → INVALID_PUZZLE_DATA (ADR-0010 D13).
 func configure_all(ctx: ServiceContext) -> ConfigureResult
 ```
 
@@ -716,7 +720,7 @@ func _flush() -> void:
 | R2 | Jolt `Area3D` misses the 0,05 m sensor, double-reports, or reports outside X 8,923–8,95 | S-0003-B; fallback Alternative 5 (arithmetic box test in `ZoneHub`, same notice contract) |
 | R3 | A load blocking > `D_carga` + 2 s lets Entrada's tope and `T_cap` expire in the same frame, order unknown | Accepted limitation (GDD 4 F3); S-0003-C records the real hitch; a warning is logged when the load exceeds `D_carga` |
 | R4 | ADR-0001 does not deliver notices within the frame, breaking "same frame" handoff and «partida terminada» timing | Hard dependency on ADR-0001; integration test T-I2 fails if so |
-| R5 | Physics interpolation shows a smear from the previous pose after `colocar` | Owned by ADR-0012 (`colocar` must reset interpolation); hidden anyway behind `N_gap` black frames |
+| R5 | Physics interpolation shows a smear from the previous pose after `colocar` | **Resolved by ADR-0012 D2/D4** (`TickInterpolator.reset` in `colocar`); hidden anyway behind `N_gap` black frames |
 | R6 | The pause opens in frame F between «iniciada» and the notice reaching Entrada | `open_no_control` is SYNC in F; `carga_en_curso` relies on ADR-0001 same-frame delivery before the next input dispatch (Open Item O2) |
 
 ## GDD Requirements Addressed
@@ -864,7 +868,7 @@ visible frame of a half-configured scene.
 | O3 | ~~Exact `InputContexts` signatures and the owner `StringName`s~~ Resolved (reconciliation 2026-11-10): ADR-0006 signatures adopted (`open_no_control(owner, declared_s, absorbs_foreign)`, `close_no_control(owner)`); owners `&"scene_loader"`, `&"scene_director"`; tope on `GameClock` | ADR-0006 | — |
 | O4 | Who lifts the curtain over the title after a full unload, and with which duration (GDD 4 OQ 8 open); proposal: a `titulo` row in `load_transitions.json`, `d_in` 0,8 s† (0,1 s with `reducir_movimiento`), triggered by 27 when ready | GDD 4 + GDD 27 | Title story |
 | O5 | Full unload from a visible scene (pause) fades in 0,1 s instead of a cut: GDD 4 rule 15 says "sin fundidos", rule 11 says the curtain is always a fade | GDD 4 author | Next GDD 4 revision |
-| O6 | `colocar` angle units and teleport reset of physics interpolation | ADR-0012 | ADR-0012 |
+| O6 | ~~`colocar` angle units and teleport reset of physics interpolation~~ Resolved by ADR-0012 D2/D4: radians; `TickInterpolator.reset` in `colocar`; `colocar` before `configurar` stores a pending placement completed by `configurar` (ADR-0012 C2) | ADR-0012 | — |
 | O7 | Collision layer name/number `zone_sensor` in the project layer table | ADR-0011 (masks) | ADR-0011 |
 
 ### Contradictions found in the sources
