@@ -92,7 +92,7 @@ Grafo de dependencias. Cada flecha es una condición:
 1. Despacho de Vera → buscar «transición» en el ordenador → **flag** `correos_leidos`.
 2. `correos_leidos` → resolver Puzle 1 → **flag** `archivo_abierto`. Se entregan `tarjeta_B` y `tarjeta_D`.
 3. `tarjeta_B` → entrar en Sala B → resolver Puzle 2 → **flag** `memo_leido`.
-4. `tarjeta_D` → entrar en D → resolver compartimentos 1 a 4 en cualquier orden, aunque la lectura tiene sentido en este orden → **flag** `caja_completa`.
+4. `tarjeta_D` → entrar en D → resolver los compartimentos 1 a 4 con la cadena c1→c3→c4 y el c2 libre (c3 requiere c1; c4 requiere c1, c2 y c3; c2 puede resolverse en cualquier momento, D-16) → **flag** `caja_completa`.
 5. Al salir de D con `caja_completa`, se activa la llamada (escena 7). Es el único disparador de la llamada.
 6. Llamada completada → se activa el ascensor → Recepción (escena 8).
 
@@ -359,7 +359,7 @@ Cada línea tiene un ID para que audio, localización y QA puedan referenciarla.
 
 - Si el jugador sale de la Sala B sin cuadrar las lámparas, quedan en la última posición. Puede volver cuando quiera.
 - Si el jugador deja «Carta a Dirección» sin decidir, la ficha permanece en la mesa y el compartimento 2 no se resuelve hasta decidirla.
-- Si el jugador sale de D sin completar la caja, la llamada no se activa. Puede volver a D en cualquier momento. Ningún compartimento depende de otro para ser resoluble.
+- Si el jugador sale de D sin completar la caja, la llamada no se activa. Puede volver a D en cualquier momento. Los compartimentos se encadenan (c3 requiere c1; c4 requiere c1, c2 y c3; c2 es libre, D-16), pero siempre hay un compartimento resoluble mientras la caja no esté completa: nunca hay callejón ni softlock.
 - Si el jugador intenta salir del edificio antes de la llamada, el ascensor no responde y la megafonía (`MEGA_03`) indica «Planta en modo de ahorro energético».
 
 ## 14. Audio
@@ -470,7 +470,7 @@ El slice se considera aceptable cuando:
 
 - **D-14 · Permanencia de la carta:** la elección del compartimento 4 es definitiva. Motivo: coherencia con el pilar de autonomía. Confirmar.
 - **D-15 · Silencio en la llamada:** es un botón («No responder»). Tras veinte segundos no se elige nada por el jugador. Confirmar.
-- **D-16 · Orden de la caja:** el compartimento 3 requiere el 1, y el 4 requiere el 1, el 2 y el 3. El 2 es libre. Confirmar.
+- **D-16 · Orden de la caja:** el compartimento 3 requiere el 1, y el 4 requiere el 1, el 2 y el 3. El 2 es libre. **Tomada (usuario, 2026-11-10):** cadena c1→c3→c4 con c2 libre. Alternativa descartada: orden libre. Motivo: guía sin callejón.
 - **D-04 · Nombre de Vera:** provisional. Afecta a la carta, la megafonía y el formulario.
 - **D-05 · Motor:** Godot o Unity. Ambos sirven. La decisión depende de la experiencia del equipo.
 - **D-06 · Clasificación por edad:** pendiente de revisión.
@@ -1101,6 +1101,7 @@ Son 20 hechos en total (los de la tabla, contando `pos_L`, `pos_C` y `pos_R` por
 | Versión | Fecha | Cambio |
 |---|---|---|
 | 0.4.1 | 2026-11-09 | Decisión del usuario (opción (c) de la Open Question 10 de `marco-de-puzles.md`, R6-9): el criterio de duración «25–30 min» (cabecera, §19.1) pasa a «entre ~15 y ~30 min según el jugador (mínimo 15,0 min con fuentes firmes, techo ≈ 33 min), a confirmar en playtest con AC-X5». §22: se retira «ningún puzle requiere más de dos minutos» (choca con F7) por «cada puzle entre ~1 y ~6 min». §23: playtest de ≥ 5 testers nuevos (unificado con AC-X5). Sin cambios de pilares ni de alcance. |
+| 0.4.3 | 2026-11-10 | Decisión del usuario D-16 (orden de la caja): cadena c1→c3→c4 con c2 libre (c3 requiere c1; c4 requiere c1, c2 y c3). Alternativa descartada: orden libre; motivo: guía sin callejón. §8 (paso 4) y §13.3 se reescriben para reflejar la cadena; D-16 pasa a «Tomada». Sin cambios de pilares ni de alcance. |
 | 0.4.2 | 2026-11-09 | Decisión del usuario sobre la fila «+4,0» de C.7: se interpreta como la línea de variante a **4,8 s** del pulso en `V02` (animación 0,8 s + silencio 2,0 s + respiración 2,0 s), no a 4,0 s ni a 8,8 s; las opciones aparecen a ≈ 10,8 s (con la línea de ≈ 5 s y +1,0 s) y la llamada dura 16,4–44,8 s (`llamada-telefonica.md`, F1–F5). Consecuencia: el mínimo del criterio de duración (cabecera, §19.1) pasa de 15,0 a ≈ 14,8 min (`marco-de-puzles.md`, F9, D9-66). D.2: `llamada_iniciada` se escribe al pulsar «Descolgar» (aclaración, D22-3). Sin cambios de pilares ni de alcance; D-15 sigue pendiente de confirmar. |
 | 0.4 | 2026-11-09 | Versión mayor que integra cinco decisiones del usuario surgidas de los GDDs de la capa Feature: (1) `MEGA_03`, megafonía de ahorro energético del ascensor inactivo, entra en §12 (27→28 entradas; 21 audibles, 3 de megafonía) con el texto de §13.3, redacción final pendiente del writer; (2) zonas `T-D-OUT` y `T-OFI-IN` añadidas al Anexo A.3 y D.4 con coordenadas propuestas; (3) `atrás` corta en `exploración` = «repasar bolsillo» (un documento por pulsación, sin menú), matiza D.1; (4) I-05 e I-06a releíbles desde el bolsillo; (5) B.1 confirmado literal (hoja con `Enviado: hh:mm` y pie «Ordena por hora de envío»; pistas 2 y 3 sin información nueva). Afecta a §12, §13.3, A.3, B.1, D.1 y D.4. |
 | 0.3.2 | 2026-11-09 | Ajustes autorizados por el usuario sobre v0.3 (sin cambiar de versión): la ficha T4 «Carta a Dirección» acepta Devolver o resolverla con los selectores (cualquier combinación), sin respuesta incorrecta ni «No corresponde»; la elección se guarda en `t4_decision` (`returned`/`assigned`, escrito antes de `caja_c2`); `VO_G_14` pasa a `VO_G_14_RET`/`VO_G_14_ASG` (propuesta provisional pendiente de narrative-director); D.2 pasa de 19 a 20 hechos. Afecta a B.4, 10.4, 11, 12, 13.3 y D.2. |
