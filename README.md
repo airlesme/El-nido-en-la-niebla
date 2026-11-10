@@ -1,7 +1,7 @@
 # El Nido en la Niebla
 
 Juego de puzles y misterio en **primera persona 3D**, hecho con **Godot 4**.
-Vertical slice actual: **«Turno de noche»** (25–30 min, un piso de oficinas, seis puzles, una llamada y un final con variaciones).
+Vertical slice actual: **«Turno de noche»** (~15–30 min según el jugador, a medir en playtest; un piso de oficinas, seis puzles, una llamada y un final con variaciones).
 
 > Objetivo inmediato: tener un slice jugable y con calidad final en lo que se muestra, para enseñarlo y conseguir financiación.
 
@@ -22,7 +22,7 @@ CLAUDE.md, project.yaml     Config del estudio de agentes (project.yaml = fuente
 
 design/                     Diseño (no tocar a mano lo de slice/ sin versionar)
   slice/                    Documento del slice (fuente de verdad) + índice
-  gdd/                      GDDs por sistema (/design-system, /map-systems)
+  gdd/                      GDDs por sistema (30 GDDs de sistemas, revisados en la ronda 9; ver systems-index.md)
   narrative/                Guion, línea temporal, lore
   levels/                   Planos y blocking de los espacios (Anexo A)
   art/                      Art bible, paleta, referencias
