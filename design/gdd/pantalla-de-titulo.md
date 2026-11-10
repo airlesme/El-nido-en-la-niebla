@@ -1,8 +1,8 @@
 # Pantalla de título, advertencias y cierre (sistema 27)
 
-> **Status**: Revisado (ronda de corrección 1) — pendiente de re-review
+> **Status**: Revisado (ronda de corrección 9) — pendiente de re-review (ronda 9: R9-B5 dureza hacia 30 = Dura sin ciclo; R9-B6 fundido de 100 ms; «Nueva partida» con confirmación si la inspección expira; durezas; suelo de texto de 30)
 > **Author**: UX Designer (lote autónomo)
-> **Last Updated**: 2026-11-09
+> **Last Updated**: 2026-11-10
 > **Implements Pillar**: Tensión sin castigo (el título nunca castiga: sin confirmaciones innecesarias, sin pérdida de partida por error) · Autonomía como progresión (el jugador decide cuándo continuar, ajustar o salir; las advertencias informan, no bloquean) · El espacio expresa la emoción (el título es la primera habitación del juego: quieta, en penumbra, sin música que dirija)
 
 ## Summary
@@ -20,7 +20,8 @@ El slice (§17) exige mostrar las advertencias de contenido «en la pantalla de 
 ```
 Arranque -> [Advertencias (solo si no vistas)] -> Menú principal
 Menú principal -> Continuar / Nueva partida -> (5: "Cargando partida") -> En partida
-En partida -> Salir al título (25) -> Menú principal
+En partida -> Volver al título (25) -> Menú principal
+En partida -> Nueva partida (25, con confirmación) -> En partida (escena 1; el título no interviene)
 En partida -> (la partida se sella al llegar a Recepción: "partida terminada" de 4, resultado `terminada` en 5)
 En partida -> "tarjeta final pedida" (21, ~25 s después) -> Tarjeta de cierre (27) -> descarga total (4) -> [Créditos, si OQ 7 los confirma] -> Menú principal (solo "Nueva partida")
 Fallo de carga (4) -> Mensaje de error -> Aceptar -> Menú principal
@@ -31,6 +32,7 @@ Fallo de carga (4) -> Mensaje de error -> Aceptar -> Menú principal
 | Resultado (5) | Filas | Aviso | Confirmación en «Nueva partida» |
 |---|---|---|---|
 | `ninguna` | Nueva partida · Opciones · Salir | — | No |
+| `desconocido` (5 no respondió en `t_espera_inspeccion_s`) | Nueva partida · Opciones · Salir | — | **Sí, siempre** (no se asume `ninguna`: la inspección tardía podría encontrar una partida válida) |
 | `valida`, `terminada` falso | **Continuar** (foco) · Nueva partida · Opciones · Salir | — | **Sí** |
 | `valida`, `terminada` verdadero | **Nueva partida** (foco) · Opciones · Salir | — | **No** (decidido por el usuario) |
 | `irrecuperable` | Nueva partida · Opciones · Salir | «La partida guardada está dañada» (una vez por arranque) | No |
@@ -51,19 +53,19 @@ El jugador llega a un lugar tranquilo antes de empezar su turno de noche. Nada l
 2. **Contenido de las advertencias (slice §17).** Una lista de cinco entradas, cada una una entrada `UI_…` de 18: estrés laboral · aislamiento · decepción afectiva · llanto contenido · dinámicas de control y de desigualdad en una relación de trabajo. Encabezado neutro («Antes de empezar»). **Sin línea de cierre** que prometa contenido («sin violencia gráfica…»): §17 es una lista de reglas internas y convertirla en promesa pública es decisión de tono/legal (OQ 8, valor por defecto: no se muestra).
 3. **No bloqueante por tiempo.** No hay cuenta atrás ni salto automático: la pantalla espera a que el jugador pulse «Entendido» (`ui_accept`). Un segundo botón «Salir del juego» está siempre presente (quien no quiera jugar no debe tener que pasar por ello).
 4. **Una sola vez.** Al pulsar «Entendido» se escribe `advertencias_vistas`† = verdadero. Las advertencias se pueden releer siempre desde Opciones > «Avisos de contenido» (regla 17).
-5. **Sin efectos.** Sin flashes ni sacudidas; la entrada es un fundido (F1) que respeta `reducir_movimiento` y `reducir_sobresaltos` (6).
+5. **Sin efectos.** Sin flashes ni sacudidas; la entrada es un fundido (F1) que, con `reducir_movimiento` o `reducir_sobresaltos` (6), dura 100 ms (30 regla 27).
 6. **Clasificación pendiente (D-06).** No se muestra ninguna etiqueta de clasificación hasta que D-06 esté cerrada (Open Questions 3).
 
 ### B. Menú principal
 
 7. **Estructura.** Lista vertical de filas (título del juego encima, rótulo de versión de compilación abajo a un lado). Las filas visibles dependen del resultado (tabla de Overview). Las filas no ofrecidas **no existen** (no se muestran desactivadas): decide el diseño UX lo que 5 deja abierto (UI Requirements de 5) por la regla de que no hay opción muerta que explicar.
 8. **Foco inicial.** En la fila «Continuar» si existe; si no, en «Nueva partida». El foco se muestra siempre (con teclado, mando y ratón), con borde y marca y no solo color.
-9. **Consulta del resultado.** El sistema lee el resultado de la **última** inspección de 5 cada vez que entra en el menú principal (también al volver de una partida): `terminada`, `con_futura` y el resultado base. No relee disco ni caduca. **Candado:** 27 no pinta el menú hasta que 5 esté en «Sin partida» y haya terminado la re-inspección disparada por «descarga total completada»; así nunca se lee un resultado viejo.
+9. **Consulta del resultado.** El sistema lee el resultado de la **última** inspección de 5 cada vez que entra en el menú principal (también al volver de una partida): `terminada`, `con_futura` y el resultado base. No relee disco ni caduca. **Candado:** 27 no pinta el menú con un resultado viejo: espera a que 5 esté en «Sin partida» y haya terminado la re-inspección disparada por «descarga total completada». Si pasa `t_espera_inspeccion_s` sin respuesta, 27 **no asume `ninguna` ni usa el resultado viejo**: pinta el menú con el estado **`desconocido`** (tabla de Overview) y «Nueva partida» exige siempre la confirmación de la regla 11; cuando 5 responda, la lista se refresca (edge case). Así 27 nunca ofrece sin diálogo una sobrescritura que la inspección pueda desmentir después.
 10. **Continuar.** Llama a `continuar()` de 5 y pasa a «Cargando» (regla 12). Sin confirmación.
-11. **Nueva partida.** Con la confirmación que marca la tabla: diálogo modal «Se sustituirá tu partida actual cuando se guarde la nueva» con «Empezar de nuevo» y «Cancelar» (foco en **Cancelar**). Sin confirmación en los demás casos. Llama a `nueva_partida()` de 5.
+11. **Nueva partida.** Con la confirmación que marca la tabla (también en el estado `desconocido`, regla 9): diálogo modal «Se sustituirá tu partida actual cuando se guarde la nueva» con «Empezar de nuevo» y «Cancelar» (foco en **Cancelar**). Sin confirmación en los demás casos. Llama a `nueva_partida()` de 5.
 12. **Carga: el título no pide `planta`.** Tras `continuar()` o `nueva_partida()`, 5 entra en «Cargando partida» y es 5 quien pide la carga de `planta` a 4. El título se limita a (a) bloquear las entradas del menú, (b) mostrar la cortina negra que gestiona 4 y (c) quedar inerte hasta recibir «carga de escena terminada» o «carga de escena fallida». No muestra barra de progreso (la carga cabe en `D_carga`, GDD 4).
-13. **Opciones.** Abre las pantallas de nivel 2 del menú de pausa (25): «Sonido y pantalla», «Accesibilidad» (cuyos ajustes comparte con 30) y «Controles», **como componente reutilizable que 25 expone** (mismos ajustes y salvaguardas de reasignación; dependencia Dura de 25 y 30: sin ese componente Opciones no existe). Se omiten «Continuar», «Pistas» y «Salir al título». Se añade una fila «Avisos de contenido» (regla 4; OQ 9). Escribir un ajuste desde aquí es igual que desde la pausa (6, regla 5).
-14. **Salir del juego.** Cierra el árbol de escenas con `SceneTree.quit()` (API estándar de Godot 4.x) sin confirmación (no hay nada sin guardar en el título). Solo en PC (incluido Steam Deck); consolas fuera de alcance del slice.
+13. **Opciones.** Abre las pantallas de nivel 2 del menú de pausa (25): «Sonido y pantalla», «Accesibilidad» (cuyos ajustes comparte con 30) y «Controles», **como componente reutilizable que 25 expone** (mismos ajustes, mismo orden de 30 regla 6 y mismas salvaguardas de reasignación). Dependencia: **Dura de 27 sobre 25 y sobre 30** (la declara 27, el dependiente: sin ese componente Opciones no existe); 30 declara a 27 y a 25 **Blanda** (solo aloja sus opciones en pantallas accesibles desde título y pausa), de modo que **no hay ciclo duro** 27↔30 (R9-B5). Se omiten las filas de la raíz de 25 («Reanudar», «Pistas», «Nueva partida», «Volver al título»). Se añade una fila «Avisos de contenido» (regla 4; OQ 9). Escribir un ajuste desde aquí es igual que desde la pausa (6, regla 5).
+14. **Salir del juego.** Cierra el árbol de escenas con `SceneTree.quit()` (**no verificado**: `docs/engine-reference/godot/` no lo cubre; pendiente de verificación) sin confirmación (no hay nada sin guardar en el título). Solo en PC (incluido Steam Deck); consolas fuera de alcance del slice.
 15. **Navegación.** Teclado (`ui_up/down/accept/cancel`), mando (D-pad, A, B) y ratón; el ratón no cambia el foco al reaparecer el cursor hasta moverse. `ui_cancel` en el menú principal no hace nada (no salir por accidente). Todas las acciones son alcanzables con solo teclado y con solo mando.
 16. **Sin entrada durante transiciones.** Mientras dura un fundido o una carga, las entradas se ignoran (no se encolan).
 17. **Avisos de contenido.** Desde Opciones, abre las mismas cinco entradas de la regla 2 en una pantalla de lectura, con «Volver».
@@ -89,7 +91,7 @@ El jugador llega a un lugar tranquilo antes de empezar su turno de noche. Nada l
 
 ### F. Accesibilidad
 
-28. **Texto y escala.** Todo el texto es de los tamaños mínimos del proyecto y escala con el ajuste de tamaño de interfaz de 6; todas las pantallas caben a 1280x720 y a 3840x2160 sin recorte.
+28. **Texto y escala.** Todo el texto es de los tamaños mínimos del proyecto y escala con `escala_texto_ui` de 6 (30 regla 8; clave provisional, 6 OQ 15) y nunca baja del suelo `tam_min_px` de 30 (regla 26: 24 px lógicos); todas las pantallas caben a 1280x720 y a 3840x2160 sin recorte.
 29. **Sin color como único canal.** Foco, avisos y botones se distinguen por forma y texto.
 30. **Mando.** Sin ratón se puede hacer todo. Al desconectarse el mando en el título, no hay panel «Mando desconectado» de 25 (excepción a reflejar en 25 y 1); el menú pasa a teclado y ratón sin perder el foco.
 
@@ -97,15 +99,15 @@ El jugador llega a un lugar tranquilo antes de empezar su turno de noche. Nada l
 
 ### F1 · Fundido de entrada y salida del título
 
-`t_fundido = t_fundido_base_s` si el movimiento es normal; `t_fundido = t_atenuacion_s` si `reducir_movimiento` o `reducir_sobresaltos` (6) están activos. `t_fundido_base_s` = 0,8 s† (rango 0,3 a 1,5 s; mismo valor que el fundido propio de 21, independiente: si 21 cambia, revisar); `t_atenuacion_s` = 0,15 s† (rango 0,05 a 0,3 s). Ejemplos: movimiento normal: 0,8 s; con `reducir_movimiento`: corte con atenuación de 0,15 s.
+`t_fundido = t_fundido_base_s` si el movimiento es normal; `t_fundido = t_fundido_reducido_s` = **0,1 s (100 ms)** si `reducir_movimiento` o `reducir_sobresaltos` (6) están activos: es el valor único del proyecto (30 regla 27, R9-B6; 6 `reduce_motion_fade_s`), que 27 cita y no posee. `t_fundido_base_s` = 0,8 s† (rango 0,3 a 1,5 s; mismo valor que el fundido propio de 21, independiente: si 21 cambia, revisar). Ejemplos: movimiento normal: 0,8 s; con `reducir_movimiento`: 100 ms.
 
 ### F2 · Duración visible de la tarjeta de cierre
 
-`t_visible_tarjeta = t_tarjeta_s + t_fundido` (sin salto). Con `t_tarjeta_s` = 3,0 s (21): 3,8 s con movimiento normal; 3,15 s con `reducir_movimiento`.
+`t_visible_tarjeta = t_tarjeta_s + t_fundido` (sin salto). Con `t_tarjeta_s` = 3,0 s (21): 3,8 s con movimiento normal; 3,1 s con `reducir_movimiento`.
 
 ## Edge Cases
 
-- **Inspección aún sin resultado al llegar al título** (5 lenta): el menú no se muestra; la cortina permanece en negro con el título del juego. Si pasan `t_espera_inspeccion_s`† sin resultado, se asume `ninguna` y se escribe una línea de diagnóstico en el log del motor (sin aviso al jugador).
+- **Inspección aún sin resultado al llegar al título** (5 lenta): el menú no se muestra; la cortina permanece en negro con el título del juego. Si pasan `t_espera_inspeccion_s`† sin resultado, el estado es **`desconocido`** (no `ninguna`): se pinta el menú con «Nueva partida» (siempre con confirmación), Opciones y Salir, y se escribe una línea de diagnóstico en el log (sin aviso al jugador). Si la inspección llega después, la lista se refresca (`valida`: aparece «Continuar»; `ninguna`: la confirmación deja de exigirse) conservando el foco, y un diálogo de confirmación ya abierto sigue siendo válido.
 - **Resultado cambia mientras el menú está abierto** (por ejemplo, 5 actualiza): se refresca la lista conservando el foco en la misma fila si aún existe; si no, en la primera.
 - **Combinaciones de resultados:** rige la precedencia del Overview (`terminada` manda sobre `irrecuperable`, `version_futura` y `con_futura`; solo «Nueva partida», sin confirmación; los avisos se muestran igual).
 - **Cierre de ventana durante la tarjeta o tras ella:** ver regla 27; la descarga total de 21 puede no haberse completado, y al reabrir 5 inspecciona de nuevo.
@@ -124,29 +126,29 @@ El jugador llega a un lugar tranquilo antes de empezar su turno de noche. Nada l
 
 | Sistema | Tipo | Qué usa 27 | Qué da 27 |
 |---|---|---|---|
-| 1 Entrada y controles | Dura | `ui_*`, cursor, contexto `menú`, reasignación (vía Opciones de 25) | Peticiones de contexto `menú` |
+| 1 Entrada y controles | Dura (declarada por 27, el dependiente; 1, 3, 4 y 21 deben repetirla en su tabla) | `ui_*`, cursor, contexto `menú`, reasignación (vía Opciones de 25) | Peticiones de contexto `menú` |
 | 3 Estado y bus | Dura | Suscripción a «tarjeta final pedida» (de 21), «carga de escena fallida/terminada», «descarga total completada» | — (no escribe hechos) |
 | 5 Guardado y carga | Dura | Resultado de la **última** inspección (`terminada`, `con_futura`), `continuar()`, `nueva_partida()`, estado «Sin partida» | Peticiones de continuar y nueva partida |
-| 6 Ajustes persistentes | Blanda (alineada con 6, fila 27) | Lectura y escritura de ajustes, `advertencias_vistas`†; sin 6 se usan valores por defecto y las advertencias cuentan como no vistas | Escrituras desde Opciones |
+| 6 Ajustes persistentes | Blanda (alineada con 6, fila 27); `advertencias_vistas` es un dato no restablecible (6 D-6.7) | Lectura y escritura de ajustes, `advertencias_vistas`†; sin 6 se usan valores por defecto y las advertencias cuentan como no vistas | Escrituras desde Opciones |
 | 18 Base de contenido | Dura | Título, advertencias (§17), «Continuará», textos de avisos y del error | — |
 | 4 Escena de planta | Dura (5 lo trata como contrato) | «Carga de escena fallida/terminada», «descarga total completada»; (la «partida terminada» de 4 solo llega a 27 vía 5) | Petición de descarga total tras fallo de carga |
 | 21 Director de escenas | Dura | «Tarjeta final pedida»; pila de entrada tras la descarga total | Pinta la tarjeta (DT-4); fin del cierre |
 | 23 Audio | Blanda | Audio del título (OQ 1) | — |
-| 25 Menú de pausa | Dura | Pantallas de nivel 2 («Sonido y pantalla», «Accesibilidad», «Controles») como componente reutilizable | Recibe al jugador tras «Salir al título» |
-| 30 Accesibilidad | Dura | Pantalla de accesibilidad (comparte ajustes con 25) | — |
+| 25 Menú de pausa | Dura | Pantallas de nivel 2 («Sonido y pantalla», «Accesibilidad», «Controles») como componente reutilizable | Recibe al jugador tras «Volver al título» |
+| 30 Accesibilidad | **Dura** (declarada por 27, el dependiente; 30 declara a 27 **Blanda**: no hay ciclo duro, R9-B5) | Contenido y orden de la pantalla de accesibilidad (comparte ajustes con 25) | — |
 
 ## Tuning Knobs
 
 | Parámetro | Valor | Rango seguro | Afecta a |
 |---|---|---|---|
 | `t_fundido_base_s` | 0,8 s† | 0,3 a 1,5 | Suavidad de entrada y salida |
-| `t_atenuacion_s` | 0,15 s† | 0,05 a 0,3 | Atenuación con `reducir_movimiento`/`reducir_sobresaltos` |
+| ~~`t_atenuacion_s`~~ → `t_fundido_reducido_s` | 0,1 s (100 ms, **no es knob de 27**: valor de 6/30) | — | Fundido con `reducir_movimiento`/`reducir_sobresaltos` |
 | `t_espera_inspeccion_s` | 3,0 s† | 1 a 10 | Tolerancia ante 5 lenta |
 | `t_aviso_s` | sin límite | — | El aviso dura toda la visita al menú |
 | `advertencias_vistas` | falso | falso/verdadero | Mostrar advertencias al arrancar |
 | `creditos_paginas` | 1† (solo si OQ 7 confirma créditos) | 0 a 3 | Longitud del cierre |
 
-(† = valor propuesto; `t_tarjeta_s` es de 21.)
+(† = valor propuesto; `t_tarjeta_s` es de 21. `t_espera_inspeccion_s` ya no «asume `ninguna`»: marca el paso al estado `desconocido`.)
 
 ## Acceptance Criteria
 
@@ -163,19 +165,20 @@ El jugador llega a un lugar tranquilo antes de empezar su turno de noche. Nada l
 - **AC-11** Al pulsar «Continuar» o «Nueva partida», 27 no emite ninguna petición de carga de `planta` (verificable: solo 5 la emite).
 - **AC-12** Con «carga de escena fallida», el panel de error aparece sobre la cortina en negro con una sola acción; al aceptarla se llega al menú con el mismo resultado de inspección.
 - **AC-13** Con 18 no disponible, el panel de error usa el texto fijo y no falla.
-- **AC-14** «Opciones» abre las pantallas de 25 sin «Continuar», «Pistas» ni «Salir al título», y un cambio de volumen persiste al empezar la partida.
+- **AC-14** «Opciones» abre las pantallas de 25 sin «Reanudar», «Pistas», «Nueva partida» ni «Volver al título», y un cambio de volumen persiste al empezar la partida.
 - **AC-15** «Salir del juego» cierra la aplicación sin diálogo.
 - **AC-16** (integración) Con «tarjeta final pedida» de 21, 27 pinta «Continuará» durante `t_tarjeta_s` + `t_fundido`; después 4 queda en «Sin escena» con la pila en [`menú`] (≤3,0 s, AC-21-28), y se llega al menú con solo «Nueva partida» (con créditos intermedios solo si OQ 7 los confirma, ya con 4 en «Sin escena»).
-- **AC-17** La tarjeta no responde a ninguna entrada ni se salta; dura `t_tarjeta_s` + `t_fundido` (3,8 s con movimiento normal, 3,15 s con `reducir_movimiento`).
-- **AC-18** Con `reducir_movimiento` o `reducir_sobresaltos`, los fundidos duran `t_atenuacion_s` (0,15 s†) y los créditos (si existen) no se desplazan.
+- **AC-17** La tarjeta no responde a ninguna entrada ni se salta; dura `t_tarjeta_s` + `t_fundido` (3,8 s con movimiento normal, 3,1 s con `reducir_movimiento`).
+- **AC-18** Con `reducir_movimiento` o `reducir_sobresaltos`, los fundidos duran 100 ms (30 regla 27, AC-30-12; R9-B6) y los créditos (si existen) no se desplazan.
 - **AC-23** No se pinta el menú hasta que 5 esté en «Sin partida» con la re-inspección terminada; tras volver de una partida, el resultado leído no es el anterior.
+- **AC-27** (escenario S1, I) Con 5 sin responder tras `t_espera_inspeccion_s`, el menú se pinta con «Nueva partida» **con** diálogo de confirmación; si la inspección llega después con `valida`, la lista pasa a «Continuar» + «Nueva partida» sin perder el foco y nada se sobrescribió.
 - **AC-24** Con `terminada` + `version_futura`/`irrecuperable`, el menú ofrece solo «Nueva partida» sin confirmación y muestra el aviso correspondiente.
 - **AC-25** (solo si OQ 7 confirma créditos) `ui_accept` avanza de página, `ui_cancel` retrocede y «Volver al título» termina el cierre y muestra el menú.
 - **AC-26** En el título, la desconexión del mando no abre el panel «Mando desconectado» de 25 y el foco se conserva.
 - **AC-19** Todo el menú, las advertencias, los avisos y los créditos se completan solo con teclado y solo con mando.
 - **AC-20** El foco es visible sin depender del color; el texto cabe a 1280x720 y 3840x2160 (captura retenida en `production/qa/evidence/`).
 - **AC-21** Durante una carga, pulsar cualquier entrada no produce ninguna acción (no se encola).
-- **AC-22** Nunca aparece «Continuar» desactivado: o existe o no se muestra.
+- **AC-22** En cada resultado de la tabla de Overview (incluido `desconocido`), «Continuar» o existe o no se muestra; nunca aparece desactivado.
 
 ## Decisiones tomadas
 
@@ -194,13 +197,17 @@ El jugador llega a un lugar tranquilo antes de empezar su turno de noche. Nada l
 | D27-11 | El cierre lo dispara «tarjeta final pedida» (21) y la tarjeta la pinta 27 | Disparar con «partida terminada» (4); que 21 la pinte | «Partida terminada» llega al sellar en Recepción (~25 s antes); DT-4 de 21 asigna el pintado a 27 |
 | D27-12 | Secuencia: tarjeta -> descarga total -> (créditos) -> menú | Créditos antes de la descarga | 21 exige la descarga inmediata (regla 22, AC-21-28); los créditos van con 4 en «Sin escena» |
 | D27-13 | Tarjeta fija de 3,0 s sin salto; se elimina `t_tarjeta_min_s` | Tarjeta saltable tras 1,5 s | El slice la define como corte fijo (L291, L1028) y 21 espera `t_tarjeta_s` sin salto |
-| D27-14 | `t_atenuacion_s` (0,15 s†) como parámetro propio en F1 | `k_mov` = 0 (fórmula que daba 0 s) | La fórmula contradecía el texto; la atenuación breve evita un corte brusco |
+| D27-14 | (sustituida por D27-22) `t_atenuacion_s` (0,15 s†) como parámetro propio en F1 | `k_mov` = 0 (fórmula que daba 0 s) | La fórmula contradecía el texto; la atenuación breve evita un corte brusco |
 | D27-15 | Dependencias duras con 4, 21, 25 y 30; Blanda con 6 (alineada con 6) | Todas blandas | Sin ellas fallan carga/cierre/Opciones; con 6 hay valores por defecto |
 | D27-16 | Reparto único del error de carga: 27 presenta, 4 solo repone `menú` | 4 repone también el mensaje | Evita doble responsabilidad con 25/4 |
 | D27-17 | Precedencia general: `terminada` > `irrecuperable` > `version_futura` > `con_futura` | Resolver caso por caso | Una regla cubre todas las combinaciones |
 | D27-18 | El aviso `con_futura` incluye el reemplazo por el siguiente guardado | Resumirlo en «usa la última compatible» | Informa de una pérdida de datos real (5, UI Requirements) |
 | D27-19 | Candado: menú solo con 5 en «Sin partida» y re-inspección terminada (regla 9) | Leer el resultado al entrar sin esperar | Evita leer un resultado viejo |
 | D27-20 | Salir del juego con `SceneTree.quit()`; consolas fuera de alcance | Contemplar consolas | El slice es PC; Steam Deck es PC |
+| D27-21 | (Ronda 9, R9-B5) 27 declara a 30 **Dura** y 30 declara a 27 y a 25 **Blanda** (cada uno repite lo que declara el dependiente); no hay ciclo duro | Dura en ambos sentidos; degradar 27→30 a Blanda | 27 lee los ajustes de 30 al mostrar el título; 30 solo aloja sus opciones en pantallas accesibles desde título y pausa |
+| D27-22 | (Ronda 9, R9-B6) El fundido con `reducir_movimiento` es de 100 ms (F1, AC-17 = 3,1 s, AC-18); se retira `t_atenuacion_s` | Mantener 0,15 s | Un solo valor en 6, 24, 25, 26, 29 y 30 |
+| D27-23 | (Ronda 9, escenario S1) Si pasa `t_espera_inspeccion_s`, el estado es `desconocido` y «Nueva partida» exige confirmación | Asumir `ninguna` (podía sobrescribir una partida válida) o no pintar nunca con timeout (el jugador queda sin menú) | Cumple el candado de la regla 9 sin bloquear al jugador ni arriesgar su partida |
+| D27-24 | (Ronda 9) Suelo de texto y escala son los de 30 (reglas 8 y 26) | Suelo propio | Un solo suelo en todos los menús |
 
 ## Open Questions
 
@@ -232,6 +239,8 @@ El jugador llega a un lugar tranquilo antes de empezar su turno de noche. Nada l
 | 30 Opciones de accesibilidad | Reciprocidad: 27 reutiliza su pantalla vía 25 (Dura) |
 | `systems-index.md` (L51) | Deps de 27: añadir 4, 21, 23, 25, 30 (hoy «1, 3, 5, 6, 18») y la nota de ciclos |
 | `entities.yaml` | Verificar que `UI_TITLE_*` y las constantes de «Entradas para el registro» no chocan con claves existentes (pasada pendiente) |
+| 1 · 3 · 4 · 21 | (Ronda 9, R9-B5) Repetir la dureza que declara 27 (Dura) en su tabla de Dependencies, o decir que 27 no depende de ellos |
+| 30 Accesibilidad | Declara a 27 y a 25 Blanda (hecho, ronda 9 de 30) |
 
 ## Entradas para el registro
 
@@ -239,7 +248,7 @@ El jugador llega a un lugar tranquilo antes de empezar su turno de noche. Nada l
 |---|---|---|
 | `advertencias_vistas`† | ajuste (6) | booleano, falso |
 | `t_fundido_base_s`† | constante | 0,8 s |
-| `t_atenuacion_s`† | constante | 0,15 s |
+| `t_atenuacion_s`† | constante **retirada** (R9-B6): el fundido reducido es `reduce_motion_fade_s` de 6 | 0,1 s |
 | `t_espera_inspeccion_s`† | constante | 3,0 s |
 | `creditos_paginas`† | constante | 1 (condicionada a OQ 7) |
 | `UI_TITLE_*`† | grupo de entradas de 18 | título, advertencias, avisos, créditos |
@@ -250,3 +259,4 @@ El jugador llega a un lugar tranquilo antes de empezar su turno de noche. Nada l
 |---|---|
 | 2026-11-09 | Primer borrador (lote autónomo) |
 | 2026-11-09 | Ronda de corrección 1: B-1..B-5 y W-1..W-13 aplicados (gatillo «tarjeta final pedida», 27 pinta la tarjeta, secuencia tarjeta->descarga->créditos, F1/F2, dureza de dependencias, precedencia de resultados, candado de lectura); créditos, promesa de contenido, filas extra y versionado de advertencias elevados a Open Questions 7–11 |
+| 2026-11-10 | Ronda de corrección 9 (`gdd-cross-review-2026-11-10.md`): R9-B5 (30 Dura de 27, sin ciclo duro), R9-B6 (fundido 100 ms, F1/F2/AC-17/AC-18), estado `desconocido` con confirmación (R9, edge case, AC-27), «Reanudar»/«Nueva partida»/«Volver al título» de 25, suelo de texto de 30, `advertencias_vistas` no restablecible. Pendiente (no decidido aquí): tipar los AC (L/I/UI/H). Estado: Revisado (ronda de corrección 9) — pendiente de re-review. |
