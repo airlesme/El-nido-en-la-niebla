@@ -257,14 +257,14 @@ root (Window)
 | Step (GDD 4 rule 9) | Phase | Frame | What `SceneLoader` does |
 |---|---|---|---|
 | 0 accept | — | F | Check preconditions (§ Preconditions). Reject → log (dev: fatal handler). Accept → state Cargando; read `reducir_movimiento` once (fixed for this load); resolve `d_out`, `d_in` for `motivo`; compute `D_carga` from **nominal** table values (GDD 4 F3). |
-| 1 «iniciada» | `STARTED` | F | Emit «carga de escena iniciada» {destino, motivo, control_final ‡, D_carga}. Then SYNC `InputContexts.open_no_control(&"scene_loader", D_carga)`. Curtain untouched yet. |
+| 1 «iniciada» | `STARTED` | F | Emit «carga de escena iniciada» {destino, motivo, control_final ‡, D_carga}. Then SYNC `InputContexts.open_no_control(&"scene_loader", D_carga, absorbs_foreign = motivo in [PARTIDA_NUEVA, REANUDAR])`. Curtain untouched yet. |
 | 2 curtain out | `FADING_OUT` | F … F+k | α from current α_0 to 1 by F1, `t += min(Δ_real, Δ_max)`; `d_out ≤ 0` or α_0 = 1 → α = 1 in frame F. At α = 1: `t_espera` starts (real time, unclipped). |
-| 3 unload | `UNLOADING` | frame α = 1 is reached (U) | If `WorldSlot` holds `planta`/`recepcion`: SYNC `InputContexts.reset_stack_on_unload()` (keeps owner, duration, tope count), then `remove_child` + `queue_free`. If it holds `title`: `remove_child` + `queue_free`, **no** stack reset (D2). |
-| 4 instantiate | `INSTANTIATING` | U+1 | Assert the old instance is gone (`is_instance_valid` false — S-0003-A). `SceneSource.instantiate(destino)`; failure → fail(`missing_resource`/`instantiate_failed`). `WorldSlot.add_child(instance)`. Validate required anchors/containers (TR-scene-003, -005) → fail(`missing_anchor`). |
+| 3 unload | `UNLOADING` | frame α = 1 is reached (U) | If `WorldSlot` holds `planta`/`recepcion`: SYNC `unbind_scene()` on every bound `SceneBindable` (21, 23, `Shell`; ADR-0009 D6), SYNC `InputContexts.reset_stack_on_unload()` (keeps owner, duration, tope count), then `remove_child` + `queue_free`. If it holds `title`: `remove_child` + `queue_free`, **no** stack reset (D2). |
+| 4 instantiate | `INSTANTIATING` | U+1 | Assert the tree is not paused (ADR-0002 G-11: for «Nueva partida» from the pause, 25 calls `resume()` before `request_load`, so instantiation always follows the resume). Assert the old instance is gone (`is_instance_valid` false — S-0003-A). 4 calls `GameClock.reset_session()` (ADR-0002 OI-3) immediately before `SceneSource.instantiate(destino)`; failure → fail(`missing_resource`/`instantiate_failed`). `WorldSlot.add_child(instance)`. Validate required anchors/containers (TR-scene-003, -005) → fail(`missing_anchor`). |
 | 5 place player | ″ | U+1 | `player.colocar(anchor.global_position, yaw, pitch)` from `spawn_office` / `spawn_elevator`. |
 | 6 configure | ″ | U+1 | Holds window opens. `root.configure_all(ctx)`: 7 → 9 (validates `puzzles.json`; failure → immediate fail(`invalid_puzzle_data`), no wait for `T_cap`) → rest in tree order (8 fails open). All synchronous. Holds window stays open while `holds` is non-empty. |
 | — wait | `WAITING_HOLDS` | U+1 … | Each frame: if `t_espera ≥ T_cap` → fail(`t_cap`, holder IDs). If `holds` empty → step 7. |
-| 7 «escena lista» | `GAP` | L | Close holds window. Emit «escena lista» {destino}. Count `N_gap` frames. |
+| 7 «escena lista» | `GAP` | L | Close holds window. SYNC `bind_scene(scene_ctx)` on 21, 23 and `Shell` adapters (ADR-0009 D6). Emit «escena lista» {destino}. Count `N_gap` frames. |
 | 8 curtain in | `FADING_IN` | L+N_gap … | α by F1 (`α_in`), `Δ_max` clipping. |
 | 9 «terminada» | — | T (α = 0) | State Lista. Enable zone monitoring (D8). Emit «carga de escena terminada» {destino, motivo, control_final ‡, t_since_started_s ‡}. If `control_final = exploracion` → SYNC `InputContexts.request_exploration(&"scene_loader")`. If `ninguno` → nothing (21 transfers, D6). If `destino = recepcion` → emit «partida terminada» right after, same frame. |
 
@@ -328,9 +328,10 @@ removes the false positive of «Nueva partida» from the pause, where 5 resets
 ```
 
 `D_carga` and `control_final` reach 21 in the «iniciada» payload;
-`t_since_started_s` (‡) in «terminada» is measured by `SceneLoader` with the
-same `RealClock` Entrada uses for its tope, so `M_traspaso` is computed on
-one time base. If 21 does not transfer, the `sin control` stays 4's and
+`t_since_started_s` (‡) in «terminada» is measured by `SceneLoader` on
+`RealClock`; Entrada's tope runs on `GameClock` (ADR-0002, ADR-0006).
+Real time ≥ game time, so `M_traspaso` computed on real time is
+conservative and therefore safe. If 21 does not transfer, the `sin control` stays 4's and
 Entrada's tope `D_carga` + margen frees it and logs the omission (GDD 4 Edge
 Cases) — 4 does not compensate.
 
@@ -397,7 +398,8 @@ func configure_all(ctx: ServiceContext) -> ConfigureResult
 ```gdscript
 # Contract with Entrada (1). Operation names are GDD 1 rule 6; signatures owned by ADR-0006.
 class_name InputContexts extends RefCounted
-func open_no_control(owner: StringName, declared_s: float) -> bool
+func open_no_control(owner: StringName, declared_s: float, absorbs_foreign: bool = false) -> bool
+func close_no_control(owner: StringName) -> bool
 func transfer_no_control(new_owner: StringName, declared_s: float) -> bool
 func request_exploration(owner: StringName) -> bool
 func restore_menu() -> void
@@ -444,9 +446,11 @@ func request_load(destination: Destination, reason: Reason, final_control: Final
 	_d_in = _tr.d_in(reason, reduced)
 	_d_load = _tr.nominal_d_out(reason) + _tr.t_cap + _tr.n_gap * _tr.delta_ref + _tr.nominal_d_in(reason)
 	_t_started_ms = _clock.now_ms()
-	_ctx.bus.emit(&"scene_load_started", {"destination": destination, "reason": reason,
-			"final_control": final_control, "d_load": _d_load})
-	_input.open_no_control(&"scene_loader", _d_load)
+	# Payload keys are ADR-0001's registry keys (reconciliation 2026-11-10).
+	_ctx.bus.emit(&"scene_load_started", {"destino": destination, "motivo": reason,
+			"control_final": final_control, "D_carga": _d_load})
+	_input.open_no_control(&"scene_loader", _d_load,
+			reason in [Reason.PARTIDA_NUEVA, Reason.REANUDAR])   # absorbs_foreign (ADR-0006)
 	_begin_fade_out()
 	return true
 
@@ -514,7 +518,7 @@ func _instantiate_and_configure() -> void:
 
 func _scene_ready() -> void:
 	_holds_open = false
-	_ctx.bus.emit(&"scene_ready", {"destination": _req.destination})
+	_ctx.bus.emit(&"scene_ready", {"destino": _req.destination})
 	_gap_left = _tr.n_gap
 	_phase = Phase.GAP if _gap_left > 0 else Phase.FADING_IN
 
@@ -522,8 +526,8 @@ func _finish() -> void:
 	_phase = Phase.IDLE
 	_state = State.READY
 	(_slot_child() as GameSceneRoot).get_zone_hub().set_enabled(true)       # D8
-	_ctx.bus.emit(&"scene_load_finished", {"destination": _req.destination, "reason": _req.reason,
-			"final_control": _req.final_control,
+	_ctx.bus.emit(&"scene_load_finished", {"destino": _req.destination, "motivo": _req.reason,
+			"control_final": _req.final_control,
 			"t_since_started_s": (_clock.now_ms() - _t_started_ms) / 1000.0})
 	if _req.final_control == FinalControl.EXPLORACION:
 		_input.request_exploration(&"scene_loader")
@@ -537,8 +541,8 @@ func _fail(cause: StringName, detail: Array) -> void:
 	_state = State.ERROR
 	_curtain.set_alpha(1.0)                        # never reveal a half scene
 	_ctx.fatal.report_load_failure(cause, detail)  # dev: stops; release: logs and returns
-	_ctx.bus.emit(&"scene_load_failed", {"destination": _req.destination,
-			"reason": _req.reason, "cause": cause})
+	_ctx.bus.emit(&"scene_load_failed", {"destino": _req.destination,
+			"motivo": _req.reason, "causa": cause})
 	_input.restore_menu()
 	_curtain.show_error(_on_back_to_title)         # «Volver al título», ui_aceptar or cursor
 
@@ -857,7 +861,7 @@ visible frame of a half-configured scene.
 |---|---|---|---|
 | O1 | Payload additions ‡: `control_final` in «carga de escena iniciada» and «carga de escena terminada», `t_since_started_s` in «terminada» (21 needs both for rule 8a and F5) | GDD 3 regla 10, GDD 4, GDD 21 (propagation) + ADR-0001 | ADR-0001 accepted |
 | O2 | Same-frame delivery guarantee of the bus relative to input dispatch (R6) | ADR-0001 / ADR-0006 | Either accepted |
-| O3 | Exact `InputContexts` signatures and the owner `StringName`s (`&"scene_loader"`, `&"scene_director"`) | ADR-0006 | ADR-0006 accepted |
+| O3 | ~~Exact `InputContexts` signatures and the owner `StringName`s~~ Resolved (reconciliation 2026-11-10): ADR-0006 signatures adopted (`open_no_control(owner, declared_s, absorbs_foreign)`, `close_no_control(owner)`); owners `&"scene_loader"`, `&"scene_director"`; tope on `GameClock` | ADR-0006 | — |
 | O4 | Who lifts the curtain over the title after a full unload, and with which duration (GDD 4 OQ 8 open); proposal: a `titulo` row in `load_transitions.json`, `d_in` 0,8 s† (0,1 s with `reducir_movimiento`), triggered by 27 when ready | GDD 4 + GDD 27 | Title story |
 | O5 | Full unload from a visible scene (pause) fades in 0,1 s instead of a cut: GDD 4 rule 15 says "sin fundidos", rule 11 says the curtain is always a fade | GDD 4 author | Next GDD 4 revision |
 | O6 | `colocar` angle units and teleport reset of physics interpolation | ADR-0012 | ADR-0012 |
