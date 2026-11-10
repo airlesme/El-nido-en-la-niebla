@@ -1028,7 +1028,7 @@ _Not run yet._
 | OI-5 | `ViewportMapper` change notification (or 7 polls size each frame in views — current choice) | ADR-0016 |
 | OI-6 | Size of the `D01b` board and its `distancia_m` (GDD 14 OQ 1); the separation check will validate whatever is chosen | 7 / 10 / art |
 
-### Amendments requested to other ADRs (pending)
+### Amendments requested to other ADRs (A-1…A-3 applied 2026-11-10 in ADR-0006 / ADR-0009; A-4 targets `architecture.md`, pending)
 
 | # | Target | Amendment |
 |---|---|---|
