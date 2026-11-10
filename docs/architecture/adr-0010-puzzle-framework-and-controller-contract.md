@@ -937,7 +937,7 @@ a new fact or a framework special case per puzzle.
 
 | ID | Item | Owner / route |
 |---|---|---|
-| OI-1 | How `FactWriter(9)` reaches 9: `ServiceContext` has no writer field; `GameState.writer_for(9)` is "composition only" (ADR-0001) — propose `SceneServices.puzzle_writer` built by the scene root | ADR-0009 amendment |
+| OI-1 | **Applied 2026-11-10: `SceneServices.puzzle_writer` in ADR-0009 D3 (also C4 rule-5 exemption and C6 note in ADR-0003).** How `FactWriter(9)` reaches 9: `ServiceContext` has no writer field; `GameState.writer_for(9)` is "composition only" (ADR-0001) — propose `SceneServices.puzzle_writer` built by the scene root | ADR-0009 amendment |
 | OI-2 | `ViewReceiver` is `@abstract … extends Node` in `architecture.md`; this ADR needs a `RefCounted` port (adapter) or a child-node adapter | ADR-0011 |
 | OI-3 | PER_ELEMENT completion tags (`PIECE_DROPPED`, `CARD_COMPLETED`, `CARD_RETURNED`) ‡ | stories of 13/14 |
 | OI-4 | `SurfaceFx` operation for world `HIGHLIGHT` (`V08`, `B0x`, `B08`) | ADR-0015 |
