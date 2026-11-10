@@ -1,6 +1,6 @@
 # Puzle 5 · Espejo de la diferencia
 
-> **Estado:** Revisado (ronda de corrección 9) — pendiente de re-review
+> **Estado:** Revisado (ronda de corrección 10) — pendiente de re-review (ronda 10: 9 y 10 sin dependencia de 15, 29 Dura, D15-25)
 > **Sistema:** 15 (capa Feature, MVP) · **Autor:** game-designer · **Fecha:** 2026-11-09
 > **Fuente de verdad:** `design/slice/slice-v0.3.md` (contenido v0.4.2): §10.5, §19.5, Anexo B.5, C.6, D.2 · **Marco:** `design/gdd/marco-de-puzles.md` (9), que este GDD **instancia, no redefine**.
 > **Pilares:** Información incompleta (P5), Tensión sin castigo (P4), Autonomía como progresión (P3), El espacio expresa la emoción (P2); anti-pilar *NOT una historia explicada*.
@@ -230,13 +230,15 @@ Bidireccional. **La dureza la declara el dependiente**: la columna «Dureza» de
 | 17 Sistema de pistas (`sistema-de-pistas.md`) · 18 Base de contenido (vía 9) | Indirecta | `request_hint`; claves `PISTA_P5_N1`, `PISTA_P5_N2` | Datos de las tres pistas | Reglas 25 a 27 de 9 |
 | 1 Entrada y controles · 2 Jugador | Indirecta | Mapeo del giro (ratón, mando, «alternar»), regreso de cámara `t_devolver` 0,5 s | — | Regla 18 de 2 (vía 7 y 9) |
 
-### Sistemas que dependen de 15 (declaran su dureza ellos)
+### Sistemas que consumen lo que entrega 15 (declaran su dureza ellos)
+
+15 depende de 9 y de 10 (**Dura**, la declara 15); 9 y 10 **no** dependen de 15 (cargan su entrada de datos y su tiempo de secuencia; sin ciclo 9 ↔ 15 ni 10 ↔ 15; el único ciclo duro del grupo es 9 ↔ 10). El único dependiente declarado es 29 (**Dura**, la declara 29 y la repite 15; blanda en ejecución para 15, versión provisional).
 
 | Sistema | Qué entrega 15 |
 |---|---|
 | 9 Marco de puzles | Los datos y el controlador de `P5` (la matriz de encaje de 9 ya lo prevé) |
 | 10 Caja y compartimentos | El tiempo de la secuencia (para que la tapa de C3 no se cierre durante ella) y `ajar_cm` |
-| 29 Shaders y efectos de superficie (`shaders-y-efectos.md`) | Instante, duración y contenido de la superposición (`FADE`) y del contorno (`OUTLINE`); el requisito de coincidencia en θ* (índice: 29 depende de 12 y 15) |
+| 29 Shaders y efectos de superficie (`shaders-y-efectos.md`; **Dura**, la declara 29) | Instante, duración y contenido de la superposición (`FADE`) y del contorno (`OUTLINE`); el requisito de coincidencia en θ* (índice: 29 depende de 12 y 15) |
 | 17 Sistema de pistas (`sistema-de-pistas.md`) | Las tres pistas de `P5` (todas `REQUEST`) |
 | 21 Director de escenas | Nada propio: `caja_completa` se deriva de `caja_c3` y los demás compartimentos |
 
@@ -385,6 +387,7 @@ Modo por lotes autónomo: se decide con la recomendación propia y se registra. 
 | D15-22 | **`T_ent` = 2,4 s** (`BOX_C3_OPEN` 1,4 s† de 10 + vista de entrada 1,0 s), no 1,0 s. | Ignorar la animación de la tapa. | La tapa de C3 se abre antes de ver `D01c` (F1 de 10); el total del modelo pasa a 56,2–188,2 s. |
 | D15-23 | (Ronda 8) Alineado con el esquema v2 de `puzzles.json` (regla 4b de 9): `schema_version: 2`; `visual_elements` y `MARK_LIT` sin ‡ y fuera del catálogo de 7; peticiones a 9 marcadas como absorbidas | Mantener las ‡ y los IDs visuales en el catálogo de 7 | 9 ya los admite (D9-71, D9-72); sin cambio de diseño ni de tiempos |
 | D15-24 | **(Ronda de corrección 9, `gdd-cross-review-2026-11-10.md`)** Las ‡ de 17, 23, 26 y 29 (Interacciones, Dependencies, Cambios requeridos) se sustituyen por el fichero de cada GDD (`sistema-de-pistas.md`, `director-de-audio.md`, `subtitulos.md`, `shaders-y-efectos.md`), que ya cierran sus contratos (P5 sin `IDLE`, `VO_G_07`, `OUTLINE`/`FADE`, `SFX_FRAME_TURN`); «23 aún sin GDD» (Open Questions 5) apunta a la regla 38 de 23 | Dejar las ‡ | Los contratos ya están en esos GDD; la pregunta de `reducir_sobresaltos` sigue abierta solo en lo que cubre `VO_G_07` |
+| D15-25 | **(Ronda de corrección 10)** Dependencies: 15 depende de 9 y 10 (Dura) y ninguno de los dos depende de 15; 29 se lista como dependiente Dura (la declara 29) | Presentar a 9 y 10 como «dependen de 15» | Contradecía el índice (fila 9: «no al revés») y sugería un ciclo duro 9 ↔ 15 |
 
 ## Open Questions
 
@@ -446,3 +449,4 @@ Ya existen en `design/registry/entities.yaml` (no duplicar; la fuente es la de c
 | 2026-11-09 | 0.3 | Ronda de corrección 7 (review: 0 bloqueantes, 10 avisos): AC-P5-04 con 7/8 y 14/16°/s y fase fijada (45 vs 51-52 fotogramas); 13 pasa a dependencia blanda de contenido (regla 23 de 13) y 15 se pide como dependiente en 10 y 13; extensiones de 9 referidas al esquema v2; `request_hint` en `RESOLVING` ignorado (D15-18); D15-19 a D15-22 (§10.5 a B.5, AC-04, 13 blanda, `T_ent` 2,4 s, total 56,2–188,2 s); lectura de F7 con revelación incluida; fuente real de constantes del registro; `VO_G_07` queda abierta para creative-director. Pendiente de re-review. |
 | 2026-11-09 | 0.4 | Ronda de corrección 8: alineación mecánica con el esquema v2 de `puzzles.json` (regla 4b de 9): `schema_version: 2`, quitadas las ‡ de `visual_elements`, `HIGHLIGHT` no interactivo y `MARK_LIT`, peticiones a 9 absorbidas marcadas; D15-23. Sin cambio de diseño. Estado: Revisado (ronda de corrección 8), pendiente de re-review. |
 | 2026-11-10 | 0.5 | Ronda de corrección 9: ‡ y «sin GDD» de 17, 23, 26 y 29 sustituidos por sus ficheros; D15-24. Estado: Revisado (ronda de corrección 9) — pendiente de re-review. |
+| 2026-11-10 | 0.6 | Ronda de corrección 10: Dependencies sin sugerir que 9 y 10 dependan de 15 (15 depende de ellos, Dura) y con 29 como dependiente Dura; D15-25. Estado: Revisado (ronda de corrección 10) — pendiente de re-review. |
