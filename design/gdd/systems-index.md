@@ -265,7 +265,7 @@ Consolidado de `design/gdd/reviews/*-re-review.md`. Histórico: los GDDs corresp
 - **27 Pantalla de título:** consulta `terminada` (con ella solo «Nueva partida», sin confirmación) y `con_futura`; `nueva_partida()` entra en «Cargando partida» y 27 no pide `planta`; muestra el fallo de carga.
 - **30 Accesibilidad:** ofrece `reducir_movimiento` como conmutador (el sistema 6 ya lo tiene en su catálogo).
 - **11 a 16 Puzles:** declaran `gestos_aceptados` por elemento y su tolerancia en px (P5 acepta `rotar` y funciona con «alternar en lugar de mantener»); datos de pista con las 8 claves `PISTA_*`.
-- **Preguntas abiertas para el usuario** (el GDD 9 sigue la recomendación): D9-34 (icono en compartimentos bloqueados), D9-35 / D-16 (orden de la caja) y D7-32 (la carta del P6 se abre igualmente si el jugador salió antes).
+- **Preguntas abiertas para el usuario** (el GDD 9 sigue la recomendación): D9-34 (icono en compartimentos bloqueados) y D7-32 (la carta del P6 se abre igualmente si el jugador salió antes). **Resuelta (usuario, 2026-11-10):** D9-35 / D-16, orden de la caja = cadena c1→c3→c4 con c2 libre (alternativa descartada: orden libre; motivo: guía sin callejón).
 
 ---
 
