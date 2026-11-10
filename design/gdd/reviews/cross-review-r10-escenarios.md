@@ -1,0 +1,33 @@
+# R14-E · Recorrido de escenarios (Fase 4) — revisor independiente
+
+Resultado: 0 BLOCKER confirmados. 6 WARNING, 6 INFO. Ningún escenario completo al 100 %; lectura por secciones y por contratos.
+
+## WARNING
+- W-1 (S3 «Volver al título» con voz/subtítulo vivos). 25 R28 pasos 3-4: descarga total y solo DESPUÉS «pausa cerrada». 23 R41 deja la voz pausada en posición; la regla de descartar voz pausada (R42) solo cubre «carga de escena iniciada»; R27 y AC-23-17 solo hablan de capas y de «ningún reproductor activo tras completada» (ambiguo para una voz pausada). 26 R5/R27 no se suscribe a «descarga total» (solo retira bloques en «carga iniciada»; su relojes están congelados por R25). Modo de fallo: la voz pausada (p. ej. VO_G_07 o la llamada) se reanuda sobre el título con «pausa cerrada», o un bloque de subtítulo queda congelado y visible hasta «pausa cerrada». Falta regla: «descarga total solicitada» cancela voces/efectos pausados y bloques de 26. (21 sí lo tiene: DT-23.)
+- W-2 (S5 ajustes en vivo). La tabla de 25 R16 (normativa: «25 no inventa ajustes») no contiene `escala_texto_ui`, `icono_grande`, `etiqueta_accion_visible`, `subtitulos_tamano`, `subtitulos_fondo`, `subtitulos_hablante` (Grep sin resultados en 25). 30 R6 los ordena en la pestaña que «dibuja 25»; 26 R26 y 30 R7 los sitúan en «Sonido y pantalla»/Accesibilidad. 25 R18 «Restablecer todos» = 12 claves; 30 Edge dice 14-18. Sin fila en 25, el jugador no puede cambiar escala de texto ni tamaño de subtítulos (S5 no ejecutable según 25). 25 debe actualizar R16/R18 o 30 declararlo cambio requerido explícito.
+- W-3 (S3/S5 pausa vs. Tween/partículas). 28 R22 y 29 R35 dependen de `PROCESS_MODE_PAUSABLE`/pausa de `GPUParticles3D` (árbol pausado), mientras 25 R2/OQ2 y 23 D23-25 dicen que 25 NO pausa el SceneTree (solo Δ_juego = 0; lo decide el ADR). Si el ADR no pausa el árbol, apagón/parpadeo/lluvia/reflejo no se congelan. 29 usa además el nombre Godot 3 `PAUSE_MODE_PAUSABLE`.
+- W-4 (contrato del bus). «Pausa cerrada»/`pause_closed`: 23 (R5, R41), 26 (R5), 28 (R22) la marcan ‡ y 3 NO la tiene (Grep en 3: solo `pause_opened`). Dos nombres para el mismo aviso (23: `pause_closed`; 25/26/28: «pausa cerrada»). Sin ella, voces pausadas no reanudan (el watchdog de 23 es solo desarrollo y no reanuda). Alta pendiente en 3 y en registro.
+- W-5 (S1/S2 título, pérdida de datos). 27 Edge: si 5 no responde en `t_espera_inspeccion_s` se asume `ninguna` (Nueva partida SIN confirmación, regla 11/tabla); si la inspección real llega después y es `valida`, 27 refresca la lista, pero el jugador pudo haber lanzado «Nueva partida» sin diálogo y 5 sobrescribirá en el primer guardado. R9 «candado» contradice el timeout (el menú no se pinta hasta la re-inspección vs. timeout asume `ninguna`). Poner confirmación o no pintar nunca con timeout.
+- W-6 (S3 «Nueva partida/Continuar desde la pausa»). 4 (tabla de pila, reglas 6/11), 21 R11b/AC-21-23 y 1 D22 especifican «Nueva partida» o «Continuar» DESDE LA PAUSA, pero 25 R29 y la raíz (R10-R14) no ofrecen esas filas (solo reanudar, Pistas, ajustes, Salir al título) y 5 solo las recibe de 27. Estados especificados e inalcanzables, y «Continuar» de 25 (= reanudar) choca de nombre con «Continuar» de 27 (= cargar). Aclarar o retirar las filas.
+
+## INFO
+- I-1 S4: la llamada es coherente de extremo a extremo (22 R3-R19, R26-R31; 23 R34, R41-R43; 26 R12, R24-R25; 28 R8, R12, R18): apagón 0,4 s monótono (0,8 s con `reducir_sobresaltos`, 28 R18), el parpadeo `C03` ocurre en escena 4, no en la llamada; con `reducir_sobresaltos` 23 R38 atenúa BUZZ/BREATH_BROKEN −6 dB. Cierre/reanudación: 22 R27-R30 repite entera, 28 R21 apagón duración 0. 44,8/45,8 s sigue abierto. `SFX_CALL_BREATH` sin subtítulo (decisión declarada); texto `[Llanto contenido]` provisional.
+- I-2 27 R20: texto «No se ha podido cargar la planta…» también se usaría en fallo de `recepcion` (5 R29) y en descarga fallida (25 Edge): 5 queda «En partida» si la descarga total falla (no recibe «completada»), estado no definido en 5 ni 27 mientras se muestra el panel.
+- I-3 S9: 24 R2 anillo solo en `exploración`; en vistas/ordenador/llamada lo gobierna 7/Entrada (no recorrido). 24 R26 deja ambiguo si el pie congelado por la pausa está oculto o visible bajo el velo. Nota de pista (17 R21, «tercio inferior») no coordinada con la banda de 26 (R14/R23 solo coordinan 24): posible solape nota/subtítulo.
+- I-4 S6: 17 coherente con 25 R14 y 9 R26: pedir pista desde pausa = efecto al reanudar (R12), espera F1 con GameClock, `applied` se vacía al cargar (R34-R36; «nivel alcanzado» = 0 tras cargar, acorde a 9 R26). Pista automática solo P3 n3, P6 n1-2 por «puzle inactivo» (R15-R17). Revelación P5: botón inerte en `RESOLVING` (R11.1, R29).
+- I-5 S2: 3 R5/línea 143, 9 R19/R8 y AC-41/AC-20: `pendiente_revelacion` verdadero → P5 ACTIVO, salta alineación y repite secuencia completa (VO_G_07 se vuelve a pedir; 23 R44 no la repite por su cuenta); `caja_c3 ∧ pendiente` → RESUELTO y limpieza silenciosa. Coherente. Guardado en `pause_opened` en medio de la revelación (5) es consistente (hechos coherentes).
+- I-6 S8: 27 R23-R26 y 21 R22/DT-4/DT-23 coinciden (tarjeta 3,0 s, descarga inmediata, menú solo «Nueva partida»); pausa durante la tarjeta/cierre cubierta por AC-21-23a. No verificado: de quién es el reloj de la tarjeta (27 F2 usa fundido real, `t_tarjeta_s` de 21 es tiempo de juego) si se pausa durante la tarjeta.
+
+## Escenarios
+- S1 PARCIAL: 27 R1-R12, 21 R8/R11, 26 R22/R27, 4 R12; no recorrido: 1, 3 al detalle, 23 arranque del título (27 R19: sin audio; 23 OQ 3 abierta), 29 (solo reducir_movimiento).
+- S2 PARCIAL: 27 R10, 5 estados/R17-18, 3, 9, 28 R21, 23 R43; sin leer P5 (15) directamente.
+- S3 PARCIAL: llamada, revelación (por contratos), carga (4 R12, Edge 190-191), «Volver al título» (W-1); NO recorrido: lectura aplazada 7 R27b (solo localizada la tabla 117/143), transición del ascensor con pausa (solo 21 R9), pausa + ajustes en vivo (25 R11) solo reglas.
+- S4 PARCIAL-ALTO (E6 recorrido por primera vez, sin BLOCKER); sin leer AC de 22/23/26 ni 18.
+- S5 PARCIAL (W-2, W-3); no leído 6, 2.
+- S6 PARCIAL (17 R10-R36); no leídos puzles 11-16 ni 18.
+- S7 PARCIAL (27 R20-22, 4 AC-22, 5 estados); no leído 1.
+- S8 PARCIAL.
+- S9 PARCIAL (24 reglas 1-31; no leídos 1, 7, 8, 19, 20 en su regla de prompt).
+
+## NO LEÍDO / NO RECORRIDO
+Leídos solo por Grep o contrato: 1, 2, 3, 5, 6, 7, 8, 9, 10, 11-16, 18, 19, 20, 29 (casi todo), 30 (AC, F). No leídos: Acceptance Criteria de 22, 23, 24, 25, 26, 27, 28; Edge Cases de 24, 26, 27 (salvo líneas), 28; Dependencies de todos; slice v0.4.2; r8 salvo escenarios.
