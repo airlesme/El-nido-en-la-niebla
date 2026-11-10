@@ -38,20 +38,20 @@ Se excluyen a propósito combate, IA de enemigos, economía, progresión, red y 
 | 14 | Puzle 4 · Tablero de tareas | Gameplay | MVP | Revisado (ronda 8) — sin bloqueantes | design/gdd/puzle-4-tablero-de-tareas.md | 9, 10, 18 (duras; 18 dura en validación y datos) · blandas 7, 3, 2, 6, 17 (vía 9) · dependen de 14: 22 (indirecta, por `t4_decision` vía 3; la declara 22), 16 (dura, por `caja_c2`), 20 (blanda), 10 y 9 (recíprocas), 5 (indirecta) |
 | 15 | Puzle 5 · Espejo de la diferencia | Gameplay | MVP | Revisado (ronda 8) — sin bloqueantes | design/gdd/puzle-5-espejo-de-la-diferencia.md | 9, 10 (duras), 6 y 13 (blandas; 13 solo de contenido: la foto) · indirectas 7, 23/26, 3/5, 17/18, 1/2 · dependen de 15: 9 y 10 (duras), 29 (blanda) |
 | 16 | Puzle 6 · Decisión | Gameplay | MVP | Revisado (ronda 8) — sin bloqueantes | design/gdd/puzle-6-decision.md | 9, 10, 18 (duras; 9 ↔ 10 circular aceptada) · blandas 20, 7 (vía 9), 17 · indirectas 3 · sin dependencia de 6 · dependen de 16: 20 y 22 (declaran ellos; 22 indirecta por `carta_variante`) |
-| 17 | Sistema de pistas (hasta 3 niveles; 2 en el puzle 6) | Gameplay | Vertical Slice | Not Started | — | 3, 9, 18 |
+| 17 | Sistema de pistas (hasta 3 niveles; 2 en el puzle 6) | Gameplay | Vertical Slice | Revisado (ronda de corrección 1) — pendiente de re-review | design/gdd/sistema-de-pistas.md | 3, 9, 18 |
 | 18 | Base de contenido narrativo (líneas, documentos, claves de traducción) | Narrative | MVP | Revisado (ronda de corrección 3) — pendiente de re-review | design/gdd/base-de-contenido-narrativo.md | — |
 | 19 | Ordenador, correo e impresora | Narrative | MVP | Revisado (ronda 6) — sin bloqueantes | design/gdd/ordenador-correo-impresora.md | 1, 3, 4, 7, 18, 20 (duras; 9 depende de 19, dura) · blandas 2, 6, 17, 23, 25/30 · indirecta 21 (vía 7, sin camino en el slice) |
 | 20 | Documentos y bolsillo | Narrative | MVP | Revisado (ronda 6) — sin bloqueantes | design/gdd/documentos-y-bolsillo.md | 3, 4, 7, 18 (duras) · blandas 1, 2, 10 · indirecta 5 · dependen de 20: 8 y 19 (duras), 9, 17 y 24 (blandas; 9 → 20 la declara 9: 20 no depende de 9), 21 (indirecta, la declara 21) |
 | 21 | Director de escenas (escenas 1–8, disparadores, eventos temporizados) | Narrative | MVP | Revisado (ronda de corrección 6) — pendiente de re-review | design/gdd/director-de-escenas.md | 1, 3, 4, 18 (duras) · blandas 5, 6, 7, 8 · indirectas 2, 9, 10, 20, 22 (22 vía 3, por `llamada_iniciada`/`llamada_completada`; la declara 21 y 22 la repite) · sin dependencia 23, 26, 27, 28 (19 ↔ 21 indirecta vía 7, la declara 19; 21 no depende de 19) |
 | 22 | Llamada telefónica | Narrative | MVP | Revisado (ronda de corrección 8) — pendiente de re-review | design/gdd/llamada-telefonica.md | 1, 3, 5, 7, 18 (duras; la dureza la declara 22, el dependiente, y los proveedores la repiten) · blanda 2 · indirectas 8, 9 y 21 (vía 3; 8 y 21 la declaran como dependientes, 9 la declara 22) · sin dependencia 4, 6 · 23 y 26 (sin GDD): contrato ‡ fuera de dependencias (D22-25) |
-| 23 | Director de audio | Audio | Vertical Slice | Not Started | — | 3, 6, 18 (blanda: 2) |
-| 24 | Prompt de interacción y feedback | UI | MVP | Not Started | — | 1, 7, 18 |
-| 25 | Menú de pausa | UI | MVP | Not Started | — | 1, 6, 18 (blanda: 5) |
-| 26 | Subtítulos | UI | Vertical Slice | Not Started | — | 6, 18, 23 |
-| 27 | Pantalla de título, advertencias y cierre | UI | Vertical Slice | Not Started | — | 1, 3, 5, 6, 18 |
-| 28 | Atmósfera reactiva (luces, apagón, reflejo retardado, lluvia) | Presentation | Vertical Slice | Not Started | — | 2, 3, 6, 21 |
-| 29 | Shaders y efectos de superficie | Presentation | Vertical Slice | Not Started | — | 12, 15 |
-| 30 | Opciones de accesibilidad | Meta | Vertical Slice | Not Started | — | 1, 6, 13, 15, 23, 26 |
+| 23 | Director de audio | Audio | Vertical Slice | Revisado (ronda de corrección 1) — pendiente de re-review | design/gdd/director-de-audio.md | 3, 6, 18 (blanda: 2) |
+| 24 | Prompt de interacción y feedback | UI | MVP | Revisado (ronda de corrección 1) — pendiente de re-review | design/gdd/prompt-de-interaccion.md | 1, 7, 18 |
+| 25 | Menú de pausa | UI | MVP | Revisado (ronda de corrección 1) — pendiente de re-review | design/gdd/menu-de-pausa.md | 1, 6, 18 (blanda: 5) |
+| 26 | Subtítulos | UI | Vertical Slice | Revisado (ronda de corrección 1) — pendiente de re-review | design/gdd/subtitulos.md | 6, 18, 23 |
+| 27 | Pantalla de título, advertencias y cierre | UI | Vertical Slice | Revisado (ronda de corrección 1) — pendiente de re-review | design/gdd/pantalla-de-titulo.md | 1, 3, 5, 6, 18 |
+| 28 | Atmósfera reactiva (luces, apagón, reflejo retardado, lluvia) | Presentation | Vertical Slice | Revisado (ronda de corrección 1) — pendiente de re-review | design/gdd/atmosfera-reactiva.md | 2, 3, 6, 21 |
+| 29 | Shaders y efectos de superficie | Presentation | Vertical Slice | Revisado (ronda de corrección 1) — pendiente de re-review | design/gdd/shaders-y-efectos.md | 12, 15 |
+| 30 | Opciones de accesibilidad | Meta | Vertical Slice | Revisado (ronda de corrección 1) — pendiente de re-review | design/gdd/opciones-de-accesibilidad.md | 1, 6, 13, 15, 23, 26 |
 
 Notas de dependencia:
 - **Eventos, no llamadas directas:** audio (23), atmósfera (28), subtítulos (26) y el avance de la llamada (22) reaccionan al bus de eventos (3). Por eso el director de escenas (21) no depende de ellos ni de la llamada.
