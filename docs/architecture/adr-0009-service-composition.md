@@ -272,6 +272,7 @@ var director: SceneDirector
 
 # --- Output ports into Shell (persistent presentation, D6) ---------------
 var ui: UiPorts                        # prompt_sink, reading_screen, hint_note_host, error_panel
+var flash_guard: FlashGuard            # ADR-0007 D9 limiter, built by Boot on real_clock (ADR-0014 OI-5); used by 21, 24, 28, 29
 
 # --- Per-scene part: null in the global context --------------------------
 var scene: SceneServices = null
@@ -292,7 +293,7 @@ func for_scene(services: SceneServices) -> ServiceContext:
     c.logger = logger; c.flavor = flavor; c.real_clock = real_clock; c.fatal = fatal; c.files = files
     c.content = content; c.state = state; c.clock = clock; c.input = input
     c.settings = settings; c.audio = audio; c.save = save
-    c.scenes = scenes; c.director = director; c.ui = ui
+    c.scenes = scenes; c.director = director; c.ui = ui; c.flash_guard = flash_guard
     c.scene = services
     c._frozen = true
     return c
@@ -329,6 +330,7 @@ var puzzles: PuzzleFramework           # 9  (F4)
 var view_gates: ViewGateProvider       # 9  (F4)  port (D5)
 var box: BoxPresenter                  # 10 (F4)  port (D5); null in recepcion
 var hints: HintService                 # 17 (F5)
+var puzzle_writer: FactWriter          # 9's writer, built by the scene root with GameState.writer_for(9) (ADR-0010 OI-1); only 9 reads it
 var hint_panel: HintPanelProvider      # 17 → pulled by 25 (D6)
 var surface_fx: SurfaceFx              # 29 output port (D6); null-safe NullSurfaceFx if absent
 var atmosphere: Atmosphere             # 28 (layer 4), only for tests/debug; nobody calls it (D11)
@@ -363,7 +365,9 @@ Rules for implementers:
 5. Inside `configurar()` a system **may** call only autoload services and
    systems already configured earlier in the D4 order (in practice: 7's
    `registrar_manejador`/`registrar_receptor`). Calls to F2–F4 services
-   **must** wait until "escena lista".
+   **must** wait until "escena lista". **Exemption (ADR-0010 D12):** 9's
+   restore-at-configure may call `BoxPresenter.set_final_pose(n)` (a pose
+   set on 10's adapter, no logic of 10 runs).
 6. Every bus subscription and every `connect()` to a node outside the
    system's own subtree **must** go into a `SubscriptionBag` released in
    `_exit_tree()` (TR-scene-009: subscriber count back to boot value after 10
@@ -390,7 +394,7 @@ func configurar(ctx: ServiceContext) -> void:
     _interaction = ctx.scene.interaction
     _player = ctx.scene.player
     _prompt = ctx.ui.prompt_sink if ctx.ui != null else null
-    _interaction.registrar_manejador(&"A03", self)          # 7 is F1: configured before
+    _interaction.registrar_manejador(&"A03", _as_handler())  # 7 is F1: configured before; InteractionHandler adapter (ADR-0011 D6)
     _subs.notice(_state, &"lectura_completada", _on_lectura_completada)
     _subs.signal_(_player.objeto_soltado, _on_objeto_soltado)
 
@@ -405,7 +409,8 @@ func _exit_tree() -> void:
 **Autoloads are injected too.** `setup(ctx)` follows rules 3, 4 and 6: an
 autoload copies the peers it needs (e.g. `Settings` keeps `files`,
 `real_clock`, `fatal`, `logger`; `SceneDirector` keeps `state`, `clock`,
-`input`, `scenes`, `content`). Tests call `setup()` on a fresh, non-registered
+`input`, `scenes`, `content`, `settings` as a `SettingsReader` for
+`reducir_movimiento` (ADR-0017 A1)). Tests call `setup()` on a fresh, non-registered
 instance with a context of doubles (D9). No autoload reads another autoload by
 global name, ever.
 
@@ -444,16 +449,16 @@ table is forbidden and goes through the bus):
 |---|---|---|
 | 4 (C2) | 2 `colocar()` | `ctx.scene.player`, delivered by the scene root |
 | 5 (C3) | 4 (load, full unload), 3 snapshot/restore | `ctx.scenes`, `ctx.state` |
-| 23 (C3) | 6 | `ctx.settings` |
-| 7 (F1) | 1, 2, 4, 18 | `ctx` |
+| 23 (C3) | 6; 2 `rayo_vision()` read, bind window only (ADR-0012 OI-2) | `ctx.settings`, bound scene context |
+| 7 (F1) | 1, 2, 4, 18; 3 read only (`get_fact_at`, `resolve_fact`); 6 read (`multiplicador_pie`, `pie_persistente`) (ADR-0011 A-2) | `ctx` |
 | 20 (F2) | 7, 2, 3 (own facts), 18 | `ctx`, `ctx.scene` |
-| 19 (F3) | 20 `has_item`, `otorgar_sesion`; 7; 1; 3 (`correos_leidos`) | `ctx.scene.pocket`, … |
+| 19 (F3) | 20 `has_item`, `otorgar_sesion`; 7; 1; 3 (`correos_leidos`); 2 `HAND_TYPE` (ADR-0012 OI-2) | `ctx.scene.pocket`, … |
 | 9 (F4) | 19 `compose_i01`, 20 `has_item`, 7, 10 via `BoxPresenter`, 3 (own facts) | `ctx.scene.computer`, `.pocket`, `.box` |
 | 10 (F4) | 9 via `ViewGateProvider`, 7 | `ctx.scene.view_gates` |
-| 8 (F5) | 20 `otorgar("A05")`, 7, 4 | `ctx.scene.pocket`, … |
+| 8 (F5) | 20 `otorgar("A05")`, 7, 4; 2 `reproducir_gesto(HAND_CARD_SWIPE)`, `sostener` via 20 (ADR-0012 OI-2) | `ctx.scene.pocket`, … |
 | 17 (F5) | 9 `list_puzzles`, `get_hints`, `request_hint` | `ctx.scene.puzzles` |
 | 21 (F5, autoload) | 7 `cerrar_modos()`, 4 (full unload), 1 (`sin control` handoff) | bound scene context (D6) |
-| 22 (F5) | 7, 1, 3 (own facts) — never 5: the seal is notice-driven (GDD 5 rule 11, GDD 22 rule 3; ADR-0004 OI-2). `request_save` callers are 25 and `Shell` only | `ctx` |
+| 22 (F5) | 7, 1, 3 (own facts); 2 `ANIM_PHONE_PICKUP`, `HAND_PHONE_PUTDOWN`, `reposo()` (ADR-0012 OI-2) — never 5: the seal is notice-driven (GDD 5 rule 11, GDD 22 rule 3; ADR-0004 OI-2). `request_save` callers are 25 and `Shell` only | `ctx` |
 | 11–16 (F5) | **only** their `PuzzleServices` (D7) | built by 9 |
 | 24, 25, 26 (Presentation, Shell) | 7 `get_target()` / `duracion_pie()` (24); `HintPanelProvider` (25); 6, 1, 18 | bound scene context (D6) |
 | 28 (Presentation) | 2 `pose_con_retardo`, `giro_acumulado` (read) | `ctx.scene.player` |
@@ -578,7 +583,7 @@ these calls is on a hard-dependency path of the caller.
 | `PromptSink` (`mostrar_pie`, `ocultar_pie`) | `src/interaction/ports/` | 24 `InteractionPrompt` (Shell) | 7, 20 | `ctx.ui.prompt_sink` | `NullPromptSink` (log once) |
 | `ReadingScreen` | `src/systems/pocket/ports/` | 20's reading UI (Shell HUD) | 20 | `ctx.ui.reading_screen` | — (hard for 20; `require`) |
 | `HintNoteHost` | `src/systems/hints/ports/` | 17's `HintNote` (Shell HUD) | 17 | `ctx.ui.hint_note_host` | `NullHintNoteHost` |
-| `SurfaceFx` (10 operations of GDD 29) | `src/puzzles/ports/` | 29 node in the scene | 9, 12, 15 | `ctx.scene.surface_fx` | `NullSurfaceFx` (TR-atmos-002 analogue: works without 29) |
+| `SurfaceFx` (11 operations: GDD 29's 10 + `set_floor_marks`; signatures in ADR-0015) | `src/puzzles/ports/` | 29 node in the scene | 9, 12, 15 | `ctx.scene.surface_fx` | `NullSurfaceFx` (TR-atmos-002 analogue: works without 29) |
 | `ErrorPanel` | `src/core/composition/` | Curtain + error panel (Shell, owned by 4) | release `FatalErrorHandler` | `ctx.ui.error_panel` | — |
 
 **Pull instead of push for 17 → 25.** The hints panel is hosted by 25 but
@@ -984,7 +989,7 @@ the end of S0 every system story ships with unit tests that use only
 | ID | Item | Owner / route |
 |---|---|---|
 | O1 | ~~`process_mode` of `SceneDirector`~~ Resolved: ADR-0002 § process_mode table assigns `SceneDirector` `ALWAYS` on `GameClock` | ADR-0002 |
-| O2 | Exact port method signatures for `PromptSink`, `SurfaceFx`, `HintPanelProvider`, `InteractionQuery`, `PocketQuery` | ADR-0011, -0015, -0016, -0010 |
+| O2 | (`SurfaceFx` closed by ADR-0015, 11 operations; `InteractionHandler`/`InteractionQuery` by ADR-0011.) Exact port method signatures for `PromptSink`, `SurfaceFx`, `HintPanelProvider`, `InteractionQuery`, `PocketQuery` | ADR-0011, -0015, -0016, -0010 |
 | O3 | Mechanism for T-U8 (script property introspection) — confirm it works on 4.7.2, else replace by a CI text scan | Implementation, S0 |
 | O4 | V1, V2, V4, V5 engine behaviours (NOT SOURCEABLE) — record observations in `docs/engine-reference/godot/` when the first S0 story runs | Implementation, S0 |
 | O5 | Whether `recepcion` needs `SceneServices` beyond `player`, `interaction`, `atmosphere` (no puzzles there per TR-scene-011) | ADR-0003 |
