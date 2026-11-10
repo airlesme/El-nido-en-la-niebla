@@ -1,8 +1,8 @@
 # Subtítulos (sistema 26)
 
-> **Status**: Revisado (ronda de corrección 1) — pendiente de re-review
+> **Status**: Revisado (ronda de corrección 9) — pendiente de re-review
 > **Author**: UX Designer (lote autónomo)
-> **Last Updated**: 2026-11-09
+> **Last Updated**: 2026-11-10
 > **System**: 26 · UI · Vertical Slice
 > **Implements Pillar**: Tensión sin castigo (quien lee vive la misma línea de tiempo que quien oye) · Información incompleta (el subtítulo transcribe, no explica ni añade pistas) · Autonomía como progresión (nada obliga a leer para avanzar: ninguna pista vive solo en el sonido, 9) · El espacio expresa la emoción (banda mínima, sin luz propia)
 > **Depende de**: 6 Ajustes persistentes · 18 Base de contenido narrativo · 23 Director de audio · 3 Estado y bus de eventos (avisos)
@@ -32,7 +32,7 @@ Quien no oye, o juega sin sonido, oye el edificio igual: la voz del Guardián ll
 
 ### B. Cuándo aparece y desaparece (sincronía)
 
-5. **Suscripciones.** 26 escucha «línea pedida» (guarda `line_id` y `fallback_s`), «línea iniciada» ‡, «línea terminada», «línea sin audio», «línea fallida», «sonido pedido» de los `SFX_*` de la regla 2, `pause_opened` ‡ y «pausa cerrada» ‡ (nombres de 23/3), y los avisos de cambio de ajustes. No llama a 23 ni a 21.
+5. **Suscripciones.** 26 escucha «línea pedida» (guarda `line_id` y `fallback_s`), «línea iniciada» ‡, «línea terminada», «línea sin audio», «línea fallida», «sonido pedido» de los `SFX_*` de la regla 2 (los SFX no llegan por «línea pedida», que es solo de voz: R7b de 23), «pausa abierta» ‡ y «pausa cerrada» ‡ (nombre único, el de 25 y 23), «descarga total solicitada» (emite 4; R27) y los avisos de cambio de ajustes. No llama a 23 ni a 21.
 6. **Con audio.** El bloque aparece en el fotograma en que llega «línea iniciada» (no en «línea pedida», porque una línea puede esperar en cola, 23 R10, R15) y se retira `t_cola_sub_s` (0,4†) después de «terminada», salvo que F1 exija más.
 7. **Duración mínima y páginas.** Una línea con texto está visible, en conjunto, al menos `t_lectura_s` (F3 de 23, citada en F1) aunque el audio acabe antes. El tope `t_sub_max_s` (8,0†) es **por página**, no por línea: una línea cuyo audio o `t_lectura_s` supere 8,0 s se pagina (F2) y la suma de páginas cubre toda la voz. Si otra línea del mismo canal llega antes, el bloque anterior se retira al terminar su mínimo, no antes.
 8. **Sin «línea iniciada» (excepción acotada a D26-2).** Si 23 no emite el aviso opcional, el bloque nace en «línea pedida» + 0,0 s **solo si no hay otra línea del mismo canal activa o pendiente** (la línea no ha podido entrar en cola); si la hay, espera a la «terminada» de esa. Se retira en «terminada» (mismo mínimo). El posible adelanto del texto sobre el audio es el coste asumido de la degradación y solo ocurre sin el aviso (D26-12). La ausencia de avisos se resuelve con el tope de 9/22: `fallback_s + line_grace_s` (23 R8, R12).
@@ -50,7 +50,7 @@ Quien no oye, o juega sin sonido, oye el edificio igual: la voz del Guardián ll
 17. **No solo color.** El hablante se distingue por **tres canales redundantes**: el nombre escrito, el estilo (la voz interior de Vera en cursiva, la megafonía entre comillas angulares, el Guardián sin adorno) y, opcionalmente, un matiz de color de nombre que **nunca es el único canal** (art bible §4.5: ningún color es señal). Los sonidos van entre corchetes. Todos los estilos son legibles en escala de grises.
 18. **Aspecto (visual: art-director).** Texto claro sobre fondo oscuro. El contraste se mide contra **fondos de referencia fijos** (blanco puro y negro puro tras el bloque), no contra «la escena»: con «opaco», **7:1** (AAA); con «translúcido», **7:1** con ambos fondos de referencia, lo que fija una opacidad mínima `sub_fondo_opacidad_min` (70 %†, art-director la confirma midiendo); con «ninguno», **4,5:1** del texto contra su contorno de 2 px (color de fondo) y el contorno es el único garante sobre cualquier cuadro. Tipografía, color exacto y opacidad final: art-director. Sin sombras animadas, sin destellos.
 19. **Tamaño y fondo (de 6).** `subtitulos_tamano` (`pequeno`, `medio`, `grande`; F3) y `subtitulos_fondo` (`ninguno`, `translucido`, `opaco`) se aplican en el fotograma del aviso, incluso con una línea en curso (el bloque se recompone, sin reiniciar su reloj). El tamaño crece, el bloque no se recorta: crece hacia arriba y el ancho de 60 % no cambia; manda el **ancho en píxeles**: los caracteres por línea se derivan de él (F3) y el texto se repagina (regla 15).
-20. **Transiciones.** Entrada y salida con fundido de `t_fundido_sub_s` (0,15†); con `reducir_movimiento`, 0,10 s fijos (como 24). Sin deslizamientos ni escalas.
+20. **Transiciones.** Entrada y salida con fundido de `t_fundido_sub_s` (0,15†); con `reducir_movimiento`, **100 ms** fijos: valor único de 6 (`reduce_motion_fade_s`, 0,10 s), el mismo que usan 24, 25, 29, 30 y 27; 26 no define uno propio. Sin deslizamientos ni escalas.
 21. **Activar y desactivar.** `subtitulos_activos` por defecto **verdadero** (regla 1 de 6, valor seguro también si el fichero falla). Falso: 26 no dibuja nada, pero sigue contando sus relojes (para poder mostrar lo restante si se reactiva a mitad de línea: el bloque vigente aparece con lo que queda de su duración). Los sonidos y avisos de 23 no cambian en ningún caso.
 
 ### D. Convivencia con otras capas y contextos
@@ -58,9 +58,9 @@ Quien no oye, o juega sin sonido, oye el edificio igual: la voz del Guardián ll
 22. **Contextos.** Los subtítulos se dibujan en **todos** los contextos de Entrada donde puede sonar una línea: `exploración`, `lectura`, `inspección`, `vista cercana`, `ordenador`, `llamada` y `sin control`. También sobre el velo de la pausa (25) para poder previsualizar los ajustes (regla 26).
 23. **Prompt (24).** 24 dibuja el pie de texto en la zona baja; 26 **reserva** la banda de F4. Mientras 26 tenga algún bloque visible, el pie de 24 se desplaza **hacia arriba** hasta quedar sobre el borde superior de los bloques actuales (margen inferior incluido) más `sub_hueco_px` (12†); la reserva completa de F4 solo es el tope de diseño para 22 y 24. El desplazamiento usa el fundido de 24 (150 ms/100 ms), de modo que nunca se solapen ni se tapen. El anillo y la etiqueta de acción no se tocan (están sobre el objetivo, no en la banda). Si el desplazamiento no cabe (tamaño grande + 2 bloques), el pie se coloca encima y puede recortarse a 2 líneas, nunca el subtítulo. Cambio requerido en 24.
 24. **Llamada (22).** En el contexto `llamada` 24 está oculto; las opciones de respuesta y la UI de 22 no pueden usar la banda inferior de F4 (cambio requerido en 22 / ADR de UI). Los subtítulos de la llamada (`VO_G_12*`, `VO_G_13*`, `VO_G_14_*`, `SFX_BREATH_BROKEN`) siguen las mismas reglas; durante la elección de respuesta el último bloque cumple su duración y se retira (no se «congela»).
-25. **Pausa.** `pause_opened` ‡ congela todos los relojes de 26 (incluidos mínimos y `fallback_s` restante), coherente con 23 R41 y 21; «pausa cerrada» ‡ los reanuda. Los bloques visibles permanecen visibles, sin cambio de aspecto.
+25. **Pausa.** «Pausa abierta» ‡ congela todos los relojes de 26 (incluidos mínimos y `fallback_s` restante), coherente con 23 R41 y 21; «pausa cerrada» ‡ los reanuda. Los relojes de 26 son tiempo de juego propio (no dependen de pausar el `SceneTree`; ver OQ 8). Los bloques visibles permanecen visibles, sin cambio de aspecto.
 26. **Vista previa.** Las pantallas de 25 y 30 que ofrecen tamaño/fondo/nombre muestran una muestra fija `UI_SUB_MUESTRA` ‡ (texto de 18, dos líneas, con nombre) que cambia con el ajuste. No usa la banda de juego ni los avisos de 23.
-27. **Carga y escenas.** «Carga iniciada» retira todos los bloques y vacía la cola sin fundido; «escena lista» no restaura nada (los bloques no se persisten, como el pie de 24). Los ajustes se leen de 6 al arrancar (6 R«Listo»); si 6 no está «Listo», se usan los valores iniciales (verdadero, `medio`, `translucido`, hablante verdadero).
+27. **Carga y escenas.** «Carga iniciada» **y «descarga total solicitada»** (aviso que emite 4: «Volver al título» desde la pausa, donde 25 R28 emite «pausa cerrada» después de la descarga) retiran todos los bloques y vacían la cola sin fundido, aunque los relojes estén congelados por la pausa (R25): ningún bloque queda congelado sobre el título; «escena lista» no restaura nada (los bloques no se persisten, como el pie de 24). Los ajustes se leen de 6 al arrancar (6 R«Listo»); si 6 no está «Listo», se usan los valores iniciales (verdadero, `medio`, `translucido`, hablante verdadero).
 28. **Prioridad de la banda.** Si compiten un subtítulo de voz y uno de sonido, ambos caben (bloques ≤ 2); el de sonido va debajo del de voz. Si ya hay 2 bloques de voz, el de sonido espera (cola de 1) hasta `t_sub_sfx_espera_s` (2,0†) y se descarta (registrado) pasado ese tiempo: es lo menos esencial.
 
 ### E. Lo que 26 no hace
@@ -108,7 +108,7 @@ Caracteres por línea (el ancho de banda es fijo, `sub_ancho_pct`): `car_linea =
 - **Dos líneas de canales distintos a la vez:** ver R15 (máximo 2 bloques, nombre visible aunque `subtitulos_hablante` sea falso).
 - **Interrupción de 22 (`VO_G_14_*`):** el bloque de la línea cortada se retira; el nuevo aparece (R11); no hay bloque «fantasma».
 - **Pausa durante un fundido:** se congela a medio fundido y continúa.
-- **Cambio de escena:** el cambio de escena (21) no retira bloques; sí «carga iniciada» (R27).
+- **Cambio de escena:** el cambio de escena (21) no retira bloques; sí «carga iniciada» y «descarga total solicitada» (R27).
 - **Alta carga:** el tope de 2 bloques acota el coste por fotograma; la composición se cachea por clave y ajuste.
 - **Texto muy largo en 24 (pie) + subtítulo + tamaño grande:** R23; prioridad del subtítulo.
 - **Muestra de vista previa durante el juego en pausa:** independiente de los bloques de juego, que siguen congelados bajo la pantalla.
@@ -120,7 +120,7 @@ Caracteres por línea (el ancho de banda es fijo, `sub_ancho_pct`): `car_linea =
 | 6 Ajustes persistentes | **Dura** | Lee `subtitulos_activos` y, **propuestos ‡**, `subtitulos_tamano`, `subtitulos_fondo`, `subtitulos_hablante`; avisos de cambio | Nota de la regla 1 de 6 |
 | 18 Base de contenido narrativo | **Dura** | Texto por `line_id`, segmentos de `VO_G_07`, claves `SUB_*`, `UI_SUB_HABLANTE_*`, `UI_SUB_MUESTRA` ‡, `fallback_s` | Solo lectura |
 | 23 Director de audio | **Blanda** (avisos) | «Línea iniciada» ‡, «terminada», «sin audio», «fallida»; `t_lectura_s`, `pausa_segmento_s` | R7, R15, R16 de 23. Sin avisos, 26 degrada a `fallback_s` (R8, R9); 23 no espera a 26 (23 R8) |
-| 3 Estado y bus de eventos | **Dura** | Entrega de avisos de 23 y de pausa, cambios de ajustes, «carga iniciada»; 26 no emite | Añadir 3 a la fila 26 y al orden del índice |
+| 3 Estado y bus de eventos | **Dura** | Entrega de avisos de 23 y de pausa, cambios de ajustes, «carga iniciada», «descarga total solicitada»; 26 no emite | Añadir 3 a la fila 26 y al orden del índice |
 | 9 Marco de puzles / 15 Puzle 5 | Consumidor (**blanda**, como declara 9) | `VO_G_07` durante `fallback_s` (14,0 s) | AC-P5-17 |
 | 22 Llamada telefónica | Consumidor (**blanda**, como declara 22 ‡) | `fallback_s`, `SUB_BREATH_BROKEN`; su UI respeta la banda | R20 y R25 de 22 |
 | 21 Director de escenas | Sin acoplamiento directo | 21 (L134) usa la duración del subtítulo como fin de línea; el vínculo es **de datos** (`t_lectura_s` de 23), 26 no depende de 21 ni 21 de 26 | Índice; nota en 21 |
@@ -145,7 +145,7 @@ Caracteres por línea (el ancho de banda es fijo, `sub_ancho_pct`): `car_linea =
 | `sub_margen_inf_pct` / `sub_hueco_px` | 7 / 12 | 5–12 / 8–24 | Colocación |
 | Bases de tamaño (`pequeno` / `medio` / `grande`) | 24 / 32 / 44 px a 1080p | 20–28 / 28–40 / 40–56 | Legibilidad (F3) |
 | `alto_min_px` | 20 | ≥ 18 | Suelo absoluto |
-| `t_fundido_sub_s` | 0,15 (0,10 con `reducir_movimiento`) | 0,05–0,3 | Transición |
+| `t_fundido_sub_s` | 0,15 (con `reducir_movimiento`: 0,10 = `reduce_motion_fade_s` de 6, no se ajusta aquí) | 0,05–0,3 | Transición |
 | Mínimo antes de ceder el sitio | `min(t_lectura_s, 1,0 s)` | 0,5–2,0 | Apilado (R15) |
 | `subtitulos_tamano` / `subtitulos_fondo` / `subtitulos_hablante` (ajustes de 6) | `medio` / `translucido` / verdadero | enum / enum / bool | Aspecto, personalizable por el jugador |
 
@@ -178,9 +178,9 @@ Caracteres por línea (el ancho de banda es fijo, `sub_ancho_pct`): `car_linea =
 - **AC-26-15 (R21, I):** **GIVEN** reactivar los subtítulos con una línea a mitad, **THEN** aparece el bloque vigente con su tiempo restante.
 - **AC-26-16 (R10, I):** **GIVEN** `vol_voces` = 0, **THEN** los bloques salen en los mismos instantes que con volumen 1,0.
 - **AC-26-17 (R1, L):** **GIVEN** una clave sin texto, **THEN** no se dibuja bloque vacío y no cambia ninguna duración de 9, 21 o 22.
-- **AC-26-18 (R27, I):** **GIVEN** «carga iniciada», **THEN** todos los bloques desaparecen y la cola queda vacía.
+- **AC-26-18 (R27, I):** **GIVEN** «carga iniciada» **o** «descarga total solicitada» con la pausa abierta y un bloque congelado, **THEN** todos los bloques desaparecen y la cola queda vacía; la «pausa cerrada» posterior no los restaura.
 - **AC-26-19 (R22, V):** **GIVEN** cada contexto de Entrada con una línea en curso, **THEN** el bloque es visible y no tapa la elección de respuesta de 22.
-- **AC-26-20 (R20, V):** **GIVEN** `reducir_movimiento`, **THEN** el fundido es de 0,10 s sin deslizamientos.
+- **AC-26-20 (R20, V):** **GIVEN** `reducir_movimiento`, **THEN** el fundido es de 100 ms (0,10 s, valor de 6) sin deslizamientos.
 
 ## Decisiones tomadas
 
@@ -202,6 +202,10 @@ Caracteres por línea (el ancho de banda es fijo, `sub_ancho_pct`): `car_linea =
 | D26-14 | Contraste medido contra fondos de referencia fijos con opacidad mínima | Contraste «contra la escena más clara» | La escena es variable y no es verificable; el contorno de 2 px cubre `ninguno` |
 | D26-15 | Sonido en lazo: retirar en `stop`/`interrupt`/`llamada` o a `t_sub_sfx_lazo_s` | Duración inexistente del lazo | Un lazo no tiene duración; el texto no puede quedar colgado |
 | D26-16 | `car_linea` derivado del ancho fijo según tamaño | Constante 42 con ancho variable | Con `grande` los 42 car. desbordarían los 60 % de ancho; manda el ancho en px |
+| D26-17 | (Ronda 9) «Descarga total solicitada» retira los bloques igual que «carga iniciada» (R27), con la pausa abierta o no | Retirar solo en «carga iniciada» | «Volver al título» desde la pausa emite «pausa cerrada» después de la descarga; un bloque congelado quedaría visible sobre el título |
+| D26-18 | (Ronda 9) Un único fundido con `reducir_movimiento`: 100 ms (valor de 6, `reduce_motion_fade_s`); 26 no lo define | 0,15 s (27 AC-18) | 6, 24, 25, 29, 30 y el registro fijan 100 ms; 27 se corrige aparte |
+| D26-19 | (Ronda 9) Nombre del aviso de pausa: «pausa abierta»/«pausa cerrada»; 23 se renombra | `pause_opened`/`pause_closed` | Un solo nombre en 3, 23, 25, 26 y 28 |
+| D26-20 | (Ronda 9) La OQ 5 («[Llanto contenido]») y el ADR de pausa pasan a Open Questions como pendientes; no se decide aquí | Fijar el texto o la arquitectura de pausa | Tocan tono (pilar Información incompleta) y arquitectura fuera de este GDD |
 
 ## Open Questions
 
@@ -211,8 +215,9 @@ Caracteres por línea (el ancho de banda es fijo, `sub_ancho_pct`): `car_linea =
 | 2 | ¿Qué sonidos (sillas, tecleo lejano, timbre, impresora) llevan subtítulo? Toca el pilar Información incompleta. **Decide el usuario** | Solo `SUB_BREATH_BROKEN`; los otros tres no se implementan hasta resolver | Usuario / narrative-director |
 | 3 | ¿Los efectos incrustados de `VO_G_07` se escriben entre corchetes en el texto? | No | Writer |
 | 4 | ¿Historial de líneas y otros idiomas? | Fuera del slice | Usuario |
-| 5 | ¿El texto de `SUB_BREATH_BROKEN` es «[Llanto contenido]» o más sobrio? | Provisional del writer (OQ 5 de 22) | Writer |
+| 5 | ¿El texto de `SUB_BREATH_BROKEN` es «[Llanto contenido]» (R3 y AC-26-06 lo usan como ejemplo, e interpreta el sonido: roza *Información incompleta*) o más sobrio («[Respiración entrecortada]», «[Sonido]»)? **Pendiente de decisión del usuario** | Provisional del writer (OQ 5 de 22); sin decidir aquí | Usuario / writer |
 | 6 | ¿Valores de la banda y el tamaño base para playtest? | Los † | Playtest |
+| 8 | **ADR de pausa (`SceneTree.paused` / `process_mode`):** la pausa del árbol no está documentada en `docs/engine-reference/godot/`. Opciones sin decidir: (a) 25 pausa el árbol y cada sistema declara su `process_mode`; (b) 25 no lo pausa y 26 (y 28/29) usan su propio reloj de juego. 26 ya usa reloj propio (R25, AC-26-13), compatible con ambas | Sin decidir | Technical-director / 25 |
 | 7 | ¿Se añaden al menú de pausa (25) los tres ajustes `subtitulos_tamano`, `subtitulos_fondo`, `subtitulos_hablante`? Amplía el alcance del menú. **Decide el usuario** | Sí, con los valores †; si no, solo `subtitulos_activos` y valores fijos `medio`/`translucido`/verdadero | Usuario |
 
 ## Cambios requeridos en otros GDDs
@@ -227,7 +232,7 @@ Caracteres por línea (el ancho de banda es fijo, `sub_ancho_pct`): `car_linea =
 | `marco-de-puzles.md` (9) / `llamada-telefonica.md` (22) | Mencionar a 26 como consumidor blando (ya declarado blando) |
 | `llamada-telefonica.md` (22) | Su UI no usa la banda inferior (R24); confirmar el contrato de `SUB_BREATH_BROKEN` |
 | `menu-de-pausa.md` (25) | Hoy solo ofrece `subtitulos_activos`: añadir pantalla de subtítulos con tamaño, fondo y nombre, y vista previa `UI_SUB_MUESTRA` (R26), sujeto a OQ 7 |
-| `estado-y-bus-de-eventos.md` (3) | Confirmar que 26 se suscribe a `pause_opened`/«pausa cerrada» y a los avisos de 23 |
+| `estado-y-bus-de-eventos.md` (3) | Confirmar que 26 se suscribe a «pausa abierta»/«pausa cerrada», «descarga total solicitada» y los avisos de 23 |
 | `systems-index.md` | Fila 26: Designed; dependencias 3 (**Dura**), 6, 18 y 23 (**Blanda**); añadir 3 al orden de diseño |
 
 ## Entradas para el registro (†=propuesta)
@@ -250,3 +255,4 @@ Caracteres por línea (el ancho de banda es fijo, `sub_ancho_pct`): `car_linea =
 |---|---|---|
 | 2026-11-09 | Primer borrador (lote autónomo) | UX Designer |
 | 2026-11-09 | Ronda de corrección 1: B-1..B-5 y W-1..W-10 de `reviews/subtitulos-review.md` (R2, R7, R8, R12, R13, R15, R16, R18, R19, R23, R25, F1–F4, dependencias, 12 ACs nuevos, D26-12..16, OQ 7); pendiente de re-review | Claude (corrección) |
+| 2026-11-10 | Ronda de corrección 9 (informe `gdd-cross-review-2026-11-10.md`): «descarga total solicitada» retira bloques (R5, R27, AC-26-18); fundido con `reducir_movimiento` = 100 ms de 6 (R20, AC-26-20); nombre «pausa abierta»/«pausa cerrada»; R5 aclara que los SFX llegan por «sonido pedido»; OQ 5 pendiente de decisión del usuario y OQ 8 (ADR de pausa); D26-17..20; pendiente de re-review | Claude (corrección) |
