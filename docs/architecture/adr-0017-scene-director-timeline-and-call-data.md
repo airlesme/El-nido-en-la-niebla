@@ -498,6 +498,14 @@ emits `line_requested` at the cue time and never holds lines itself; the
 observable behaviour of rule 7 is unchanged and has one owner (C4). 21 waits
 on a line only inside the `CIERRE` chain (D4).
 
+**No lines under the curtain (ADR-0016 OI-4 / C5).** The `Curtain` is drawn
+above subtitles, so a line started while it covers the screen would be
+heard but unreadable. 21 **must not** emit `line_requested` while a load or
+its own `cierre` fade has the curtain at α > 0; a cue whose time falls in
+that window is emitted when the curtain has lifted (scene cues only start
+after «carga de escena terminada», so in practice this binds the `CIERRE`
+chain and the title transition).
+
 ### Architecture Diagram
 
 ```text
@@ -1188,7 +1196,7 @@ Visual/feel items (blackout, flicker, reflection, end card) are PV evidence in
 
 | # | Item | Owner | Before |
 |---|---|---|---|
-| A1 | ADR-0009: `SceneDirector` peers add `settings` (`SettingsReader`, `reducir_movimiento`) | ADR-0009 | 21 story |
+| A1 | **Applied 2026-11-10 (A1–A5 applied in ADR-0009, -0003, -0006, -0001, -0005; A6 pending).** ADR-0009: `SceneDirector` peers add `settings` (`SettingsReader`, `reducir_movimiento`) | ADR-0009 | 21 story |
 | A2 | ADR-0003: `SceneLoader.fade_duration_s(reason) -> float` ‡ so 21 reads `d_cierre` from 4 (single owner; 0,1 s with `reducir_movimiento`) | ADR-0003 | CIERRE story |
 | A3 | ADR-0006: `InputContexts.no_control_margin_s()` ‡ (`margen_E`) for F5 | ADR-0006 | 21 story |
 | A4 | ADR-0001 registry: replace the three "‡ ADR-0017" payload rows with D5; add `SceneEffects` schema | ADR-0001 | 21/28 stories |
