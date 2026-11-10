@@ -1,6 +1,6 @@
 # Pantalla de título, advertencias y cierre (sistema 27)
 
-> **Status**: Revisado (ronda de corrección 9) — pendiente de re-review (ronda 9: R9-B5 dureza hacia 30 = Dura sin ciclo; R9-B6 fundido de 100 ms; «Nueva partida» con confirmación si la inspección expira; durezas; suelo de texto de 30)
+> **Status**: Revisado (ronda de corrección 10) — pendiente de re-review (ronda 9: R9-B5 dureza hacia 30 = Dura sin ciclo; R9-B6 fundido de 100 ms; «Nueva partida» con confirmación si la inspección expira; durezas; suelo de texto de 30)
 > **Author**: UX Designer (lote autónomo)
 > **Last Updated**: 2026-11-10
 > **Implements Pillar**: Tensión sin castigo (el título nunca castiga: sin confirmaciones innecesarias, sin pérdida de partida por error) · Autonomía como progresión (el jugador decide cuándo continuar, ajustar o salir; las advertencias informan, no bloquean) · El espacio expresa la emoción (el título es la primera habitación del juego: quieta, en penumbra, sin música que dirija)
@@ -152,33 +152,35 @@ El jugador llega a un lugar tranquilo antes de empezar su turno de noche. Nada l
 
 ## Acceptance Criteria
 
-- **AC-01** Con `advertencias_vistas` falso, al arrancar aparece la lista de cinco advertencias del slice §17 antes del menú; con verdadero, no aparece.
-- **AC-02** Las advertencias no avanzan solas: tras 60 s sin pulsar, siguen visibles.
-- **AC-03** «Entendido» escribe `advertencias_vistas` verdadero y solo entonces; cerrar la ventana antes no lo escribe.
-- **AC-04** Con resultado `ninguna`, el menú muestra Nueva partida, Opciones y Salir, y no Continuar; «Nueva partida» no pide confirmación.
-- **AC-05** Con `valida` sin `terminada`, el foco inicial está en «Continuar» y «Nueva partida» pide confirmación con foco en «Cancelar».
-- **AC-06** Con `terminada`, el menú ofrece solo «Nueva partida» (sin «Continuar») y esta no pide confirmación.
-- **AC-07** Con `irrecuperable`, se muestra una sola vez por arranque el aviso «dañada»; al volver de una partida al título, no se repite.
-- **AC-08** Con `version_futura`, se muestra el aviso de versión más nueva, sin «Continuar», y «Nueva partida» pide confirmación.
-- **AC-09** Con `con_futura` y partida cargable, se muestra el aviso (incluida la advertencia de que el siguiente guardado reemplaza la copia más nueva) y «Continuar» está disponible.
-- **AC-10** Tras salir al título desde una partida terminada o no, el menú refleja el resultado **actual** de 5, no el del arranque.
-- **AC-11** Al pulsar «Continuar» o «Nueva partida», 27 no emite ninguna petición de carga de `planta` (verificable: solo 5 la emite).
-- **AC-12** Con «carga de escena fallida», el panel de error aparece sobre la cortina en negro con una sola acción; al aceptarla se llega al menú con el mismo resultado de inspección.
-- **AC-13** Con 18 no disponible, el panel de error usa el texto fijo y no falla.
-- **AC-14** «Opciones» abre las pantallas de 25 sin «Reanudar», «Pistas», «Nueva partida» ni «Volver al título», y un cambio de volumen persiste al empezar la partida.
-- **AC-15** «Salir del juego» cierra la aplicación sin diálogo.
-- **AC-16** (integración) Con «tarjeta final pedida» de 21, 27 pinta «Continuará» durante `t_tarjeta_s` + `t_fundido`; después 4 queda en «Sin escena» con la pila en [`menú`] (≤3,0 s, AC-21-28), y se llega al menú con solo «Nueva partida» (con créditos intermedios solo si OQ 7 los confirma, ya con 4 en «Sin escena»).
-- **AC-17** La tarjeta no responde a ninguna entrada ni se salta; dura `t_tarjeta_s` + `t_fundido` (3,8 s con movimiento normal, 3,1 s con `reducir_movimiento`).
-- **AC-18** Con `reducir_movimiento` o `reducir_sobresaltos`, los fundidos duran 100 ms (30 regla 27, AC-30-12; R9-B6) y los créditos (si existen) no se desplazan.
-- **AC-23** No se pinta el menú hasta que 5 esté en «Sin partida» con la re-inspección terminada; tras volver de una partida, el resultado leído no es el anterior.
-- **AC-27** (escenario S1, I) Con 5 sin responder tras `t_espera_inspeccion_s`, el menú se pinta con «Nueva partida» **con** diálogo de confirmación; si la inspección llega después con `valida`, la lista pasa a «Continuar» + «Nueva partida» sin perder el foco y nada se sobrescribió.
-- **AC-24** Con `terminada` + `version_futura`/`irrecuperable`, el menú ofrece solo «Nueva partida» sin confirmación y muestra el aviso correspondiente.
-- **AC-25** (solo si OQ 7 confirma créditos) `ui_accept` avanza de página, `ui_cancel` retrocede y «Volver al título» termina el cierre y muestra el menú.
-- **AC-26** En el título, la desconexión del mando no abre el panel «Mando desconectado» de 25 y el foco se conserva.
-- **AC-19** Todo el menú, las advertencias, los avisos y los créditos se completan solo con teclado y solo con mando.
-- **AC-20** El foco es visible sin depender del color; el texto cabe a 1280x720 y 3840x2160 (captura retenida en `production/qa/evidence/`).
-- **AC-21** Durante una carga, pulsar cualquier entrada no produce ninguna acción (no se encola).
-- **AC-22** En cada resultado de la tabla de Overview (incluido `desconocido`), «Continuar» o existe o no se muestra; nunca aparece desactivado.
+Tipo de evidencia: **L** = test unitario lógico (gdUnit4, `tests/unit/title/`, dobles de 5 y reloj falso); **I** = integración o playtest documentado; **UI** = captura retenida en `production/qa/evidence/`; **PV** = pendiente de verificación en el editor de Godot 4.7 (depende del motor: cierre de la aplicación, señales de mando).
+
+- **AC-01 (L)** Con `advertencias_vistas` falso, al arrancar aparece la lista de cinco advertencias del slice §17 antes del menú; con verdadero, no aparece.
+- **AC-02 (L)** Las advertencias no avanzan solas: tras 60 s sin pulsar, siguen visibles.
+- **AC-03 (L)** «Entendido» escribe `advertencias_vistas` verdadero y solo entonces; cerrar la ventana antes no lo escribe.
+- **AC-04 (L)** Con resultado `ninguna`, el menú muestra Nueva partida, Opciones y Salir, y no Continuar; «Nueva partida» no pide confirmación.
+- **AC-05 (L)** Con `valida` sin `terminada`, el foco inicial está en «Continuar» y «Nueva partida» pide confirmación con foco en «Cancelar».
+- **AC-06 (L)** Con `terminada`, el menú ofrece solo «Nueva partida» (sin «Continuar») y esta no pide confirmación.
+- **AC-07 (L)** Con `irrecuperable`, se muestra una sola vez por arranque el aviso «dañada»; al volver de una partida al título, no se repite.
+- **AC-08 (L)** Con `version_futura`, se muestra el aviso de versión más nueva, sin «Continuar», y «Nueva partida» pide confirmación.
+- **AC-09 (L)** Con `con_futura` y partida cargable, se muestra el aviso (incluida la advertencia de que el siguiente guardado reemplaza la copia más nueva) y «Continuar» está disponible.
+- **AC-10 (I)** Tras salir al título desde una partida terminada o no, el menú refleja el resultado **actual** de 5, no el del arranque.
+- **AC-11 (L)** Al pulsar «Continuar» o «Nueva partida», 27 no emite ninguna petición de carga de `planta` (verificable: solo 5 la emite).
+- **AC-12 (I)** Con «carga de escena fallida», el panel de error aparece sobre la cortina en negro con una sola acción; al aceptarla se llega al menú con el mismo resultado de inspección.
+- **AC-13 (L)** Con 18 no disponible, el panel de error usa el texto fijo y no falla.
+- **AC-14 (I)** «Opciones» abre las pantallas de 25 sin «Reanudar», «Pistas», «Nueva partida» ni «Volver al título», y un cambio de volumen persiste al empezar la partida.
+- **AC-15 (PV)** «Salir del juego» cierra la aplicación sin diálogo.
+- **AC-16 (I)** Con «tarjeta final pedida» de 21, 27 pinta «Continuará» durante `t_tarjeta_s` + `t_fundido`; después 4 queda en «Sin escena» con la pila en [`menú`] (≤3,0 s, AC-21-28), y se llega al menú con solo «Nueva partida» (con créditos intermedios solo si OQ 7 los confirma, ya con 4 en «Sin escena»).
+- **AC-17 (I)** La tarjeta no responde a ninguna entrada ni se salta; dura `t_tarjeta_s` + `t_fundido` (3,8 s con movimiento normal, 3,1 s con `reducir_movimiento`).
+- **AC-18 (I)** Con `reducir_movimiento` o `reducir_sobresaltos`, los fundidos duran 100 ms (30 regla 27, AC-30-12; R9-B6) y los créditos (si existen) no se desplazan.
+- **AC-23 (L)** No se pinta el menú hasta que 5 esté en «Sin partida» con la re-inspección terminada; tras volver de una partida, el resultado leído no es el anterior.
+- **AC-27 (I)** (escenario S1) Con 5 sin responder tras `t_espera_inspeccion_s`, el menú se pinta con «Nueva partida» **con** diálogo de confirmación; si la inspección llega después con `valida`, la lista pasa a «Continuar» + «Nueva partida» sin perder el foco y nada se sobrescribió.
+- **AC-24 (L)** Con `terminada` + `version_futura`/`irrecuperable`, el menú ofrece solo «Nueva partida» sin confirmación y muestra el aviso correspondiente.
+- **AC-25 (I, solo si OQ 7 confirma créditos)** `ui_accept` avanza de página, `ui_cancel` retrocede y «Volver al título» termina el cierre y muestra el menú.
+- **AC-26 (PV)** En el título, la desconexión del mando no abre el panel «Mando desconectado» de 25 y el foco se conserva.
+- **AC-19 (I)** Todo el menú, las advertencias, los avisos y los créditos se completan solo con teclado y solo con mando.
+- **AC-20 (UI)** El foco es visible sin depender del color; el texto cabe a 1280x720 y 3840x2160 (captura retenida en `production/qa/evidence/`).
+- **AC-21 (L)** Durante una carga, pulsar cualquier entrada no produce ninguna acción (no se encola).
+- **AC-22 (L)** En cada resultado de la tabla de Overview (incluido `desconocido`), «Continuar» o existe o no se muestra; nunca aparece desactivado.
 
 ## Decisiones tomadas
 
@@ -208,6 +210,7 @@ El jugador llega a un lugar tranquilo antes de empezar su turno de noche. Nada l
 | D27-22 | (Ronda 9, R9-B6) El fundido con `reducir_movimiento` es de 100 ms (F1, AC-17 = 3,1 s, AC-18); se retira `t_atenuacion_s` | Mantener 0,15 s | Un solo valor en 6, 24, 25, 26, 29 y 30 |
 | D27-23 | (Ronda 9, escenario S1) Si pasa `t_espera_inspeccion_s`, el estado es `desconocido` y «Nueva partida» exige confirmación | Asumir `ninguna` (podía sobrescribir una partida válida) o no pintar nunca con timeout (el jugador queda sin menú) | Cumple el candado de la regla 9 sin bloquear al jugador ni arriesgar su partida |
 | D27-24 | (Ronda 9) Suelo de texto y escala son los de 30 (reglas 8 y 26) | Suelo propio | Un solo suelo en todos los menús |
+| D27-25 | **(Ronda de corrección 10, restos R15)** Cada AC lleva su tipo (L/I/UI/PV) y la sección una leyenda; AC-15 (cierre de la aplicación) y AC-26 (desconexión del mando) PV por depender del motor | Dejar los AC sin tipo | R15-4: 27 no tipaba ningún AC; sin tipo no hay gate de evidencia (coding-standards) |
 
 ## Open Questions
 
@@ -260,3 +263,4 @@ El jugador llega a un lugar tranquilo antes de empezar su turno de noche. Nada l
 | 2026-11-09 | Primer borrador (lote autónomo) |
 | 2026-11-09 | Ronda de corrección 1: B-1..B-5 y W-1..W-13 aplicados (gatillo «tarjeta final pedida», 27 pinta la tarjeta, secuencia tarjeta->descarga->créditos, F1/F2, dureza de dependencias, precedencia de resultados, candado de lectura); créditos, promesa de contenido, filas extra y versionado de advertencias elevados a Open Questions 7–11 |
 | 2026-11-10 | Ronda de corrección 9 (`gdd-cross-review-2026-11-10.md`): R9-B5 (30 Dura de 27, sin ciclo duro), R9-B6 (fundido 100 ms, F1/F2/AC-17/AC-18), estado `desconocido` con confirmación (R9, edge case, AC-27), «Reanudar»/«Nueva partida»/«Volver al título» de 25, suelo de texto de 30, `advertencias_vistas` no restablecible. Pendiente (no decidido aquí): tipar los AC (L/I/UI/H). Estado: Revisado (ronda de corrección 9) — pendiente de re-review. |
+| 2026-11-10 | Ronda de corrección 10 (restos R15): ACs tipados (L/I/UI/PV) con leyenda (D27-25). Estado: Revisado (ronda de corrección 10) — pendiente de re-review |
