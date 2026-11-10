@@ -424,9 +424,9 @@ may change only through that ADR.
 | «puerta abierta» | `&"door_opened"` | 8 | `puerta: SN` ‡ (`A`/`B`/`D`) |
 | «ascensor llamado» | `&"elevator_called"` | 8 | — |
 | «ascensor rechazado» | `&"elevator_rejected"` | 21 | — |
-| «efecto de escena pedido» | `&"scene_effect_requested"` | 21 | ‡ ADR-0017 (`id`, `objetivo`, `duracion`, `parametros` per TR-atmos contract) |
-| «estado de objeto pedido» | `&"object_state_requested"` | 21 (sole emitter) | ‡ ADR-0017 |
-| «tarjeta final pedida» | `&"end_card_requested"` | 21 | ‡ ADR-0017 |
+| «efecto de escena pedido» | `&"scene_effect_requested"` | 21 | `id: SN` (closed `SceneEffects` set, ADR-0017 D5), `objetivo: SN?`, `duracion: F` (≥ 0), `parametros: Dictionary` (per-effect schema `SceneEffects.PARAMS`) — ADR-0017 D5 |
+| «estado de objeto pedido» | `&"object_state_requested"` | 21 (sole emitter) | `objeto: SN`, `estado: SN` — ADR-0017 D5 |
+| «tarjeta final pedida» | `&"end_card_requested"` | 21 | `titulo_key: SN`, `rotulo_key: SN`, `duracion_s: F` — ADR-0017 D5 |
 | `EV_PUZZLE_SOLVED_<ID>` | `&"EV_PUZZLE_SOLVED_P1"` … `&"EV_PUZZLE_SOLVED_P6"` (literal, six constants) | 9 | `puzzle: SN`, `rewards: A`, `choice: SN?` (TR-puzzles-020) |
 | «compartimento completado» | `&"compartment_completed"` | 9 | `n: I` (1–4) |
 | «puzle activado» | `&"puzzle_activated"` | 9 | `puzzle: SN`, `ajar_cm: F?` |
@@ -869,7 +869,7 @@ CA-29 (demo export without console) is validated by ADR-0018's CI script.
 | OI-4 | **Interpretation:** I-9 checks `owner` for `write_silent` in release too, while GDD 3 rule 2 skips owner checks in release for normal writes. Rule 16(a) makes ownership part of the silent-write contract, so the stricter reading is used | technical-director | GDD 3 re-review (confirm) |
 | OI-5 | Revisit typed payload classes (Alt. 3) if integration finds payload bugs that the debug schema did not catch | technical-director | M2 retrospective |
 | OI-6 | Proposed payload keys ‡ (`dispositivo`, `contexto`, `dueno`, `zona`, `vista`, `doc`, `lista`, `puerta`, `puzzle` in `puzzle_resolution_interrupted`) must be confirmed by GDDs 1, 4, 7, 8, 9 or by ADR-0006/-0003/-0011/-0010. Closed for system 1 by ADR-0006 (`anterior`/`contexto`, `dueno`; reconciliation 2026-11-10); `dispositivo` still ‡ | owners of those ADRs | Each ADR |
-| OI-7 | Payload schemas of `scene_effect_requested`, `object_state_requested`, `end_card_requested` | ADR-0017 | M3 |
+| OI-7 | **Resolved 2026-11-10 by ADR-0017 D5 (registry rows updated).** Payload schemas of `scene_effect_requested`, `object_state_requested`, `end_card_requested` | ADR-0017 | M3 |
 | OI-8 | GDD 3 internal inconsistency (minor): its Dependencies row for 7 lists four notices; rule 10 lists eleven. The registry follows rule 10 | game-designer (GDD 3) | GDD 3 re-review |
 | OI-9 | `architecture.md` § API Boundaries "Bus y estado (3)" keeps `escribir_silencioso`/`cola_vacía` as identifiers; update to G-13 names on acceptance | technical-director | `Accepted` |
 
