@@ -1,6 +1,6 @@
 # Puzle 2 · Memorando en el cristal
 
-> **Status**: Revisado (ronda de corrección 8) — pendiente de re-review
+> **Status**: Revisado (ronda de corrección 9) — pendiente de re-review
 > **Author**: Álvaro + agentes (`game-designer`)
 > **Last Updated**: 2026-11-09 (ronda de corrección 7)
 > **Sistema**: 12 (índice: `design/gdd/systems-index.md`) · Layer `Feature` · Categoría `Gameplay` · Prioridad `MVP`
@@ -46,7 +46,7 @@ Estética principal (MDA): **Sensation** (luz ámbar contra cristal frío, el hu
 
 **R3. Reparto.** El controlador del P2 (`P2Controller`, hereda de `PuzzleController`, regla 9 de 9) **solo devuelve veredictos y presenta**: no escribe hechos, no emite avisos, no cambia el estado público (regla 10 de 9). **9 escribe** `pos_L`, `pos_C`, `pos_R` (en cada cambio, regla 22 de 9), `memo_leido`, y emite `EV_PUZZLE_SOLVED_P2`. Este GDD **no escribe ningún hecho**.
 
-**R4. Ningún otro sistema depende del P2 para avanzar.** Ni puertas (8), ni compartimentos (10), ni la llamada (22) leen `memo_leido` ni `pos_*`. Su único lector declarado es el sistema 17 (`memo_leido`; GDD del 3). Saltarse el P2 no bloquea nada y no tiene coste (pilar *Autonomía como progresión*).
+**R4. Ningún otro sistema depende del P2 para avanzar.** Ni puertas (8), ni compartimentos (10), ni la llamada (22) leen `memo_leido` ni `pos_*`. `memo_leido` no tiene lector en el slice: 17 **no** lo lee (`sistema-de-pistas.md` D17-10; 3 ya lo anota sin 17). Saltarse el P2 no bloquea nada y no tiene coste (pilar *Autonomía como progresión*).
 
 ### B. Estado inicial y posiciones
 
@@ -109,7 +109,7 @@ Fragmentos (`DOC_01` partido en tres por 18, regla 10 de 18): **F1** «Traslado 
 
 **R22. Recompensa.** Solo el memorando legible. **Sin llave, sin ítem y sin entrada en el bolsillo** (slice §10.2, «No hay llave ni objeto»): `rewards` = `[]`. El jugador lee el memorando **en el cristal** (`B04` no tiene verbo; D7-18). Cuestión abierta Q12-7: si 20 debe ofrecer relectura (`repasar_bolsillo`) de `DOC_01`; por defecto, no.
 
-**R22b. Efectos posteriores (no los gobierna el P2).** `21` pide `VO_V_08` a +3,0 s† de `EV_PUZZLE_SOLVED_P2` (2,0 s del hum + 1,0 s, slice C.5; `d_vo08_s` de 21). `17` lee `memo_leido`. 5 guarda con la causa `puzzle_solved:P2` (GDD del 5). Nada más cambia.
+**R22b. Efectos posteriores (no los gobierna el P2).** `21` pide `VO_V_08` a +3,0 s† de `EV_PUZZLE_SOLVED_P2` (2,0 s del hum + 1,0 s, slice C.5; `d_vo08_s` de 21). `17` **no** lee `memo_leido` (D17-10). 5 guarda con la causa `puzzle_solved:P2` (GDD del 5). Nada más cambia.
 
 **R23. Estado `RESUELTO`.** El puzle es inerte (D9-7; regla 35 de 9): cualquier `Girar` sobre `B01`–`B03` devuelve `SIN_EFECTO`; 7 reproduce `SFX_CLICK_SUBTLE` y `HAND_REACH`; no cambia ninguna posición ni hecho; no se escribe nada (`memo_leido` es de un solo sentido).
 
@@ -119,11 +119,11 @@ El P2 declara **tres** pistas (regla 27 de 9). Todas son `trigger: REQUEST`: el 
 
 | Nivel | `availability` | Efectos | Clave / dato | Qué hace exactamente |
 |---|---|---|---|---|
-| 1 | `ON_HINT` | `TEXT` + `AFFORDANCE` (`MIRROR_PREVIEW`) | `PISTA_P2_N1` (18, regla 20): «El memorando está escrito en espejo. Un haz lo muestra mejor que la luz directa» | Muestra el texto durante `hint_text_s` = 2,0 s† y, a la vez, el texto de F1 **en espejo** durante `mirror_preview_s` = 2,0 s† en una zona neutra del cristal que **no** es ninguno de los 12 puntos (no revela dónde está F1). Ver Q12-4 |
+| 1 | `ON_HINT` | `TEXT` + `AFFORDANCE` (`MIRROR_PREVIEW`) | `PISTA_P2_N1` (18, regla 20): «El memorando está escrito en espejo. Un haz lo muestra mejor que la luz directa» | Muestra el texto como nota de 17 (duración por F2 de 17, ≈ 6 s; sin `duration_s` propio) y, a la vez, el texto de F1 **en espejo** durante `mirror_preview_s` = 2,0 s† en una zona neutra del cristal que **no** es ninguno de los 12 puntos (no revela dónde está F1). Ver Q12-4 |
 | 2 | `ON_HINT` | `AFFORDANCE` (`FLOOR_MARKS`) | — (dato del objeto `B08`) | Las marcas del suelo `B08` se resaltan: muestran sus **números 1 a 4** y la marca de la **posición actual** de cada lámpara se ilumina. No indica la posición correcta. Ver Q12-5 |
 | 3 | `ON_HINT` | `AFFORDANCE` (`BEAM_HALO`) | — (efecto visual) | Mientras el jugador esté a ≤ `halo_distance_m` = 1,5 m† de la base de una lámpara, el **punto actual** de su haz se marca con un halo en el cristal, también si es un punto vacío. Muestra el punto actual, **no** la posición correcta (slice B.2). Las lámparas están a 1,6 m entre sí: desde el centro de la fila, cada una se ve desde ≤ 0,8 m |
 
-**R24. Persistencia de las pistas.** Los niveles 2 y 3 permanecen mientras dure la sesión de la escena; el nivel alcanzado (`hint_level_reached`) solo está en memoria y no se persiste (regla 26 de 9). Tras cargar, hay que volver a pedirlas. El nivel 1 es transitorio (2 s).
+**R24. Persistencia de las pistas.** Los niveles 2 y 3 permanecen mientras dure la sesión de la escena; el nivel alcanzado (`hint_level_reached`) solo está en memoria y no se persiste (regla 26 de 9). Tras cargar, hay que volver a pedirlas. El nivel 1 es una nota que 17 muestra (F2 de 17, ≈ 6 s) y no se persiste.
 
 **R25. Pistas en pausa.** `request_hint` escribe el nivel alcanzado en el acto; la duración del texto y de la vista previa se mide con el `GameClock` (regla 36 de 9) y **empieza al reanudar**.
 
@@ -222,7 +222,7 @@ Cada caso dice **qué ocurre**, no «se gestiona».
 10. **Cierre entre dos escrituras** (p. ej. entre `pos_C` y el guardado). Se pierde, como mucho, el último cambio hasta la siguiente causa de guardado (`t_periodico`, 5); es inocuo (rehacer una pulsación no cuesta nada, regla 22 de 9).
 11. **Pausa durante el hum de 2,0 s o durante un fundido.** Se miden con el `GameClock` (regla 36 de 9) y se detienen con la pausa. Verificación en el editor pendiente (Open Questions 4 de 9).
 12. **Cambio de `reducir_movimiento` con el puzle activo.** Afecta a la **siguiente** pulsación (regla 14b de 9); la cabeza ya girando termina como estaba.
-13. **El jugador nunca resuelve el P2.** Permitido: ninguna regla lo exige (R4). Pierde el memorando (el contraste entre fuentes) y no cambia ningún otro puzle ni la llamada. `memo_leido` queda falso; 17 puede ofrecer pistas.
+13. **El jugador nunca resuelve el P2.** Permitido: ninguna regla lo exige (R4). Pierde el memorando (el contraste entre fuentes) y no cambia ningún otro puzle ni la llamada. `memo_leido` queda falso; 17 puede ofrecer pistas (no depende de ese hecho).
 14. **`B05` (nota bajo la base de `B02`).** Apuntar a la base da «Girar»; apuntar a la parte de la nota que asoma da «Leer» (collider ≥ 0,02 m de margen, 7 y 4). Lo verifica AC-04c de 7; el P2 no añade lógica.
 15. **Sello iluminado con `pos_L = 2` y nada más.** Veredicto `NONE`; no suena nada; no cuenta como progreso (R14). Si L pasa a 3 y F1 se ilumina, el sello se apaga con su fundido.
 16. **Dato inválido** (dos fragmentos en una lámpara, posición fuera de rango, `REJECT` de un controlador): la validación de arranque lo detecta (R31); en la build final es un fallo de carga, nunca un puzle inactivo (regla 29 de 9). Un `REJECT` en tiempo de ejecución se trata como `NONE` y se registra (regla 15 de 9).
@@ -247,7 +247,7 @@ La **dureza la declara el dependiente**. El índice (`systems-index.md`, fila 12
 | 2 Jugador | Blanda (vía 7) | `HAND_TURN` (≤ 0,8 s) | — |
 | 6 Ajustes | Blanda (vía 9) | `reducir_movimiento` | — |
 
-**Dependen de 12** (la dureza la declara el dependiente): **17** lee `memo_leido`; **21** reacciona a `EV_PUZZLE_SOLVED_P2` (`ESC5_MEMORANDO`, `VO_V_08`; indirecta, vía bus); **5** guarda `pos_*` y `memo_leido` (causa `puzzle_solved:P2`); **29** (fila 29 del índice) y **28** presentan el reflejo; **23** reproduce `SFX_GLASS_HUM`. La sección «Matriz de encaje: los seis puzles frente al marco» de 9 (columna «P2 Memorando») recoge al P2. 21 no declara a 12 (relación indirecta vía bus).
+**Dependen de 12** (la dureza la declara el dependiente): **17** (`sistema-de-pistas.md`) **no** lee `memo_leido` (solo pide las pistas por `request_hint`; D17-10); **21** reacciona a `EV_PUZZLE_SOLVED_P2` (`ESC5_MEMORANDO`, `VO_V_08`; indirecta, vía bus); **5** guarda `pos_*` y `memo_leido` (causa `puzzle_solved:P2`); **29** (fila 29 del índice) y **28** presentan el reflejo; **23** reproduce `SFX_GLASS_HUM`. La sección «Matriz de encaje: los seis puzles frente al marco» de 9 (columna «P2 Memorando») recoge al P2. 21 no declara a 12 (relación indirecta vía bus).
 
 ## Tuning Knobs
 
@@ -262,7 +262,7 @@ La **dureza la declara el dependiente**. El índice (`systems-index.md`, fila 12
 | `initial_pos` | C | **2,2,2** | 1–4, nunca = solución | Estado inicial; (2,2,2) pone el sello a la vista (R14) |
 | `solution` / `pointing_map` | C | **3,1,4** / R9 | un solo fragmento por lámpara | Solución; cualquier cambio exige revalidar R31 y AC-P2-04 |
 | `t_obs_s` (modelo F3) | C | 2,0 s† | 1,0–4,0 | Parámetro del modelo de tiempo, no de código |
-| `hint_text_s` | F | 2,0 s† | 1,0–4,0 | Texto de la pista 1 (comparte el knob de 9) |
+| ~~`hint_text_s`~~ | F | — | — | Retirado (ronda de corrección 9): la duración de la nota de la pista 1 la fija F2 de 17 |
 | `mirror_preview_s` | F | 2,0 s† | 1,0–3,0 | Vista previa en espejo de F1 (pista 1) |
 | `halo_distance_m` | G | 1,5 m† | 1,0–2,5 | Alcance del halo (pista 3); debe ser < separación entre lámparas (1,6 m) para que cada halo se atribuya a una lámpara |
 | `d_vo08_s` | G | 3,0 s† (de 21) | 1–5 | Retardo de `VO_V_08`; lo posee 21 |
@@ -290,7 +290,7 @@ Tipos: **L** lógica (test automático, `tests/unit/`), **I** integración (`tes
 - **AC-P2-06 (R13, L)**: **GIVEN** `progress = {F2}`, **WHEN** se mueve L de 1 a 2, **THEN** no suena nada; **WHEN** L llega a 3, **THEN** `SFX_GLASS_HUM` suena una vez; **WHEN** C sale de 1, **THEN** F2 se apaga sin sonido y sin `REJECT`.
 - **AC-P2-07 (R20, I)**: **WHEN** la tercera lámpara llega a su posición, **THEN** en el mismo fotograma, en este orden: `memo_leido = true`, estado `RESUELTO`, `EV_PUZZLE_SOLVED_P2` con `rewards = []`; no se emite «compartimento completado»; suena `SFX_GLASS_HUM` 2,0 s.
 - **AC-P2-08 (R23, L)**: **GIVEN** P2 `RESUELTO`, **WHEN** `Girar`, **THEN** `SIN_EFECTO`, suena `SFX_CLICK_SUBTLE` y `pos_*` no cambia.
-- **AC-P2-09 (R4, I)**: **GIVEN** `memo_leido` falso, **THEN** la puerta D, la caja, P3–P6 y la llamada funcionan igual (ningún sistema lo lee salvo 17).
+- **AC-P2-09 (R4, I)**: **GIVEN** `memo_leido` falso, **THEN** la puerta D, la caja, P3–P6 y la llamada funcionan igual (ningún sistema lo lee; 17 tampoco, D17-10).
 - **AC-P2-10 (R26, R27, I)**: **GIVEN** `pos = (4,3,2)` guardados, **WHEN** se carga, **THEN** las lámparas están en 4, 3, 2 sin fundido, sin sonido y sin `PARTIAL`.
 - **AC-P2-11 (R28, L)**: **GIVEN** `pos = (3,1,4)` y `memo_leido` falso al cargar, **WHEN** llega «escena lista», **THEN** se resuelve una sola vez por el camino normal (AC-41 de 9).
 - **AC-P2-12 (R27, L)**: **GIVEN** `memo_leido` verdadero y `pos = (2,2,2)`, **WHEN** se carga, **THEN** `RESUELTO` en silencio, presentación en 3,1,4 y `pos_*` sin reescribir.
@@ -388,6 +388,7 @@ Notas: **esquema v2 de 9 (regla 4b, D9-67 a D9-79; `schema_version: 2` es de la 
 | D12-22 | (Ronda 7, A5) R19 dice «tanteo por lámpara con feedback `PARTIAL`; sin softlock»; Q12-1 sigue abierta | Afirmar que la solución se deduce | Sin marca del punto vacío (R17, D12-6) solo se deduce el mecanismo, no la posición |
 | D12-23 | (Ronda 7, A6/A7) Dependencies: duras 7, 9 y 18 (como el índice); 3, 4, 2 y 6 blandas; la «matriz de encaje» existe en 9 y se cita por su título | Subir 3, 4, 2, 6 a duras | La dureza la declara el dependiente y ninguna impide arrancar el P2. A7 (Q12-3/Q12-6 frente al slice) ya está abierta |
 | D12-24 | (Ronda 8) Alineado con el esquema v2 (regla 4b de 9): `schema_version: 2`; `affordance` en lugar de `kind`; `B08` como `{ "id": "B08", "decor": true }` dentro de `elements` (sustituye al `decor_elements` provisional) | Mantener `kind` y `decor_elements` | Un nombre por concepto y validación única (D9-71, D9-72); sin cambio de diseño ni de tiempos |
+| D12-25 | (Ronda de corrección 9, `sistema-de-pistas.md` Cambios requeridos nº 5) 17 **no** lee `memo_leido` (D17-10): se quita a 17 como lector de R4, R22b, la lista de dependientes, AC-P2-09 y las entradas de registro; el `TEXT` de la pista 1 pierde su `duration_s` y el knob `hint_text_s` (la nota la dura F2 de 17, ≈ 6 s) | Mantener a 17 como lector «por si acaso»; mantener los 2,0 s de la pista | Un lector que no lee confunde al verificador de hechos; 2,0 s no bastan para leer la nota (F2 de 17) |
 
 ## Open Questions
 
@@ -408,7 +409,7 @@ No se ha editado ningún archivo existente. Pendiente:
 
 - **9 Marco de puzles:** (1) F7: **no cambiar** el valor del P2 hasta medir (Q12-2); (2) **absorbido en 9 (esquema v2, D9-71, D9-72, D9-70):** catálogo `AFFORDANCE` (`affordance`: `MIRROR_PREVIEW` sin `targets`, `FLOOR_MARKS`, `BEAM_HALO`), `decor: true` (`B08`) aceptado como `targets` sin exigir presencia en 7, y `on_reject: null` válido (el P2 no lleva `on_reject`); (3) la fila «Pistas» de la matriz: aclarar que las 3 del P2 son `REQUEST`; (4) AC-12 de 9: añadir que el sello no cuenta como progreso.
 - **18 Base de contenido:** fila 163 («el sello»): el sello es gráfico, sin clave ni texto (D12-5); confirmar Q12-4 sobre `PISTA_P2_N1`.
-- **17 Sistema de pistas (al redactarse):** las pistas del P2 son solo a petición; `memo_leido` es su único dato del P2.
+- **17 Sistema de pistas (`sistema-de-pistas.md`):** las pistas del P2 son solo a petición; 17 **no** usa `memo_leido` (D17-10) y muestra la nota de la pista 1 con su propia duración (F2 de 17, ≈ 6 s; sin persistirla).
 - **21 Director de escenas:** nota sobre Q12-8.
 - **4 Escena de planta:** requisitos de nivel de R10 (12 puntos sin solape, haces independientes, orden izquierda-centro-derecha) y que `B08` esté siempre presente (geometría; no hace falta que esté en el catálogo de 7).
 - **Datos / registro (`assets/data`, `design/registry/entities.yaml`):** `cobertura_anexo_a.json` **no existe** (solo lo cita el registro): crearlo con `B04` y `B08` como `interactuable: false`, o corregir la referencia (R1).
@@ -422,7 +423,7 @@ Constantes (verificar duplicados con 9, que ya tiene `fragment_fade_s` y `glass_
 Fórmulas: `p2_clicks_to_target` = (p* − p₀) mod 4 (0–3) · `p2_expected_time_min` (1,1–4,5; típico 2,0; sin validar).
 Entidades: `B01`–`B03` (lámparas L, C, R), `B04` (ventanal, no interactuable), `B08` (marcas), fragmentos `F1`–`F3` de `DOC_01`, sello de Dirección (distractor).
 Efectos de pista nuevos: `MIRROR_PREVIEW`, `FLOOR_MARKS`, `BEAM_HALO`.
-Hechos (sin cambios): `pos_L/C/R` (owner 9), `memo_leido` (owner 9; lector 17).
+Hechos (sin cambios): `pos_L/C/R` (owner 9), `memo_leido` (owner 9; sin lector en el slice: 17 no lo lee, D17-10).
 
 ## Historial
 
@@ -433,3 +434,4 @@ Hechos (sin cambios): `pos_L/C/R` (owner 9), `memo_leido` (owner 9; lector 17).
 | 2026-11-09 | Review independiente: NEEDS REVISION (1 bloqueante, 7 avisos). |
 | 2026-11-09 (ronda de corrección 8) | Alineación mecánica con el esquema v2 de `puzzles.json` (regla 4b de 9): `schema_version: 2`, `kind` → `affordance`, `decor_elements` → `decor: true` en `elements`; petición a 9 marcada como absorbida; D12-24. Sin cambio de diseño. Estado: Revisado (ronda 8), pendiente de re-review. |
 | 2026-11-09 | Ronda de corrección 7: B1 (`B08` con `decor: true`, petición a 9 esquema v2 y a 4; se quita la petición a 7); A1 (`MIRROR_PREVIEW` sin `targets`); A2 (`cobertura_anexo_a.json` planificado, no existe); A3 (F4: se declara qué pulsaciones usa cada cálculo; Q12-2 «medir antes»; F7 no se toca); A4 (F3 con `t_clic` 0,8 s, `t_paso` 3,6 s; F4 recalculada: 66,6 / 122,4 / 270,6 s, ≈ 1,1–4,5 min); A5 (R19 reescrita; Q12-1 abierta); A6/A7 (Dependencies; matriz de encaje verificada en 9). D12-18 a D12-23. Estado: pendiente de re-review. |
+| 2026-11-10 (ronda de corrección 9) | Lector de `memo_leido`: 17 retirado (D17-10); pista 1 sin `duration_s` ni `hint_text_s` (F2 de 17); fila de 17 con su GDD; D12-25. Estado: Revisado (ronda de corrección 9) — pendiente de re-review. |
