@@ -819,7 +819,7 @@ confirmación del usuario.
 | ADR | Título | Qué decide | Qué desbloquea | TRs que cubre | Riesgo motor | Spike |
 |---|---|---|---|---|---|---|
 | **ADR-0018** — escrito (Proposed) | Build, export, CI and dev-only tooling | Presets Windows/Linux, ejecución de gdUnit4 en CI, exclusión verificada de consola de 3, herramientas de 5, recarga de 18 y registro de playtest de la demo | Primera build de entrega (antes de M5; el runner de tests ya está en `project.yaml`) | TR-state-018; TR-save-022; TR-content-012, -013; TR-puzzles-021, -022; Tooling restantes | MED (crash en `--import` 4.7.x documentado) | No |
-| **ADR-0019** — pendiente | Performance budgets and reference hardware | Fija equipo de referencia y presupuestos medidos (fotograma, GPU por sistema, memoria, audio) | M4 (perfilado) | TR-atmos-016; TR-shaders-009; TR-audio-021 | MED | Sí (perfilado) |
+| **ADR-0019** — escrito (Proposed) | Performance budgets and reference hardware | Fija equipo de referencia y presupuestos medidos (fotograma, GPU por sistema, memoria, audio) | M4 (perfilado) | TR-atmos-016; TR-shaders-009; TR-audio-021 | MED | Sí (perfilado) |
 | **ADR-0020** — pendiente | Localization readiness beyond `es` | Idiomas, longitud de texto, recálculo de duraciones al cambiar idioma, texto del cristal pregenerado | Post-slice | TR-content-005, -007; TR-hints-017; TR-shaders-019; Localization restantes | LOW | No |
 
 **Recuento: 20 ADRs** (9 antes de programar, 8 antes de su sistema, 3
@@ -880,11 +880,11 @@ Tensión sin castigo · Información incompleta) y del slice «Turno de noche».
 
 | ID | Resumen | Prioridad | Vía de resolución |
 |---|---|---|---|
-| QQ-01 | D-16: orden de la caja (cadena c1→c3→c4 con c2 libre, o libre del todo). Afecta a `requires.all` de P5/P6 en `puzzles.json`, no a la arquitectura del marco | Media | Decisión del usuario (PLAN-TECNICO §7.1); se refleja en datos |
+| QQ-01 | D-16: orden de la caja (cadena c1→c3→c4 con c2 libre, o libre del todo). Afecta a `requires.all` de P5/P6 en `puzzles.json`, no a la arquitectura del marco | Media | **Resuelta 2026-11-10** (usuario): cadena c1→c3→c4 con c2 libre (diseño actual, Anexo B); se refleja en datos. Antes: Decisión del usuario (PLAN-TECNICO §7.1) |
 | QQ-02 | Lenguaje: GDScript (propuesto y fijado en `project.yaml`) o C# | Baja (de facto cerrada) | Confirmación del usuario; este documento asume GDScript |
-| QQ-03 | Tamaño y perfiles del equipo | Media | Usuario (PLAN-TECNICO §7.3); condiciona `team.size` y el paralelismo de ADRs |
-| QQ-04 | **Equipo de referencia** (CPU/GPU/RAM). Sin él, 60 fps, 1500 draw calls, 1,0 ms de 28 y 0,5 ms de 29 no se pueden medir | **Alta** | Usuario (PLAN-TECNICO §7.4) → ADR-0019; bloquea el criterio de S0b |
-| QQ-05 | Fecha objetivo de la demo | Media | Usuario (PLAN-TECNICO §7.5); decide qué ADR diferibles se adelantan |
+| QQ-03 | Tamaño y perfiles del equipo | Media | **Resuelta 2026-11-10** (usuario): equipo individual, una persona con agentes de Claude. Antes: Usuario (PLAN-TECNICO §7.3); condiciona `team.size` y el paralelismo de ADRs |
+| QQ-04 | **Equipo de referencia** (CPU/GPU/RAM). Sin él, 60 fps, 1500 draw calls, 1,0 ms de 28 y 0,5 ms de 29 no se pueden medir | **Alta** | **Resuelta 2026-11-10 por ADR-0019** (`Proposed`): portátil de desarrollo (Core Ultra 7 265H, iGPU Intel, 15,4 GB, 1920×1200 a 60 Hz); presupuestos como objetivos, 60 fps en iGPU sin verificar. Antes: Usuario (PLAN-TECNICO §7.4) → ADR-0019; bloquea el criterio de S0b |
+| QQ-05 | Fecha objetivo de la demo | Media | **Resuelta 2026-11-10** (usuario): sin fecha fija; planificación por hitos con plazos relativos y orden de recorte. Antes: Usuario (PLAN-TECNICO §7.5); decide qué ADR diferibles se adelantan |
 | QQ-06 | **ADR de pausa**: `SceneTree.paused` + `process_mode` (recomendado) frente a reloj propio sin pausar el árbol; contradicción 23 D23-25 / TR-audio-015 («25 no pausa el árbol», pausa por reproductor) frente a 28 R22 y 29 R35 (árbol pausable) | **Crítica** | **Resuelta por ADR-0002** (opción A, spike 2026-11-10; S4 manual pendiente de registro). Antes: Spike en 4.7.2 → ADR-0002. Propuesta de conciliación: el árbol se pausa, 23 y 26 corren `ALWAYS` y mantienen su pausa propia guiada por `pause_opened`; 23 solo cambia el texto de D23-25 |
 | QQ-07 | Espera de pistas 20/40 s (17 OQ3, 30 OQ1) frente a «Tensión sin castigo»; recorte de pips/cuaderno/«Repetir» | Baja (arquitectura) | Usuario; solo cambia `hints_policy.json` y quizá la reaplicación ‡ de `request_hint` |
 | QQ-08 | Alcance de `reducir_movimiento` más allá del slice §14 y cierre de `escala_texto_ui` («restablecer todos» 18 o 17 claves) | Media | Usuario → ADR-0007 |
