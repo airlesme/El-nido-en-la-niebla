@@ -1,6 +1,6 @@
 # Plan de acción técnico · Slice «Turno de noche»
 
-**Base:** `design/slice/slice-v0.3.md` · **Motor:** Godot 4 (ref. 4.7) · **Objetivo:** build jugable de 25–30 min + vídeo/tráiler para financiación.
+**Base:** `design/slice/slice-v0.3.md` (fuente de verdad del slice, según `CLAUDE.md`) · **Motor:** Godot 4 (ref. 4.7) · **Objetivo:** build jugable de ~15–30 min según el jugador (a medir en playtest) + vídeo/tráiler para financiación.
 **Estado:** propuesta para aprobar. Nada de lo de abajo está implementado todavía.
 
 ## 1. Decisiones técnicas propuestas
