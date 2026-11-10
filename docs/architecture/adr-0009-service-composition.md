@@ -210,7 +210,7 @@ any consumer reads it in the same frame, independent of tree order (V2).
 `GameClock`, which that list omits):
 
 ```text
- 0  Boot builds the platform objects: Log sink, MonotonicClock, FatalErrorHandler
+ 0  Boot builds the platform objects: BuildFlavor, Log sink, RealClock, FatalErrorHandler
     (debug or release variant), FileStore, then an empty ServiceContext (D3)
  1  ContentDB.setup(ctx)      → load narrative/*        fail → fatal CONTENIDO_INVALIDO ‡
  2  GameState.setup(ctx)      → load state/flags.json   fail → fatal (CA-26 of 3)
@@ -222,7 +222,7 @@ any consumer reads it in the same frame, independent of tree order (V2).
                                  Settings directly in step 7, so no ramp is lost)
  7  AudioDirector.setup(ctx)  → after 3 and 6
  8  SceneLoader.setup(ctx)    → validates load_transitions.json  fail → DATOS_ESCENA_INVALIDOS
- 9  SceneDirector.setup(ctx)  → scenes.json + scene-config.json (invalid scenes dropped)
+ 9  SceneDirector.setup(ctx)  → director/scenes.json + director/director_config.json (ADR-0005 D1; invalid scenes dropped)
 10  SaveService.setup(ctx)    → inspect() → result kept for 27
 11  Shell.setup_ui(ctx)       → configures HUD, Subtitles, PauseMenu, Curtain (D6)
 12  ctx.freeze()              → from here the global context is read-only
@@ -254,7 +254,8 @@ class_name ServiceContext extends RefCounted
 
 # --- Platform (layer 0) -------------------------------------------------
 var logger: LogSink                    # push_* wrapper; tests use RecordingLog (not `log`: shadows the builtin)
-var real_clock: MonotonicClock         # unscaled real time (T_cap, Settings debounce)
+var flavor: BuildFlavor                # debug / release policy, set in step 0 (ADR-0005 O2)
+var real_clock: RealClock         # unscaled real time (T_cap, Settings debounce)
 var fatal: FatalErrorHandler           # D8
 var files: FileStore                   # user:// and res:// access; tests use MemoryFileStore
 
@@ -288,7 +289,7 @@ func is_frozen() -> bool:
 ## The global context itself is never mutated by a scene.
 func for_scene(services: SceneServices) -> ServiceContext:
     var c := ServiceContext.new()
-    c.logger = logger; c.real_clock = real_clock; c.fatal = fatal; c.files = files
+    c.logger = logger; c.flavor = flavor; c.real_clock = real_clock; c.fatal = fatal; c.files = files
     c.content = content; c.state = state; c.clock = clock; c.input = input
     c.settings = settings; c.audio = audio; c.save = save
     c.scenes = scenes; c.director = director; c.ui = ui
@@ -331,6 +332,7 @@ var hints: HintService                 # 17 (F5)
 var hint_panel: HintPanelProvider      # 17 → pulled by 25 (D6)
 var surface_fx: SurfaceFx              # 29 output port (D6); null-safe NullSurfaceFx if absent
 var atmosphere: Atmosphere             # 28 (layer 4), only for tests/debug; nobody calls it (D11)
+var audio_index: AudioSceneIndex       # 23: markers with audio_id, AudioRoomVolume, surface tags; built by the scene root (ADR-0008 OI-6)
 ```
 
 **The `configurar()` contract (must).** Every system node in a game scene
@@ -423,7 +425,7 @@ Sub-layers (from `architecture.md` § System Layer Map, adopted unchanged):
 
 | Layer | Sub-layer | Systems | Configured in a scene? |
 |---|---|---|---|
-| 0 Platform | — | `LogSink`, `MonotonicClock`, `FileStore`, `FatalErrorHandler`, `NoticeChannel`, `DataValidator` | No (Boot) |
+| 0 Platform | — | `LogSink`, `RealClock`, `FileStore`, `FatalErrorHandler`, `NoticeChannel`, `DataValidator` | No (Boot) |
 | 1 Foundation | — | 3 `GameState`, `GameClock`, 1 `InputRouter`, 18 `ContentDB` | No (autoload) |
 | 2 Core | C1 | 6 `Settings` | No (autoload) |
 | | C2 | 2 `Player` (scene), 4 `SceneLoader` (autoload) | 2: yes |
@@ -451,7 +453,7 @@ table is forbidden and goes through the bus):
 | 8 (F5) | 20 `otorgar("A05")`, 7, 4 | `ctx.scene.pocket`, … |
 | 17 (F5) | 9 `list_puzzles`, `get_hints`, `request_hint` | `ctx.scene.puzzles` |
 | 21 (F5, autoload) | 7 `cerrar_modos()`, 4 (full unload), 1 (`sin control` handoff) | bound scene context (D6) |
-| 22 (F5) | 5 (`request_save`), 7, 1, 3 (own facts) | `ctx` |
+| 22 (F5) | 7, 1, 3 (own facts) — never 5: the seal is notice-driven (GDD 5 rule 11, GDD 22 rule 3; ADR-0004 OI-2). `request_save` callers are 25 and `Shell` only | `ctx` |
 | 11–16 (F5) | **only** their `PuzzleServices` (D7) | built by 9 |
 | 24, 25, 26 (Presentation, Shell) | 7 `get_target()` / `duracion_pie()` (24); `HintPanelProvider` (25); 6, 1, 18 | bound scene context (D6) |
 | 28 (Presentation) | 2 `pose_con_retardo`, `giro_acumulado` (read) | `ctx.scene.player` |
@@ -496,7 +498,7 @@ Signals **must never** connect two systems of the same sub-layer.
  │ C3 SaveService(5)  AudioDirector(23)   C2 SceneLoader(4)   C1 Settings(6)   F5* SceneDirector │
  │ L1 ContentDB(18)  GameState(3) ═══ bus ═══  GameClock  InputRouter(1)                        │
  └──────────────────┬───────────────────────────────────────────────────────────────────────────┘
- ┌──────────────────▼──── layer 0: LogSink · MonotonicClock · FileStore · FatalErrorHandler ─────┐
+ ┌──────────────────▼──── layer 0: LogSink · RealClock · FileStore · FatalErrorHandler ─────┐
  └───────────────────────────────────────────────────────────────────────────────────────────────┘
   * 21 is an F5 system hosted as an autoload; it reaches scene services only while bound (D6).
 ```
@@ -586,7 +588,8 @@ the bound scene context when the player opens the "Pistas" tab. With no
 bound scene (title) the tab is hidden.
 
 **Bind / unbind protocol** — for the persistent consumers of per-scene
-services (`SceneDirector` and `Shell`, which fans out to 24, 25, 26):
+services (`SceneDirector`, `AudioDirector` (23, reads `scene.audio_index`;
+ADR-0008 OI-6) and `Shell`, which fans out to 24, 25, 26):
 
 ```gdscript
 # src/core/composition/scene_bindable.gd
@@ -599,7 +602,7 @@ services (`SceneDirector` and `Shell`, which fans out to 24, 25, 26):
 @abstract func unbind_scene() -> void
 ```
 
-(`SceneDirector` and `Shell` are Nodes, so they hand out an adapter, as in
+(`SceneDirector`, `AudioDirector` and `Shell` are Nodes, so they hand out an adapter, as in
 D5.) Rules: `SceneLoader` **must** call `unbind_scene()` on every bound
 consumer before `queue_free()` of the world scene, and TR-scene-002's
 "21 inactive during full unload" is implemented as "unbound". A persistent
@@ -689,7 +692,7 @@ a system (V5, NOT SOURCEABLE).
 |---|---|---|---|
 | `FakeGameState` | `GameState` | subclass of `GameState`, `setup()` skipped | In-memory facts from a fixture dict; synchronous notice delivery; records `set_fact` writer IDs |
 | `FakeClock` | `GameClock` / `GameClockReader` | subclass | `advance(ticks: int)`; `set_paused(b)`; integer ticks (TR-settings-021) — already listed in layer 0 by `architecture.md` |
-| `FakeMonotonicClock` | `MonotonicClock` | subclass | Same, unscaled |
+| `FakeRealClock` | `RealClock` | subclass | Same, unscaled |
 | `MemoryFileStore` | `FileStore` | subclass | Dict of path → bytes; can inject read/rename failures (ADR-0004 tests) |
 | `RecordingLog` | `LogSink` | subclass | Collects lines; asserts on log-and-continue paths |
 | `RecordingFatalHandler` | `FatalErrorHandler` | concrete | See D8 |
@@ -704,7 +707,7 @@ class_name TestContexts extends RefCounted
 static func make(overrides: Dictionary = {}) -> ServiceContext:
     var c := ServiceContext.new()
     c.logger = overrides.get(&"logger", RecordingLog.new())
-    c.real_clock = overrides.get(&"real_clock", FakeMonotonicClock.new())
+    c.real_clock = overrides.get(&"real_clock", FakeRealClock.new())
     c.fatal = overrides.get(&"fatal", RecordingFatalHandler.new())
     c.files = overrides.get(&"files", MemoryFileStore.new())
     c.state = overrides.get(&"state", FakeGameState.new())
@@ -790,7 +793,7 @@ inherits this placement.
 | `SceneBindable` | `@abstract RefCounted` | `src/core/composition/scene_bindable.gd` | D6 |
 | `PuzzleServices`, `GameClockReader`, `SettingsReader`, `PocketQuery`, `InteractionQuery` | `RefCounted` | `src/puzzles/` | D7 |
 | `FatalErrorHandler` (+ Debug/Release) | `@abstract RefCounted` | `src/core/composition/` | D8 |
-| `LogSink`, `MonotonicClock`, `FileStore` | `RefCounted` | `src/core/platform/` | D3 |
+| `LogSink`, `RealClock`, `FileStore` | `RefCounted` | `src/core/platform/` | D3 |
 
 Method signatures of the ports other than D5/D6/D8 are owned by the ADR of
 the implementing system (ADR-0010, -0011, -0015, -0016); this ADR fixes only
@@ -915,7 +918,7 @@ that they exist, their direction and where they are injected.
 | sistema-de-pistas.md (17) | TR-hints-001: `HintService` injected, no singleton/autoload of state | D1 rejected list; lives in `planta`, reached via `ctx.scene.hints`; panel via pull (D6) |
 | ajustes-persistentes.md (6) | TR-settings-007: survives scene changes without dangling refs; scene subscribers unsubscribe on unload | D1 (autoload, P/B); D3 rule 6 `SubscriptionBag` |
 | ajustes-persistentes.md (6) | TR-settings-019: invalid catalog → injected fatal handler, code `CATALOGO_INVALIDO` + offending parameter, text independent of 18 | D8 (`detail.param` mandatory; `fatal_messages.gd` constants) |
-| ajustes-persistentes.md (6) | TR-settings-021: no real I/O, injected clock (integer ticks), replaceable error handler and log sink | D3 platform fields; D9 `MemoryFileStore`, `FakeMonotonicClock`, `RecordingFatalHandler`, `RecordingLog` |
+| ajustes-persistentes.md (6) | TR-settings-021: no real I/O, injected clock (integer ticks), replaceable error handler and log sink | D3 platform fields; D9 `MemoryFileStore`, `FakeRealClock`, `RecordingFatalHandler`, `RecordingLog` |
 | escena-de-planta.md (4) | TR-scene-002: 1, 3, 6, 21, 23 persistent with the same instance id; 21 inactive during full unload | D1 (all five are autoloads); D6 unbind = inactive |
 | escena-de-planta.md (4) | TR-scene-009: orphans and bus subscribers back to boot values after 10 cycles | D3 rule 6, D6 bind window; Validation T-I2 |
 | escena-de-planta.md (4) | TR-scene-011: configuration order 7 → 9 → rest, synchronous | D5 configuration order + `CONFIG_ORDER` test |
