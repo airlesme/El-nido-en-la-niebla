@@ -4,13 +4,14 @@
 
 | Campo | Valor |
 |---|---|
-| Version | 1 |
+| Version | 2 |
 | Fecha | 2026-11-10 |
 | Engine | Godot 4.7 (pin 4.7.2.stable; editor local del desarrollador sin registrar, ver `docs/engine-reference/godot/VERSION.md`) |
 | Lenguaje / render / física | GDScript tipado · Forward+ (D3D12 por defecto en Windows desde 4.6) · Jolt |
 | GDDs cubiertos | 30/30 (vía `docs/architecture/tr-baseline-provisional.md`, lectura parcial por bloque: ver «NO LEÍDO» de cada bloque) |
-| Requisitos técnicos | 609 TR provisionales (615 filas `\| TR-` menos 6 cabeceras de tabla) |
-| ADRs referenciados | Ninguno aún (todos propuestos, ver § Required ADRs) |
+| Requisitos técnicos | 609 TR, ya registrados en `docs/architecture/tr-registry.yaml` (único renombrado: `TR-audio-012b` → `TR-audio-026`) |
+| ADRs referenciados | ADR-0001…ADR-0017, todos `Proposed` (ADR-0002 con resultados de spike: ver su § Spike Results) |
+| Revisión de arquitectura | `docs/architecture/architecture-review-2026-11-10.md`: **CONCERNS** |
 | Modo | `workflow: standard`, `automation: autonomous`, densidad `balanced` |
 | Fuente de verdad del slice | `design/slice/slice-v0.3.md` (prevalece sobre GDDs y sobre este documento) |
 
@@ -40,7 +41,7 @@ dependencia parcial; **LOW** = API estable y patrón citado en la referencia.
 | **Physics / Jolt** | HIGH | 4.5 interpolación física 3D movida de RenderingServer a SceneTree (API igual, internos distintos); 4.6 Jolt por defecto; 4.7 signo de `WorldBoundaryShape3D.plane.d` invertido, masa de `SoftBody3D`, `Area3D` informa solapes con `SoftBody3D` (`modules/physics.md`). Patrón `CharacterBody3D` + `move_and_slide()` e `intersect_ray` citados como estables | `Area3D` como sensor de zona bajo Jolt (radio 0,02–0,05 m) y orden de entradas simultáneas (TR-scene-006, TR-player-003, TR-scene-023); consulta de forma esférica que recoja **todos** los contactos (`ShapeCast3D`/consulta de forma) (TR-interact-003; el respaldo de 7 rayos no cumple F1); comportamiento de la interpolación física 3D en 4.7 (TR-player-004); desactivación de colisión de hoja de puerta en el mismo paso (TR-access-008, sin cita de motor) |
 | **Input** | HIGH | 4.5 driver de mando SDL3; 4.6 foco dual (ratón/táctil separado de teclado/mando; `grab_focus()` solo afecta al segundo); 4.7 `InputEvent.DEVICE_ID_MOUSE`/`DEVICE_ID_KEYBOARD` en lugar de `device == 0`, `VirtualJoystick`, giroscopio (`modules/input.md`) | Detección de familia de mando (`A`/`✕`) para `get_binding_label` (TR-input-018); señales de conexión/desconexión de mando (TR-title-016, TR-pause-021, TR-input-008); lectura de ejes crudos sin la zona muerta del motor (TR-input-010); pérdida de foco de ventana (TR-input-008, TR-pause-004); modo de estiramiento para el cursor virtual en 1920×1080 lógico (TR-input-011) |
 | **UI / AccessKit** | HIGH | 4.5 lector de pantalla vía AccessKit en `Control`, `FoldableContainer`, desactivación recursiva; 4.6 foco dual; 4.7 `Control.accessibility_live` tipado `AccessibilityServer.AccessibilityLiveMode`, `offset_transform_*`, imágenes de `RichTextLabel` (`width_unit`), **estiramiento por defecto `canvas_items`/`expand` solo en proyectos nuevos** (`modules/ui.md`) | Interacción de la escala de UI F1 de 30 con `content_scale_mode`/`stretch` (TR-a11y-006, TR-prompt-018, TR-subs-014, TR-computer-013); propiedad de nombre accesible y orden de foco (TR-a11y-015, AC-30-16 PV; TR-computer-014); anuncio por lector de pantalla en título (OQ 10 de 27) |
-| **Audio** | MED | Sin cambios de API en 4.5–4.6; 4.7 quita `AudioEffectSpectrumAnalyzer.tap_back_pos` y `area_mask` de `AudioStreamPlayer2D/3D` pasa a `0` (rompe `audio_bus_override` de `Area3D` hasta poner la capa 1) (`modules/audio.md`). Buses, `set_bus_volume_db`, `set_bus_mute`, pool de reproductores citados | `process_mode` del nodo de audio con el árbol pausado (TR-audio-001, TR-pause-002); `stream_paused` por reproductor (TR-audio-015); limitador de techo y filtros en ejecución por fuente/paso bajo (TR-audio-022, -023); detección de «sin dispositivo» en ejecución (TR-audio-019; solo `--headless` con driver ficticio está citado); memoria de streaming frente a precarga (TR-audio-021). Aviso: los volúmenes `audio_room` de TR-audio-012b, si se implementan con `Area3D`, chocan con el cambio de `area_mask` |
+| **Audio** | MED | Sin cambios de API en 4.5–4.6; 4.7 quita `AudioEffectSpectrumAnalyzer.tap_back_pos` y `area_mask` de `AudioStreamPlayer2D/3D` pasa a `0` (rompe `audio_bus_override` de `Area3D` hasta poner la capa 1) (`modules/audio.md`). Buses, `set_bus_volume_db`, `set_bus_mute`, pool de reproductores citados | `process_mode` del nodo de audio con el árbol pausado (TR-audio-001, TR-pause-002); `stream_paused` por reproductor (TR-audio-015); limitador de techo y filtros en ejecución por fuente/paso bajo (TR-audio-022, -023); detección de «sin dispositivo» en ejecución (TR-audio-019; solo `--headless` con driver ficticio está citado); memoria de streaming frente a precarga (TR-audio-021). Aviso: los volúmenes `audio_room` de TR-audio-026 (antes 012b), si se implementan con `Area3D`, chocan con el cambio de `area_mask` |
 | **Animation / Tween** | HIGH | 4.5 `BoneConstraint3D`; 4.6 IK restaurado (`SkeletonModifier3D`); 4.7 `Tween.tween_await()`, `LookAtModifier3D.relative` = `false` (`modules/animation.md`). `AnimationPlayer.play` + `await animation_finished` citado | `AnimationPlayer` con `SceneTree.paused` (TR-box-015, bloquea AC-21 de 10); `Tween` en pausa / `TWEEN_PAUSE_STOP` / `PROCESS_MODE_PAUSABLE` (TR-puzzles-014, TR-atmos-018, TR-shaders-017); pausa de `GPUParticles3D` (TR-atmos-018) |
 | **Core / Scene / pausa** | HIGH | 4.4 `FileAccess.store_*` devuelven `bool`; 4.5 `duplicate_deep()`; 4.6 `Quaternion` inicia en identidad; 4.7 `Object.is_class()` con `StringName`; `Time.get_ticks_msec()` sustituye a `OS.get_ticks_msec()` (`deprecated-apis.md`) | **`SceneTree.paused` y `process_mode`** (TR-pause-001/-002/-003, TR-audio-001); `SceneTree.quit()` (TR-title-009); instanciación/liberación de escenas y conteo de huérfanos `OBJECT_NODE_COUNT`/`print_orphan_nodes()` (TR-scene-009, -023); renombrado atómico y borrado de ficheros en `user://` (TR-save-004/-005, TR-settings-012/-015); SHA-256 (TR-save-002); comportamiento del parser JSON (enteros devueltos como `float`) (TR-state-015, TR-save-003, TR-puzzles-006); reloj monotónico más allá de `Time.get_ticks_msec()` (TR-save-010, TR-settings-014); `TIME` de shader con el árbol pausado (TR-shaders-017); aplicación de `modo_ventana` sin reinicio (TR-settings-018) |
 | **GDScript** | MED | 4.5 argumentos variádicos (`...args: Array`), `@abstract` (clases y métodos sin cuerpo), backtrace en release; 4.7 **override de un método con retorno tipado hereda el tipo y exige `return` explícito**, escribir un elemento de un array empaquetado ya no llama al setter de la propiedad; lambdas capturan locales por valor (`current-best-practices.md`) | Ninguno NS en los TR: `@abstract` de `PuzzleController` (TR-puzzles-008) está citado. Riesgo práctico: los `PuzzleController` hijos con `evaluate() -> Verdict` deben devolver siempre (regla 4.7) |
@@ -166,7 +167,12 @@ Partida: 3, 1, 6, 5, 23, 4. Lista final, en orden de registro (= orden de
 construcción; la **inicialización** la hace la escena `Boot` en el orden de
 § Data Flow 4):
 
-| # | Autoload ‡ | Sistema | Motivo |
+Lista confirmada por ADR-0009 D1. Nombre registrado = `class_name` +
+`Autoload` (`ContentDBAutoload`, `GameStateAutoload`, …); solo `Boot` lo usa,
+el código usa el `class_name`. `process_mode` de los nueve: `ALWAYS`
+(ADR-0002, incluido `SceneDirector`).
+
+| # | Autoload (`class_name`) | Sistema | Motivo |
 |---|---|---|---|
 | 1 | `ContentDB` | 18 | **Añadido.** Catálogo de solo lectura que valida 9 al arrancar y consultan 25, 26, 27 y el panel de error; debe existir antes que cualquier escena y no depender de ninguna |
 | 2 | `GameState` | 3 | Hechos + bus de avisos; único canal horizontal; sobrevive a cargas (TR-scene-002) |
@@ -184,10 +190,13 @@ que vive como nodo en cada escena de juego y se reconstruye en «escena
 lista»); `HintService` 17, `PauseMenu` 25, `SurfaceFx` 29, `CallController`
 22 (todos los GDDs piden inyección, no singleton).
 
-**Regla de uso:** los autoloads solo se nombran desde puntos de composición
-(`Boot`, la raíz de `Shell` y el `configurar(ctx)` de cada escena). El código de
-sistema recibe sus dependencias por inyección (`ServiceContext` ‡), de modo
-que todos los tests de `tests/unit/` sustituyen cualquier autoload por un doble.
+**Regla de uso (ADR-0009 D3):** `Boot` es la **única** raíz de composición y
+el único que nombra autoloads; `Shell` y el `configurar(ctx)` de cada escena
+reciben el `ServiceContext` ya construido. Las llamadas hacia arriba se hacen
+por puertos de salida (ADR-0009 D6). 21 es un sistema F5 alojado como
+autoload, que alcanza servicios de escena solo mientras está ligado (D6). El
+código de sistema recibe sus dependencias por inyección, de modo que todos
+los tests de `tests/unit/` sustituyen cualquier autoload por un doble.
 
 ### Árbol en ejecución
 
@@ -201,11 +210,19 @@ root (Window)
     │           ├── Player (2) · InteractionSystem (7) · PuzzleFramework (9) + controladores 11–16
     │           ├── Access (8) · Box D01 (10) · Pocket (20) · Computer V01/V08 (19) · CallController (22)
     │           └── AtmosphereZone/Atmosphere (28) · SurfaceFx + FxTarget (29) · HintService (17)
-    ├── HUD (CanvasLayer) .... InteractionPrompt (24) · HintNote (17) · ReadingScreen (20)
-    ├── Subtitles (CanvasLayer, sobre el velo de pausa) (26)
-    ├── PauseMenu (CanvasLayer) + OptionsComponent (25; reutilizado por 27)
-    └── Curtain (CanvasLayer superior, propiedad de 4) + panel de error
+    │     └── SceneUi (CanvasLayer 5, PAUSABLE) ... pantallas de 27 · overlay de 19 · opciones de 22
+    ├── HUD (CanvasLayer 10, PAUSABLE) .... InteractionPrompt (24) · HintNote (17) · ReadingScreen (20)
+    ├── PauseVeil (CanvasLayer 20, ALWAYS) .. velo + desaturación (25, fundido F3 con RealClock)
+    ├── Subtitles (CanvasLayer 30, ALWAYS, sobre el velo) (26)
+    ├── MenuLayer (CanvasLayer 40, ALWAYS) .. PauseMenu + OptionsComponent (25; reutilizado por 27)
+    ├── CursorLayer (CanvasLayer 50, ALWAYS) .. cursor virtual (1)
+    ├── Curtain (CanvasLayer 60, ALWAYS, propiedad de 4)
+    └── ErrorPanel (CanvasLayer 70, ALWAYS, propiedad de 4)
 ```
+
+Números de capa y `process_mode`: ADR-0016 D1 (constantes en
+`src/ui/ui_layers.gd`). Liberar `title.tscn` al cargar `planta` **no** es una
+«descarga» (no reinicia la pila de entrada; ADR-0003 D2).
 
 `Shell` resuelve sin autoloads extra la persistencia de la UI (24, 25, 26) y
 de la cortina entre escenas. 4 instancia en `WorldSlot` (nunca reutiliza la
@@ -215,10 +232,10 @@ instancia, TR-scene-009) en lugar de cambiar la escena raíz.
 
 | Sistema | Owns | Exposes | Consumes | Engine APIs (riesgo) |
 |---|---|---|---|---|
-| **3 Estado y bus** | 20 hechos, catálogo `state/flags.json`, cola de avisos, `max_chained_notices`, estados Sin cargar/Listo/Restaurando, `snapshot_version` | Lectura O(1), escritura validada, `escribir_silencioso`, instantánea/restaurar/restablecer, `cola_vacía()`, suscripción por hecho/todos/nombre; avisos «estado restablecido/restaurado», «avisos descartados», cambio de hecho | «carga de escena iniciada/lista/fallida» (4) para la ventana silenciosa | Señales tipadas o `Callable` (LOW); parser JSON enteros→`float` ⚠ (MED, TR-state-015) |
+| **3 Estado y bus** | 20 hechos, catálogo `state/flags.json`, cola de avisos, `max_chained_notices`, estados Sin cargar/Listo/Restaurando, `snapshot_version` | Lectura O(1), escritura validada, `write_silent` (GDD: `escribir_silencioso`), instantánea/restaurar/restablecer, `is_queue_empty()` (GDD: `cola_vacía()`), suscripción por hecho/todos/nombre; avisos «estado restablecido/restaurado», «avisos descartados», cambio de hecho | «carga de escena iniciada/lista/fallida» (4) para la ventana silenciosa | Señales tipadas o `Callable` (LOW); parser JSON enteros→`float` ⚠ (MED, TR-state-015) |
 | **1 Entrada** | Pila de contextos, dueño/duración/tope de `sin control`, dispositivo activo, `carga_en_curso`, asignaciones; `input/default_bindings.json` | Acciones lógicas y gestos derivados, «dispositivo/contexto de entrada cambiado», «`sin control` absorbido», `get_binding_label`, API de reasignación ‡, exportar/importar bloque | Avisos de carga (4), «ajustes aplicados» (6), descriptores de 7 (`gestos_aceptados`, `verbo_largo`) | Input Map (LOW); `DEVICE_ID_MOUSE/KEYBOARD` ⚠ (HIGH 4.7); SDL3 ⚠; foco dual ⚠; familia de mando y señales de conexión ⚠ NS |
 | **18 Contenido** | Catálogo de solo lectura (8 tipos), tabla de nombres, listas de presentación, estado Sin cargar/Cargando/Listo/Error; `narrative/*` | Texto por (id, idioma) y por fragmento/segmento, grupos de variantes, recarga atómica solo dev | Nada en ejecución; verificador lee `slice-v0.3.md` §12 | `FileAccess`/JSON (LOW–MED); sin `tr()` del motor obligatorio: capa propia de idioma (decisión ADR-0005) |
-| **GameClock (módulo de pausa)** | Flag «pausa activa», Δ_juego, relojes inyectables | `now()`, `delta()`, `is_paused()`, `pause()/resume()` ‡ | Petición de 25 y de 1 (foco/mando) | `SceneTree.paused`, `process_mode` ⚠ NS (HIGH) |
+| **GameClock (módulo de pausa)** | Flag «pausa activa», Δ_juego; el tiempo real es un `RealClock` inyectable aparte (ADR-0002) | `now()`, `delta()`, `is_paused()`, `pause()/resume()`, `deadline()/is_due()`, `schedule()/cancel()` (ADR-0002) | Petición de 25 y de 1 (foco/mando) | `SceneTree.paused`, `process_mode` ⚠ NS (HIGH) |
 
 ### Capa 2 — Core
 
@@ -386,9 +403,9 @@ estado interno de puzles, ítems de sesión ni ajustes (6 tiene fichero propio).
  2 escena principal Shell → nodo Boot ejecuta, en este orden y de forma síncrona:
    a ContentDB.load(narrative/*)            Error → mensaje de fallo de carga, no entra
    b GameState.load(state/flags.json)       ausente/corrupto → error y cierre (CA-26)
-   c DataValidator (debug y CI) ‡: puzzles.json v2, scenes.json, interactables.json,
-     access.json, box.json, items.json, audio_catalog.json, call.json ‡, player.json,
-     load_transitions.json, save-config.json, hints_policy.json  → fallo ruidoso en debug
+   b' GameClock.setup(ctx)                  no lee nada; now() = 0 (ADR-0009 D2, paso 3)
+   c DataValidator (debug y CI): los ficheros del registro canónico de ADR-0005 D1
+     → fallo ruidoso en debug
    d InputRouter.load(input/default_bindings.json)  (se suscribe a «ajustes aplicados»)
    e Settings.load(defaults.json + fichero de usuario) → Listo → «ajustes aplicados»
        → 1 importa `controles`; 23 fija buses sin rampa
@@ -415,7 +432,7 @@ que en debug detiene y en build final muestra el panel de 4/27 sin cerrar la app
 
 ```text
  petición(destino, motivo, control_final) ─► «carga de escena iniciada»(destino, motivo, D_carga)
-   ─► 1 abre `sin control`(4, D_carga) ─► cortina a α=1 ─► descarga (1 reinicia pila a [sin control])
+   ─► 4 abre `sin control`(4, D_carga) en 1 (SYNC, justo tras emitir «iniciada»; ADR-0003 D6) ─► cortina a α=1 ─► descarga (1 reinicia pila a [sin control])
    ─► instanciar en WorldSlot ─► 2.colocar(ancla) ─► configurar 7 → 9 → 8, 10, 20 … (SYNC, mismo fotograma)
    ─► n_ret = 0 ─► «escena lista» ─► N_gap fotogramas ─► aclarado ─► «carga de escena terminada»
        control_final = exploracion → 4 pide `exploración`
@@ -445,11 +462,11 @@ pedida» → descarga total (SYNC a 4).
  ─► libera `llamada` ─► COMPLETADA     (todo en GameClock; la pausa congela máquina y audio)
 ```
 
-**Pausa** (contrato hasta ADR-0002):
+**Pausa** (ADR-0002, opción A validada por spike salvo S4 manual; 25 corre `ALWAYS` con `RealClock`):
 
 ```text
  apertura: `pausa` | pérdida de foco | desconexión del mando activo   (1 decide; nunca con carga_en_curso)
-   ─► 25 pide contexto `menú` a 1 ─► GameClock.pause()  [opción recomendada: SceneTree.paused = true]
+   ─► 25 pide contexto `menú` a 1 ─► GameClock.pause()  [SceneTree.paused = true + process_mode explícito]
    ─► 25 llama a 6 «vaciar pendientes» (SYNC, no bus) ─► «pausa abierta» (pause_opened)
         → 5 guarda (pause_opened) · 23 pausa voces/puntuales, lazos a −6 dB · 26 congela relojes
  cierre: 25 restaura contexto ─► GameClock.resume() ─► «pausa cerrada» (pause_closed) → 24 re-resuelve glifos
@@ -486,8 +503,8 @@ var snapshot_version: int                                        # solo lectura,
 
 func get_fact(name: StringName) -> Variant                       # ‡ «lectura de hecho», O(1), sin asignaciones
 func set_fact(name: StringName, value: Variant, writer: StringName) -> bool   # ‡ «escritura validada»
-func escribir_silencioso(name: StringName, value: Variant) -> bool            # nombre del GDD
-func cola_vacía() -> bool                                        # nombre del GDD (identificador ‡ `queue_empty`)
+func write_silent(name: StringName, value: Variant) -> bool      # GDD: escribir_silencioso (ADR-0001 G-13)
+func is_queue_empty() -> bool                                    # GDD: cola_vacía() (ADR-0001 G-13)
 func request_snapshot() -> Dictionary                            # ‡ {} = «no disponible» si hay cola
 func restore(snapshot: Dictionary) -> void                       # ‡ síncrona y atómica
 func reset_new_game() -> void                                    # ‡ «partida nueva (restablecer)»
@@ -507,6 +524,9 @@ debug; en build final una escritura inválida se ignora con una línea de log.
 Garantía: tras «estado restaurado» todo lector ve ya el estado nuevo.
 
 ### Entrada (1) — ADR-0006
+
+> Boceto v1. Las firmas vigentes son las de ADR-0006 § Key Interfaces
+> (operaciones de `sin control` D4, reasignación D11; QQ-16 cerrada).
 
 ```gdscript
 class_name InputRouter extends Node
@@ -559,10 +579,10 @@ func abrir_lectura(doc_id: StringName) -> Dictionary             # {ACEPTADA | A
 func cerrar_lectura(motivo: StringName) -> void
 func cerrar_modos() -> void                                      # emite una vez «modos cerrados»
 func get_target() -> Dictionary                                  # {id, etiqueta, largo, p, anillo_visible} | {}
-func duracion_pie(clave: StringName) -> float                    # INF = PERSISTENTE ‡ (representación)
+func duracion_pie(clave: StringName) -> float                    # PIE_PERSISTENTE = -1.0 (ADR-0011; no INF)
 func modo_actual() -> int                                        # NINGUNO, INSPECCION, LECTURA, VISTA, ORDENADOR
 
-@abstract class_name ViewReceiver extends Node                    # ‡ base abstracta
+@abstract class_name ViewReceiver extends RefCounted              # puerto (ADR-0011)
 @abstract func elements() -> Array[ViewElement]                 # {id, forma, z_orden, atraccion}
 @abstract func handle_pointer(ev: PointerEvent) -> void
 @abstract func on_open() -> void
@@ -573,8 +593,8 @@ func modo_actual() -> int                                        # NINGUNO, INSP
 Invariantes: 7 reserva el gesto de 2 **antes** de `interact()` (si 2 rechaza,
 no se llama); tope único de bloqueo 3 s de tiempo de juego; `T_cadena ≤ 2,8 s`;
 respuesta a toda pulsación ≤ `latencia_feedback_ms` 100 ms; un gesto = un
-aviso «interacción ejecutada»; 7 no persiste nada. Hueco: `elemento_bajo` en
-`seleccionar` aún no especificado (lo pide 16).
+aviso «interacción ejecutada»; 7 no persiste nada. `elemento_bajo` en
+`seleccionar`: lo fija ADR-0011 (un solo `FIN`; `elemento_bajo` = pick al soltar).
 
 ### Marco de puzles (9) y `puzzles.json` v2 — ADR-0010
 
@@ -582,7 +602,7 @@ aviso «interacción ejecutada»; 7 no persiste nada. Hueco: `elemento_bajo` en
 enum PublicState { BLOQUEADO, ACTIVO, RESUELTO }
 class Verdict:                                                   # NONE | HOLDING | PARTIAL(progress) | REJECT | SOLVED(carga)
     var kind: int
-    var payload: Dictionary   # PARTIAL {progress} (P4: {element, action} ‡ cambio requerido en 9) · SOLVED {choice | t4_action}
+    var payload: Dictionary   # PARTIAL {progress, element?, action?} (ADR-0010 D3) · SOLVED {choice | t4_action}
 
 @abstract class_name PuzzleController extends Node
 @abstract func configure(def: Dictionary, flags: Dictionary) -> void
@@ -603,7 +623,7 @@ signal elements_changed(tag: StringName)
 func get_view_gate(view_id: StringName) -> Dictionary  # {state: OPEN|BLOCKED|SOLVED, missing_items, feedback_sfx, feedback_text_key}
 func list_puzzles() -> Array[Dictionary]               # + estado, mode, vista, último compromiso, hint_level_reached, first_action ‡
 func get_hints(id: StringName) -> Array[Dictionary]
-func request_hint(id: StringName, level: int) -> bool  # true = aplicado; reaplicación ‡ (cambio requerido por 17)
+func request_hint(id: StringName, level: int) -> int   # HintOutcome; aplicado = `!= REFUSED` (ADR-0010)
 ```
 
 ```json
@@ -620,9 +640,12 @@ avisos (no recibe referencia de escritura); estados públicos monótonos;
 `SOLVED` idempotente por fotograma; todo temporizador en `GameClock`
 (prohibido `SceneTreeTimer`/`create_timer`); `on_reject ≤ lock_max_s` 2,0 s;
 fallo de validación en build final = fallo de carga de 4, nunca puzle inactivo.
-Firmas ‡ por confirmar con 19/20/10: `has_item`, `compose_i01`, `get_view_gate`.
+`has_item`, `compose_i01` y `get_view_gate`: firmas fijadas en ADR-0010
+(`missing_items` es una lista).
 
 ### Guardado (5) — ADR-0004
+
+> API vigente: ADR-0004 D11 (cierra QQ-17 para 5). El boceto se mantiene como resumen.
 
 ```gdscript
 enum Inspection { NINGUNA, VALIDA, IRRECUPERABLE, VERSION_FUTURA }
@@ -695,13 +718,21 @@ completada»; no escribe hechos (solo lee `llamada_completada`).
 ### Pausa — ADR-0002
 
 ```gdscript
-class_name GameClock extends Node                                # ‡ todo el bloque
-signal paused_changed(is_paused: bool)
+class_name GameClock extends Node                                # autoload #3, ALWAYS (ADR-0002)
+signal paused_changed(is_paused: bool)                           # solo infraestructura; juego usa el bus
+func configure(backend: PauseBackend, max_frame_delta_s: float) -> void   # solo Boot
 func now() -> float                  # segundos de juego acumulados (no avanza en pausa)
 func delta() -> float                # Δ_juego del fotograma (0 en pausa)
 func is_paused() -> bool
 func pause(requester: StringName) -> void
 func resume(requester: StringName) -> void
+func deadline(after_s: float) -> float
+func is_due(deadline_s: float) -> bool
+func schedule(after_s: float, callback: Callable) -> int        # NO_HANDLE = -1
+func cancel(handle: int) -> void
+
+class_name RealClock extends RefCounted                          # tiempo real inyectable (UI de pausa, T_cap, reintentos)
+func now_ms() -> int
 # Contrato de 25 (GDD): emite «pausa abierta» (`pause_opened`) tras entrar en `menú` y marcar pausa;
 # «pausa cerrada» (`pause_closed`) después de restaurar contexto y reanudar el tiempo.
 ```
@@ -709,32 +740,37 @@ func resume(requester: StringName) -> void
 Invariantes: Δ_juego = 0 desde el fotograma de apertura; siguen en tiempo
 real UI de pausa, guardado diferido de 6, reintentos de 5, captura de 8 s,
 muestra de volumen de 23 y `T_cap` de 4; ningún sistema de juego usa
-`SceneTreeTimer`. Todo el bloque **NOT SOURCEABLE hasta el spike**.
+`SceneTreeTimer`. Todo lo que corre en pausa lee `RealClock`, nunca
+`GameClock`. Spike 2026-11-10 (ADR-0002 § Spike Results): opción A se
+mantiene; S4 (foco con teclado/mando en pausa, desconexión del mando) queda
+pendiente de registro manual.
 
 ## ADR Audit
 
-No existe ningún ADR en `docs/architecture/` (solo `tr-registry.yaml` y el
-baseline provisional). **Cobertura hoy: 0 de 609 TR (0 %).** Todas las áreas
-son gap. Recuento por la columna Dominio del baseline (Grep sobre `| TR-`;
-615 filas − 6 cabeceras = 609 TR):
+Existen ADR-0001…0017, todos `Proposed`. Cobertura de los 609 TR según
+`docs/architecture/requirements-traceability.md` y
+`architecture-review-2026-11-10.md` (veredicto CONCERNS): **0 % por ADR
+`Accepted`; 72,1 % (439) trazado por ADR `Proposed`; 26,8 % (163) parcial;
+1,1 % (7) hueco** (5 → ADR-0018, 2 → ADR-0020). Renombrado:
+`TR-audio-012b` → `TR-audio-026`. Recuento por dominio:
 
-| Dominio TR | Nº TR | Sistemas con más TR del dominio | ADR que lo cubrirá | Cobertura hoy |
+| Dominio TR | Nº TR | Sistemas con más TR del dominio | ADR que lo cubrirá | Cobertura (Proposed · parcial · hueco) |
 |---|---|---|---|---|
-| Core | 131 | hints 8, player 8, computer 7, director 7, puzzles 7, puzzle3 7, settings 7, interact 6, scene 6, puzzle1 6 | Repartido: 0001 (3), 0002 (pausa), 0003 (4, 21), 0004 (5), 0007 (6), 0009 (composición), 0010 (9, 11–17), 0011 (7), 0012 (2), 0017 (21, 22) | 0 % |
-| Input | 63 | input 14, pause 6, interact 5, computer 4, director 4 | 0006 (+ 0011 para puntero/picking, 0003 para `sin control`) | 0 % |
-| Data | 60 | content 8, puzzles 5, computer 4, hints 4 | 0005 (+ 0010 para `puzzles.json` v2) | 0 % |
-| Events | 57 | director 6, state 5, call 5, hints 4 | 0001 | 0 % |
-| Save/Load | 55 | save 13, settings 7, state 4 | 0004 (+ 0007 para el fichero de ajustes, 0001 para la instantánea) | 0 % |
-| UI | 41 | subs 9, prompt 6, a11y 5, pause 4, title 4 | 0016 (+ 0007 para escala) | 0 % |
-| Accessibility | 41 | a11y 9, shaders 5, atmos 3, prompt 3, subs 3 | 0007 (+ 0014/0015 para el limitador de destellos) | 0 % |
-| Scene | 36 | scene 7, box 4, title 3 | 0003 | 0 % |
-| Rendering | 35 | shaders 10, atmos 9 | 0013, 0014, 0015 (+ 0012 cámara/FOV) | 0 % |
-| Audio | 34 | audio 17, call 3 | 0008 | 0 % |
-| Animation | 22 | player 3, box 3 | 0012 (gestos de manos), 0002 (animación en pausa) | 0 % |
-| Tooling | 17 | content 3, puzzles 2 | 0005 (verificadores), 0018 (CI, exclusión de herramientas dev) | 0 % |
-| Physics | 10 | interact 4, player 3, scene 2 | 0011 (consulta de foco), 0012 (cuerpo e interpolación), 0003 (sensores de zona) | 0 % |
-| Localization | 7 | content 2 | 0005 (capa de idioma), 0020 | 0 % |
-| **Total** | **609** | | 20 ADR propuestos | **0 %** |
+| Core | 131 | hints 8, player 8, computer 7, director 7, puzzles 7, puzzle3 7, settings 7, interact 6, scene 6, puzzle1 6 | Repartido: 0001 (3), 0002 (pausa), 0003 (4, 21), 0004 (5), 0007 (6), 0009 (composición), 0010 (9, 11–17), 0011 (7), 0012 (2), 0017 (21, 22) | 🟡 99 · ⚠️ 32 · ❌ 0 |
+| Input | 63 | input 14, pause 6, interact 5, computer 4, director 4 | 0006 (+ 0011 para puntero/picking, 0003 para `sin control`) | 🟡 48 · ⚠️ 15 · ❌ 0 |
+| Data | 60 | content 8, puzzles 5, computer 4, hints 4 | 0005 (+ 0010 para `puzzles.json` v2) | 🟡 46 · ⚠️ 14 · ❌ 0 |
+| Events | 57 | director 6, state 5, call 5, hints 4 | 0001 | 🟡 55 · ⚠️ 2 · ❌ 0 |
+| Save/Load | 55 | save 13, settings 7, state 4 | 0004 (+ 0007 para el fichero de ajustes, 0001 para la instantánea) | 🟡 36 · ⚠️ 19 · ❌ 0 |
+| UI | 41 | subs 9, prompt 6, a11y 5, pause 4, title 4 | 0016 (+ 0007 para escala) | 🟡 28 · ⚠️ 13 · ❌ 0 |
+| Accessibility | 41 | a11y 9, shaders 5, atmos 3, prompt 3, subs 3 | 0007 (+ 0014/0015 para el limitador de destellos) | 🟡 26 · ⚠️ 15 · ❌ 0 |
+| Scene | 36 | scene 7, box 4, title 3 | 0003 | 🟡 18 · ⚠️ 18 · ❌ 0 |
+| Rendering | 35 | shaders 10, atmos 9 | 0013, 0014, 0015 (+ 0012 cámara/FOV) | 🟡 30 · ⚠️ 5 · ❌ 0 |
+| Audio | 34 | audio 17, call 3 | 0008 | 🟡 27 · ⚠️ 7 · ❌ 0 |
+| Animation | 22 | player 3, box 3 | 0012 (gestos de manos), 0002 (animación en pausa) | 🟡 6 · ⚠️ 16 · ❌ 0 |
+| Tooling | 17 | content 3, puzzles 2 | 0005 (verificadores), 0018 (CI, exclusión de herramientas dev) | 🟡 8 · ⚠️ 4 · ❌ 5 |
+| Physics | 10 | interact 4, player 3, scene 2 | 0011 (consulta de foco), 0012 (cuerpo e interpolación), 0003 (sensores de zona) | 🟡 9 · ⚠️ 1 · ❌ 0 |
+| Localization | 7 | content 2 | 0005 (capa de idioma), 0020 | 🟡 3 · ⚠️ 2 · ❌ 2 |
+| **Total** | **609** | | 17 ADR escritos (`Proposed`) | **🟡 439 · ⚠️ 163 · ❌ 7** |
 
 **TR sin dominio claro:** 0 filas sin dominio. Pero **Core (131, 21 %)** es un
 cajón de sastre que mezcla máquinas de estado de sistema, contratos de
@@ -755,39 +791,39 @@ confirmación del usuario.
 
 | ADR | Título | Qué decide | Qué desbloquea | TRs que cubre | Riesgo motor | Spike |
 |---|---|---|---|---|---|---|
-| **ADR-0001** | Event bus and fact contract | Mecanismo del bus (`Callable` frente a señales Godot), `NoticeChannel` compartido con 6, formato de nombres de aviso (regla 10 de 3 → `StringName`), cargas útiles, cola sin reentrada y tope, formato de instantánea, ventana de escritura silenciosa, uso permitido de señales de contrato (2, `elements_changed`) | Todo sistema de Feature; 5; tests de integración | TR-state-001…018; TR-settings-005, -006; TR-puzzles-011, -020; Events de 8, 9, 21, 22, 23 | MED | No (sí test de rendimiento de lectura O(1)) |
-| **ADR-0002** | Pause and game time | **Máxima prioridad.** `GameClock` como única fuente de Δ_juego; opción recomendada a spike: `SceneTree.paused = true` + `process_mode` explícito por sistema (`ALWAYS`: 1, 3, 4, 5, 6, 23, 26, `GameClock`; `WHEN_PAUSED`: UI de 25 y Opciones; `PAUSABLE`: mundo, 2, 28, 29). Resuelve 23 D23-25 frente a 28 R22 / 29 R35 | 9, 10, 17, 19, 21, 22, 26, 28, 29; AC-21 de 10, AC-28-16, AC-21 de 29 | TR-pause-001…003; TR-audio-001, -015; TR-puzzles-014; TR-box-015; TR-atmos-018; TR-shaders-017; TR-subs-008; TR-input-005, -008; TR-player-015; TR-access-012; TR-computer-009 | HIGH (todo NS) | **Sí**: `SceneTree.paused` con `Tween`, `AnimationPlayer`, `GPUParticles3D`, `AudioStreamPlayer` (`stream_paused`), `TIME` de shader, interpolación física |
-| **ADR-0003** | Scene loading, Shell and `sin control` handoff | `Shell` + `WorldSlot` frente a `change_scene_to_*`, secuencia de 9 pasos, retenciones, `T_cap`, cortina, traspaso a 21, descarga total, persistencia de 2 (por escena, recomendado) | 7, 9, 21, 27, toda escena de planta | TR-scene-001…023; TR-input-003, -004, -006; TR-director-001, -002, -010, -025; TR-player-018; TR-save-019, -020 | HIGH | **Sí**: instanciar/liberar 10 veces y contar huérfanos; `Area3D` con Jolt (sensor 0,05 m) |
-| **ADR-0004** | Save format and lifecycle | Ruta `user://saves/`, formato `v<N>` + checksum + JSON, algoritmo de hash, secuencia de renombrado seguro, canonicalización para `dif`, migraciones, Sellando/Sellada | 22 (sellado), 25, 27 | TR-save-001…022; TR-state-013…016; TR-call-003, -004 | HIGH | **Sí**: renombrado/borrado en Windows y Linux, SHA-256, enteros en el parser JSON |
-| **ADR-0005** | Data schema, validation pipeline and content catalog | Convención de ficheros `assets/data/<sistema>/*.json`, esquemas, validación al arranque (debug ruidoso) y en CI, conversión explícita a `int`, capa de idioma de 18 (propia frente a `tr()`), verificador `tools/` | Todos los sistemas data-driven; contenido | TR-content-001…017; TR-puzzles-001…006; Data de 2, 8, 10, 17, 19, 20, 21, 22, 24, 28; TR-scene-022; TR-save-021 | MED | Sí (corto): parser JSON 4.7 |
-| **ADR-0006** | Input abstraction, contexts and binding labels | Capa sobre Input Map, pila de contextos y `sin control`, histéresis de dispositivo, zona muerta propia, cursor virtual, reconocedor de gestos, `get_binding_label`, reasignación y validador de conflictos, foco del campo de texto | 2, 7, 19, 22, 24, 25 | TR-input-001…019; TR-pause-004, -008, -013, -016, -017, -021; TR-computer-003, -004, -011, -012; TR-title-007, -008, -016 | HIGH | **Sí**: familia de mando, conexión/desconexión, ejes crudos, `DEVICE_ID_*` |
-| **ADR-0007** | Settings persistence, accessibility and UI scaling | Fichero de ajustes (formato, NaN), cuantización, guardado diferido; **escala de UI**: `content_scale_mode`/`stretch` frente a la F1 de 30 (evitar factor doble); preparación AccessKit (nombre accesible, orden de foco) | 24, 25, 26, 27, 30 | TR-settings-001…021; TR-a11y-001…020; TR-prompt-018; TR-subs-014; TR-computer-013, -014; TR-title-015 | HIGH | **Sí**: stretch `canvas_items` a 720p/1080p/2160p y 16:10; AccessKit |
-| **ADR-0008** | Audio buses, voice queue and `process_mode` | Árbol de buses, pool de reproductores y polifonía, cola de voz por canal, watchdog, ducking, pausa por reproductor, filtros/limitador (horneado frente a ejecución), streaming frente a precarga, volúmenes por estancia sin `Area3D` (o con `area_mask` = 1) | 9, 21, 22, 26 (señales de línea) | TR-audio-001…025 (+012b); TR-call-011, -015, -016; TR-director-009, -026; TR-puzzles-013; TR-settings-017 | HIGH | **Sí**: `stream_paused`, limitador, detección sin dispositivo |
-| **ADR-0009** | Service composition: autoloads, Shell and dependency injection | Lista final de 9 autoloads (§ Module Ownership), `ServiceContext` ‡ e inyección en `configurar()`, subcapas F1–F5 y llamadas permitidas, interfaces `ViewGateProvider`/`BoxPresenter`, manejador de error fatal inyectado, dobles para tests | Todos los tests unitarios; regla de capas en el control manifest | Transversal: TR-hints-001; TR-settings-007, -019, -021; TR-scene-002; TR-atmos-001 (rechazado); TR-pocket (nodo de servicio); TR-shaders-015 | LOW | No |
+| **ADR-0001** — escrito (`Proposed`) | Event bus and fact contract | Mecanismo del bus (`Callable` frente a señales Godot), `NoticeChannel` compartido con 6, formato de nombres de aviso (regla 10 de 3 → `StringName`), cargas útiles, cola sin reentrada y tope, formato de instantánea, ventana de escritura silenciosa, uso permitido de señales de contrato (2, `elements_changed`) | Todo sistema de Feature; 5; tests de integración | TR-state-001…018; TR-settings-005, -006; TR-puzzles-011, -020; Events de 8, 9, 21, 22, 23 | MED | No (sí test de rendimiento de lectura O(1)) |
+| **ADR-0002** — escrito (`Proposed`); spike: opción A validada salvo S4 manual | Pause and game time | **Máxima prioridad.** `GameClock` como única fuente de Δ_juego; opción recomendada a spike: `SceneTree.paused = true` + `process_mode` explícito por sistema (`ALWAYS`: los 9 autoloads incluido 21, 26 y la UI de 25 y Opciones —no `WHEN_PAUSED`: Opciones también se muestra en el título con el árbol en marcha—; `PAUSABLE`: mundo, 2, 28, 29). Tiempo real por `RealClock`; `GameClock` con `deadline`/`schedule`/`cancel`; transiciones T1–T6 en ADR-0002. Resuelve 23 D23-25 frente a 28 R22 / 29 R35 | 9, 10, 17, 19, 21, 22, 26, 28, 29; AC-21 de 10, AC-28-16, AC-21 de 29 | TR-pause-001…003; TR-audio-001, -015; TR-puzzles-014; TR-box-015; TR-atmos-018; TR-shaders-017; TR-subs-008; TR-input-005, -008; TR-player-015; TR-access-012; TR-computer-009 | HIGH (todo NS) | **Sí**: `SceneTree.paused` con `Tween`, `AnimationPlayer`, `GPUParticles3D`, `AudioStreamPlayer` (`stream_paused`), `TIME` de shader, interpolación física |
+| **ADR-0003** — escrito (`Proposed`) | Scene loading, Shell and `sin control` handoff | `Shell` + `WorldSlot` frente a `change_scene_to_*`, secuencia de 9 pasos, retenciones, `T_cap`, cortina, traspaso a 21, descarga total, persistencia de 2 (por escena, recomendado) | 7, 9, 21, 27, toda escena de planta | TR-scene-001…023; TR-input-003, -004, -006; TR-director-001, -002, -010, -025; TR-player-018; TR-save-019, -020 | HIGH | **Sí**: instanciar/liberar 10 veces y contar huérfanos; `Area3D` con Jolt (sensor 0,05 m) |
+| **ADR-0004** — escrito (`Proposed`) | Save format and lifecycle | Ruta `user://saves/`, formato `v<N>` + checksum + JSON, algoritmo de hash, secuencia de renombrado seguro, canonicalización para `dif`, migraciones, Sellando/Sellada | 22 (sellado), 25, 27 | TR-save-001…022; TR-state-013…016; TR-call-003, -004 | HIGH | **Sí**: renombrado/borrado en Windows y Linux, SHA-256, enteros en el parser JSON |
+| **ADR-0005** — escrito (`Proposed`) | Data schema, validation pipeline and content catalog | Convención de ficheros `assets/data/<sistema>/*.json`, esquemas, validación al arranque (debug ruidoso) y en CI, conversión explícita a `int`, capa de idioma de 18 (propia frente a `tr()`), verificador `tools/` | Todos los sistemas data-driven; contenido | TR-content-001…017; TR-puzzles-001…006; Data de 2, 8, 10, 17, 19, 20, 21, 22, 24, 28; TR-scene-022; TR-save-021 | MED | Sí (corto): parser JSON 4.7 |
+| **ADR-0006** — escrito (`Proposed`) | Input abstraction, contexts and binding labels | Capa sobre Input Map, pila de contextos y `sin control`, histéresis de dispositivo, zona muerta propia, cursor virtual, reconocedor de gestos, `get_binding_label`, reasignación y validador de conflictos, foco del campo de texto | 2, 7, 19, 22, 24, 25 | TR-input-001…019; TR-pause-004, -008, -013, -016, -017, -021; TR-computer-003, -004, -011, -012; TR-title-007, -008, -016 | HIGH | **Sí**: familia de mando, conexión/desconexión, ejes crudos, `DEVICE_ID_*` |
+| **ADR-0007** — escrito (`Proposed`) | Settings persistence, accessibility and UI scaling | Fichero de ajustes (formato, NaN), cuantización, guardado diferido; **escala de UI**: `content_scale_mode`/`stretch` frente a la F1 de 30 (evitar factor doble); preparación AccessKit (nombre accesible, orden de foco) | 24, 25, 26, 27, 30 | TR-settings-001…021; TR-a11y-001…020; TR-prompt-018; TR-subs-014; TR-computer-013, -014; TR-title-015 | HIGH | **Sí**: stretch `canvas_items` a 720p/1080p/2160p y 16:10; AccessKit |
+| **ADR-0008** — escrito (`Proposed`) | Audio buses, voice queue and `process_mode` | Árbol de buses, pool de reproductores y polifonía, cola de voz por canal, watchdog, ducking, pausa por reproductor, filtros/limitador (horneado frente a ejecución), streaming frente a precarga, volúmenes por estancia sin `Area3D` (o con `area_mask` = 1) | 9, 21, 22, 26 (señales de línea) | TR-audio-001…026; TR-call-011, -015, -016; TR-director-009, -026; TR-puzzles-013; TR-settings-017 | HIGH | **Sí**: `stream_paused`, limitador, detección sin dispositivo |
+| **ADR-0009** — escrito (`Proposed`) | Service composition: autoloads, Shell and dependency injection | Lista final de 9 autoloads (§ Module Ownership), `ServiceContext` ‡ e inyección en `configurar()`, subcapas F1–F5 y llamadas permitidas, interfaces `ViewGateProvider`/`BoxPresenter`, manejador de error fatal inyectado, dobles para tests | Todos los tests unitarios; regla de capas en el control manifest | Transversal: TR-hints-001; TR-settings-007, -019, -021; TR-scene-002; TR-atmos-001 (rechazado); TR-pocket (nodo de servicio); TR-shaders-015 | LOW | No |
 
 ### Before the relevant system (hitos M1–M4)
 
 | ADR | Título | Qué decide | Qué desbloquea | TRs que cubre | Riesgo motor | Spike |
 |---|---|---|---|---|---|---|
-| **ADR-0010** | Puzzle framework and controller contract | `PuzzleFramework`/`PuzzleController` (`@abstract`), `Verdict`, 5 políticas, `GameClock` inyectado, esquema `puzzles.json` v2, cambios requeridos por 14 (`PARTIAL{element, action}`) y 17 (`first_action`, reaplicación, re-emisión de «puzle inactivo») | 10, 11–16, 17 (M1 P1, M2) | TR-puzzles-007…022; TR-puzzle1…6 (todas las Core/Events); TR-box-001; TR-hints-006, -007, -013, -014 | MED (retorno tipado 4.7) | No |
-| **ADR-0011** | Interaction focus query under Jolt and view picking | Consulta de forma esférica que recoja todos los contactos frente a `ShapeCast3D`; máscaras; picking 2D aritmético; F6 `ppm` y eje de FOV en 16:10 | 7, 8, 19, 20, 22, vistas de puzle (M1) | TR-interact-001…022; TR-puzzle3-008, -009; TR-puzzle4-002 | HIGH | **Sí**: `intersect_shape`/`ShapeCast3D` con Jolt, coste por paso |
-| **ADR-0012** | Player controller, physics interpolation and camera | Cinemático con Jolt, paso fijo 60 Hz + interpolación (o seguimiento suavizado), FOV vertical, cesión de cámara, memoria de poses, red de seguridad, máquina de gestos de manos | 7, 28 (reflejo), M1 | TR-player-001…021; TR-scene-007 | HIGH | **Sí**: interpolación 3D en 4.7 a 30/60/144 fps; `keep_aspect` |
-| **ADR-0013** | First-person hands rendering and blackout lighting | Técnica de manos encima del mundo (shader, sub-viewport, segunda cámara) con `fov_manos` 60° y luz mínima en el apagón (razón ≥ 1,5:1) | 2 (manos visibles), 28 (apagón), M3 | TR-player-010; TR-atmos-010 | HIGH | **Sí** (spike A/B, D-28) |
-| **ADR-0014** | Atmosphere lighting budget and rain | Presupuesto de luces (≤ 8 visibles, ≤ 2 sombras, ≤ 14 por escena), `Tween` de energía, lluvia `GPUParticles3D`, reflejo retardado por proxy, limitador de destellos, sin `LightmapGI`; 28 como nodo de escena | S0b (prueba de atmósfera), M3–M4 | TR-atmos-001…020; TR-a11y-010, -011 | HIGH | **Sí** (S0b, 30 s de pasillo, hardware de referencia) |
-| **ADR-0015** | Glass and mirror shaders and transparent draw order | 3 shaders `spatial`, `render_priority`, `instance uniform` frente a material por instancia, `#include`, Shader Baker/precalentado, fallback `StandardMaterial3D`, presupuesto 0,5 ms GPU | 12 (P2), 15 (P5), M4 | TR-shaders-001…020; TR-puzzle2-007, -015; TR-puzzle5-008, -012 | HIGH | **Sí** (TR-shaders-008 lo exige) |
-| **ADR-0016** | Subtitles and UI text rendering | Capas `CanvasLayer` y orden (HUD, subtítulos sobre el velo, pausa, cortina), paginación, banda reservada, convivencia 24↔26, fuentes y tamaño mínimo 24 px, tokens `{accion:<id>}` | 24, 25, 26, 27, 22 (opciones) | TR-subs-001…021; TR-prompt-001…020; TR-pause-009…011, -022; TR-title-002, -005, -011 | MED | Sí (corto, con ADR-0007) |
-| **ADR-0017** | Scene director timeline and call data | Formato de `scenes.json`/`scene-config.json` y `call.json` ‡, ejecutor de línea de tiempo con `GameClock`, cargas útiles ‡ de «efecto de escena pedido», «estado de objeto pedido», «tarjeta final pedida» | 21, 22, 28, 27 (M3) | TR-director-003…027; TR-call-001…024 | LOW | No |
+| **ADR-0010** — escrito (`Proposed`) | Puzzle framework and controller contract | `PuzzleFramework`/`PuzzleController` (`@abstract`), `Verdict`, 5 políticas, `GameClock` inyectado, esquema `puzzles.json` v2, cambios requeridos por 14 (`PARTIAL{element, action}`) y 17 (`first_action`, reaplicación, re-emisión de «puzle inactivo») | 10, 11–16, 17 (M1 P1, M2) | TR-puzzles-007…022; TR-puzzle1…6 (todas las Core/Events); TR-box-001; TR-hints-006, -007, -013, -014 | MED (retorno tipado 4.7) | No |
+| **ADR-0011** — escrito (`Proposed`) | Interaction focus query under Jolt and view picking | Consulta de forma esférica que recoja todos los contactos frente a `ShapeCast3D`; máscaras; picking 2D aritmético; F6 `ppm` y eje de FOV en 16:10 | 7, 8, 19, 20, 22, vistas de puzle (M1) | TR-interact-001…022; TR-puzzle3-008, -009; TR-puzzle4-002 | HIGH | **Sí**: `intersect_shape`/`ShapeCast3D` con Jolt, coste por paso |
+| **ADR-0012** — escrito (`Proposed`) | Player controller, physics interpolation and camera | Cinemático con Jolt, paso fijo 60 Hz + interpolación (o seguimiento suavizado), FOV vertical, cesión de cámara, memoria de poses, red de seguridad, máquina de gestos de manos | 7, 28 (reflejo), M1 | TR-player-001…021 (TR-player-010 parcial: contrato del nodo; técnica en 0013); TR-scene-007 | HIGH | **Sí**: interpolación 3D en 4.7 a 30/60/144 fps; `keep_aspect` |
+| **ADR-0013** — escrito (`Proposed`) | First-person hands rendering and blackout lighting | Técnica de manos encima del mundo (shader, sub-viewport, segunda cámara) con `fov_manos` 60° y luz mínima en el apagón (razón ≥ 1,5:1) | 2 (manos visibles), 28 (apagón), M3 | TR-player-010; TR-atmos-010 | HIGH | **Sí** (spike A/B, D-28) |
+| **ADR-0014** — escrito (`Proposed`) | Atmosphere lighting budget and rain | Presupuesto de luces (≤ 8 visibles, ≤ 2 sombras, ≤ 14 por escena), `Tween` de energía, lluvia `GPUParticles3D`, reflejo retardado por proxy, limitador de destellos, sin `LightmapGI`; 28 como nodo de escena | S0b (prueba de atmósfera), M3–M4 | TR-atmos-001…020; TR-a11y-010, -011 | HIGH | **Sí** (S0b, 30 s de pasillo, hardware de referencia) |
+| **ADR-0015** — escrito (`Proposed`) | Glass and mirror shaders and transparent draw order | 3 shaders `spatial`, `render_priority`, `instance uniform` frente a material por instancia, `#include`, Shader Baker/precalentado, fallback `StandardMaterial3D`, presupuesto 0,5 ms GPU | 12 (P2), 15 (P5), M4 | TR-shaders-001…020; TR-puzzle2-007, -015; TR-puzzle5-008, -012 | HIGH | **Sí** (TR-shaders-008 lo exige) |
+| **ADR-0016** — escrito (`Proposed`) | Subtitles and UI text rendering | Ocho capas `CanvasLayer` numeradas (D1: `SceneUi` 5, HUD 10, `PauseVeil` 20, subtítulos 30, menú 40, cursor 50, cortina 60, error 70; el velo es capa propia), paginación, banda reservada, convivencia 24↔26, fuentes y tamaño mínimo 24 px, tokens `{accion:<id>}` | 24, 25, 26, 27, 22 (opciones) | TR-subs-001…021; TR-prompt-001…020; TR-pause-009…011, -022; TR-title-002, -005, -011 | MED | Sí (corto, con ADR-0007) |
+| **ADR-0017** — escrito (`Proposed`) | Scene director timeline and call data | Formato de `scenes.json`/`scene-config.json` y `call.json` ‡, ejecutor de línea de tiempo con `GameClock`, cargas útiles ‡ de «efecto de escena pedido», «estado de objeto pedido», «tarjeta final pedida» | 21, 22, 28, 27 (M3) | TR-director-003…027; TR-call-001…024 | LOW | No |
 
 ### Can defer
 
 | ADR | Título | Qué decide | Qué desbloquea | TRs que cubre | Riesgo motor | Spike |
 |---|---|---|---|---|---|---|
-| **ADR-0018** | Build, export, CI and dev-only tooling | Presets Windows/Linux, ejecución de gdUnit4 en CI, exclusión verificada de consola de 3, herramientas de 5, recarga de 18 y registro de playtest de la demo | Primera build de entrega (antes de M5; el runner de tests ya está en `project.yaml`) | TR-state-018; TR-save-022; TR-content-012, -013; TR-puzzles-021, -022; Tooling restantes | MED (crash en `--import` 4.7.x documentado) | No |
-| **ADR-0019** | Performance budgets and reference hardware | Fija equipo de referencia y presupuestos medidos (fotograma, GPU por sistema, memoria, audio) | M4 (perfilado) | TR-atmos-016; TR-shaders-009; TR-audio-021 | MED | Sí (perfilado) |
-| **ADR-0020** | Localization readiness beyond `es` | Idiomas, longitud de texto, recálculo de duraciones al cambiar idioma, texto del cristal pregenerado | Post-slice | TR-content-005, -007; TR-hints-017; TR-shaders-019; Localization restantes | LOW | No |
+| **ADR-0018** — escrito (Proposed) | Build, export, CI and dev-only tooling | Presets Windows/Linux, ejecución de gdUnit4 en CI, exclusión verificada de consola de 3, herramientas de 5, recarga de 18 y registro de playtest de la demo | Primera build de entrega (antes de M5; el runner de tests ya está en `project.yaml`) | TR-state-018; TR-save-022; TR-content-012, -013; TR-puzzles-021, -022; Tooling restantes | MED (crash en `--import` 4.7.x documentado) | No |
+| **ADR-0019** — pendiente | Performance budgets and reference hardware | Fija equipo de referencia y presupuestos medidos (fotograma, GPU por sistema, memoria, audio) | M4 (perfilado) | TR-atmos-016; TR-shaders-009; TR-audio-021 | MED | Sí (perfilado) |
+| **ADR-0020** — pendiente | Localization readiness beyond `es` | Idiomas, longitud de texto, recálculo de duraciones al cambiar idioma, texto del cristal pregenerado | Post-slice | TR-content-005, -007; TR-hints-017; TR-shaders-019; Localization restantes | LOW | No |
 
 **Recuento: 20 ADRs** (9 antes de programar, 8 antes de su sistema, 3
-diferibles). Orden crítico: 0001 → 0002 → 0009 → 0003 pueden redactarse en
+diferibles); v2: 0001–0017 escritos (`Proposed`), 0018 en redacción, 0019–0020 pendientes. Orden crítico: 0001 → 0002 → 0009 → 0003 pueden redactarse en
 paralelo con el spike de pausa; 0004 a 0008 dependen de 0001 y 0002.
 
 ### Presupuestos de rendimiento provisionales
@@ -849,21 +885,25 @@ Tensión sin castigo · Información incompleta) y del slice «Turno de noche».
 | QQ-03 | Tamaño y perfiles del equipo | Media | Usuario (PLAN-TECNICO §7.3); condiciona `team.size` y el paralelismo de ADRs |
 | QQ-04 | **Equipo de referencia** (CPU/GPU/RAM). Sin él, 60 fps, 1500 draw calls, 1,0 ms de 28 y 0,5 ms de 29 no se pueden medir | **Alta** | Usuario (PLAN-TECNICO §7.4) → ADR-0019; bloquea el criterio de S0b |
 | QQ-05 | Fecha objetivo de la demo | Media | Usuario (PLAN-TECNICO §7.5); decide qué ADR diferibles se adelantan |
-| QQ-06 | **ADR de pausa**: `SceneTree.paused` + `process_mode` (recomendado) frente a reloj propio sin pausar el árbol; contradicción 23 D23-25 / TR-audio-015 («25 no pausa el árbol», pausa por reproductor) frente a 28 R22 y 29 R35 (árbol pausable) | **Crítica** | Spike en 4.7.2 → ADR-0002. Propuesta de conciliación: el árbol se pausa, 23 y 26 corren `ALWAYS` y mantienen su pausa propia guiada por `pause_opened`; 23 solo cambia el texto de D23-25 |
+| QQ-06 | **ADR de pausa**: `SceneTree.paused` + `process_mode` (recomendado) frente a reloj propio sin pausar el árbol; contradicción 23 D23-25 / TR-audio-015 («25 no pausa el árbol», pausa por reproductor) frente a 28 R22 y 29 R35 (árbol pausable) | **Crítica** | **Resuelta por ADR-0002** (opción A, spike 2026-11-10; S4 manual pendiente de registro). Antes: Spike en 4.7.2 → ADR-0002. Propuesta de conciliación: el árbol se pausa, 23 y 26 corren `ALWAYS` y mantienen su pausa propia guiada por `pause_opened`; 23 solo cambia el texto de D23-25 |
 | QQ-07 | Espera de pistas 20/40 s (17 OQ3, 30 OQ1) frente a «Tensión sin castigo»; recorte de pips/cuaderno/«Repetir» | Baja (arquitectura) | Usuario; solo cambia `hints_policy.json` y quizá la reaplicación ‡ de `request_hint` |
 | QQ-08 | Alcance de `reducir_movimiento` más allá del slice §14 y cierre de `escala_texto_ui` («restablecer todos» 18 o 17 claves) | Media | Usuario → ADR-0007 |
-| QQ-09 | «interacción ejecutada»: filtrar por `HECHO` (aplicado) o aviso aparte solo para 24 (7 OQ 6) | Baja | Usuario; ADR-0001 registra el contrato elegido |
+| QQ-09 | «interacción ejecutada»: filtrar por `HECHO` (aplicado) o aviso aparte solo para 24 (7 OQ 6) | Baja | **Resuelta por ADR-0001** D11 (un aviso, filtrado por `HECHO`). Antes: Usuario; ADR-0001 registra el contrato elegido |
 | QQ-10 | Suelo de subtítulos a 720p (D26-22: `pequeno` = `medio` = 24 px) | Media | Usuario + ADR-0007/0016; depende del equipo de referencia (QQ-04) |
 | QQ-11 | D13-4: `tray_drop_verdict` `REJECT` o `NONE`; permanencia de la elección de P6 ante cierre antes de guardar (16 OQ 12) | Baja | Usuario; el primero es dato, el segundo afecta a la causa de guardado `puzzle_solved:P6` (ADR-0004) |
-| QQ-12 | Jugador (2) persistente o por escena (OQ de 4) | Media | ADR-0003 (recomendado: por escena, reconstruido con `colocar`) |
-| QQ-13 | Atmósfera (28) como autoload (TR-atmos-001) o nodo de escena (este documento) | Media | ADR-0009 / ADR-0014 |
-| QQ-14 | Cuándo se valida `puzzles.json`: en la configuración de `planta` (GDD 9, TR-scene-011) o también al arrancar (decisión de partida) | Baja | ADR-0005: ambos, el de arranque solo en debug/CI |
-| QQ-15 | Firmas ‡ de 3 (lectura/escritura/suscripción) y de 6 (leer/escribir/restablecer/vaciar): los GDDs las dejan a ADR | Alta | ADR-0001, ADR-0007 |
-| QQ-16 | Firmas ‡ de 1: API de reasignación, `es_imprimible(entrada)`, lista exportada de ajustes de manejo; operaciones de `sin control` | Alta | ADR-0006 |
-| QQ-17 | Firmas ‡ de 4 (petición de carga, retenciones), de 5 (`request_save`, consulta de inspección) y `GameClock` completo | Alta | ADR-0003, ADR-0004, ADR-0002 |
-| QQ-18 | Firmas ‡ confirmadas solo por un lado: `has_item` (20), `compose_i01` (19), `get_view_gate` (9/10); `elemento_bajo` en `seleccionar` (7, lo pide 16); `PARTIAL{element, action}` (14 → 9); `first_action` y reaplicación (17 → 9) | Alta | `/architecture-review` + ADR-0010/0011; cambios requeridos en GDDs 7 y 9 |
-| QQ-19 | Contratos sin firma de Presentación: proveedor de panel de pistas (17 → 25), `OptionsComponent.mostrar(pantalla, pestaña_inicial?)`, API propia de 28, `SurfaceFx` (29, propuesta del GDD) | Media | ADR-0016, ADR-0014, ADR-0015 |
-| QQ-20 | Cargas útiles ‡ de «efecto de escena pedido», «estado de objeto pedido», «tarjeta final pedida»; fichero `call.json` ‡ | Media | ADR-0017 |
-| QQ-21 | Nombres de fichero sin fijar o fuera de convención: ficheros de 18 bajo `assets/data/narrative/` (el plan dice `lines.json`), `save-config.json` y `scene-config.json` (kebab-case frente a `snake_case`), `hints_policy.json` en la raíz de `assets/data/` | Baja | ADR-0005 |
-| QQ-22 | «línea iniciada» y `seg_b_inicio_s` pendientes de confirmar entre 18/23/26; audio del título (27 OQ 1 / 23 OQ 3) | Baja | ADR-0008 |
+| QQ-12 | Jugador (2) persistente o por escena (OQ de 4) | Media | **Resuelta por ADR-0003** D3 (por escena, reconstruido con `colocar`). Antes: ADR-0003 (recomendado: por escena, reconstruido con `colocar`) |
+| QQ-13 | Atmósfera (28) como autoload (TR-atmos-001) o nodo de escena (este documento) | Media | **Resuelta por ADR-0009** D11 (nodo de escena). Antes: ADR-0009 / ADR-0014 |
+| QQ-14 | Cuándo se valida `puzzles.json`: en la configuración de `planta` (GDD 9, TR-scene-011) o también al arrancar (decisión de partida) | Baja | **Resuelta por ADR-0005** D3.2 (nivel L en `planta` y nivel B en arranque). Antes: ADR-0005: ambos, el de arranque solo en debug/CI |
+| QQ-15 | Firmas ‡ de 3 (lectura/escritura/suscripción) y de 6 (leer/escribir/restablecer/vaciar): los GDDs las dejan a ADR | Alta | **Resuelta por ADR-0001 y ADR-0007**. Antes: ADR-0001, ADR-0007 |
+| QQ-16 | Firmas ‡ de 1: API de reasignación, `es_imprimible(entrada)`, lista exportada de ajustes de manejo; operaciones de `sin control` | Alta | **Resuelta por ADR-0006** D4, D11. Antes: ADR-0006 |
+| QQ-17 | Firmas ‡ de 4 (petición de carga, retenciones), de 5 (`request_save`, consulta de inspección) y `GameClock` completo | Alta | **Resuelta por ADR-0002, ADR-0003 y ADR-0004** D11. Antes: ADR-0003, ADR-0004, ADR-0002 |
+| QQ-18 | Firmas ‡ confirmadas solo por un lado: `has_item` (20), `compose_i01` (19), `get_view_gate` (9/10); `elemento_bajo` en `seleccionar` (7, lo pide 16); `PARTIAL{element, action}` (14 → 9); `first_action` y reaplicación (17 → 9) | Alta | **Resuelta por ADR-0010 y ADR-0011** (quedan cambios en GDDs 7, 9, 17: reconciliación H2–H4, H7). Antes: `/architecture-review` + ADR-0010/0011; cambios requeridos en GDDs 7 y 9 |
+| QQ-19 | Contratos sin firma de Presentación: proveedor de panel de pistas (17 → 25), `OptionsComponent.mostrar(pantalla, pestaña_inicial?)`, API propia de 28, `SurfaceFx` (29, propuesta del GDD) | Media | **Resuelta por ADR-0016** D7/D8, **ADR-0014** (`Atmosphere`) y **ADR-0015** (puerto `SurfaceFx`). Antes: ADR-0016, ADR-0014, ADR-0015 |
+| QQ-20 | Cargas útiles ‡ de «efecto de escena pedido», «estado de objeto pedido», «tarjeta final pedida»; fichero `call.json` ‡ | Media | **Resuelta por ADR-0017** D5. Antes: ADR-0017 |
+| QQ-21 | Nombres de fichero sin fijar o fuera de convención: ficheros de 18 bajo `assets/data/narrative/` (el plan dice `lines.json`), `save-config.json` y `scene-config.json` (kebab-case frente a `snake_case`), `hints_policy.json` en la raíz de `assets/data/` | Baja | **Resuelta por ADR-0005** D1. Antes: ADR-0005 |
+| QQ-22 | «línea iniciada» y `seg_b_inicio_s` pendientes de confirmar entre 18/23/26; audio del título (27 OQ 1 / 23 OQ 3) | Baja | **Parcial:** «línea iniciada»/`seg_b_inicio_s` resuelta por ADR-0008 D11; audio del título sigue abierto (usuario). Antes: ADR-0008 |
 | QQ-23 | Herramienta de verificación de destellos (PEAT u otra, TR-a11y-011) y filtro de daltonismo para AC-24-07 | Baja | ADR-0014 / QA |
+
+Estado (v2): las QQ no marcadas siguen abiertas; QQ-01, 03, 04, 05, 07, 08, 10, 11 esperan decisión del usuario; QQ-23, a QA (ADR-0014 OI-6). Todas las «Resuelta» lo están por ADR `Proposed`.
+
+**Pendiente de verificar:** QQ-12 por ADR-0012 (solo verificado en ADR-0003); cierre de QQ-17 por ADR-0003 (inferido, sin frase explícita de cierre); § Entrada (1) solo remite a ADR-0006 § Key Interfaces, el boceto no se sustituyó; S4 manual de ADR-0002 sin log.
