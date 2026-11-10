@@ -1,11 +1,11 @@
 # Prompt de interacción y feedback (sistema 24)
 
-> **Status**: Revisado (ronda de corrección 9) — pendiente de re-review
+> **Status**: Revisado (ronda de corrección 10) — pendiente de re-review
 > **Author**: UX Designer (lote autónomo)
 > **Last Updated**: 2026-11-10
 > **Implements Pillar**: Autonomía como progresión (el prompt no revela lo que aún no está disponible) · Tensión sin castigo (el rechazo es un susurro, nunca un error) · Información incompleta (el pie es ambiente, no pista) · El espacio expresa la emoción (overlay mínimo, sin luz propia)
 
-> `†` = valor propuesto, a validar en playtest. `‡` = elemento propuesto que aún no existe en otros GDDs (ver «Cambios requeridos»; desde la ronda 9 quedan abiertos solo los de 6 y 18). `PV` = pendiente de verificación en el editor de Godot 4.7. Los identificadores de código van en inglés; los IDs del slice (`V06`, `OBJ_C06`, `UI_BOLSILLO_AYUDA`…) se conservan tal cual.
+> `†` = valor propuesto, a validar en playtest. `‡` = elemento propuesto que aún no existe en otros GDDs (ver «Cambios requeridos»; desde la ronda 10 queda abierto solo el token `{accion:atrás}` de 18). `PV` = pendiente de verificación en el editor de Godot 4.7. Los identificadores de código van en inglés; los IDs del slice (`V06`, `OBJ_C06`, `UI_BOLSILLO_AYUDA`…) se conservan tal cual.
 
 ## Summary
 
@@ -26,7 +26,7 @@ Mirar es elegir (art bible, principio 3): el anillo aparece cuando algo «respon
 1. **Fuente única.** 24 consulta `get_target()` de 7 **en cada fotograma de render** (7, regla 29: no hay aviso de cambio de objetivo). Entrada esperada: `{id, etiqueta (clave ya resuelta), largo (bool), p (0 a 1), anillo_visible (bool)} | nulo` (contrato aplicado en 7, regla 30 y D7-73). 24 **no** recalcula el objetivo, el verbo ni `p`.
 2. **Cuándo se dibuja.** Solo con el contexto de Entrada en `exploración` y `get_target() ≠ nulo`. En cualquier otro contexto (`menú`, `lectura`, `inspección`, `vista cercana`, `ordenador`, `llamada`, `sin control`) el anillo y la etiqueta están ocultos (el cursor de las vistas no es del 24, 7/Entrada). **No hay punto de mira permanente** (art bible §7.3; slice §16): sin objetivo no se dibuja nada.
 3. **Posición.** Centro exacto de la pantalla, fijo (el rayo de 7 sale del centro); no se proyecta sobre el objeto ni sigue su silueta. Evita saltos y no compite con la iluminación del mundo.
-4. **Forma y tamaño** (art bible §7.3): anillo de 28 px a 1080p, trazo 2 px, punto 4 px, opacidad 80 %, filo plano de 1 px azul noche `#1C2A38`, blanco frío `#DCE6E8`, sin sombra ni halo. **Versión grande** (accesibilidad, art bible §4.5): 48 px, trazo 3 px, punto 8 px, opacidad 100 %, contorno 2 px; se activa con `icono_grande` ‡ (ajuste de 6, pantallas 25/30). Los tamaños escalan con F2.
+4. **Forma y tamaño** (art bible §7.3): anillo de 28 px a 1080p, trazo 2 px, punto 4 px, opacidad 80 %, filo plano de 1 px azul noche `#1C2A38`, blanco frío `#DCE6E8`, sin sombra ni halo. **Versión grande** (accesibilidad, art bible §4.5): 48 px, trazo 3 px, punto 8 px, opacidad 100 %, contorno 2 px; se activa con `icono_grande` (ajuste de 6, pantallas 25/30). Los tamaños escalan con F2.
 5. **Aparición y desaparición.** Fundido de opacidad de 250 ms (ease-out) al aparecer y 150 ms al desaparecer (art bible §7.4). Si el objetivo pasa de un objeto a otro sin pasar por nulo, el anillo **no** parpadea: se mantiene y solo cambia la etiqueta (fundido cruzado de 120 ms). Con `reducir_movimiento` ambos fundidos duran 100 ms fijos.
 6. **Progreso de `leer`.** Si `anillo_visible` y `largo`, el anillo se rellena en sentido horario desde las 12 h en proporción a `p` (F1). Es un **relleno del propio anillo, no una barra** (art bible §7.3). Al completarse (`p = 1`) el relleno llega a opacidad 100 % y 7 abre la lectura; el anillo se oculta con el cambio de contexto. Si se suelta antes, el relleno se vacía en 100 ms. En el modo «alternar en lugar de mantener» (Entrada R14) el relleno permanece a la vista entre las dos pulsaciones, como exige 7 (edge case de alternar), y se vacía al cancelar con `atrás`.
 7. **Pulsación aceptada.** Cuando `interactuar` se procesa con resultado `HECHO`, el anillo sube de 80 % a 100 % de opacidad en 120 ms y vuelve (art bible §7.4); sin escala ni movimiento. Se dispara con el aviso «interacción ejecutada (id, verbo, resultado = HECHO)» de 7.
@@ -36,7 +36,7 @@ Mirar es elegir (art bible, principio 3): el anillo aparece cuando algo «respon
 ### B. Etiqueta de acción y glifo
 
 10. **Qué muestra.** Cuando está activa, una línea de texto bajo el anillo (separación 12 px† a 1080p): `[glifo de interactuar] + texto de la clave de etiqueta` (p. ej. `[E] Abrir`, `[A] Leer`). El texto lo pide 24 a 18 con la clave que entrega 7 (`UI_VERBO_*`, ya resuelta por `etiqueta(verbo)` del manejador si la hay: «Encender»/«Apagar» de `V06`; «Imprimir»/«Recoger» de `V08`).
-11. **Apagada por defecto.** `etiqueta_accion_visible` ‡ = falso (art bible §7.3: «desactivada por defecto, activable en accesibilidad»). Con ella apagada el anillo es la única señal y se cumple el slice §16 («icono discreto»). Con ella activa se muestra siempre que haya objetivo.
+11. **Apagada por defecto.** `etiqueta_accion_visible` = falso (art bible §7.3: «desactivada por defecto, activable en accesibilidad»). Con ella apagada el anillo es la única señal y se cumple el slice §16 («icono discreto»). Con ella activa se muestra siempre que haya objetivo.
 12. **Glifo siempre con texto.** Un glifo **nunca** va solo: lleva la etiqueta textual de la asignación (`E`, `Clic izq.`, `A`, `Cruz`). Teclas = rectángulo de esquinas vivas con el nombre; botón de mando = forma neutra con su letra o símbolo (art bible §7.3). Alto del glifo = alto de línea del texto que lo acompaña. Los glifos se muestran **en línea con la etiqueta, nunca flotando junto al anillo** (art bible §7.3).
 13. **Origen del glifo.** Se lee de Entrada: dispositivo activo (regla 3 de 1) y asignación **vigente** de la acción (reasignable, R15 de 1) mediante `get_binding_label(accion, dispositivo) -> {tipo, texto, glifo_id}` (1, regla 24, D34). 24 **nunca** guarda ni supone una tecla concreta. Con dos asignaciones para la acción y el dispositivo, se muestra la primera que devuelve `get_binding_label`; se pide a 1 que el orden sea determinista (orden de alta, también tras reasignar).
 14. **Reactividad.** Al cambiar el dispositivo activo («dispositivo de entrada cambiado», Entrada R3) o la asignación (se re-consulta al recibir «pausa cerrada»: la reasignación solo ocurre con la pausa abierta; 1, regla 24), la etiqueta y los pies con glifo se re-resuelven en el siguiente fotograma, sin reiniciar el reloj de ningún pie. Una única consulta por cambio, no por fotograma.
@@ -75,7 +75,7 @@ Mirar es elegir (art bible, principio 3): el anillo aparece cuando algo «respon
 ### E. Escala, resoluciones y ajustes leídos
 
 30. **Escala.** Todas las medidas en px de este GDD son para 1080p y escalan con F2 (altura de la ventana; soporte de 720p a 2160p). En 16:9 o más estrecho los márgenes seguros del 5 % se aplican a ambos ejes; en ultraancho se anclan al área 16:9 central.
-31. **Ajustes que lee** (de 6, vía avisos de cambio; 24 los aplica en el fotograma siguiente): `reducir_movimiento` (fundidos fijos de 100 ms), `icono_grande` ‡, `etiqueta_accion_visible` ‡ (los dos últimos, pendientes de alta en 6). `multiplicador_pie` y `pie_persistente` los lee 7 (vía `duracion_pie`), no 24; 24 solo recibe el resultado (`float` o `PERSISTENTE`).
+31. **Ajustes que lee** (de 6, vía avisos de cambio; 24 los aplica en el fotograma siguiente): `reducir_movimiento` (fundidos fijos de 100 ms), `icono_grande`, `etiqueta_accion_visible` (los dos últimos, ya dados de alta en 6). `multiplicador_pie` y `pie_persistente` los lee 7 (vía `duracion_pie`), no 24; 24 solo recibe el resultado (`float` o `PERSISTENTE`).
 32. **Sin dependencia del color.** Ningún elemento de 24 usa un color distinto para comunicar estado: anillo = presencia; relleno = progreso; pulso = rechazo; texto = contenido. Tras el filtrado de daltonismo (art bible §4.5) todos los estados se distinguen igual.
 
 ## Formulas
@@ -95,7 +95,7 @@ Mirar es elegir (art bible, principio 3): el anillo aparece cuando algo «respon
 
 **Variables:** `altura_ventana` en px físicos; `base_px` el valor de 1080p de este GDD.
 **Rango:** `s` ∈ [0,67, 2,0] (720p → 0,67; 1440p → 1,33; 2160p → 2,0).
-**Ejemplo:** a 720p el anillo estándar mide 28 · 0,67 = 18,8 → 19 px (redondeo al entero); el texto del pie de 28 px† mide 19 px, **por debajo del mínimo de legibilidad**: por eso el alto mínimo absoluto del pie es `pie_alto_min_px` 20† y el pie usa `max(28 · s, 20)`.
+**Ejemplo:** a 720p el anillo estándar mide 28 · 0,67 = 18,8 → 19 px (redondeo al entero); el texto del pie de 28 px† mide 19 px, **por debajo del mínimo de legibilidad**: por eso el alto mínimo absoluto del pie es `pie_alto_min_px` 24 (suelo de 25 y 30) y el pie usa `max(28 · s, 24)`.
 
 ### F3 · Vigencia del pie retenido
 
@@ -128,7 +128,7 @@ Mirar es elegir (art bible, principio 3): el anillo aparece cuando algo «respon
 | 7 Interacción e inspección | **Dura** | `get_target()` (con `anillo_visible`), `duracion_pie`, aviso «interacción ejecutada» con `resultado` ampliado a `SIN_EFECTO`/`GESTO_RECHAZADO`/`TOQUE_CORTO`; llama a `mostrar_pie` / `ocultar_pie` | Contrato aplicado en 7 (reglas 12, 29 y 30; D7-73 a D7-75); 7 declara la dependencia dura |
 | 18 Base de contenido narrativo | **Dura** | Textos de `UI_VERBO_*`, `OBJ_<id>`, `UI_BOLSILLO_AYUDA` (con token `{accion:atrás}` ‡) | Solo lectura; claves ausentes: reglas 16 y de pie |
 | 20 Documentos y bolsillo | Consumidor | 20 llama a `mostrar_pie(UI_BOLSILLO_AYUDA, …, retener = verdadero)` (R23 de 20); 24 no lee nada de 20 | 20 declara 24 como blanda |
-| 6 Ajustes persistentes | Blanda (valores iniciales si no están) ‡ | `reducir_movimiento`, `icono_grande` ‡, `etiqueta_accion_visible` ‡ | `multiplicador_pie`/`pie_persistente` los lee 7 |
+| 6 Ajustes persistentes | Blanda (valores iniciales si no están) | `reducir_movimiento`, `icono_grande`, `etiqueta_accion_visible` | `multiplicador_pie`/`pie_persistente` los lee 7 |
 | 26 Subtítulos | Blanda (convivencia) | 26 reserva la banda inferior; 24 sube el pie sobre ella (regla 24; regla 23 de 26); 24 no lee nada de 26 | 24 nombra a 26 desde la ronda 9; 26 ya lo exigía |
 | 8, 9, 10, 19, 22, 28 | Indirecta (vía 7) | Sus manejadores (`can_interact`, `interact`, `etiqueta`) llegan a 24 solo como `get_target()`, avisos de 7 y pies de 7 | 24 no los conoce ni los llama |
 | 25 / 30 (Pausa, Accesibilidad) | Consumidores | Ofrecen `reducir_movimiento`, `icono_grande`, `etiqueta_accion_visible`; 30 fija el criterio de «destello» (regla 18, AC-30-13) y el suelo de texto (D30-4) que 24 acata | Pantallas fuera de 24 |
@@ -145,7 +145,7 @@ Todos en `assets/data/ui/prompt.json`. Los de accesibilidad son ajustes del juga
 | `anillo_px` / `anillo_grande_px` | 28 / 48 | 24–40 / 40–64 | Legibilidad del anillo (F2) |
 | `anillo_opacidad` | 0,80 | 0,6–1,0 | Discreción frente a visibilidad |
 | `fade_in_ms` / `fade_out_ms` | 250 / 150 | 100–400 / 100–300 | Sensación «todo se disuelve» |
-| `fade_reducido_ms` | 100 | 50–150 | Con `reducir_movimiento` (art bible §7.4) |
+| `fade_reducido_ms` | 100 | 50–150 (rango único del proyecto, igual en 30) | Con `reducir_movimiento` (art bible §7.4) |
 | `pulso_ms` | 120 | 80–200 | Latencia percibida; ≤ `latencia_feedback_ms` al inicio |
 | `pulso_rechazo_min` | 0,40† | 0,3–0,6 | Que el rechazo se note sin parecer parpadeo |
 | `pulso_min_intervalo_ms` | 340† | 334–600 | Tope de fotosensibilidad (≤ 3 pulsos/s); no bajar de 334 |
@@ -155,8 +155,8 @@ Todos en `assets/data/ui/prompt.json`. Los de accesibilidad son ajustes del juga
 | `pie_panel_opacidad` | 0,85† | 0,75–0,95 | Contraste del pie (≥ 4,5:1 sobre blanco puro) |
 | `pie_fade_ms` | 250† | 100–400 | Entrada y salida del pie |
 | `ui_escala_min` / `ui_escala_max` | 0,67 / 2,0 | 0,5–0,75 / 1,5–3,0 | Resoluciones soportadas (F2) |
-| `etiqueta_accion_visible` ‡ | falso | falso/verdadero | Accesibilidad (6) |
-| `icono_grande` ‡ | falso | falso/verdadero | Accesibilidad (6) |
+| `etiqueta_accion_visible` | falso | falso/verdadero | Accesibilidad (6) |
+| `icono_grande` | falso | falso/verdadero | Accesibilidad (6) |
 
 ## Acceptance Criteria
 
@@ -189,14 +189,14 @@ Todos en `assets/data/ui/prompt.json`. Los de accesibilidad son ajustes del juga
 | ID | Decisión | Alternativa descartada | Motivo |
 |---|---|---|---|
 | D24-1 | Anillo fijo en el centro de la pantalla | Proyectarlo sobre el objeto | El rayo sale del centro; la proyección salta con el temblor y acerca el icono a una fuente de luz del mundo (art bible §3.3) |
-| D24-2 | Etiqueta de acción **apagada por defecto** (`etiqueta_accion_visible` ‡) | Siempre visible (lo sugiere UI Requirements de 7) | Art bible §7.3 la fija desactivada por defecto; slice §16 pide «icono discreto»; pilar Autonomía como progresión. 7 queda alineado en «Cambios requeridos» |
+| D24-2 | Etiqueta de acción **apagada por defecto** (`etiqueta_accion_visible`) | Siempre visible (lo sugiere UI Requirements de 7) | Art bible §7.3 la fija desactivada por defecto; slice §16 pide «icono discreto»; pilar Autonomía como progresión. 7 queda alineado en «Cambios requeridos» |
 | D24-3 | `{accion:atrás}` como token resuelto contra Entrada, con respaldo al nombre de la acción | Escribir «Retroceso» en el texto de 18 o mostrar solo «Atrás» | `atrás` es reasignable (R15 de 1): un literal mentiría; un nombre sin glifo no dice qué pulsar |
 | D24-4 | Glifo siempre con texto; nunca solo icono | Solo glifos gráficos | Accesibilidad (sin depender de forma/color del glifo) y lector de pantalla futuro |
 | D24-5 | Rechazo = pulso de opacidad + `SFX_CLICK_SUBTLE` de 7 (+ pie si lo hay) | Temblor o color de error; sonido propio de 24 | Art bible: sin rojo, temblor reservado a puzles; una sola fuente de audio (7/23); pilar Tensión sin castigo |
 | D24-6 | No hay estado «solo punto» en `exploración` | Dibujar un punto permanente | Slice §16 y art bible §7.3: «no hay punto de mira permanente»; ver Open Questions |
 | D24-7 | Un solo hueco de pie, sin cola; el último gana | Cola de pies | Coherencia con 7, regla 12; un pie es ambiente, perder uno no cuesta |
 | D24-8 | Pies de objeto se descartan al abrir un modo; solo los marcados `retener` (ayuda de 20) esperan, **sin caducidad por tiempo** (revisado en ronda 1) | Caducar el retenido a los 10 s† (borrador); retener todos / descartar todos | Un pie obsoleto confunde, pero la ayuda de 20 es la única enseñanza de `repasar_bolsillo`, se pide una vez por sesión y 20 no reintenta: caducarla la perdería justo tras una lectura larga (pilar de guía sin menú) |
-| D24-9 | 24 consulta `get_target()` por fotograma y el rechazo llega ampliando el `resultado` del aviso existente «interacción ejecutada» ‡ (`SIN_EFECTO`, `GESTO_RECHAZADO`, `TOQUE_CORTO`) | Aviso nuevo «interacción sin efecto» (borrador: duplicaba `SIN_EFECTO`); aviso por cambio de objetivo | Regla 29 de 7: una señal por fotograma saturaría el bus; el rechazo es discreto y sí merece aviso |
+| D24-9 | 24 consulta `get_target()` por fotograma y el rechazo llega ampliando el `resultado` del aviso existente «interacción ejecutada» (`SIN_EFECTO`, `GESTO_RECHAZADO`, `TOQUE_CORTO`) | Aviso nuevo «interacción sin efecto» (borrador: duplicaba `SIN_EFECTO`); aviso por cambio de objetivo | Regla 29 de 7: una señal por fotograma saturaría el bus; el rechazo es discreto y sí merece aviso |
 | D24-10 | La duración la calcula el llamador con F5 de 7 (`duracion_pie`) | 24 reimplementa F5 | Una sola fórmula, un solo dueño (7); 24 solo dibuja |
 | D24-12 | Pulso de rechazo limitado a ≥ 340 ms† entre inicios (≤ 2,9/s), independiente del enfriamiento de 7 | Reformular solo el AC con la definición de destello (borrador: 4 pulsos/s) | Cumple el umbral de 3/s por diseño y no depende de la interpretación del área; el sonido de 7 no cambia |
 | D24-13 | `pie_panel_opacidad` 0,85† y contraste garantizado sobre blanco puro | Mantener 0,70† con contorno en el panel | Con 0,70 el peor caso caía a ≈ 4,3:1; subir opacidad es más sencillo y no añade elementos al panel (art-director puede sustituirlo por contorno) |
@@ -208,6 +208,7 @@ Todos en `assets/data/ui/prompt.json`. Los de accesibilidad son ajustes del juga
 | D24-18 | «Destello» = definición de 30 (regla 18, AC-30-13); 24 no fija otra | Medida propia del anillo | Una sola definición de proyecto; el tope de 340 ms de D24-12 queda por debajo de 3/s con cualquier definición |
 | D24-19 | AC-24-07 pasa a NOT SOURCEABLE + PV: no se afirma un filtro de daltonismo del motor; se usa herramienta externa anotada | Citar «filtros de daltonismo del motor» | La referencia del motor no los documenta (no se afirma una API sin fuente) |
 | D24-20 | Convención de nombres: `repasar_bolsillo` y «pausa cerrada» | `pause_closed`, `revisar_bolsillo` | Cierra la discrepancia de nomenclatura de la ronda 9 (7 y 1 la siguen) |
+| D24-21 | Ronda 10: se quitan las ‡ de `icono_grande` y `etiqueta_accion_visible` (6 y el registro ya las tienen); F2 cita el suelo de 24 px (`pie_alto_min_px`); `fade_reducido_ms` con rango único 50–150 ms y 100 ms por defecto, igual en 30 | Conservar ‡; 20 px en F2; rango 50–200 ms | Restos de la re-verificación R15: la fórmula contradecía el knob y D24-15; un solo rango para el fundido reducido en 24 y 30 |
 
 ## Open Questions
 
@@ -229,12 +230,12 @@ Este GDD no ha editado ningún archivo existente. Cambios a aplicar (los coordin
 
 | GDD | Cambio | Motivo |
 |---|---|---|
-| `systems-index.md` | Fila 24 (la numerada «22» en su tabla de Progress/Order, corregir numeración): estado «Borrador (lote autónomo)», ruta `design/gdd/prompt-de-interaccion.md`; dependencias 1 (blanda), 7 (dura), 18 (dura), 6 (blanda ‡); consumidor 20 | Existe el GDD |
+| `systems-index.md` | Fila 24 (la numerada «22» en su tabla de Progress/Order, corregir numeración): estado «Borrador (lote autónomo)», ruta `design/gdd/prompt-de-interaccion.md`; dependencias 1 (blanda), 7 (dura), 18 (dura), 6 (blanda); consumidor 20 | Existe el GDD |
 | `entrada-y-controles.md` (1) | **APLICADO (ronda 9, D34):** regla 24 `get_binding_label` con orden determinista, AC-E19, fila 24 «Dura»; AC-03 «V» cerrado con 24 | Contrato de 24 (W-4) |
 | `interaccion-e-inspeccion.md` (7) | **APLICADO (ronda 9, D7-73 a D7-76):** (a) `get_target()` añade `anillo_visible`; (b) ampliar el dominio de `resultado` de «interacción ejecutada» a `HECHO`, `SIN_EFECTO`, `GESTO_RECHAZADO`, `TOQUE_CORTO` (sin aviso aparte); (c) `duracion_pie(clave) -> float \| PERSISTENTE`, aplicando `pie_persistente`; (d) llama a `mostrar_pie`/`ocultar_pie` de 24 y alinea UI Requirements: etiqueta apagada por defecto (D24-2); (e) recoger en F5 la norma de contar cada token `{…}` como un carácter | Contrato de 24 (W-2, W-3, W-5) |
 | `base-de-contenido-narrativo.md` (18) | Fijar en un solo lugar la gramática de tokens `{accion:<id>}` con el identificador de Entrada (`atrás`); `UI_BOLSILLO_AYUDA` con token: «{accion:atrás}: revisar los papeles» (texto provisional); claves `UI_VERBO_RECOGER` y `UI_VERBO_RESPONDER` si se mantienen; fila 24 con el token | Sin asumir `Retroceso` (W-5) |
 | `documentos-y-bolsillo.md` (20) | R23: «pide a 24» = `mostrar_pie(UI_BOLSILLO_AYUDA, duracion_pie(clave), retener = verdadero)`; el pie retenido ya no caduca por tiempo (D24-8); pasar `PERSISTENTE` tal cual | Contrato concreto (W-1, W-3) |
-| `ajustes-persistentes.md` (6) | **Sigue pendiente (otro agente):**  Nuevos ajustes de accesibilidad `icono_grande` y `etiqueta_accion_visible` (bool, falso); **corregir la fila de dependientes 24**: 24 lee solo `reducir_movimiento`, `icono_grande`, `etiqueta_accion_visible`; `multiplicador_pie` y `pie_persistente` los lee 7 (que pasa el resultado a 24); añadir 24 a la columna de consumidores de `reducir_movimiento`; recuento de «restablecer todos» de 12 a 14 (la cifra final la fija 6; 30 cuenta 18) | Art bible §4.5/§7.3; reciprocidad (B-2) |
+| `ajustes-persistentes.md` (6) | **Ya presentes en 6 (ronda 10):** nuevos ajustes de accesibilidad `icono_grande` y `etiqueta_accion_visible` (bool, falso); **corregir la fila de dependientes 24**: 24 lee solo `reducir_movimiento`, `icono_grande`, `etiqueta_accion_visible`; `multiplicador_pie` y `pie_persistente` los lee 7 (que pasa el resultado a 24); añadir 24 a la columna de consumidores de `reducir_movimiento`; recuento de «restablecer todos» de 12 a 14 (la cifra final la fija 6; 30 cuenta 18) | Art bible §4.5/§7.3; reciprocidad (B-2) |
 | `menu-de-pausa` (25) / `opciones-de-accesibilidad` (30) | Ofrecer los dos ajustes nuevos (los dos GDD ya existen) | Pantallas |
 | `design/art/art-bible.md` | Confirmar rótulo con etiqueta (glifo en línea) bajo el anillo frente a «nunca flotando junto al anillo»; definir panel y tipografía del pie; resolver la contradicción interna §7.3 («solo punto» frente a «no hay punto de mira permanente») | Open Questions 2 y 3 (W-7) |
 
@@ -248,8 +249,8 @@ Este GDD no ha editado ningún archivo existente. Cambios a aplicar (los coordin
 | constante | `PROMPT_PULSE_MIN_INTERVAL_MS` † | 340 (tope de fotosensibilidad) | regla 17 |
 | constante | `PROMPT_UI_SCALE_RANGE` † | 0,67–2,0 sobre 1080p | F2 |
 | fórmula | `ui_scale` | `clamp(altura/1080, 0,67, 2,0)` | F2 |
-| ajuste | `icono_grande` ‡ | bool, falso (6) | regla 4 |
-| ajuste | `etiqueta_accion_visible` ‡ | bool, falso (6) | regla 11 |
+| ajuste | `icono_grande` | bool, falso (6) | regla 4 |
+| ajuste | `etiqueta_accion_visible` | bool, falso (6) | regla 11 |
 | aviso | «interacción ejecutada» (dominio de `resultado` ampliado, 7 regla 29) | `HECHO`, `SIN_EFECTO`, `GESTO_RECHAZADO`, `TOQUE_CORTO`; emite 7, consume 24 | regla 19 |
 | API | `mostrar_pie` / `ocultar_pie` | las llaman 7 y 20; dueño 24 | regla 22 |
 | API | `get_binding_label` | dueño 1 (regla 24); consume 24 | regla 13 |
@@ -263,3 +264,4 @@ Este GDD no ha editado ningún archivo existente. Cambios a aplicar (los coordin
 | 2026-11-09 | Borrador inicial (lote autónomo): anillo, etiqueta, rechazo, pie y `UI_BOLSILLO_AYUDA` sin asumir `Retroceso`. Pendiente de revisión independiente |
 | 2026-11-09 | Ronda de corrección 1 (revisión independiente): B-1 tope de 340 ms entre pulsos (D24-12); B-2 reparto de lectura de ajustes aclarado y fila de 6 a corregir; B-3 panel 0,85 y AC con fondo blanco (D24-13); W-1 pie retenido sin caducidad (D24-8, F3); W-2 sin aviso nuevo (D24-9); W-3 `duracion_pie` devuelve `PERSISTENTE` + AC-24-21; W-4 ejemplo «Clic der.»; W-5 token con tilde (D24-14); W-7 art bible a Cambios; W-8 justificación; W-9 ACs 07/13/18 reescritos. W-6 (índice) ya figura en Cambios requeridos. Pendiente de re-review |
 | 2026-11-10 | Ronda de corrección 9 (R9-B4, `gdd-cross-review-2026-11-10.md`; avisos de `reviews/cross-review-r10-*`): contrato con 7 y 1 aplicado y ‡ cerradas (D24-16); suelo de pie 24 px (D24-15); pie sobre subtítulos de 26 y 26 en Dependencies (D24-17, AC-24-22); «destello» de 30 (D24-18); AC-24-07 NOT SOURCEABLE + PV (D24-19); 1 pasa a dependencia Dura; nomenclatura (D24-20); AC-24-23; Open Questions 10 y 11. Pendiente de re-review |
+| 2026-11-10 | Ronda de corrección 10 (restos R15): ‡ cerradas de `icono_grande`/`etiqueta_accion_visible`; F2 con suelo de 24 px; `fade_reducido_ms` 50–150 ms unificado con 30 (D24-21) |
