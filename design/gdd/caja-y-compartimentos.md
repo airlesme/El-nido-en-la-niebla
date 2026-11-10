@@ -1,6 +1,6 @@
 # Caja y compartimentos
 
-> **Status**: Revisado (ronda de corrección 8) — pendiente de re-review
+> **Status**: Revisado (ronda de corrección 9) — pendiente de re-review
 > **Author**: Game Designer (lote autónomo)
 > **Last Updated**: 2026-11-09
 > **Implements Pillar**: Autonomía como progresión (el jugador abre los compartimentos en el orden que quiera dentro de las dependencias) · Tensión sin castigo (la caja nunca falla, nunca se atasca y nunca bloquea más de 3 s) · El espacio expresa la emoción (madera, cerraduras y un altavoz dentro de la caja dicen lo que nadie explica) · Información incompleta (la caja guarda objetos y una voz, no confirma intenciones)
@@ -312,6 +312,7 @@ Tipos: **L** = lógica (prueba automática, `tests/unit/box/`), **I** = integrac
 | D10-24 | **(Ronda de corrección 5, dependencias R7, A9/A7)** Se retiran las citas obsoletas «1 no lista a 10» y «21 no la lista»: 1 (fila «10 Caja y compartimentos») y 21 (fila de 10, DT-27) la listan como Indirecta; 10 declara la misma dureza en ambos sentidos (A7: la dirección es 21 → 3 → 10, 21 lee `caja_completa` de 3; no hay aviso de 10 a 21). El GDD 22 no pide cambios a 10 | Dejar las citas como «pendiente de alinear» | Los otros GDDs ya la listan; el dependiente declara y el proveedor repite (R6-1) |
 | D10-25 | **(Ronda de corrección 8, de 15)** Corregida la contradicción interna: la regla 14 dejaba C3 `ABIERTO` y la regla 4, el Edge Case 9, AC-12, AC-34 y D10-21 decían `ENTREABIERTO` al interrumpir `RESOLVING`; se unifica a `ENTREABIERTO` (decisión ya tomada en D10-21/22; 15 la usa) | Mantener `ABIERTO` en la regla 14 | La pose no debe depender de haber cargado |
 | D10-26 | **(Ronda de corrección 8, de 13, 14, 15 y 16)** 13 a 16 pasan a filas propias en Dependencies; `ANC_D01A` se desplaza lateralmente (traslación sin giro) a `view_center_m`; `ANC_D01C` y `ANC_D01D` perpendiculares a su plano; `SPK_D01C` confirmado; `set_final_pose(n)` idempotente y silencioso y `play_open(n)` según la 14b(c) de 9 (D9-75); la política de `reducir_movimiento` sobre la caja sigue abierta (Pregunta 5) | Dejar la fila genérica «13–16»; que cada controlador anime la tapa | Un dueño de la caja y dependencias explícitas en ambos sentidos |
+| D10-27 | **(Ronda de corrección 9, `gdd-cross-review-2026-11-10.md`)** Comprobado: 10 no cita 17 ni 23–30 como «sin GDD», «por redactar» ni con ‡; solo queda la frase genérica de la leyenda de Dependencies («si el GDD del otro lado aún no existe») | Reescribirla | Es una regla de lectura, no una marca obsoleta |
 
 ## Preguntas abiertas
 
@@ -436,3 +437,4 @@ No se proponen hechos, avisos ni flags nuevos (D10-13).
 | 2026-11-09 | Ronda de corrección 3 (informe cruzado ronda 6: R6-1, R6-2): `BOX_Cn_OPEN` como notación genérica de `BOX_C1_OPEN`…`BOX_C4_OPEN`, sin «actualizar» el registro (ya aplicado), 21 y 2 pasan a Indirecta (D10-23). Estado: Revisado (ronda de corrección 3) — pendiente de re-review. |
 | 2026-11-09 | Ronda de corrección 5 (`reviews/dependencias-r7-review.md`, A7/A9): citas «1 no lista a 10» y «21 no la lista» corregidas (1 y 21 la listan como Indirecta); D10-24. Sin cambios de reglas. Estado: Revisado (ronda de corrección 5) — pendiente de re-review. |
 | 2026-11-09 | Ronda de corrección 8 (propagación de los GDDs 13 a 16 y D9-75): contradicción C3 `ABIERTO`/`ENTREABIERTO` corregida en la regla 14 (D10-25); filas propias de 13, 14, 15 y 16 en Dependencies (`ANC_D01A` desplazado, `D01b`, `SPK_D01C`/`ANC_D01C`, `ANC_D01D`/`set_final_pose(4)`); 14b(c) de 9 en la regla 15; Pregunta abierta 5 (`reducir_movimiento`) sin decidir y con dependientes; D10-25 y D10-26. Estado: Revisado (ronda de corrección 8) — pendiente de re-review. |
+| 2026-11-10 | Ronda de corrección 9: comprobación de textos obsoletos (sin hallazgos); D10-27. Estado: Revisado (ronda de corrección 9) — pendiente de re-review. |
