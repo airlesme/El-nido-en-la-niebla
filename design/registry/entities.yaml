@@ -475,9 +475,9 @@ formulas:
     source: design/gdd/subtitulos.md
     referenced_by: [design/gdd/opciones-de-accesibilidad.md]
     variables: ["base_px", "s", "alto_viewport", "sub_alto_min_px"]
-    output_range: "≥ 20"
+    output_range: "≥ 24"
     expression: "alto_px = max(round(base_px · s), sub_alto_min_px), s = alto_viewport/1080; car_linea = floor(sub_car_linea · base_medio / base_tam)"
-    notes: "F3 de 26. 720p medio = 21 px; pequeno 20 px; car/línea 56/42/30"
+    notes: "F3 de 26. Suelo sub_alto_min_px = 24 (ronda 10; antes 20, con lo que 720p pequeño daba 20 px y ahora 24: recalcular los ejemplos en 26); car/línea 56/42/30"
     added: 2026-11-10
     revised: ""
   - name: sub_reserved_band_px
@@ -1789,8 +1789,8 @@ constants:
     referenced_by: []
     value: 24
     unit: "px"
-    range: [20, 32]
-    note: "Valor † (sin playtest); ver Tuning Knobs de 19"
+    range: [24, 32]
+    note: "Valor † (sin playtest); ver Tuning Knobs de 19. Rango con suelo 24 (ronda 10, R15-3 D1): suelo lógico de 30 (tam_min_px, regla 26)"
     added: 2026-11-09
     revised: ""
   - name: pantalla_min_px
@@ -2110,7 +2110,7 @@ constants:
   - name: t_corte_senal_s
     status: deprecated
     source: design/gdd/llamada-telefonica.md
-    referenced_by: [design/gdd/marco-de-puzles.md]
+    referenced_by: []
     value: 0.3
     unit: "s"
     range: [0.1, 0.6]
@@ -2167,10 +2167,19 @@ constants:
     status: active
     source: design/gdd/llamada-telefonica.md
     referenced_by: [design/gdd/estado-y-bus-de-eventos.md, design/gdd/director-de-escenas.md, design/gdd/control-de-acceso.md]
-    value: "«llamada iniciada», «llamada completada», «linea pedida» (tambien 22), «sonido de llamada pedido» ‡ (22 a 23); recibe «estado de objeto pedido» ‡ (21 a 22, solo V02)"
+    value: "«llamada iniciada», «llamada completada», «linea pedida» (también 22), «sonido pedido» (22 a 23; antes «sonido de llamada pedido», ver `sonido_de_llamada_pedido` deprecated); recibe «estado de objeto pedido» (21 a 22, solo V02)"
     unit: ""
     note: "Avisos con emisor 22 (tabla de avisos de 3, fila 22)"
     added: 2026-11-09
+    revised: ""
+  - name: sonido_de_llamada_pedido
+    status: deprecated
+    source: design/gdd/llamada-telefonica.md
+    referenced_by: []
+    value: "«sonido de llamada pedido»"
+    unit: ""
+    note: "ALIAS DEPRECATED (2026-11-10, ronda 10): sustituido por «sonido pedido» (regla 10 de 3; emisores 7, 8, 10, 15, 17, 19, 22, 25; consumidor 23). Ya no se emite ni se consume"
+    added: 2026-11-10
     revised: ""
   - name: call_content_ids
     status: active
@@ -3112,10 +3121,11 @@ constants:
   - name: piso_mega_db
     status: active
     source: design/gdd/director-de-audio.md
-    referenced_by: []
+    referenced_by: [design/gdd/director-de-audio.md]
     value: 12
     unit: "dB"
-    note: "AC-23-24: atenuación máxima de MEGA_02 en sala cerrada respecto al pasillo (≤ 12). SIN fila en Tuning Knobs de 23 y sin rango: sin valor propio en el GDD †"
+    range: [6, 18]
+    note: "† propuesto. Magnitud (12 = −12 dB de nivel); AC-23-24: atenuación de MEGA_02 en sala cerrada ≤ 12 dB. Fila en Tuning Knobs de 23 (rango 6–18 † propuesto, ronda 10)"
     added: 2026-11-10
     revised: ""
   - name: AUDIO_BUSES
@@ -3205,7 +3215,7 @@ constants:
     referenced_by: [design/gdd/estado-y-bus-de-eventos.md, design/gdd/marco-de-puzles.md, design/gdd/interaccion-e-inspeccion.md, design/gdd/ordenador-correo-impresora.md, design/gdd/menu-de-pausa.md, design/gdd/sistema-de-pistas.md]
     value: "«sonido pedido» {sound_id, fuente?, accion, valor?}"
     unit: ""
-    note: "Emisores 7, 8, 10, 15, 19, 25 (y 17: SFX_CLICK_SUBTLE; 22 «sonido de llamada pedido» ‡); consumidor 23 (R5). Los SFX nunca van por «línea pedida» (R7b) ‡"
+    note: "Emisores 7, 8, 10, 15, 19, 25 (y 17: SFX_CLICK_SUBTLE; 22 «sonido pedido» (antes «sonido de llamada pedido»)); consumidor 23 (R5). Los SFX nunca van por «línea pedida» (R7b)"
     added: 2026-11-10
     revised: ""
   - name: notice_line_started
@@ -3368,9 +3378,9 @@ constants:
     status: active
     source: design/gdd/subtitulos.md
     referenced_by: [design/gdd/opciones-de-accesibilidad.md]
-    value: 20
+    value: 24
     unit: "px"
-    note: "Suelo absoluto (≥ 18) †. ▲ distinto de tam_min_px (24 px LÓGICOS de 30, regla 26): revisar si 26 debe usar 24 lógicos"
+    note: "Suelo absoluto = el suelo de 30 (tam_min_px, 24 px lógicos; regla 26 de 30). Antes 20 (ronda 10, R15-3 D2): 26 debe alinear su Tuning Knob y AC-26-08"
     added: 2026-11-10
     revised: ""
   - name: t_fundido_sub_s
