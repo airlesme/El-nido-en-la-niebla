@@ -1,6 +1,6 @@
 # Ordenador, correo e impresora (sistema 19)
 
-> **Status**: Revisado (ronda de corrección 9) — pendiente de re-review (ronda de corrección 8: `ts_envio` en `compose_i01()` para el AC-3 de 11, 11 listado como dependiente, D19-20 y D19-21)
+> **Status**: Revisado (ronda de corrección 10) — pendiente de re-review (ronda de corrección 8: `ts_envio` en `compose_i01()` para el AC-3 de 11, 11 listado como dependiente, D19-20 y D19-21)
 > **Author**: ux-designer (lote autónomo, sin aprobación por archivo)
 > **Last Updated**: 2026-11-09
 > **Implements Pillar**: Autonomía como progresión (el jugador decide qué buscar y qué leer) · Información incompleta (hechos de los correos fijos y comprobables) · Tensión sin castigo (nada falla; la impresión es repetible)
@@ -207,7 +207,7 @@ Dependencias recíprocas con regla o AC citado de la otra parte. `‡` = la cont
 | `tecla_sep_px` | 8 px† | 8–16 | Errores de pulsación | F5; el mínimo 8 coincide con AC-11 |
 | `fila_px` | 48 px† | 44–64 | Altura de fila de la lista (seleccionable, ≥ `pick_min_px`) | F5 |
 | `filas_visibles_min` | 4† | 3–6 | Filas de lista visibles con el teclado abierto | F5, AC-28 |
-| `texto_min_px` | 24 px† (lógicos) | 20–32 | Legibilidad (cuerpo 28†) | R18 |
+| `texto_min_px` | 24 px† (lógicos) | 24–32 (suelo único de 30, regla 26) | Legibilidad (cuerpo 28†) | R18 |
 | `pantalla_min_px` | 1280 px† (lógicos) | 960–1600 | Encuadre de la cámara de 7 | R18 |
 | `contraste_min` | 4,5:1 (7:1 cuerpo) | ≥ 4,5 | Accesibilidad visual | R17; WCAG 2.1 SC 1.4.3 (4,5:1) y 1.4.6 (7:1) |
 | `i01_pie_ordena_visible` (dato) | verdadero† | bool | Si la hoja lleva «Ordena por hora de envío» | D19-16 (decidido); literal de B.1 |
@@ -284,6 +284,7 @@ Reclasificadas como preguntas abiertas en la ronda de corrección 1 (alcance del
 
 ---
 | D19-22 | **(Ronda de corrección 9, `gdd-cross-review-2026-11-10.md`)** Las ‡ de la fila de 17 (pistas del P1: `sistema-de-pistas.md` regla 32), 23 (`SFX_PRINTER`, `SFX_KEY`, `SFX_CLICK_SUBTLE`: `director-de-audio.md`) y 25/30 (escala de texto: `menu-de-pausa.md`, `opciones-de-accesibilidad.md`) se sustituyen por el fichero. 17 lee `correos_leidos` (blanda, vía 3) | Dejar las ‡ | Los contratos ya están en esos GDD |
+| D19-23 | **(Ronda de corrección 10, restos R15)** `texto_min_px`: rango [24, 32] en lugar de [20, 32] | Dejar 20–32 | El suelo de texto de 30 (regla 26) es 24 px lógicos; el rango no puede permitir bajar de él. El registro (`texto_min_px`, range [20,32]) debe alinearse (cambio requerido, no editado aquí) |
 
 ## Preguntas abiertas
 
@@ -341,3 +342,4 @@ Reclasificadas como preguntas abiertas en la ronda de corrección 1 (alcance del
 | 0.6 | 2026-11-09 | Ronda de corrección 5 (GDD 22 y `reviews/dependencias-r7-review.md`): comprobadas las citas a 22 (ninguna) y la dirección 9 → 19; D19-19. Sin cambios de reglas. Estado: Revisado (ronda de corrección 5) — pendiente de re-review. |
 | 0.7 | 2026-11-09 | Ronda de corrección 8 (propagación del GDD 11): `ts_envio` entero en `SheetI01` de R30 (D19-20, AC-31), `hora_envio` null con `hora_visible` falso, 11 como dependiente (D19-21). Sin cambios en 18 (`dia` en la tabla Lunes–Domingo). Estado: Revisado (ronda de corrección 8) — pendiente de re-review. |
 | 0.8 | 2026-11-10 | Ronda de corrección 9: ‡ de 17, 23, 25 y 30 sustituidas por sus ficheros; D19-22. Estado: Revisado (ronda de corrección 9) — pendiente de re-review. |
+| 0.9 | 2026-11-10 | Ronda de corrección 10 (restos R15): `texto_min_px` con rango [24, 32] (D19-23). Estado: Revisado (ronda de corrección 10) — pendiente de re-review. |
