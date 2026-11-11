@@ -185,3 +185,9 @@ Nota de nombres: los presets escriben `el-nido.exe` / `el-nido.x86_64`. Los nomb
 - **C-S0-13** CI: enlace del run verde aportado por el usuario (`actions/runs/42980040179`), declarado y no verificable por el agente (repo privado). Anotado en `tests/README.md`.
 - PATH: el usuario añadió Godot al PATH (C10 cerrada por su parte; no verificado desde esta sesión hasta reiniciar el shell).
 - **C-S0-10/11** siguen pendientes: ADR-0001 (V-ENG-1…6 y C1) y ADR-0009.
+
+### Actualización 2026-11-11 (cierre de Foundation)
+
+- **C-S0-10** ADR-0001: V-ENG-1…6 PASS en 4.7.2 (suite 31/31, verificada); **Accepted** con C1 diferida al spike S-0006 de M1 (decisión del usuario).
+- **C-S0-11** ADR-0009: **Accepted** (0001 y 0002 aceptados; C9 anotada para la historia de Recepción).
+- Foundation (0001, 0002, 0009) aceptada: ninguna historia de M1 nace bloqueada por esos tres ADR. Siguen Proposed los otros 16 ADR.
