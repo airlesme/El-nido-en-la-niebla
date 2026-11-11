@@ -1,7 +1,7 @@
 # Story 006: Datos `assets/data/state/flags.json` (20 hechos, dueños)
 
 > **Epic**: Estado y bus de eventos
-> **Status**: Ready
+> **Status**: Done (2026-11-11; smoke formal `production/qa/smoke-*.md` no generado)
 > **Layer**: Foundation
 > **Type**: Config/Data
 > **Estimate**: S (≈ 0,5 días, confianza BAJA)
@@ -76,3 +76,14 @@
 
 - Depends on: `production/epics/estado-y-bus/story-005-flags-schema-and-catalog-load.md`
 - Unlocks: `production/epics/estado-y-bus/story-015-m1-state-test.md`
+
+---
+
+## Evidencia
+
+- Creado `assets/data/state/flags.json` (UTF-8 sin BOM, LF; `schema_version` 1, `max_chained_notices` 64, 20 hechos de slice D.2 con dueños de GDD 3: 19, 9, 20, 22 y `caja_completa` 3 con `derive` c1..c4).
+- Test `tests/unit/state/flags_owners_test.gd` (3 casos): el fichero real carga sin issues (READY, 20 hechos, sin fatal), 20 nombres únicos con dueño y tipo esperados (CA-30, C-M1-4 datos), cabecera, rango/inicial de `pos_*` y `values` de `t4_decision`.
+- `--import` sin errores. Arranque debug `--boot-report`: solo `[boot] flavor=debug ...`, ya NO emite `FATAL CATALOGO_INVALIDO`.
+- Suite completa: `290 test cases | 0 errors | 0 failures | 0 flaky | 0 skipped | 0 orphans` (sin `ObjectDB instances were leaked` ni `resources still in use`).
+- Decisiones: `carta_variante` y `respuesta_llamada` inician `null` («sin sellar», GDD 3 tabla; D.2 pone «—»). Discrepancia a propagar: el fixture de `flags_catalog_load_test.gd` usa `respuesta_llamada` inicial `"A"`; el GDD dice sin fijar (no tocado).
+- Pendiente: smoke formal (`production/qa/smoke-*.md`) no ejecutado; el ADVISORY de Config/Data queda cubierto solo por el test.

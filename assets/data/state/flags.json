@@ -1,0 +1,26 @@
+{
+  "schema_version": 1,
+  "max_chained_notices": 64,
+  "facts": [
+    {"name": "correos_leidos", "type": "bool", "initial": false, "owner": 19},
+    {"name": "archivo_abierto", "type": "bool", "initial": false, "owner": 9},
+    {"name": "formulario_leido", "type": "bool", "initial": false, "owner": 20},
+    {"name": "tarjeta_B", "type": "bool", "initial": false, "owner": 20},
+    {"name": "tarjeta_D", "type": "bool", "initial": false, "owner": 20},
+    {"name": "memo_leido", "type": "bool", "initial": false, "owner": 9},
+    {"name": "pos_L", "type": "int", "initial": 2, "owner": 9, "range": [1, 4]},
+    {"name": "pos_C", "type": "int", "initial": 2, "owner": 9, "range": [1, 4]},
+    {"name": "pos_R", "type": "int", "initial": 2, "owner": 9, "range": [1, 4]},
+    {"name": "caja_c1", "type": "bool", "initial": false, "owner": 9},
+    {"name": "t4_decision", "type": "enum", "initial": null, "owner": 9, "values": ["returned", "assigned"]},
+    {"name": "caja_c2", "type": "bool", "initial": false, "owner": 9},
+    {"name": "caja_c3", "type": "bool", "initial": false, "owner": 9},
+    {"name": "caja_c4", "type": "bool", "initial": false, "owner": 9},
+    {"name": "pendiente_revelacion", "type": "bool", "initial": false, "owner": 9},
+    {"name": "caja_completa", "type": "bool", "initial": false, "owner": 3, "derive": ["caja_c1", "caja_c2", "caja_c3", "caja_c4"]},
+    {"name": "carta_variante", "type": "enum", "initial": null, "owner": 9, "values": ["A", "B", "C"]},
+    {"name": "llamada_iniciada", "type": "bool", "initial": false, "owner": 22},
+    {"name": "respuesta_llamada", "type": "enum", "initial": null, "owner": 22, "values": ["A", "B", "C", "D"]},
+    {"name": "llamada_completada", "type": "bool", "initial": false, "owner": 22}
+  ]
+}
