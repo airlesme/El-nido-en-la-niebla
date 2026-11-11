@@ -1013,9 +1013,30 @@ AC-32 pass headless; S-0011-B error ≤ 5 mm; T-P1 within budget; and the
 playtest reports no "icon flicker" or "can't click the small thing" findings
 on `V02`, `B05` and the P4 board.
 
-## Spike Results
+## Spike Results (2026-11-11)
 
-_Not run yet._
+Godot 4.7.2.stable.official.ed1daf0bf, headless, Jolt (setting `DEFAULT`; Jolt module settings
+present), 60 Hz. Tests in `tests/unit/engine_facts/`: `adr0011_ray_occlusion_test.gd` (5/5),
+`adr0011_shape_queries_test.gd` (7/7), `adr0011_camera_fov_and_physics_order_test.gd` (4/4).
+Cost figures are a proxy (one `intersect_ray` + one `intersect_shape` per step against 40 `Area3D`
+boxes), not the real D3+D5 sweep, which does not exist yet. Rendered pixels and the logical
+viewport under `canvas_items`/`expand` need a window: NEEDS_WINDOWED (`prototypes/physics-spike/`).
+
+| S-n | Claim | Result | Figures | Fallback |
+|---|---|---|---|---|
+| S-0011-B depth | `intersect_ray` depth error on box faces ≤ 5 mm at 0,5–1,8 m, normal and 60° | PASS | normal: worst 4,8e-8 m; 60°: worst 8,3e-7 m at d 0,5 / 1,0 / 1,8 m | none (rule: ≤ 5 mm as designed) |
+| S-0011-B exclude | `query.exclude: Array[RID]` skips the body; keys `collider`, `rid` | PASS | near box z −1,0 → excluded → far box z −2,0; keys: position, normal, face_index, collider_id, collider, shape, rid | none (R2 not triggered) |
+| S-0011-B mask | mask bit 1 ignores bits 2–5 | PASS | bit 1 → no hit; bit 2 → z −1,45; bit 3 → z −1,95 | none |
+| S-0011-B inside | ray starting inside a box | PASS (recorded) | `hit_from_inside` default is **false** in 4.7.2; the ray from inside returns no hit (`{}`) | rule stands: a ray whose origin is inside a solid is a miss; no change |
+| S-0011-A (a) | `intersect_shape` + `collide_with_areas` returns every overlapping box | PASS | 8 capsule positions vs analytic: 0 mismatches; keys: rid, collider_id, collider, shape; `max_results` default 32 (cap applies: 64 → 40, 32 → 32, default → 32), so D11 must pass `max_results` ≥ entries (40); order not sorted by distance or id (e.g. grid_1, grid_9, grid_17, grid_25) | none; D11 enabled (returns all overlaps) with explicit `max_results` |
+| S-0011-A (a) | `monitorable = false`/`monitoring = false` volumes are queryable; mask honoured | PASS | mask bit 3 → 3 hits; mask 1 → 0; `collide_with_areas = false` → 0 | none |
+| S-0011-A (b) | `ShapeCast3D` sphere (r 0,05) sweep over 8 boxes in a row | recorded, rejected as designed | reports 1 of 8 (`grid_0`, closest only; safe/unsafe fraction 0,121/0,127) | D3 stays (rule unchanged) |
+| S-0011-A (c) | `BoxShape3D.size` readable; layer names in `project.godot` | PASS / GAP | V02 size reads back (0,15, 0,08, 0,02); `layer_names/3d_physics/layer_3` is **not defined** in `project.godot` | add layer names in the project (ADR-0003 O7) |
+| S-0011-A (d) | cost per step, 40 entries, 600 steps: mean ≤ 0,25 ms, peak ≤ 0,5 ms | PASS (proxy) | mean 0,0137 ms; p99 0,029 ms; max 0,109 ms | none (R5 not triggered) |
+| S-0011-A oracle | first hit equals analytic nearest box on 1 000 seeded rays | PASS | seed 20261111; 929 analytic hits; 0 mismatches; 0 ambiguous | none |
+| S-0011-C axis | default `keep_aspect` is keep-height; FOV vertical | PASS | `keep_aspect` = KEEP_HEIGHT (1); default fov 75, near 0,05. 0,10 m quad at 0,35 m, fov 70, `unproject_position` in SubViewports: 220,34 px (1080), 244,83 px (1200), 326,43 px (1600) = analytic to 3e-5 px; KEEP_WIDTH control gives the horizontal formula (391,72 px at 1920×1200) | none |
+| S-0011-C logical viewport | logical height with `canvas_items`/`expand` at 1920×1080, 1920×1200, 2560×1600 | NEEDS_WINDOWED | SubViewport size ≠ window content scale; needs a real window (README in `prototypes/physics-spike/`) | — |
+| S-0011-C order | `process_physics_priority` 0 / 10 over the steps | PASS | node with priority 0 ran before priority 10 on 30/30 steps although added second in the tree; 0 inversions | none (R3 not triggered) |
 
 ## Open Items
 
