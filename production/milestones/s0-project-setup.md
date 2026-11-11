@@ -210,3 +210,8 @@ Nota de nombres: los presets escriben `el-nido.exe` / `el-nido.x86_64`. Los nomb
 | C-S0-13 CI verde con run id | **Parcial** | run `42980040179` declarado por el usuario; falta un run tras los cambios de hoy |
 
 Suite local tras el cierre: 35 tests, 0 errores, 0 fallos, 0 huérfanos. **Estado del hito: casi cerrado.** Pendiente para «Cerrado»: C-S0-5 y C-S0-13 (GitHub), y recortables V-18-8/V-18-9 → M1.
+
+### Actualización 2026-11-11 (CI)
+
+- **C-S0-13** **Hecho (declarado):** el usuario aporta un run verde posterior a los cambios de cierre: `actions/runs/42986319318` (anotado en `tests/README.md`). No verificable por el agente (repo privado).
+- Queda abierto solo **C-S0-5** (V-18-4: la CI se pone roja ante test fallido, huérfano y cero tests): exige empujar a propósito ramas rotas a GitHub. **Estado del hito: Cerrado salvo C-S0-5**, que pasa a M1 como tarea de CI (decisión del agente: no ensuciar `main` con commits rojos; hacerlo en una rama de prueba cuando el usuario lo apruebe).
