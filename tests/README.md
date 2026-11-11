@@ -82,3 +82,7 @@ merging. The workflow has not been executed yet.
 ## Verified 2026-11-10
 
 GdUnit4 **6.2.3** (`godot-gdunit-labs/gdUnit4`, tag v6.2.3, copied from the source `addons/gdUnit4`) runs on Godot 4.7.2.stable: `Overall Summary: 3 test cases | 0 errors | 0 failures | 0 orphans`, exit code 0. The line `Remote Debugger: Unable to connect to host '127.0.0.1:0'` printed by the documented command is expected noise (port 0) and does not affect the result. The addon is not enabled in `project.godot` (the command-line tool works without it).
+
+## CI run (declared)
+
+Last green run reported by the developer on 2026-11-11: https://github.com/airlesme/El-nido-en-la-niebla/actions/runs/42980040179. Not independently verified: the repository is private (the public GitHub API returns 404) and no `gh` is available here.
