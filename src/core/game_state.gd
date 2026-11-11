@@ -25,6 +25,8 @@ var _owners: Dictionary = {}      # StringName -> int owner system number
 var _ranges: Dictionary = {}      # StringName -> [min, max] (int facts with a range)
 var _enum_values: Dictionary = {} # StringName -> Array[StringName]
 var _derived: Dictionary = {}     # StringName -> true (written only by the state, EB-010)
+var _derive_inputs: Dictionary = {} # derived StringName -> Array of input names (conjunction)
+var _dependents: Dictionary = {}    # input StringName -> Array[StringName] derived facts (reverse index)
 
 
 func _init() -> void:
@@ -116,7 +118,7 @@ func writer_for(owner_id: int) -> FactWriter:
 ## through `FactWriter.write`. Returns true when accepted (changed or identical). A valid change is
 ## applied at once, even while draining; only the notice is queued. Invalid writes keep the value,
 ## log exactly one line and call `ErrorPolicy.fail`. The owner is checked in dev builds only.
-## TODO(ADR-0001): one-way facts (EB-009) and derived recompute (EB-010) hook in at the marked points.
+## Derived facts (EB-010) are recomputed after each accepted change; their notice follows the input's.
 func set_fact(fact: StringName, value: Variant, owner_id: int) -> bool:
 	if _status != Status.READY:
 		return _write_failed("fact '%s': state is %s, write discarded" % [fact, Status.keys()[_status]])
@@ -136,9 +138,30 @@ func set_fact(fact: StringName, value: Variant, owner_id: int) -> bool:
 	if _is_one_way(fact) and _is_set(fact, old):
 		return _write_failed("fact '%s' is one-way: %s cannot go back to %s" % [fact, old, value])
 	_slots[slot] = value
-	# EB-010 hook: recompute dependents here and push their changes after the input's.
 	_channel.push_change(fact, old, value)
+	_recompute_dependents(fact)
 	return true
+
+
+## Re-evaluates every derived fact that lists `input` (reverse index built at load). A derived value
+## that changes is stored and its notice queued after the input's (FIFO, CA-14); derived facts that
+## feed other derived facts cascade. Generic: the rule comes from the catalog `derive` (conjunction).
+func _recompute_dependents(input: StringName) -> void:
+	var deps: Array = _dependents.get(input, [])
+	for d: Variant in deps:
+		var derived: StringName = d
+		var all_true: bool = true
+		for n: Variant in _derive_inputs[derived]:
+			if _slots[_index[n as StringName]] != true:
+				all_true = false
+				break
+		var slot: int = _index[derived]
+		var old: Variant = _slots[slot]
+		if old == all_true:
+			continue
+		_slots[slot] = all_true
+		_channel.push_change(derived, old, all_true)
+		_recompute_dependents(derived)
 
 
 ## The channel built from the catalog (null while UNLOADED). TODO(ADR-0001): the subscription
@@ -209,6 +232,8 @@ func _commit(root: Dictionary) -> void:
 	_ranges.clear()
 	_enum_values.clear()
 	_derived.clear()
+	_derive_inputs.clear()
+	_dependents.clear()
 	for f: Variant in root["facts"]:
 		var d: Dictionary = f
 		var fact: StringName = d["name"]
@@ -227,6 +252,14 @@ func _commit(root: Dictionary) -> void:
 			_enum_values[fact] = allowed
 		if d.has("derive"):
 			_derived[fact] = true
+			var ins: Array[StringName] = []
+			for n: Variant in d["derive"]:
+				var input: StringName = StringName(n)
+				ins.append(input)
+				if not _dependents.has(input):
+					_dependents[input] = []
+				(_dependents[input] as Array).append(fact)
+			_derive_inputs[fact] = ins
 		_names.append(fact)
 		_types[fact] = type
 		_initials[fact] = initial

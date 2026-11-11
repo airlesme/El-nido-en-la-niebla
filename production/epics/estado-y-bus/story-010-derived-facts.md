@@ -1,7 +1,7 @@
 # Story 010: Hechos derivados (`caja_completa`)
 
 > **Epic**: Estado y bus de eventos
-> **Status**: Ready
+> **Status**: Done
 > **Layer**: Foundation
 > **Type**: Logic
 > **Estimate**: S (≈ 0,5 días, confianza BAJA)
@@ -67,7 +67,7 @@
 
 **Story Type**: Logic
 **Required evidence**: `tests/unit/state/derived_facts_test.gd` — must exist and pass.
-**Status**: [ ] Not yet created
+**Status**: [x] Created and passing
 
 ---
 
@@ -75,3 +75,12 @@
 
 - Depends on: `production/epics/estado-y-bus/story-008-validated-writes-and-writer.md`
 - Unlocks: `production/epics/estado-y-bus/story-013-dev-console-hook.md`, `production/epics/estado-y-bus/story-015-m1-state-test.md`
+
+---
+
+## Evidencia
+
+- `src/core/game_state.gd`: índice inverso entrada -> derivados construido en `_commit`; `_recompute_dependents` genérico (conjunción de `derive`), con cascada; el aviso del derivado se encola tras el de la entrada (FIFO).
+- `tests/unit/state/derived_facts_test.gd`: 5 tests, 5/5 (CA-07 y CA-14, escritura directa rechazada, entradas incompletas en silencio, reescritura sin re-aviso).
+- `--import` sin errores. Suite bloqueante (`-a res://tests -i res://tests/timing`): 418 test cases, 0 errors, 0 failures, 0 orphans. 0 coincidencias de `ObjectDB instances were leaked` / `resources still in use`.
+- Nota: `derive` como conjunción sigue con `TODO(ADR-0001)` en `flags_schema.gd` (forma no fijada por el ADR).
