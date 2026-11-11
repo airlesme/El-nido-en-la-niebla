@@ -2,7 +2,7 @@
 
 ## Status
 
-Proposed
+Accepted (2026-11-11) — spikes S-0003-A/B run on 4.7.2 (sensor range corrected to (8.95; 8.977], see O8); S-0003-C (synchronous load hitch) deferred until the grey `planta` exists
 
 > **Who may move this to `Accepted`: the user, or `technical-director` on the
 > user's explicit confirmation. No other agent, and no skill on its own.**
