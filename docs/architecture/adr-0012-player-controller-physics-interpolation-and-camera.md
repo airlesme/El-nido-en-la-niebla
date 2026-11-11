@@ -2,7 +2,7 @@
 
 ## Status
 
-Proposed
+Accepted (2026-11-11) — S-0012-A…F run on 4.7.2 with R1 (use `Engine.get_physics_interpolation_fraction()`); 15 s corridor at each fps cap (NEEDS_WINDOWED) deferred to the playable prototype
 
 > **Who may move this to `Accepted`: the user, or `technical-director` on the
 > user's explicit confirmation. No other agent, and no skill on its own.**
