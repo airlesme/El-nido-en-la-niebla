@@ -1,7 +1,7 @@
 # Story 007: Lecturas O(1) — `get_fact`, `resolve_fact`, `get_fact_at`, valor neutro
 
 > **Epic**: Estado y bus de eventos
-> **Status**: Complete (2026-11-11) — suite completa con 3 fallos ajenos (EB-006 en curso), ver Evidencia
+> **Status**: Done — criterios con evidencia; suite 290/290 con EB-006 (los fallos ajenos del momento se resolvieron)
 > **Layer**: Foundation
 > **Type**: Logic
 > **Estimate**: S (≈ 0,5 días, confianza BAJA)
