@@ -1,7 +1,7 @@
 # Story 001: Costuras de plataforma — `LogSink`, `ErrorPolicy`, `FatalErrorHandler`, `TestContexts`
 
 > **Epic**: Estado y bus de eventos
-> **Status**: Ready
+> **Status**: Done
 > **Layer**: Foundation (piezas de capa 0 Platform, ADR-0009 D4)
 > **Type**: Logic
 > **Estimate**: M (≈ 1,5 días, confianza BAJA)
@@ -87,3 +87,15 @@
 
 - Depends on: None
 - Unlocks: `production/epics/estado-y-bus/story-002-notice-channel-core.md`, `production/epics/estado-y-bus/story-005-flags-schema-and-catalog-load.md`, `production/epics/estado-y-bus/story-014-boot-wiring-state.md`, `production/epics/contenido-y-datos/story-001-file-store-and-json-text.md`, `production/epics/entrada-y-controles/story-001-input-types-and-binding-table.md`
+
+---
+
+## Evidencia
+
+- Suite: `tests/unit/state/platform_seams_test.gd` (12 tests, todos PASSED). Suite completa gdUnit4: 139 casos, 0 errores, 0 fallos, 0 huérfanos (28/28 suites); `--import` sin errores. Godot 4.7.2.
+- CA1 (RecordingLog/RecordingFatalHandler): `test_recording_log_collects_level_and_message`, `test_recording_fatal_handler_records_calls_and_flags_failure`.
+- CA2 (ErrorPolicy): `test_error_policy_default_is_strict_only_in_debug`, `test_error_policy_default_fail_in_release_does_not_halt`, `test_base_error_policy_is_inert`.
+- CA3 (TestContexts): `test_test_contexts_make_returns_frozen_context_of_doubles`, `test_test_contexts_override_replaces_a_single_service`. Ninguna suite nombra un `*Autoload` en estas pruebas.
+- CA4 (ServiceContext/Boot): campos `logger`, `fatal`; `Boot.make_fatal_handler` cubierto por `test_boot_picks_fatal_handler_by_flavor` (la composición completa de `compose()` toca autoloads y no se ejecuta en unit).
+- Decisiones: `ErrorPolicyDefault` = `push_error` + `quit(1)` solo en debug (F-R09/F-X09, sin `assert`; la nota de motor de la historia queda superada por la enmienda). `DebugFatalHandler` delega la parada en `ErrorPolicy` inyectada (no nombra el motor); `ReleaseFatalHandler` solo registra, `# TODO(ADR-0009)` para `ctx.ui.error_panel`. La rama de debug real de `fail()` (quit) no es testeable en la suite.
+- Ficheros: `src/core/platform/log_sink.gd`, `src/core/platform/error_policy.gd`, `src/core/error_policy_default.gd`, `src/core/composition/{fatal_error_handler,debug_fatal_handler,release_fatal_handler,fatal_messages,service_context}.gd`, `src/core/boot/boot.gd`, `tests/doubles/{recording_log,recording_fatal_handler,fake_real_clock,fake_clock,fake_game_state,test_contexts}.gd`, `tests/unit/state/platform_seams_test.gd`.

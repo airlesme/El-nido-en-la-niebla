@@ -1,11 +1,13 @@
 ## Typed bag of injected services. Built by Boot; read-only after freeze() (ADR-0009 D3).
-## TODO(ADR-0009): logger, fatal, files, ui, flash_guard, scene and for_scene() once
+## TODO(ADR-0009): files, ui, flash_guard, scene and for_scene() once
 ## LogSink, FatalErrorHandler, FileStore, UiPorts, FlashGuard and SceneServices exist.
 class_name ServiceContext extends RefCounted
 
 # --- Platform (layer 0) ---
+var logger: LogSink # push_* wrapper; not `log` (shadows the builtin)
 var flavor: BuildFlavor
 var real_clock: RealClock
+var fatal: FatalErrorHandler # ADR-0009 D8
 
 # --- Foundation and Core: the 9 autoloads ---
 var content: ContentDB

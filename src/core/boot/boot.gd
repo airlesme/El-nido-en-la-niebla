@@ -1,6 +1,6 @@
 ## Single composition root (ADR-0009 D3): the only file that names an autoload.
 ## Skeleton (S0): builds platform objects and the context, then runs setup() in D2 order.
-## TODO(ADR-0009): LogSink, FatalErrorHandler, FileStore, DataValidator (step 4),
+## TODO(ADR-0009): FileStore, DataValidator (step 4),
 ## Shell.setup_ui (step 11) and SceneLoader.request_title() (step 13).
 class_name Boot extends Node
 
@@ -30,6 +30,13 @@ static func wants_boot_report(user_args: PackedStringArray) -> bool:
 	return user_args.has(BOOT_REPORT_ARG)
 
 
+## Picks the FatalErrorHandler variant by BuildFlavor (ADR-0009 D8): Debug stops via ErrorPolicy, Release only logs.
+static func make_fatal_handler(flavor: BuildFlavor, logger: LogSink) -> FatalErrorHandler:
+	if flavor.is_debug():
+		return DebugFatalHandler.new(logger, ErrorPolicyDefault.new(flavor))
+	return ReleaseFatalHandler.new(logger)
+
+
 func _project_version() -> String:
 	var version: String = str(ProjectSettings.get_setting("application/config/version", ""))
 	return version if not version.is_empty() else "dev"
@@ -39,7 +46,9 @@ func _project_version() -> String:
 func compose() -> ServiceContext:
 	var ctx: ServiceContext = ServiceContext.new()
 	ctx.flavor = BuildFlavor.from_engine()
+	ctx.logger = LogSink.new()
 	ctx.real_clock = RealClock.new()
+	ctx.fatal = make_fatal_handler(ctx.flavor, ctx.logger)
 	ctx.content = ContentDBAutoload
 	ctx.state = GameStateAutoload
 	ctx.clock = GameClockAutoload
