@@ -198,7 +198,7 @@ Efectos sobre la escena: `llamada_completada` en `T_compl`; luces y lluvia en `T
 
 ## Tuning Knobs
 
-Todos los valores en datos externos (`call.json` propuesto ‡), no en código.
+Todos los valores en datos externos (`assets/data/call/call.json`, sin ‡: G14, ADR-0005 D1 / ADR-0017), no en código.
 
 | Knob | Valor | Rango seguro | Afecta a |
 |---|---|---|---|
@@ -292,6 +292,7 @@ Tipos: L = lógica (automática), I = integración, PV = playtest o verificació
 | D22-31 | Ronda 8: 22 cita a 14 y 16 en su fila de 9 como proveedores indirectos de `t4_decision` y `carta_variante`, sin cambiar su contrato (lectura de dos hechos de 9; fallos con consola como antes, R16 y Edge Cases). La métrica `p_oir` (cuántos jugadores oyen la línea de 14 antes de elegir) es de playtest de 14 y 22 no la calcula ni la registra. | Que 22 cuente `p_oir`/`r_T4` en un registro propio; abrir la dependencia 22 → 14 como directa. | 14 lo resuelve por observación (P4-F4); 22 solo lee `t4_decision` y no sabe de qué puzle viene. La dependencia sigue siendo indirecta por el estado (vía 3), como la declara 22. |
 | D22-32 | **Ronda de corrección 9 (R9-B1, B2 de la revisión de contratos):** 22 pide los `SFX_*` de la llamada por «sonido pedido» (`accion` `play`/`stop`/`interrupt`) y solo las voces `VO_G_12*`, `VO_G_13*`, `VO_G_14_*` por «línea pedida»; desaparece «sonido de llamada pedido»; 22 **no** emite «estado de objeto pedido» (solo lo recibe de 21 para `V02`); `t_corte_senal_s` se retira y el fundido es `t_interrupt_s` de 23 | Mantener `SFX_*` en «línea pedida» más un alias | 23 R7b rechaza `SFX_*` en «línea pedida»; un solo nombre por aviso (regla 10 de 3, DT-24). |
 | D22-33 | **Ronda de corrección 10 (R15-3 B1):** `T_compl` de F3 usa `t_interrupt_s` (0,2 s†, dueño 23) y no la constante retirada `t_corte_senal_s`; la fila «Elige durante la señal» pasa de 40,1 s a 40,0 s. | Dejar 0,3† | Una constante retirada no puede estar en una fórmula viva (D22-32). |
+| D22-34 | **(2026-11-11, M1 cola B; G14 = ADR-0005 O1, ADR-0017)** `call.json` pierde la ‡ y su ruta es `assets/data/call/call.json` (Tuning Knobs y Entradas para el registro). H23: `V02` en la escena 1 solo recibe de 21 los efectos `TELEFONO_PULSOS`/`TELEFONO_MENSAJE` (los ejecuta el presentador de `V02`, no 22; 22 sigue sin emitir «estado de objeto pedido», D22-32) | Dejar la ‡ y la ruta sin fijar | ADR-0005 D1 fija `assets/data/<dominio>/<snake>.json`. Sin cambio de reglas ni de números. |
 
 ## Open Questions
 
@@ -333,7 +334,7 @@ Tipos: L = lógica (automática), I = integración, PV = playtest o verificació
 - **Contexto de entrada:** `llamada` (22 abre y cierra).
 - **IDs propuestos:** `SFX_CALL_BREATH` ‡, `SUB_BREATH_BROKEN` (texto provisional), `UI_LLAMADA_OPCION_A–D` ‡. Existentes usados: `V02`, `VO_G_12A/B/C`, `VO_G_13A–D`, `VO_G_14_RET/ASG`, `SFX_PHONE_BUZZ`, `SFX_BREATH_BROKEN`, `SFX_PHONE_END`, `ANIM_PHONE_PICKUP`, `HAND_PHONE_HOLD`, `HAND_PHONE_PUTDOWN`, `VO_V_12A–D` (consumidas por 21).
 - **Constantes †:** `t_sil_s` 2,0, `t_resp_s` 2,0, `t_ante_s` 1,0, `t_guarda_opciones_s` 0,6, `t_espera_s` 20,0, `t_cierre_s` 1,0, `line_grace_s` 2,0 (de 9), `t_putdown_s` ≤0,6.
-- **Datos:** `call.json` ‡ (tiempos y claves). **Estados de 22:** `INACTIVA`, `DESCOLGANDO`, `SILENCIO`, `RESPIRACION`, `LINEA`, `ANTES_OPCIONES`, `OPCIONES` (`ESPERA`, `SENAL`), `RESPUESTA`, `CIERRE`, `COMPLETADA` (hasta la descarga del despacho; luego `INACTIVA`).
+- **Datos:** `assets/data/call/call.json` (tiempos y claves; ruta fijada, G14). **Estados de 22:** `INACTIVA`, `DESCOLGANDO`, `SILENCIO`, `RESPIRACION`, `LINEA`, `ANTES_OPCIONES`, `OPCIONES` (`ESPERA`, `SENAL`), `RESPUESTA`, `CIERRE`, `COMPLETADA` (hasta la descarga del despacho; luego `INACTIVA`).
 
 ## Historial
 
