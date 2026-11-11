@@ -1,6 +1,6 @@
 ## Single composition root (ADR-0009 D3): the only file that names an autoload.
 ## Skeleton (S0): builds platform objects and the context, then runs setup() in D2 order.
-## TODO(ADR-0009): FileStore, DataValidator (step 4),
+## TODO(ADR-0009): FileStore in ServiceContext (step 4 builds its own meanwhile),
 ## Shell.setup_ui (step 11) and SceneLoader.request_title() (step 13).
 class_name Boot extends Node
 
@@ -42,6 +42,15 @@ func _project_version() -> String:
 	return version if not version.is_empty() else "dev"
 
 
+## Boot step 4 (ADR-0009 D2): DataValidator.run(ctx) in debug only; release never builds nor calls it.
+## Example: `Boot.run_data_validation(ctx, FileStore.new())`.
+static func run_data_validation(ctx: ServiceContext, files: FileStore) -> void:
+	if not ctx.flavor.is_debug():
+		return
+	var reader: DataReader = DataReader.new(files, ctx.flavor)
+	DataValidator.new(reader, ctx.logger).run(ctx)
+
+
 ## Builds the global context from the autoloads, runs setup() and freezes it.
 func compose() -> ServiceContext:
 	var ctx: ServiceContext = ServiceContext.new()
@@ -62,6 +71,10 @@ func compose() -> ServiceContext:
 	ctx.content.setup(ctx)
 	ctx.state.setup(ctx)
 	ctx.clock.setup(ctx)
+	# Step 4. TODO(ADR-0009): the FileStore moves to ctx.files when ServiceContext gains it.
+	run_data_validation(ctx, FileStore.new())
+	if ctx.fatal.has_failed(): # a fatal call stops the sequence (ADR-0009 D2)
+		return ctx
 	ctx.input.setup(ctx)
 	ctx.settings.setup(ctx)
 	ctx.audio.setup(ctx)

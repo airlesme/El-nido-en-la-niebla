@@ -1,7 +1,7 @@
 # Story 003: `DataCatalog`, `RefIndex` y `DataValidator` (paso 4 de arranque)
 
 > **Epic**: Contenido narrativo y datos validados
-> **Status**: Ready
+> **Status**: Done
 > **Layer**: Foundation (capa 0 Platform)
 > **Type**: Logic
 > **Estimate**: M (≈ 1 día, confianza BAJA)
@@ -77,3 +77,12 @@
 
 - Depends on: `production/epics/contenido-y-datos/story-002-schema-and-data-reader.md`
 - Unlocks: `production/epics/contenido-y-datos/story-004-content-db-load-and-lifecycle.md`, `production/epics/contenido-y-datos/story-010-data-check-verifier-core.md`, `production/epics/estado-y-bus/story-005-flags-schema-and-catalog-load.md`
+
+---
+
+## Evidencia
+
+- `--headless --path . --import`: sin errores.
+- Suite completa gdUnit4 (Godot 4.7.2): `Overall Summary: 256 test cases | 0 errors | 0 failures | 0 flaky | 0 skipped | 0 orphans`, `Executed test suites: (34/34)`, `Exit code: 0`; sin `ObjectDB instances were leaked` ni `resources still in use`.
+- `tests/unit/content/data_validator_test.gd` (21 tests): orden y convención del registro (`is_valid_path` rechaza raíz, kebab-case, mayúsculas, dos carpetas, `.JSON`, `ñ`), `RefIndex`, `sweep` (ref inexistente + ID duplicado entre ficheros: ambos issues; retirado; fact; fichero ausente), `run` (`CONTENIDO_INVALIDO`/`CATALOGO_INVALIDO` con count/file/param, warnings sin fatal), `Boot.run_data_validation` (release: 0 lecturas).
+- Notas: (1) las filas M1 están registradas en `DataCatalog.registry()`, pero `entries()` solo devuelve las que ya tienen esquema (hoy ninguna) hasta que la historia dueña lo aporte (F-R50; `TODO(CD-004/EB-005/ADR-0006/ADR-0010)`), por lo que el barrido real de arranque está vacío. (2) `RefIndex.set_fact_values` y `provides` no están en el ADR (`TODO(ADR-0005)`); `fact_value` y kinds sin proveedor se omiten (`TODO(ADR-0010)`). (3) Boot crea su propio `FileStore` hasta que `ServiceContext` tenga `files`. (4) `TestContexts.make` crea `FakeClock`/`FakeGameState` aunque se sobrescriban (huérfanos); los tests de esta historia construyen el contexto a mano.
