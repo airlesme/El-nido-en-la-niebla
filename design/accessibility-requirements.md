@@ -1,6 +1,6 @@
 # Accessibility Requirements
 
-> **Status**: Committed (nivel Estándar; confirmación del usuario pendiente, OQ 8 de 30)
+> **Status**: Committed (nivel Estándar, sin modos de daltonismo; confirmado por el usuario el 2026-11-11, OQ 8 de 30)
 > **Author**: ux-designer (`/ux-design accessibility`, modo autónomo; consolida decisiones ya tomadas, no añade requisitos)
 > **Last Updated**: 2026-11-10
 > **Accessibility Tier Target**: Estándar (escala del proyecto de 30 regla 1; equivale al «Standard» de la plantilla con **una exención documentada**: sin modo de daltonismo, ver Known Intentional Limitations L-1)
@@ -283,7 +283,7 @@ La plantilla define cuatro niveles (Basic, Standard, Comprehensive, Exemplary). 
 | **DPU. Suelo de texto a 720p (QQ-10):** ¿suelo lógico de 24 px (16 px reales a 720p) o real (24 px reales a 720p)? Cambia `pequeno`/`medio` de subtítulos a 720p y el texto de la UI a 720p | Usuario | Antes de implementar `UiTextScale` y el tema | Por defecto rige el suelo lógico (ADR-0007 OI-1; reversible con un cambio en `UiTextScale.logical_size`) |
 | **DPU. `escala_texto_ui` (QQ-08, OQ 10 de 30, OQ 15 de 6):** ¿se da por cerrada en el slice? | Usuario | Antes de cerrar el catálogo de 6 | Por defecto sí (18 claves). Si no, 17 |
 | **DPU. Parpadeo y apagón (OQ 10 de 30):** ¿se extiende `reducir_movimiento` a parpadeo del pasillo, reflejo retardado y lluvia (28 R9 y R17), más allá de slice §14? ¿Y `reducir_sobresaltos` sigue leída por 28 junto a `reducir_movimiento`? | Usuario | Antes del re-review de 28 | Por defecto se mantiene lo escrito: 28 lee ambas claves |
-| **DPU. Nivel Estándar (OQ 8 de 30):** ¿se acepta como compromiso ante financiadores? | Usuario | Antes de la puerta de preproducción | Por defecto sí |
+| **DPU. Nivel Estándar (OQ 8 de 30):** ¿se acepta como compromiso ante financiadores? | Usuario | Antes de la puerta de preproducción | **Resuelta 2026-11-11: sí, Estándar sin daltonismo** |
 | **DPU. Dwell de P5 (OQ 9 de 30)** | Usuario, 15 | Tras playtest | Por defecto aceptar la excepción |
 | **DPU. Espera de pistas (OQ 1 de 30)** | Usuario | Tras playtest | Por defecto no |
 | **DPU. Sonidos con subtítulo (OQ 2 de 26)** | Usuario | Antes de implementar 26 | Solo `SUB_BREATH_BROKEN` |
