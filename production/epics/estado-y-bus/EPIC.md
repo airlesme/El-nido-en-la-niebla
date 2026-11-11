@@ -5,9 +5,31 @@
 > **Architecture Module**: Capa 1 — 3 Estado y bus (`GameState`, autoload n.º 2); `architecture.md` § Module Ownership y § API Boundaries «Bus y estado (3) — ADR-0001»
 > **Status**: **LISTO** — 14/18 TR libres; TR-state-013…016 (instantánea/restaurar) esperan a ADR-0004 con el guardado diferido (recorte 4)
 > **Actualizado 2026-11-11**: desbloqueado por ADR-0005 (TR-state-001)
-> **Stories**: Not yet created — run `/create-stories estado-y-bus`
+> **Stories**: 15 historias (15 Ready, 0 Blocked) — índice con estimaciones y diferidos en `stories.md` (2026-11-11, manifiesto 2026-11-11b)
 > **Control manifest**: v2026-11-11 — § Foundation Layer Rules (cubre ADR-0001, 0002, 0009)
 > **Engine Risk**: MEDIUM (parser JSON enteros→`float`, TR-state-015)
+
+## Stories
+
+| # | Story | Type | Status | ADR |
+|---|-------|------|--------|-----|
+| 001 | Costuras de plataforma (`LogSink`, `ErrorPolicy`, `FatalErrorHandler`, `TestContexts`) | Logic | Ready | ADR-0009, ADR-0001 |
+| 002 | `NoticeChannel`: suscripción, FIFO, drenaje sin reentrada | Logic | Ready | ADR-0001 |
+| 003 | `NoticeChannel`: tope, callables inválidos, `run_after_drain`, tap | Logic | Ready | ADR-0001 |
+| 004 | Registro `NoticeIds` y validación de payload | Logic | Ready | ADR-0001 |
+| 005 | Esquema de `flags.json` y `load_catalog` | Logic | Ready | ADR-0005, ADR-0001 |
+| 006 | Datos `flags.json` (20 hechos) | Config/Data | Ready | ADR-0005, ADR-0001 |
+| 007 | Lecturas O(1) y valor neutro | Logic | Ready | ADR-0001 |
+| 008 | Escritura validada y `FactWriter` | Logic | Ready | ADR-0001 |
+| 009 | Hechos de un solo sentido y reversibles | Logic | Ready | ADR-0001 |
+| 010 | Hechos derivados | Logic | Ready | ADR-0001 |
+| 011 | Partida nueva (`reset_new_game`) | Logic | Ready | ADR-0001 |
+| 012 | `write_silent` y ventana de carga | Logic | Ready | ADR-0001 |
+| 013 | Gancho `dev_force` | Logic | Ready | ADR-0001 |
+| 014 | Composición en `Boot` | Integration | Ready | ADR-0009, ADR-0001 |
+| 015 | Test de estado de M1 | Integration | Ready | ADR-0001, ADR-0009 |
+
+Diferido por ADR-0004 (TR-state-013…016), ADR-0018 (CA-29) y ADR-0007 (canal de Ajustes): ver `stories.md` § Diferido.
 
 ## Overview
 
