@@ -178,3 +178,10 @@ pesimista ya es la holgura.
 | C-S0-5, 7, 9, 10, 11, 13 | Pendiente | S4 manual del usuario; aceptación 0001/0002/0009; CI con run id |
 
 Nota de nombres: los presets escriben `el-nido.exe` / `el-nido.x86_64`. Los nombres de propiedades de `export_presets.cfg` quedan ahora **verificados en la práctica** (Godot 4.7.2 los acepta y exporta), no contra la documentación.
+
+### Actualización 2026-11-11 (tarde)
+
+- **C-S0-9** S4 manual: el usuario informa «ha ido bien»; no precisó si usó mando. ADR-0002 → **Accepted** (puntos de mando 4 y 5 sin confirmar por separado).
+- **C-S0-13** CI: enlace del run verde aportado por el usuario (`actions/runs/42980040179`), declarado y no verificable por el agente (repo privado). Anotado en `tests/README.md`.
+- PATH: el usuario añadió Godot al PATH (C10 cerrada por su parte; no verificado desde esta sesión hasta reiniciar el shell).
+- **C-S0-10/11** siguen pendientes: ADR-0001 (V-ENG-1…6 y C1) y ADR-0009.
