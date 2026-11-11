@@ -917,6 +917,21 @@ on 25/27/19 → screenshots (AC-30-03, UI, BLOCKING); T-I4 AC-13 on the real
 `DisplayWindowPort` (manual, after SP-5). Lint: G-6 scan (`/ 1080` in
 `src/ui/`), G-9/G-11 scans (engine names outside their adapters).
 
+## Spike Results (2026-11-11)
+
+Godot 4.7.2 stable, Windows. Headless: `tests/unit/engine_facts/adr0007_stretch_theme_and_json_test.gd`
+(9 tests, PASS, run alone). Windowed: `prototypes/ui-spike/` + `--write-movie`; frames in
+`production/qa/evidence/ui-spike/`. Status stays `Proposed`.
+
+| Spike | Result | Observed value | Fallback needed |
+|---|---|---|---|
+| SP-1 | PASS (geometry, text); 3D NEEDS_WINDOWED | `canvas_items` + `expand`, base 1920×1080: logical viewport and `Window.get_final_transform().get_scale()` equal `s = min(W/1920, H/1080)` to 4e-8 / 0.0 px at 1280×720 (1920×1080, 0.6667), 1920×1080 (1.0), 2560×1440 (1920×1080, 1.3333), 3840×2160 (1920×1080, 2.0), 1280×800 (1920×1200, 0.6667), 1920×1200 (1920×1200, 1.0), 2560×1080 (2560×1080, 1.0). Both the headless embedded `Window` and the real window agree. Glyph cap height / edge widths: see ADR-0016 SP-16A (≤ 2 px transition, none blurred at 2160p). The rendered image size equals the window size (3840×2160 at 2160p), so the 3D buffer is at window resolution; the 1-px 3D checker was **not** rendered: NEEDS_WINDOWED. 16:10 and 21:9 anchors hold (corner labels at the window edges, 1920×1080 frame centred). **Operational note:** the OS clamps a decorated window taller than the desktop (2560×1440 request gave 2560×1183); borderless + `DisplayServer.window_set_size` reached the true size | No |
+| SP-2 | PARTIAL | `Window.content_scale_stretch` (`fractional` = 0) exists and gives 0.6667 at 720p. Embedded `Window.min_size = 1280×720` clamps a requested 800×600 to 1280×720. OS-level minimum on a real top-level window (user resize below 720p): NEEDS_WINDOWED. The project setting name `display/window/stretch/scale_mode="fractional"` loaded without error in the prototype | Enforce minimum in `DisplayWindowPort` if the OS allows less |
+| SP-3 | PASS (headless) | `Theme.set_default_font_size` 32→48 (×1.5) on a `VBoxContainer` with one `Label`: minimum size (276×45)→(414×67) by the next frame; the call itself took ~1 µs (the re-layout is deferred); the 25 options tab with a full screen and the 720p clipping check (AC-30-03): NEEDS_WINDOWED | No |
+| SP-4 | NEEDS_MANUAL_SCREEN_READER | Needs Narrator / Accessibility Insights; not automatable | Record the gap (D30-2) |
+| SP-5 | PARTIAL | `DisplayServer.get_name()` = `headless`, `window_get_mode()` = 1 (minimised) under the dummy display: the getter works but reports a meaningless mode there. Set/Alt+Enter poll: NEEDS_WINDOWED | Window size-changed signal if polling fails |
+| SP-6 | PASS | `JSON.new().parse("{\"a\": 1,")` returns error 43 (`Expected '}'`) with no exception; `get_error_line()` is 0 on a one-line input. `JSON.stringify({"v": NAN})` = `{"v":null}` and `INF` = `1e99999`; `parse_string` returns `inf` for `1e999`, `null` (whole result) for bare `NaN`, `"nan"` stays a String, `null` stays null. Ints parse as float (`typeof` = `TYPE_FLOAT`). A NaN setting therefore round-trips as `null` and must be rejected by the codec. Rename-over-existing on Windows/Linux stays with ADR-0004 | No |
+
 ## Open Items
 
 | ID | Item | Owner / route |
