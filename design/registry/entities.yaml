@@ -3483,9 +3483,9 @@ constants:
     referenced_by: [design/gdd/opciones-de-accesibilidad.md, design/gdd/menu-de-pausa.md, design/gdd/pantalla-de-titulo.md, design/gdd/prompt-de-interaccion.md, design/gdd/subtitulos.md]
     value: "1_00 (enum: 1_00, 1_25, 1_50)"
     unit: "enum"
-    note: "Clave nueva (ronda 9). Un valor desconocido toma el inicial. ▲ provisional: que el slice la dé por cerrada lo decide el usuario (OQ 15 de 6). †"
+    note: "Clave nueva (ronda 9). Un valor desconocido toma el inicial. Cerrada para el slice (ADR-0007 OI-2, D-6.11 de 6; el usuario puede revertirla). †"
     added: 2026-11-10
-    revised: ""
+    revised: 2026-11-11
   - name: icono_grande
     status: active
     source: design/gdd/ajustes-persistentes.md
