@@ -392,6 +392,10 @@ measurement protocol and the ladder carry over unchanged.
 session, a miss is resolved by a ladder step without reopening the renderer
 choice, and the demo build runs on the pitch machine without hitches.
 
+## First Measurement (P1 on REF-1, 2026-11-11)
+
+See `production/qa/perf/perf-2026-11-11-P1.md`. In short, on a graybox hallway with the atmosphere (not representative of final content): frame p99 13.38 ms, GPU p99 12.37 ms (max 14.28), 0 frames > 16.6 ms at 1920×1200 native, D3D12, nothing cut (ladder step 0). The per-system GPU split is **not** respected for system 28 (≈ 4.2 ms vs ≤ 1.0 ms), which confirms D3: the frame total rules and the per-system figures are indicative. Not measured: memory (monitor returned 0), Vulkan, clean-conditions run. B5/B6 re-baseline (OI-6) pending a clean run. Status stays `Proposed`.
+
 ## Open Items
 
 | ID | Item | Owner | Blocks |
