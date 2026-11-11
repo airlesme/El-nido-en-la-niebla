@@ -71,51 +71,47 @@ func test_notice_subscriber_ignores_facts_and_other_notices() -> void:
 
 
 func test_entries_enqueued_during_drain_run_after_current_entry_fifo() -> void:
-	var ch: NoticeChannel = _ch
 	var rec: Array = _rec
-	ch.subscribe(NoticeChannel.Kind.NOTICE, &"a", func(_p: Dictionary) -> void:
+	_ch.subscribe(NoticeChannel.Kind.NOTICE, &"a", func(_p: Dictionary) -> void:
 		rec.append("a-start")
-		ch.notify(&"b")
-		rec.append("a-end:%s" % ch.is_draining()))
-	ch.subscribe(NoticeChannel.Kind.NOTICE, &"b", func(_p: Dictionary) -> void: rec.append("b"))
-	ch.notify(&"a")
+		_ch.notify(&"b")
+		rec.append("a-end:%s" % _ch.is_draining()))
+	_ch.subscribe(NoticeChannel.Kind.NOTICE, &"b", func(_p: Dictionary) -> void: rec.append("b"))
+	_ch.notify(&"a")
 	assert_array(rec).is_equal(["a-start", "a-end:true", "b"])
-	assert_bool(ch.is_draining()).is_false()
+	assert_bool(_ch.is_draining()).is_false()
 
 
 func test_unsubscribe_during_delivery_blocks_later_entries_only() -> void:
-	var ch: NoticeChannel = _ch
 	var rec: Array = _rec
 	var handles: Array[int] = [0]
-	handles[0] = ch.subscribe(NoticeChannel.Kind.NOTICE, &"n", func(_p: Dictionary) -> void:
+	handles[0] = _ch.subscribe(NoticeChannel.Kind.NOTICE, &"n", func(_p: Dictionary) -> void:
 		rec.append("self")
-		ch.unsubscribe(handles[0]))
-	ch.notify(&"n")
-	ch.notify(&"n")
+		_ch.unsubscribe(handles[0]))
+	_ch.notify(&"n")
+	_ch.notify(&"n")
 	assert_array(rec).is_equal(["self"])
 
 
 func test_unsubscribe_applies_after_current_entry() -> void:
-	var ch: NoticeChannel = _ch
 	var rec: Array = _rec
 	var handles: Array[int] = [0]
-	ch.subscribe(NoticeChannel.Kind.NOTICE, &"n", func(_p: Dictionary) -> void:
-		ch.unsubscribe(handles[0]))
-	handles[0] = ch.subscribe(NoticeChannel.Kind.NOTICE, &"n", _notice_cb("B"))
-	ch.notify(&"n")
-	ch.notify(&"n")
+	_ch.subscribe(NoticeChannel.Kind.NOTICE, &"n", func(_p: Dictionary) -> void:
+		_ch.unsubscribe(handles[0]))
+	handles[0] = _ch.subscribe(NoticeChannel.Kind.NOTICE, &"n", _notice_cb("B"))
+	_ch.notify(&"n")
+	_ch.notify(&"n")
 	assert_int(rec.size()).is_equal(1)
 
 
 func test_subscribe_during_delivery_valid_from_next_entry() -> void:
-	var ch: NoticeChannel = _ch
 	var rec: Array = _rec
 	var cb_late: Callable = _notice_cb("late")
-	ch.subscribe(NoticeChannel.Kind.NOTICE, &"n", func(_p: Dictionary) -> void:
-		ch.subscribe(NoticeChannel.Kind.NOTICE, &"n", cb_late))
-	ch.notify(&"n")
+	_ch.subscribe(NoticeChannel.Kind.NOTICE, &"n", func(_p: Dictionary) -> void:
+		_ch.subscribe(NoticeChannel.Kind.NOTICE, &"n", cb_late))
+	_ch.notify(&"n")
 	assert_int(rec.size()).is_equal(0)
-	ch.notify(&"n")
+	_ch.notify(&"n")
 	assert_int(rec.size()).is_equal(1)
 
 
