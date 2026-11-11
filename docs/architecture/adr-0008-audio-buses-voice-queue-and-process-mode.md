@@ -985,6 +985,26 @@ We will know this decision was right if:
 - AC-23-28 measures ≤ 24 voices, ≤ 24 MB in memory, ≤ 40 MB on disk; AC-23-14 measures the baked `VO_G_07` peak ≤ −10 dBFS ±0.5.
 - AC-23-32 passes by listening: the sample plays while a paused line holds position and resumes from it.
 
+## Spike Results (2026-11-11)
+
+Godot 4.7.2 stable, Windows, `--headless` (audio driver `Dummy`).
+`tests/unit/engine_facts/adr0008_audio_buses_and_playback_test.gd`: 8 tests, PASS, run alone (SA9 and SA2 repeated 3x, stable).
+Streams are `AudioStreamWAV` generated in code: there is **no .ogg/.wav asset in the repo**. Status stays `Proposed`;
+ADR-0002 S8/S9 (pause) were not part of this run.
+
+| Spike | Result | Observed value | Fallback needed |
+|---|---|---|---|
+| SA1 | PASS | `add_bus` + `set_bus_name` + `set_bus_send` build the tree by code (1 → 6 buses; `Voice_Vera` send = `Voice`); a second pass guarded by `get_bus_index(name) == -1` adds none; unknown name → -1. The 11-bus D1 layout itself was not built (builder not written) | No |
+| SA2 | PASS | Player on a muted bus: position advanced 0.006→0.284 s in 0.3 s wall, `playing` stayed true, `finished` after 1240–1280 ms for a 1200 ms stream (jitter ≤ 80 ms in the test runner; ADR tolerance ±50 ms **not** met by wall-clock timing, but the overshoot is runner/Dummy-chunk latency and also appears at -80 dB: 781–859 ms for 800 ms). Muting does not shorten or stall playback | No (keep `set_bus_mute`; re-measure `finished` timing in a windowed build with a real device) |
+| SA3 | PASS (WAV); OGG NEEDS_ASSET | `AudioStreamWAV.get_length()` = 2.5 for 2.5 s. OGG length needs a real .ogg | Catalog `duracion_s` if OGG fails |
+| SA4 | PASS (numbers); resume audibly NEEDS_LISTENING | `stop()` sets `playing` false, `finished` **not** emitted (0). `play(3.0)` + 0.2 s wall → position 3.10–3.19. **`get_playback_position()` lags wall time by ~0.1–0.2 s and is chunk-quantised** (0.28 s after 0.5 s wall) — the ADR's ±0.05 s criterion does not hold for absolute position; resume-from-position on S8 must tolerate ~0.2 s | Treat position as ±0.25 s; no seek-resume fallback beyond that |
+| SA5 | PARTIAL; export part NEEDS_EXPORT | `ResourceLoader.exists("res://.../does_not_exist.ogg")` = false. `AudioStreamOggVorbis.load_from_file` on a zero-byte file returns `null` with an engine error logged, no crash. `exists` for a missing file in an **exported** build and truncated-OGG behaviour: not run | Treat every load failure as `line_failed` |
+| SA6 | PARTIAL | `AudioServer.get_driver_name()` = `"Dummy"` under `--headless`; `get_output_device_list()` = `["Default"]`, `get_output_device()` = `"Default"`, mix rate 44100. `get_driver_name() == "Dummy"` is a deterministic no-device/CI signal; the "real device unplugged" case with a real driver is NEEDS_MANUAL (hardware) | D10 probe / command-line flag if unplugged is indistinguishable |
+| SA7 | NEEDS_LISTENING + offline measure | Limiter on `Voice_Guardian`; baked variant remains primary | — |
+| SA8 | NEEDS_LISTENING | 3D panning/attenuation under an autoload node needs ears or a recorded output | `AudioListener3D` on `Player` |
+| SA9 | PASS (numbers); audible parts NEEDS_LISTENING | `pitch_scale` is applied: simultaneous players at 0.97/1.0/1.03/2.0 reached 1.35/1.40/1.44/2.79 s in the same wall time (ratio 2.0/1.0 = 1.996; 1.03/0.97 = 1.06, expected 1.062). `AudioStreamWAV` loop flags round-trip (`LOOP_FORWARD`, `loop_end` = 22050). Seamlessness of an imported OGG loop at the seam: not measured | Pre-rendered pitch variants if audible |
+| SA10 | NEEDS_ASSET | Memory with the real catalog; no audio assets yet | — |
+
 ## Open Items
 
 | # | Item | Owner | When |
