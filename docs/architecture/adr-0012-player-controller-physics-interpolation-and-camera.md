@@ -1029,9 +1029,32 @@ We will know this decision was right if: S-0012-A passes at all three caps with
 the own interpolator; AC-06 and AC-27 pass in the first grey-box build; and no
 Player story needs to touch an NP-3 API.
 
-## Spike Results
+## Spike Results (2026-11-11)
 
-*Empty until S-0012-A…F run on 4.7.2.*
+Godot 4.7.2.stable.official.ed1daf0bf, headless, Jolt, 60 Hz. Tests in `tests/unit/engine_facts/`:
+`adr0012_tick_interpolation_test.gd` (4/4), `adr0012_character_body_jolt_test.gd` (3/3),
+`adr0012_camera_keep_aspect_test.gd` (4/4), `adr0012_animation_manual_advance_test.gd` (2/2).
+The tests pin observed values; the one failed claim is recorded here and not asserted (timing-dependent).
+Capsule r 0,25 m, h 1,75 m; `eps_atasco_m` 0,02 used for the probe. Visual/windowed parts: NEEDS_WINDOWED.
+
+| S-n | Claim | Result | Figures | Fallback |
+|---|---|---|---|---|
+| S-0012-A NP-1 | all pending ticks run before `_process` in a frame; 2 ticks/frame at 30, 0–1 at 144 | PASS | 0 order mismatches at 30/60/144; ticks/frame at 30 fps: 2 in 38 of 41 frames (plus a startup frame with 8); 60 fps: 1 in 86 of 89; 144 fps: 0 in 102, 1 in 89 frames, never 2 | none |
+| S-0012-A NP-2 | tick-rate setting and read-back | PASS | `physics/common/physics_ticks_per_second` = 60 (default); `Engine.physics_ticks_per_second` = 60 | none |
+| S-0012-A own interpolation | own `prev/curr` + accumulator alpha: eye X monotonic, per-frame displacement within 10 % of `v·frame_dt` | **FAIL** (naive accumulator `acc += delta − dt·ticks`) | worst per-frame deviation: 30 fps 13,8 %; 60 fps 25,9 %; 144 fps 69,9 %; uncapped 54,4 %. Monotonic in all four runs in this pass (a first pass saw 48 non-monotonic frames at 144 fps: the accumulator drifts from the engine's, alpha clamps at 1, then the eye jumps). Using `Engine.get_physics_interpolation_fraction()` as alpha: deviation ≤ 1e-13 relative, 0 non-monotonic at 30/60/144/uncapped | R1: take `_fraction()` from `Engine.get_physics_interpolation_fraction()` (works with engine interpolation off); else Alternative 1 for the rig. `TickInterpolator` must not keep its own accumulator |
+| S-0012-A corridor | corridor 15,1 ± 0,3 s at every cap (AC-06) | NEEDS_WINDOWED | headless 2 s walks reach x ≈ 3,0 m at every cap (a real-time 15 s walk per cap not run) | — |
+| S-0012-B NP-4/NP-9 | `keep_aspect` default and FOV axis; viewport size API | PASS | `keep_aspect` default KEEP_HEIGHT; 1 m quad at 1 m, fov 70, via `unproject_position`: 771,20 px at 1920×1080 for 16:9, 4:3, 21:9, 32:9 (constant, = H/(2 tan 35°), error 3e-5 px); `get_viewport().get_visible_rect().size` returns the SubViewport size; `near` and `make_current()` read/switch as expected | none |
+| S-0012-B 32:9 cap | measured vertical FOV 51,9° ± 0,2° at 32:9 | PASS (with the horizontal cap applied by the caller) | cap at 120° horizontal gives 51,945°; engine KEEP_HEIGHT does not cap by itself (vertical stays 70°) | `CameraFov.to_engine()` converts as designed |
+| S-0012-B same frame | FOV change visible in the same frame | PASS (projection level) | fov 70 → 50: 771,2 → 1158,03 px immediately; rendered pixels in a resized window NEEDS_WINDOWED | — |
+| S-0012-C NP-5 | head-on push: position variation < 1 mm over 60 ticks; stays on floor | PASS | x variation 0,0 mm; y variation 0,72 mm (non-zero, < 1 mm); settles 3,7 mm from the wall with `safe_margin` 0,001, `floor_snap_length` 0,1 (defaults, no tuning) | none (R2 not triggered) |
+| S-0012-C 45° / corner | normal velocity < 0,001 m/s; corner stable | PASS | worst normal velocity 4,0e-5 m/s; slide speed 1,13 m/s (= 1,6 · sin 45°); corner jitter 0,016 mm over 60 ticks | none |
+| S-0012-C door / gap | 1,00 m door passable at full width; 0,45 m gap not | PASS | walker offset 0,2 m from door axis passes (x → 6,93 m); 0,45 m gap: capsule stops at x = 2,64 (wall face 2,75), does not pass | none |
+| S-0012-C NP-8 | floor label via slide collision metadata | PASS | `get_slide_collision().get_collider().get_meta("surface")` = `test` | none |
+| S-0012-C cost | per-tick CPU within D11 | RECORDED | `move_and_slide` + logging, one capsule: mean 107 µs, p99 246 µs, max 279 µs (headless, other walkers present) | compare with the D11 budget when the Player exists |
+| S-0012-D NP-6 | shrunk-capsule overlap: wall touch false, 0,05 m inside true, ≤ 0,05 ms per call | PASS | eps 0,02: penetration 0,00 → false, 0,01 → false, 0,03 → true, 0,05 → true, 0,10 → true; cost mean 0,0024 ms, p99 0,003 ms. Note: the 0,03 m seam case flips at eps 0,02; at eps ≥ 0,03 it reads false | none; choose `eps_atasco_m` knowing the flip point = eps |
+| S-0012-E NP-7 | manual `AnimationMixer` advance; pose constant in pause; ends after 1,0 s; `AnimationTree` parameter takes effect next advance | PASS | `ANIMATION_CALLBACK_MODE_PROCESS_MANUAL` + `advance(dt)`: x = 5,0 at 30 ticks, 0 changes over 120 paused frames, 9,83 at 59 ticks and 10,0 at 60 ticks (clip ends, `is_playing` false); `AnimationTree` blend 0 → 1 set before advance leaves the pose unchanged, next `advance` gives 10,0; 0,5 → 5,0 | none (R5 not triggered) |
+| S-0012-F NP-3 | engine physics interpolation default off in a new 4.7.2 project | PASS (as seen in this project, which has no explicit setting) | `physics/common/physics_interpolation` reads `false`; `is_physics_interpolated_and_enabled()` false on root and camera | set explicitly off in `project.godot` (the prototypes set it `true`, do not copy) |
+| S-0012-F ADR-0002 S11 regression | pause mid-walk at 144 fps: camera transform identical across paused frames; first resumed frame ≤ one tick of displacement | PASS | 30/30 paused frames identical; first resumed frame dx 0,0133 m ≤ one tick 0,0267 m | none |
 
 ## Open Items
 
