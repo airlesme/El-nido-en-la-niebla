@@ -11,7 +11,7 @@
 - **Tipo**: Prototype (vertical, sin texturas)
 - **Duración**: 2–4 semanas (esperado 3). **Confianza: baja.**
 - **Sprints**: 2 (de ~1,5 semanas; sin velocidad medida)
-- **Estado**: **No iniciado** — bloqueado hasta que S0 acepte 0001/0002/0009.
+- **Estado**: **En curso** — S0 cerrado; ADR 0001, 0002, 0003, 0009, 0011 y 0012 `Accepted`; faltan spikes de 0005/0006 y los épicos/historias.
 
 ## Objetivo del hito
 
@@ -172,3 +172,4 @@ Del slice § 20: **D-04** (nombre de Vera: megafonía y formulario) toca M1, sin
 | Fecha | Cambio | Motivo |
 |---|---|---|
 | 2026-11-11 | Línea base | PR-PHASE-GATE C12 |
+| 2026-11-11 | ADR 0003, 0011 y 0012 `Accepted` tras sus spikes de física (suite 71/71); partes con ventana diferidas al prototipo jugable. Cola de diseño aplicada (lotes A, B, C; pendientes H3, H8, H9, H10, H12) | Primer tramo de M1 |
