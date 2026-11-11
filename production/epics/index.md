@@ -21,9 +21,9 @@ trabajo de M1 del épico no puede empezar.
 
 | Epic | Layer | System (GDD n.º) | Stories | Status | TR libres / total | Bloqueado por | Desbloqueado hoy por |
 |------|-------|------------------|---------|--------|------|------|------|
-| [estado-y-bus](estado-y-bus/EPIC.md) | Foundation | 3 Estado y bus | Not yet created | **LISTO** | 14 / 18 | ADR-0004 solo en TR-state-013…016 (guardado, recorte 4) | ADR-0005 (TR-state-001) |
-| [entrada-y-controles](entrada-y-controles/EPIC.md) | Foundation | 1 Entrada | Not yet created | **LISTO** | 19 / 19 | — (comprobaciones de mando físico NEEDS_MANUAL) | ADR-0006 |
-| [contenido-y-datos](contenido-y-datos/EPIC.md) | Foundation | 18 Contenido + esquema | Not yet created | **LISTO** | 17 / 17 | — | ADR-0005 |
+| [estado-y-bus](estado-y-bus/EPIC.md) | Foundation | 3 Estado y bus | 15 stories | **LISTO** | 14 / 18 | ADR-0004 solo en TR-state-013…016 (guardado, recorte 4) | ADR-0005 (TR-state-001) |
+| [entrada-y-controles](entrada-y-controles/EPIC.md) | Foundation | 1 Entrada | 15 stories | **LISTO** | 19 / 19 | — (comprobaciones de mando físico NEEDS_MANUAL) | ADR-0006 |
+| [contenido-y-datos](contenido-y-datos/EPIC.md) | Foundation | 18 Contenido + esquema | 12 stories | **LISTO** | 17 / 17 | — | ADR-0005 |
 | [jugador-primera-persona](jugador-primera-persona/EPIC.md) | Core | 2 Jugador | Not yet created | **LISTO** | 17 / 21 | ADR-0013 solo en 4 TR de manos (recorte 1) | ADR-0005 (TR-player-002/021) |
 | [carga-de-planta](carga-de-planta/EPIC.md) | Core | 4 Escena de planta | Not yet created | **LISTO** | 22 / 23 | ADR-0008 co-citado en TR-scene-009 | ADR-0005 (TR-scene-022) |
 | [interaccion-y-prompt](interaccion-y-prompt/EPIC.md) | Feature + Presentation | 7 Interacción, 24 Prompt | Not yet created | **PARCIAL**: 7 LISTO · 24 BLOQUEADO | 22 / 42 | **ADR-0016** (20 TR del prompt; TR-prompt-018 también ADR-0007) | ADR-0005 (TR-prompt-020, sigue con 0016) |
