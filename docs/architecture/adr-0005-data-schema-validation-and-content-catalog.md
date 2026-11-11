@@ -2,7 +2,7 @@
 
 ## Status
 
-Proposed
+Accepted (2026-11-11) — S-0005-A run on 4.7.2 (A7, A9, A10 also run in a release export). Findings to implement: duplicate JSON keys are undetectable after parsing, BOM must be checked on bytes before decoding, trailing commas are tolerated unless pre-checked
 
 > **Who may move this to `Accepted`: the user, or `technical-director` on the
 > user's explicit confirmation. No other agent, and no skill on its own.**
