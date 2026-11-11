@@ -1,7 +1,7 @@
 # Story 001: `PlayerConfig` y validación de `player.json`
 
 > **Epic**: Jugador en primera persona (sin manos)
-> **Status**: Ready
+> **Status**: Done
 > **Layer**: Core
 > **Type**: Logic
 > **Estimate**: M — 1 día (0,5–1,5; confianza BAJA)
@@ -76,7 +76,17 @@
 
 **Story Type**: Logic
 **Required evidence**: `tests/unit/player/player_config_test.gd` (T-U13 de ADR-0012) — must exist and pass.
-**Status**: [ ] Not yet created
+**Status**: [x] `tests/unit/player/player_config_test.gd` (32 tests, pasan)
+
+---
+
+## Evidencia
+
+- Godot 4.7.2 local, `--import` sin errores. Suite bloqueante (`-a res://tests -i res://tests/timing`): `488 test cases | 0 errors | 0 failures | 0 flaky | 0 skipped | 0 orphans`, exit 0; 0 coincidencias de `ObjectDB instances were leaked` / `resources still in use` en la salida completa.
+- Suite suelta: `player_config_test.gd` 32/32.
+- AC-41, TR-player-002 (invariante con constante inyectada), TR-player-021 (`f_fisica` vs tasa inyectada) y duraciones bloqueantes ≤ `t_transicion_max`: cubiertos por tests con nombre del parámetro en el fatal inyectado.
+- Ficheros: `src/player/player_config.gd`, `src/player/data/player_schema.gd`, `assets/data/player/player.json`, fila `player/player.json` en `src/core/data/data_catalog.gd` (+ lista esperada en `tests/unit/content/data_validator_test.gd`).
+- Desviaciones: no hay ficheros de fixture; las variantes inválidas se construyen en memoria desde el fichero real (`MemoryFileStore`). Claves en minúscula por la regla de datos (`t_hist`, `l_paso`, `a_v`…). Duraciones de gestos "≤ X" = el tope del GDD (TODO confirmar con clips). Firmas `load_from`/`from_dict`/`cross_check` y constante `PLAYER_MIN_PASSAGE_WIDTH_M`, `campo_vision` 70° inyectados: pendiente enmienda en ADR-0012 § Key Interfaces (TODO en el código).
 
 ---
 
