@@ -992,6 +992,7 @@ the end of S0 every system story ships with unit tests that use only
 | O2 | (`SurfaceFx` closed by ADR-0015, 11 operations; `InteractionHandler`/`InteractionQuery` by ADR-0011.) Exact port method signatures for `PromptSink`, `SurfaceFx`, `HintPanelProvider`, `InteractionQuery`, `PocketQuery` | ADR-0011, -0015, -0016, -0010 |
 | O3 | Mechanism for T-U8 (script property introspection) — confirm it works on 4.7.2, else replace by a CI text scan | Implementation, S0 |
 | O4 | V1, V2, V4, V5 engine behaviours (NOT SOURCEABLE) — record observations in `docs/engine-reference/godot/` when the first S0 story runs | Implementation, S0 |
+| O5 | `FileStore` signature (layer 0), proposed by story CD-001 (2026-11-11) and implemented in `src/core/platform/file_store.gd`: `read_bytes(path) -> PackedByteArray` plus `last_error() -> int` (the `FileAccess.get_open_error()` of the last read; a missing file reads as empty bytes and must be told apart from an empty file by this code). `MemoryFileStore` in `tests/doubles/` implements the same two methods. Review: lead-programmer review skipped (lean mode); write/rename/remove methods are added by ADR-0004 stories | Implementation (CD-001); ADR-0004 |
 | O5 | Whether `recepcion` needs `SceneServices` beyond `player`, `interaction`, `atmosphere` (no puzzles there per TR-scene-011) | ADR-0003 |
 
 ### Contradictions detected (for `/architecture-review`)
