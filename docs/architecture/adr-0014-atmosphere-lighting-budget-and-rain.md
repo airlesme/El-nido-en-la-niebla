@@ -869,6 +869,20 @@ Doubles: `GameClock` driven by `advance()` with `NullPauseBackend` (ADR-0002), `
 - S0b-6 / AC-30-13 video analysis finds ≤ 2 flashes per 1 s in 28's sequences and none from blackout or restore.
 - No GDD rule of 28 had to change in timing or limits; only wording (OI-2, OI-3).
 
+## Spike Results (S0b, 2026-11-11)
+
+Prototype `prototypes/s0b-atmosphere/` (graybox hallway, 6 C03 lights, 2 shadowed, rain, C02 reflection, glow, AgX, SDR), exported release on REF-1 (Core Ultra 7 265H, Intel iGPU, D3D12), 3 P1 runs. Full data: `production/qa/perf/perf-2026-11-11-P1.md`. **Conditions were not ideal** (Windows "Balanced" power plan, other apps open): the figures are indicative until the developer repeats the run clean.
+
+| Step | Result | Note |
+|---|---|---|
+| S0b-1 | PASS (proposed) | p99 frame 13.38 ms worst run; 0 frames > 16.6 ms; system 28 CPU mean 28–33 µs, peak ≤ 390 µs |
+| S0b-2 | **FAIL on the per-system figure** | differential GPU of 28 ≈ 4.2 ms mean (5.2 → 9.4 ms) vs ≤ 1.0 ms; frame total still within budget |
+| S0b-3 | PASS | 6 stops, ≤ 6 visible, 2 shadowed, ≤ 6 enabled; "visible" is an approximation |
+| S0b-4, S0b-5, S0b-7 | NOT VALIDATED | rain ramp, glass reflection/fresnel and rain under pause not judged yet |
+| S0b-6 | PARTIAL | ≤ 2 flash onsets per 1 s window on per-frame luminance; luminance monotonicity inconclusive (camera motion confounds it) |
+
+NS-A7/NS-P2 (GPU time per viewport via `RenderingServer`): available and non-zero on 1800/1800 frames on this iGPU; not cross-checked with PIX / Intel GPA. The memory monitor returned 0: memory NOT ASSESSED. The tone was approved visually by the developer (2026-11-11). **Consequence:** D12's "at most the first two steps of F8" criterion is met at step 0 on a graybox scene, but the 4.2 ms of GPU the atmosphere costs is the main item to cut first (shadows, rain, glow, in that order of the F8 ladder) once real content is added. Status stays `Proposed` (dependencies 0003, 0005, 0007 not accepted; clean re-run pending).
+
 ## Open Items
 
 | ID | Item | Owner / where |
