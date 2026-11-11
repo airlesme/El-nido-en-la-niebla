@@ -29,8 +29,16 @@ Get-Content (Join-Path $godotDir 'version.txt') | Where-Object { $_ -match '^\s*
 }
 
 # 1. Pin check: the running editor must match BUILD.
-$exe = Join-Path $godotDir ("bin\Godot_v{0}_win64_console.exe" -f $cfg.VERSION)
-if (-not (Test-Path $exe)) { Fail "pinned Godot missing: $exe (run tools\godot\setup.ps1)" }
+# Editor lookup order: $env:GODOT_BIN, tools\godot\bin\..., `godot` on PATH. The pin check below still applies.
+$exe = $env:GODOT_BIN
+if (-not $exe) {
+    $local = Join-Path $godotDir ("bin\Godot_v{0}_win64_console.exe" -f $cfg.VERSION)
+    if (Test-Path $local) { $exe = $local }
+    else { $cmd = Get-Command godot -ErrorAction SilentlyContinue; if ($cmd) { $exe = $cmd.Source } }
+}
+if (-not $exe -or -not (Test-Path $exe)) { Fail "Godot not found (set GODOT_BIN, put godot on PATH, or run tools\godot\setup.ps1)" }
+$sw = [System.Diagnostics.Stopwatch]::StartNew()
+function Lap([string]$what) { Write-Host ("export.ps1: TIME {0} {1:N1}s" -f $what, $sw.Elapsed.TotalSeconds); $sw.Restart() }
 $actual = (& $exe --version | Select-Object -First 1).Trim()
 if ($actual -ne $cfg.BUILD) { Fail "Godot version '$actual' != pinned '$($cfg.BUILD)' (tools/godot/version.txt)" }
 
@@ -55,6 +63,7 @@ if (-not (Select-String -Path (Join-Path $root 'export_presets.cfg') -Pattern ('
 $rc = $LASTEXITCODE
 if ($rc -eq 139) { Write-Warning 'import exited 139; retrying once (E6)'; & $exe --headless --path $root --import; $rc = $LASTEXITCODE }
 if ($rc -ne 0) { Fail "--import exited $rc" }
+Lap 'import'
 
 # 5. Export; the debug/release pairing is hard-coded.
 $mode = if ($Preset -like 'demo-*') { '--export-release' } else { '--export-debug' }
@@ -71,13 +80,20 @@ if (-not (Test-Path $out)) { Fail "export reported success but $out does not exi
 if ($SkipAudit) {
     [Console]::Error.WriteLine('export.ps1: WARNING: audit SKIPPED by -SkipAudit; artifact is NOT verified free of dev tools.')
 } else {
+    Lap 'export'
     $audit = Join-Path $root 'tools\ci\audit_artifact.sh'
     if (-not (Test-Path $audit)) { Fail 'tools/ci/audit_artifact.sh missing (ADR-0018 D4 layer 2). Pass -SkipAudit to export without it.' }
     $bash = Get-Command bash -ErrorAction SilentlyContinue
     if (-not $bash) { Fail 'bash not found; needed for the D4 audit' }
     Push-Location $root
-    try { & $bash.Source 'tools/ci/audit_artifact.sh' "build/$Preset"; $arc = $LASTEXITCODE } finally { Pop-Location }
+    try {
+        # The audit must itself pass its fixtures before its verdict on the artifact counts.
+        & $bash.Source 'tools/ci/test_audit_artifact.sh'
+        if ($LASTEXITCODE -ne 0) { Fail 'tools/ci/test_audit_artifact.sh failed: the audit is not trustworthy' }
+        & $bash.Source 'tools/ci/audit_artifact.sh' "build/$Preset"; $arc = $LASTEXITCODE
+    } finally { Pop-Location }
     if ($arc -ne 0) { Fail "audit_artifact.sh exited $arc" }
+    Lap 'audit'
 }
 
 # 7. Checksums.

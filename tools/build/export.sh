@@ -61,6 +61,7 @@ if [ "${SKIP_AUDIT:-0}" = "1" ]; then
   echo "export.sh: WARNING: audit SKIPPED; artifact NOT verified free of dev tools." >&2
 else
   [ -f "$root/tools/ci/audit_artifact.sh" ] || fail "tools/ci/audit_artifact.sh missing (ADR-0018 D4 layer 2); SKIP_AUDIT=1 to bypass"
+  ( cd "$root" && bash tools/ci/test_audit_artifact.sh >/dev/null ) || fail "test_audit_artifact.sh failed: audit not trustworthy"
   ( cd "$root" && bash tools/ci/audit_artifact.sh "build/$preset" ) || fail "audit_artifact.sh failed"
 fi
 
