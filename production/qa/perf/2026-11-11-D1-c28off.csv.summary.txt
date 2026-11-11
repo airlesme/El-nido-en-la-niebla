@@ -1,0 +1,26 @@
+API RenderingServer.viewport_set_measure_render_time OK
+API RenderingServer.viewport_get_measured_render_time_gpu OK
+API RenderingServer.viewport_get_measured_render_time_cpu OK
+backend: adapter=Intel(R) Graphics vendor=Intel driver=d3d12
+engine: 4.7.2-stable (official) debug_build=false editor=false
+csv: C:/dev/personal/el-nido/production/qa/perf/2026-11-11-D1-c28off.csv
+options: { "perf-run": "1", "vsync": "0", "c28": "0", "out": "C:/dev/personal/el-nido/production/qa/perf/2026-11-11-D1-c28off.csv" } perf_run=true clock=frame c28=false
+window=(1920, 1200) scale=1.00 vsync=0 max_fps=0
+lights=6 shadows=2 rain=true glow=true tonemap=AgX exposure=fixed SDR
+AUDIT PASS stop 0 X=3.0 t=0 ms: visible=0/8 shadowed=2/2 enabled=0/14
+AUDIT PASS stop 1 X=7.0 t=6000 ms: visible=0/8 shadowed=2/2 enabled=0/14
+AUDIT PASS stop 2 X=11.0 t=12000 ms: visible=0/8 shadowed=2/2 enabled=0/14
+AUDIT PASS stop 3 X=15.0 t=18000 ms: visible=0/8 shadowed=2/2 enabled=0/14
+AUDIT PASS stop 4 X=19.0 t=24000 ms: visible=0/8 shadowed=2/2 enabled=0/14
+AUDIT PASS stop 5 X=23.0 t=30000 ms: visible=0/8 shadowed=2/2 enabled=0/14
+---- SUMMARY (1800 frames) ----
+frame_time_ms    mean=6.1634 p50=6.2500 p95=6.9444 p99=7.8890 max=9.4120
+time_process_ms  mean=9.7911 p50=7.7150 p95=28.3320 p99=28.3320 max=28.3320
+time_physics_ms  mean=1.2290 p50=0.2130 p95=11.2860 p99=11.2860 max=11.2860
+gpu_ms(API)      mean=5.1236 p50=5.2530 p95=5.8910 p99=6.2750 max=7.2400
+gpu_ms nonzero frames: 1800 of 1800 (usable)
+cpu28_us         mean=0.0000 p50=0.0000 p95=0.0000 p99=0.0000 max=0.0000
+draw_calls       mean=8.4244 p50=8.0000 p95=10.0000 p99=10.0000 max=10.0000
+mem_static_mb    mean=0.0000 p50=0.0000 p95=0.0000 p99=0.0000 max=0.0000
+frames > 16.6 ms: 0 (0.00 %)   frames > 50 ms: 0
+final backend: adapter=Intel(R) Graphics driver=d3d12

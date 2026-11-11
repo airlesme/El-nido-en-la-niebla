@@ -1,0 +1,24 @@
+; PROTOTYPE - NOT FOR PRODUCTION (S0b atmosphere test, throwaway)
+; Render config mirrors the game: Forward+, Jolt, D3D12 by default on Windows.
+config_version=5
+
+[application]
+
+config/name="S0b Atmosphere Prototype"
+run/main_scene="res://main.tscn"
+run/frame_delta_smoothing=false
+config/features=PackedStringArray("4.7", "Forward Plus")
+
+[display]
+
+window/size/viewport_width=1920
+window/size/viewport_height=1200
+
+[physics]
+
+3d/physics_engine="Jolt Physics"
+
+[rendering]
+
+renderer/rendering_method="forward_plus"
+rendering_device/driver.windows="d3d12"
