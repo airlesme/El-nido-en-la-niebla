@@ -76,6 +76,11 @@ func _ready() -> void:
 ```
 
 ### Localization-Ready UI (best practice)
+> **Project note (ADR-0005 D7, A8, 2026-11-11):** `tr()` is a general engine best
+> practice, not an engine constraint. El Nido does **not** use `tr()` for player
+> text: Content (18) owns its own language layer (`ContentDB`, keys `UI_*`).
+> Do not apply this snippet to visible strings in this project.
+
 ```gdscript
 # Use tr() for all visible strings
 label.text = tr("MENU_START_GAME")
