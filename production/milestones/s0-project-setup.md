@@ -162,3 +162,19 @@ pesimista ya es la holgura.
 |---|---|
 | Mitad (≈ día 4) | ¿V-18-3 pasa? Si no, decidir runner Windows |
 | Fin | `/gate-check` informal del hito; actualizar este fichero a «Cerrado» |
+
+## Progreso (2026-11-11)
+
+| Criterio | Estado | Evidencia |
+|---|---|---|
+| C-S0-1 presets versionados + `.gitignore` | **Hecho** | `export_presets.cfg` commiteado; los 4 presets exportan |
+| C-S0-2 templates (V-18-3) | **Hecho (Windows/Linux)** | `Godot_v4.7.2-stable_export_templates.tpz` (1.281.349.702 B), SHA-512 verificado contra `SHA512-SUMS.txt` oficial; fijado en `tools/godot/version.txt`; instaladas en `%APPDATA%\Godot\export_templates\4.7.2.stable` (`version.txt` = `4.7.2.stable`). `LINUX_*` (editor Linux de CI) sigue NOT VERIFIED |
+| C-S0-3 export de los 4 presets (V-18-1) | **Parcial** | Los 4 exportan con `--export-debug/--export-release` sin errores (solo el aviso por `prototypes/pause-spike/project.godot`); tamaños: `demo-windows` 109 MB, `playtest-windows` 103 MB, `demo-linux` 73,5 MB, `playtest-linux` 73,7 MB (+ `.pck` 13 KB). Arrancan solo los de Windows (`--headless --quit-after 5`, exit 0). Faltan: captura retenida en ventana, y arranque de Linux (no hay runner/WSL probado) |
+| C-S0-4 `BuildFlavor` true/true/false (V-18-2) | Pendiente | Solo hay test unitario; no se ha mostrado desde los exportados |
+| C-S0-6 `src/dev/` ausente en `demo-*` (V-18-5/6) | **Parcial** | Auditoría ingenua del `.pck` de `demo-windows`: no contiene `src/dev`, `gdUnit4` ni `tests/`. Control positivo imposible: `src/dev/` aún no existe y `tools/ci/audit_artifact.sh` tampoco |
+| C-S0-8 tiempos medidos (V-18-10) | Pendiente | Solo hay tamaños; no se midieron tiempos |
+| C-S0-12 versión del editor local | **Hecho** | `docs/engine-reference/godot/VERSION.md` |
+| Autoloads vacíos + `Boot` | **Hecho** | 16/16 tests gdUnit4, import y arranque limpios |
+| C-S0-5, 7, 9, 10, 11, 13 | Pendiente | S4 manual del usuario; aceptación 0001/0002/0009; CI con run id |
+
+Nota de nombres: los presets escriben `el-nido.exe` / `el-nido.x86_64`. Los nombres de propiedades de `export_presets.cfg` quedan ahora **verificados en la práctica** (Godot 4.7.2 los acepta y exporta), no contra la documentación.
