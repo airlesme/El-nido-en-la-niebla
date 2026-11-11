@@ -1,0 +1,18 @@
+; PROTOTYPE - NOT FOR PRODUCTION
+; Question: windowed/pad parts of ADR-0006 S-0006-A/B/C/D/E (pad family, hot-plug, deadzone, mouse motion, focus-out)
+; Date: 2026-11-11
+
+config_version=5
+
+[application]
+
+config/name="input-spike"
+run/main_scene="res://main.tscn"
+config/features=PackedStringArray("4.7")
+
+[display]
+
+window/size/viewport_width=1920
+window/size/viewport_height=1080
+window/stretch/mode="canvas_items"
+window/stretch/aspect="expand"
