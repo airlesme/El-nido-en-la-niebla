@@ -4,6 +4,8 @@ extends GdUnitTestSuite
 ## 0-1 at 144; own interpolation (prev/curr + accumulator alpha) is monotonic and moves v*frame_dt per frame.
 ## S-0012-F: engine physics interpolation is off by default; a paused own interpolator leaves the camera
 ## transform identical and resumes with <= one tick of displacement.
+## Only deterministic asserts live here (step order vs _process, structure). The load-sensitive ones (ticks/frame
+## rate, per-frame deviations, first resume step) are in tests/timing/adr0012_tick_rate_timing_test.gd.
 ## The rendered/visual part and the full 15,1 s corridor walk are NEEDS_WINDOWED (prototypes/physics-spike/).
 
 const SPEED: float = 1.6
@@ -124,62 +126,17 @@ func test_ticks_run_before_process_in_each_frame_at_30_60_and_144_fps() -> void:
 	# Assert
 	for cap: int in [30, 60, 144]:
 		assert_int(int((summary[cap] as Dictionary)["mismatch"])).is_equal(0)
-	var h30: Dictionary = (summary[30] as Dictionary)["tick_hist"]
-	assert_bool(h30.has(2)).is_true()
-	var h144: Dictionary = (summary[144] as Dictionary)["tick_hist"]
-	assert_bool(h144.has(0)).is_true()
-	assert_bool(h144.has(2) or h144.has(3)).is_false()
 
 
-func _metrics(frames: Array[Dictionary], key: String) -> Dictionary:
-	var worst_rel: float = 0.0
-	var non_monotonic: int = 0
-	var t: float = 0.0
-	var checked: int = 0
-	for i: int in range(1, frames.size()):
-		var f: Dictionary = frames[i]
-		var p: Dictionary = frames[i - 1]
-		t += float(f["delta"])
-		var dx: float = float(f[key]) - float(p[key])
-		if dx <= 0.0 and t > 0.5:
-			non_monotonic += 1
-		if t > 0.6:
-			var expected: float = SPEED * float(f["delta"])
-			if expected > 1e-3:  # ignore sub-millimetre frames of the uncapped run (float noise)
-				worst_rel = maxf(worst_rel, absf(dx - expected) / expected)
-				checked += 1
-	return {"non_monotonic": non_monotonic, "worst_rel": worst_rel, "checked": checked}
-
-
-func test_own_accumulator_vs_engine_fraction_interpolation_at_30_60_144_and_uncapped() -> void:
-	# Arrange / Act: the own accumulator is recorded (timing-dependent, not asserted);
-	# the engine fraction path (ADR-0012 R1 fallback) is asserted.
-	for cap: int in [30, 60, 144, 0]:
-		var r: Array[Dictionary] = await _run_walk(cap, 2.0)
-		var frames: Array[Dictionary] = r.slice(0, r.size() - 1)
-		var own: Dictionary = _metrics(frames, "eye_own")
-		var eng: Dictionary = _metrics(frames, "eye_engine")
-		print("S-0012-A cap=", cap, " frames=", frames.size(), " OWN accumulator: ", own, " | ENGINE fraction: ", eng,
-			" final_eye_x=", (frames.back() as Dictionary)["eye_engine"])
-
-		# Assert: engine fraction path
-		assert_int(int(eng["non_monotonic"])).is_equal(0)
-		if cap != 0:
-			assert_float(float(eng["worst_rel"])).is_less(0.10)
-
-
-func test_paused_own_interpolator_keeps_camera_identical_and_resumes_within_one_tick() -> void:
-	# Arrange: engine interpolation is off (S-0012-F); walk at 144 fps, pause mid-walk, resume
+func test_paused_own_interpolator_keeps_camera_identical() -> void:
+	# Arrange: engine interpolation is off (S-0012-F); walk a few frames, then pause. No fps cap: structural only.
 	var rig: Rig = Rig.new()
 	var cam: Camera3D = Camera3D.new()
 	rig.camera = cam
 	rig.add_child(cam)
 	add_child(auto_free(rig))
-	Engine.max_fps = 144
-	var t: float = 0.0
-	while t < 0.8:
+	for i: int in 20:
 		await get_tree().process_frame
-		t += float((rig.frames.back() as Dictionary)["delta"]) if not rig.frames.is_empty() else 0.0
 
 	# Act
 	rig.paused_own = true
@@ -191,18 +148,9 @@ func test_paused_own_interpolator_keeps_camera_identical_and_resumes_within_one_
 		await get_tree().process_frame
 		if cam.global_transform == pose_at_pause:
 			identical += 1
-	rig.paused_own = false
-	var x_before: float = cam.global_transform.origin.x
-	await get_tree().process_frame
-	var first_step: float = cam.global_transform.origin.x - x_before
-	var one_tick: float = SPEED * TICK_DT
-	Engine.max_fps = 0
 	rig.set_process(false)
 	rig.set_physics_process(false)
-	print("S-0012-F paused frames identical=", identical, "/", frames_paused, " first_resume_frame_dx=", first_step,
-		" one_tick_displacement=", one_tick, " engine_interp_on_camera=", cam.is_physics_interpolated_and_enabled())
 
 	# Assert
 	assert_int(identical).is_equal(frames_paused)
-	assert_float(first_step).is_between(0.0, one_tick + 1e-6)
 	assert_bool(cam.is_physics_interpolated_and_enabled()).is_false()

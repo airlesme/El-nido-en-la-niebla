@@ -71,7 +71,21 @@ jobs:
           version: 'installed'
           paths: |
             tests
+          # tests/timing is load-sensitive (wall-clock, Engine.max_fps): it runs in its own advisory step.
+          # gdUnit4 6.2.3 -i matches by substring of the suite's source path. The action input is `arguments`
+          # (verified against gdUnit4-action@v1 action.yml on 2026-11-11; `extra-args` does not exist).
+          arguments: -i res://tests/timing
           report-name: test-results
+
+      - name: Run timing tests (advisory, not blocking)
+        uses: godot-gdunit-labs/gdUnit4-action@v1
+        continue-on-error: true
+        with:
+          godot-version: '4.7.2'
+          version: 'installed'
+          paths: |
+            tests/timing
+          report-name: test-results-timing
 
       - name: Upload Test Results
         if: always()

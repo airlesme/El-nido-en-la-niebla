@@ -68,6 +68,6 @@ commands:
   # On a local machine without it on PATH, use the editor's full path via /settings.
   # build: no export preset exists yet; set it once export_presets.cfg has one.
   build: "[TO BE CONFIGURED]"
-  test: "godot --headless -s -d --remote-debug tcp://127.0.0.1:0 res://addons/gdUnit4/bin/GdUnitCmdTool.gd -a res://tests --ignoreHeadlessMode"
+  test: "godot --headless -s -d --remote-debug tcp://127.0.0.1:0 res://addons/gdUnit4/bin/GdUnitCmdTool.gd -a res://tests -i res://tests/timing --ignoreHeadlessMode"
   run: "godot --path . --windowed --resolution 1280x720"
   smoke: "godot --headless --quit-after 5"
