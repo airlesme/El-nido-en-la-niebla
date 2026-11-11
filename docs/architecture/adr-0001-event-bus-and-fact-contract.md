@@ -859,11 +859,28 @@ budget; and no story needs a second notice mechanism.
 
 CA-29 (demo export without console) is validated by ADR-0018's CI script.
 
+## Spike Results (2026-11-11)
+
+Godot 4.7.2.stable.official.ed1daf0bf, Windows, laptop CPU/iGPU, `--headless`. Tests in
+`tests/unit/engine_facts/adr0001_*_test.gd`; V-ENG-4 release half in `prototypes/bus-spike/README.md`.
+Suite: 31 test cases, 0 errors, 0 failures, 0 orphans.
+
+| ID | Claim | Observed result | Figures | Fallback that applies |
+|---|---|---|---|---|
+| V-ENG-1 (NS-1) | `Callable.is_valid()` is `false` once the bound node is freed | PASS. `is_valid()` true before, `false` after `free()`, no error. Alternative also works: `get_object()` returns `null`, `is_instance_valid()` false | n/a | None needed; RK-1 closed. Keep the `is_instance_valid(get_object())` guard as optional belt-and-braces |
+| V-ENG-2 (NS-2) | 35 reads/step under 0.02 ms | PASS (limit 0.02 ms/step). Headless time is not a substitute for measuring with the running game; allocations not measured | Array indexed 0.00073-0.00077 ms/step; Dictionary<StringName> 0.00153-0.00166 ms/step (10,000 steps x 35 reads) | None needed for budget (both ~10x under). Indexed path stays as designed (about 2x faster); RK-2 closed for time, allocation unverified |
+| V-ENG-3 (NS-3) | JSON integral numbers round trip; restore accepts both | Every JSON number parses as `float`: `2` -> `2.0`, `-3` -> `-3.0`, `1000000` -> `1000000.0`. Exact up to 2^53; `9007199254740993` -> `9007199254740992.0` (precision lost) | n/a | Rule 13 (accept `int` or integral `float`) is mandatory, not defensive. Fact ints are counters far below 2^53, so no change |
+| V-ENG-4 (NS-4) | Which call halts in debug and is a no-op in release | `OS.is_debug_build()` false in the release export, true in debug export and editor headless. `push_error` logs and never halts anywhere. `assert(false)` is stripped in release (code after runs); in debug (headless/exported, no debugger) it prints `Assertion failed` and aborts only the current function, the caller continues. Editor pause-on-assert not tested (no editor session) | n/a | `ErrorPolicy` production impl: `push_error` + (dev only, behind `OS.is_debug_build()`) explicit halt via `get_tree().quit(1)`; `assert` alone is not a reliable halt |
+| V-ENG-5 (NS-8) | Runtime error in a `Callable.call()` | Aborts only the callee (`b:after` never ran); the caller's index loop continued to `c` and reached its end. Error printed as SCRIPT ERROR | log `a, b:before, c`; loop reached end | RK-6 mitigation (reset `_draining` when queue empty) is not needed for wedging, keep as cheap defence. The callee's own state after an abort is undefined: `_draining` must be cleared by the drain, not by the callback |
+| V-ENG-6 (lambda) | `func(...args)` receives 3 args | PASS: on signal `emit(1, "x", 2.5)` and on `Callable.call(1, 2, 3)` | `args.size() == 3` | None |
+
+Condition on C1 (NS-7, same-frame delivery): none of these results conditions it.
+
 ## Open Items
 
 | # | Item | Owner | Resolve before |
 |---|---|---|---|
-| OI-1 | Run V-ENG-1…6 on 4.7.2 and record results here (NS-1…NS-9; NS-5, NS-7 and NS-9 are avoided by design and need no test) | lead-programmer | `Accepted` |
+| OI-1 | **Resuelto 2026-11-11** (see § Spike Results; caveats: V-ENG-2 time measured headless, allocations not measured; V-ENG-4 editor pause-on-assert untested). Run V-ENG-1…6 on 4.7.2 and record results here (NS-1…NS-9; NS-5, NS-7 and NS-9 are avoided by design and need no test) | lead-programmer | `Accepted` |
 | OI-2 | **GDD contradiction:** GDD 7 rule 29 lists 28 (Atmósfera) as a consumer of «interacción ejecutada»; the 28 contract in `tr-baseline-provisional.md` (from `atmosfera-reactiva.md`) says 28 does **not** consume it. Under D11 either is valid; GDD 7 rule 29 / OQ 6 should be aligned with 28 | game-designer (GDD 7 / 28 re-review) | Re-review of 7 and 28 |
 | OI-3 | **Interpretation:** GDD 3 says the cap is "por fotograma"; this ADR applies it per synchronous drain (D5). Equivalent for any single chain; GDD 3 Tuning Knobs text should say "por entrega encadenada" | game-designer (GDD 3) | GDD 3 re-review |
 | OI-4 | **Interpretation:** I-9 checks `owner` for `write_silent` in release too, while GDD 3 rule 2 skips owner checks in release for normal writes. Rule 16(a) makes ownership part of the silent-write contract, so the stricter reading is used | technical-director | GDD 3 re-review (confirm) |
