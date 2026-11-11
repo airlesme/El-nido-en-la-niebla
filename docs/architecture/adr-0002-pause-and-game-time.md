@@ -2,7 +2,7 @@
 
 ## Status
 
-Proposed
+Accepted (2026-11-11) — S4 manual reported PASS by the developer; see § Spike Results
 
 > **Who may move this to `Accepted`: the user, or `technical-director` on the
 > user's explicit confirmation. No other agent, and no skill on its own.**
@@ -940,7 +940,9 @@ Run with Godot 4.7.2.stable.official.ed1daf0bf (same as the pin) from `prototype
 | SB1, SB2 | Option B (tree not paused) `Tween.pause()` and `AnimationPlayer.pause()` / `speed_scale = 0` | **PASS** (B is viable as fallback) |
 | SB3 | Option B particles `speed_scale = 0` | **PASS** (pixel part) |
 
-**S4 manual (2026-11-10):** the interactive harness `s4_manual.tscn` was handed to the developer, who answered «está bien, continúa» without attaching a log. Treated as a *provisional* OK: the ADR stays `Proposed` until a log (or a one-line PASS/FAIL per point 3, 4, 5 of the README) is recorded here.
+**S4 manual — RESULT 2026-11-11: the developer ran `s4_manual.tscn` and reported «la prueba de godot ha ido bien» (PASS). The message did not say whether a gamepad was used, so the gamepad-specific points (4 and 5: pad focus and connect/disconnect in pause) are recorded as *not separately confirmed*; keyboard/focus behaviour is accepted as PASS. ADR accepted by the developer's go-ahead on the S4 result; re-open if a pad-specific defect appears.**
+
+**S4 manual (2026-11-10, superseded above):** the interactive harness `s4_manual.tscn` was handed to the developer, who answered «está bien, continúa» without attaching a log. Treated as a *provisional* OK: the ADR stays `Proposed` until a log (or a one-line PASS/FAIL per point 3, 4, 5 of the README) is recorded here.
 
 **Decision rule check:** core tests S1, S2, S3, S9, S13 PASS; S4 is only partially verified. Presentation tests S5, S6, S7, S11 PASS. **Option A (tree paused + explicit `process_mode`) holds. Status stays `Proposed` until the manual S4 run (keyboard and gamepad focus under pause, pad disconnect) is recorded.**
 
