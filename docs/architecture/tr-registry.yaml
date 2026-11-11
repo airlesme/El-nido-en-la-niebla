@@ -1148,7 +1148,7 @@ requirements:
 - id: TR-player-003
   system: player
   gdd: design/gdd/jugador-en-primera-persona.md
-  requirement: "Sensor de zona esférico (`radio_sensor_zona` 0,05 m, rango 0,02–0,05) a la cintura, separado de la cápsula, que es lo que detectan los `T-…` (Area3D bajo Jolt, PV): activación con centro entre X 8,923 y 8,95 para `T-PAS-1`."
+  requirement: "Sensor de zona esférico (`radio_sensor_zona` 0,05 m, rango 0,02–0,05) a la cintura, separado de la cápsula, que es lo que detectan los `T-…` (Area3D bajo Jolt, PV): activación con centro en X ∈ (8,95; 8,977] para `T-PAS-1` (9,0 − radio + (0, v·dt]; corregido 2026-11-11, spike S-0003-B)."
   created: 2026-11-10
   revised: ""
   status: active
