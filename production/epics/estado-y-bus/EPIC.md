@@ -3,7 +3,8 @@
 > **Layer**: Foundation
 > **GDD**: design/gdd/estado-y-bus-de-eventos.md (§ Overview l. 15, § Acceptance Criteria l. 239)
 > **Architecture Module**: Capa 1 — 3 Estado y bus (`GameState`, autoload n.º 2); `architecture.md` § Module Ownership y § API Boundaries «Bus y estado (3) — ADR-0001»
-> **Status**: Ready — 13/18 TR libres; TR-state-001 y 015 esperan a ADR-0005; TR-state-013…016 (instantánea/restaurar) van con el guardado diferido (ADR-0004)
+> **Status**: **LISTO** — 14/18 TR libres; TR-state-013…016 (instantánea/restaurar) esperan a ADR-0004 con el guardado diferido (recorte 4)
+> **Actualizado 2026-11-11**: desbloqueado por ADR-0005 (TR-state-001)
 > **Stories**: Not yet created — run `/create-stories estado-y-bus`
 > **Control manifest**: v2026-11-11 — § Foundation Layer Rules (cubre ADR-0001, 0002, 0009)
 > **Engine Risk**: MEDIUM (parser JSON enteros→`float`, TR-state-015)
@@ -23,7 +24,7 @@ restauración para el guardado (ADR-0004) quedan fuera de M1 con el recorte 4.
 | ADR-0001: Event bus and fact contract (Accepted) | Bus único y contrato de hechos con escritor único; C1/NS-7 diferida a S-0006 | MEDIUM |
 | ADR-0002: Pause and game time (Accepted) | `GameClock` único dueño de pausa y Δ_juego | HIGH (`process_mode`) |
 | ADR-0009: Service composition (Accepted) | `Boot` única raíz de composición; inyección | LOW |
-| ADR-0004, ADR-0005 (Proposed) | Co-citados en TR-state-001, 013–016 | — |
+| ADR-0005 (Accepted) · ADR-0004 (Proposed) | ADR-0005 en TR-state-001/015; ADR-0004 en TR-state-013–016 | — |
 
 ## Criterios de aceptación del épico (trazables al hito)
 
@@ -38,7 +39,7 @@ Fuente: `docs/architecture/tr-registry.yaml` (v2, 2026-11-10), filas `system:` s
 
 | TR-ID | Requirement | ADR Coverage |
 |-------|-------------|--------------|
-| TR-state-001 | Catálogo cerrado de exactamente 20 hechos cargado de `assets/data/state/flags.json` (nombre, tipo `bool`/`int` con rango/`enum`, inicial, `owner`, regla de derivación opcional); fichero ausente o... | ADR-0001 ✅ (+ ADR-0005 Proposed) |
+| TR-state-001 | Catálogo cerrado de exactamente 20 hechos cargado de `assets/data/state/flags.json` (nombre, tipo `bool`/`int` con rango/`enum`, inicial, `owner`, regla de derivación opcional); fichero ausente o... | ADR-0001, ADR-0005 ✅ |
 | TR-state-002 | Lectura del valor de un hecho en coste constante y sin asignaciones (lo lee el 7 en cada paso de física para ~35 objetos con `habilitado_si`) | ADR-0001 ✅ |
 | TR-state-003 | Una escritura válida se aplica en el acto (y recalcula derivados) aunque ocurra durante una entrega de avisos; solo el aviso puede diferirse; lectura posterior devuelve el valor nuevo | ADR-0001 ✅ |
 | TR-state-004 | Validación estricta de escritura sin conversiones de tipo (float en int, int en bool inválidos), rango, hecho no declarado, derivado, y cambio de hecho de un solo sentido; en dev detiene la ejecu... | ADR-0001 ✅ |
@@ -52,10 +53,19 @@ Fuente: `docs/architecture/tr-registry.yaml` (v2, 2026-11-10), filas `system:` s
 | TR-state-012 | Un único mecanismo de avisos debe cubrir también el aviso propio de Ajustes (6); el formato técnico (señales/cadenas) y el de la instantánea los fija un ADR | ADR-0001 ✅ |
 | TR-state-013 | Instantánea = mapa nombre→valor con `snapshot_version` (inicial 1, consultable); solo los 20 hechos, sin ajustes de volumen/subtítulos/controles | ADR-0001 ✅ (+ ADR-0004 Proposed) |
 | TR-state-014 | Restauración síncrona y atómica dentro de una sola llamada (estado «Restaurando»: rechaza lecturas/escrituras/restauraciones reentrantes), descarta la cola, emite un único «estado restaurado... | ADR-0001 ✅ (+ ADR-0004 Proposed) |
-| TR-state-015 | Tolerancia de tipos al restaurar desde JSON: número con fracción nula se acepta como `int` (2.0→2), con fracción o fuera de rango→inicial con log; hecho ausente→inicial; no declarado→ign... | ADR-0001 ✅ (+ ADR-0004, ADR-0005 Proposed) |
+| TR-state-015 | Tolerancia de tipos al restaurar desde JSON: número con fracción nula se acepta como `int` (2.0→2), con fracción o fuera de rango→inicial con log; hecho ausente→inicial; no declarado→ign... | ADR-0001, ADR-0005 ✅ (+ ADR-0004 Proposed) |
 | TR-state-016 | Petición de instantánea síncrona que nunca espera: devuelve «no disponible» si la cola no está vacía (consulta `cola_vacía()`); Guardado reintenta | ADR-0001 ✅ (+ ADR-0004 Proposed) |
 | TR-state-017 | `escribir_silencioso(hecho, valor)`: solo `owner` (9), solo hechos reversibles, solo en la ventana entre «carga de escena iniciada» y «escena lista» (el 3 se suscribe a ambos), valida como norm... | ADR-0001 ✅ |
 | TR-state-018 | Consola de pruebas solo en builds de desarrollo (fuerza valores saltando reglas 4 y 6, emite aviso normal y deja log); ausente de la demo, verificado por script CI en `tools/ci/`; logs a destino su... | ADR-0001 ✅ |
+
+## Requisitos bloqueados (al 2026-11-11)
+
+| TR-ID | Bloqueado por | Motivo / salida |
+|-------|---------------|-----------------|
+| TR-state-013 | ADR-0004 (Proposed) | guardado, recorte 4 |
+| TR-state-014 | ADR-0004 (Proposed) | guardado, recorte 4 |
+| TR-state-015 | ADR-0004 (Proposed) | guardado, recorte 4 |
+| TR-state-016 | ADR-0004 (Proposed) | guardado, recorte 4 |
 
 ## Definition of Done
 
