@@ -5,9 +5,28 @@
 > **Architecture Module**: Capa 1 — 18 Contenido (`ContentDB`, autoload n.º 1)
 > **Status**: **LISTO** — 17/17 TR libres; implementar los hallazgos de S-0005-A (claves duplicadas, BOM en bytes, comas finales)
 > **Actualizado 2026-11-11**: desbloqueado por ADR-0005
-> **Stories**: Not yet created — run `/create-stories contenido-y-datos` (tras regenerar el manifiesto, índice Q2)
+> **Stories**: 12 historias (12 Ready, 0 Blocked) — índice con estimaciones y diferidos en `stories.md` (2026-11-11, manifiesto 2026-11-11b)
 > **Control manifest**: v2026-11-11 — § Foundation Layer Rules (sin reglas de Contenido: ADR-0005 excluido)
 > **Engine Risk**: MEDIUM (`FileAccess`/JSON)
+
+## Stories
+
+| # | Story | Type | Status | ADR |
+|---|-------|------|--------|-----|
+| 001 | `FileStore` y `JsonText` | Logic | Ready | ADR-0005, ADR-0009 |
+| 002 | `DataSchema`, `DataReader`, `to_int` | Logic | Ready | ADR-0005 |
+| 003 | `DataCatalog`, `RefIndex`, `DataValidator` | Logic | Ready | ADR-0005, ADR-0009 |
+| 004 | Carga de `ContentDB` y ciclo de vida | Logic | Ready | ADR-0005, ADR-0009 |
+| 005 | Capa de idioma y marcadores | Logic | Ready | ADR-0005 |
+| 006 | Líneas, documentos y `audio` | Logic | Ready | ADR-0005 |
+| 007 | Correos y fichas | Logic | Ready | ADR-0005 |
+| 008 | Variantes, IDs retirados, duplicados | Logic | Ready | ADR-0005 |
+| 009 | Datos narrativos de M1 | Config/Data | Ready | ADR-0005 |
+| 010 | Verificador `tools/data_check` | Logic | Ready | ADR-0005 |
+| 011 | Comparación con §12 | Logic | Ready | ADR-0005 |
+| 012 | Escaneo de literales | Logic | Ready | ADR-0005 |
+
+Diferido por ADR-0018 (recarga en caliente, CI), ADR-0016/ADR-0008 (AC-19) y ADR-0016 (TR-content-017): ver `stories.md` § Diferido.
 
 ## Overview
 
