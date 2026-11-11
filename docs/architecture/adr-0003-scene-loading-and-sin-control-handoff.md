@@ -221,7 +221,11 @@ collects entries stamped with the physics tick, sorts by (tick, ID) and emits
 «zona activada» once per entry. `SceneLoader` enables `monitoring` on all
 zones in the «terminada» frame, which gives GDD 4's "spawn-inside emits after
 «terminada», never in the black wait". Whether Jolt reports the entry on the
-next physics tick, and the activation band, is S-0003-B.
+next physics tick, and the activation band, is S-0003-B. **Resolved
+2026-11-11 (S-0003-B, Godot 4.7.2 + Jolt):** the activation band for the sensor
+centre is `X = face − radio + (0, v·dt]`; for `T-PAS-1` (face 9,0, radio 0,05,
+v·dt 0,0267) that is **(8,95; 8,977]**, never earlier than 8,95. The earlier
+written range 8,923–8,95 had the sign of the step term wrong.
 
 ### Architecture Diagram
 
@@ -717,7 +721,7 @@ func _flush() -> void:
 | # | Risk | Mitigation |
 |---|---|---|
 | R1 | `queue_free`d `planta` still valid at U+1 (or not freed under a paused tree), so two game scenes coexist or orphans accumulate | S-0003-A measures it; fallback: wait until `is_instance_valid(old)` is false for up to 3 frames (inside `T_cap`), else fail(`previous_scene_not_freed`) |
-| R2 | Jolt `Area3D` misses the 0,05 m sensor, double-reports, or reports outside X 8,923–8,95 | S-0003-B; fallback Alternative 5 (arithmetic box test in `ZoneHub`, same notice contract) |
+| R2 | Jolt `Area3D` misses the 0,05 m sensor, double-reports, or reports outside X (8,95; 8,977] (range corrected 2026-11-11 after S-0003-B) | S-0003-B passed on entries/doubles/misses; Alternative 5 (arithmetic box test in `ZoneHub`) discarded 2026-11-11 in favour of correcting the documented range |
 | R3 | A load blocking > `D_carga` + 2 s lets Entrada's tope and `T_cap` expire in the same frame, order unknown | Accepted limitation (GDD 4 F3); S-0003-C records the real hitch; a warning is logged when the load exceeds `D_carga` |
 | R4 | ADR-0001 does not deliver notices within the frame, breaking "same frame" handoff and «partida terminada» timing | Hard dependency on ADR-0001; integration test T-I2 fails if so |
 | R5 | Physics interpolation shows a smear from the previous pose after `colocar` | **Resolved by ADR-0012 D2/D4** (`TickInterpolator.reset` in `colocar`); hidden anyway behind `N_gap` black frames |
@@ -815,7 +819,7 @@ inside a zone with `monitoring = false`, then `monitoring = true`; (4) render
 at 30, 60 and 144 fps with physics fixed at 60 Hz; (5) `Engine.get_physics_frames()`
 stamp at each callback.
 Pass: 100 entries, 0 doubles, 0 misses; every entry with centre X in
-[8,923; 8,95]; case 2 delivers both entries with the same tick and the hub
+(8,95; 8,977] (corrected 2026-11-11; the original criterion read [8,923; 8,95], see S-0003-B.1 in Spike Results); case 2 delivers both entries with the same tick and the hub
 emits them ID-sorted; case 3 reports one entry within 1–2 physics ticks after
 enabling (record which); results identical at the three frame rates.
 Fail on any → R2 fallback (Alternative 5) and update D8.
@@ -891,6 +895,7 @@ built in the test (60 `Node3D` + 3 bus-subscribing elements + `Area3D` + `Charac
 | O5 | Full unload from a visible scene (pause) fades in 0,1 s instead of a cut: GDD 4 rule 15 says "sin fundidos", rule 11 says the curtain is always a fade | GDD 4 author | Next GDD 4 revision |
 | O6 | ~~`colocar` angle units and teleport reset of physics interpolation~~ Resolved by ADR-0012 D2/D4: radians; `TickInterpolator.reset` in `colocar`; `colocar` before `configurar` stores a pending placement completed by `configurar` (ADR-0012 C2) | ADR-0012 | — |
 | O7 | Collision layer name/number `zone_sensor` in the project layer table | ADR-0011 (masks) | ADR-0011 |
+| O8 | ~~Zone sensor activation range 8,923–8,95 (S-0003-B.1 FAIL)~~ **Resuelto 2026-11-11: rango corregido a (8,95; 8,977], Alternativa 5 descartada** (user decision; GDD 2 rule 4/D-46, GDD 4 rule 18(c), TR-player-003 updated). Status stays `Proposed` | game-designer | — |
 
 ### Contradictions found in the sources
 
