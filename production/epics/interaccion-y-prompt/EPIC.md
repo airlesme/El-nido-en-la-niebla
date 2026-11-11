@@ -3,7 +3,8 @@
 > **Layer**: Feature (7) + Presentation (24)
 > **GDD**: design/gdd/interaccion-e-inspeccion.md (§ Overview l. 15, § Acceptance Criteria l. 518); design/gdd/prompt-de-interaccion.md (§ Overview l. 14, § Acceptance Criteria l. 161)
 > **Architecture Module**: Capa 3 — 7 Interacción (`InteractionSystem` en `planta`); Capa 4 — 24 Prompt (`InteractionPrompt` en `HUD`); `architecture.md` § API Boundaries «Interacción (7) — ADR-0011»
-> **Status**: **Parcial** — Interacción **Ready** (22/22 TR libres); Prompt **BLOQUEADO por ADR-0016 (Proposed)** (20/20 TR lo citan; TR-prompt-018 también ADR-0007, TR-prompt-020 también ADR-0005)
+> **Status**: **PARCIAL** — Interacción (7) **LISTO** (22/22 TR libres); Prompt (24) **BLOQUEADO por ADR-0016 (Proposed)** (20/20 TR; TR-prompt-018 también ADR-0007)
+> **Actualizado 2026-11-11**: desbloqueado por ADR-0005 (TR-prompt-020; sigue bloqueado por ADR-0016)
 > **Desbloqueo del prompt**: spike corto de ADR-0016 con ADR-0007; R30 → aceptación de ADR-0016 (no se difiere con los subtítulos: índice A2)
 > **Stories**: Not yet created — run `/create-stories interaccion-y-prompt` (hoy, solo historias de 7)
 > **Control manifest**: v2026-11-11 — § Feature y § Presentation Layer Rules **vacías: no incluyen ADR-0011** (índice A1)
@@ -26,7 +27,7 @@ ADR-0011. Decisión de usuario n.º 4 de `gdd-cross-review-2026-11-10-r2.md` (fi
 | ADR-0011: Interaction focus query and view picking (Accepted) | Consulta de foco y picking de vistas; S-0011-A/B/C pasados | HIGH |
 | ADR-0001 (Accepted) | Avisos por el bus (co-cubre TR-prompt-005/006) | MEDIUM |
 | ADR-0016 (**Proposed**) | Texto de UI del prompt | HIGH |
-| ADR-0007, ADR-0005 (Proposed) | Escalado de UI (TR-prompt-018); datos (TR-prompt-020) | — |
+| ADR-0007 (Proposed) · ADR-0005 (Accepted) | Escalado de UI (TR-prompt-018); datos (TR-prompt-020) | — |
 
 ## Criterios de aceptación del épico (trazables al hito)
 
@@ -62,26 +63,51 @@ Fuente: `docs/architecture/tr-registry.yaml` (v2, 2026-11-10), filas `system:` i
 | TR-interact-020 | `abrir_lectura(doc_id)->{ACEPTADA,APLAZADA,RECHAZADA(motivo)}` según tabla de estado; una única petición aplazada con tope 3 s de tiempo de juego; `cerrar_vista(resuelto)` se aplaza si hay lectu... | ADR-0011 ✅ |
 | TR-interact-021 | Sin estado propio ni persistencia: al cargar escena objetivo vacío y ningún modo abierto; el estado de objetos lo reconstruyen los dueños desde hechos | ADR-0011 ✅ |
 | TR-interact-022 | El objetivo no viaja por el bus: 24 consulta `get_target()` cada fotograma; pie vía `mostrar_pie(clave, duracion_pie(clave), retener)`; F5 `t_pie=clamp(0,5+n/14,2,8)·multiplicador_pie`, `texto_ma... | ADR-0011 ✅ |
-| TR-prompt-001 | Sondea `get_target()` de 7 en cada fotograma de render (sin aviso de cambio de objetivo) y no recalcula objetivo, verbo ni `p`; entrada `{id, etiqueta, largo, p, anillo_visible} \\ | ❌ No ADR (ADR-0016 Proposed) |
-| TR-prompt-002 | Anillo/etiqueta dibujados solo con contexto de Entrada `exploración` y objetivo ≠ nulo; ocultos en menú, lectura, inspección, vista cercana, ordenador, llamada, sin control; sin punto de mira ... | ❌ No ADR (ADR-0016 Proposed) |
-| TR-prompt-003 | Anillo fijo en el centro de pantalla; 28 px a 1080p (48 px con `icono_grande`), opacidad 80 %; fundidos 250 ms in / 150 ms out; cambio directo de objeto sin parpadeo (cruzado 120 ms) | ❌ No ADR (ADR-0016 Proposed) |
-| TR-prompt-004 | Relleno del anillo `360·p` grados horario desde las 12 h (p de 7); vaciado 100 ms al soltar; permanece en modo «alternar» | ❌ No ADR (ADR-0016 Proposed) |
+| TR-prompt-001 | Sondea `get_target()` de 7 en cada fotograma de render (sin aviso de cambio de objetivo) y no recalcula objetivo, verbo ni `p`; entrada `{id, etiqueta, largo, p, anillo_visible} \\ | ❌ Bloqueado (ADR-0016 Proposed) |
+| TR-prompt-002 | Anillo/etiqueta dibujados solo con contexto de Entrada `exploración` y objetivo ≠ nulo; ocultos en menú, lectura, inspección, vista cercana, ordenador, llamada, sin control; sin punto de mira ... | ❌ Bloqueado (ADR-0016 Proposed) |
+| TR-prompt-003 | Anillo fijo en el centro de pantalla; 28 px a 1080p (48 px con `icono_grande`), opacidad 80 %; fundidos 250 ms in / 150 ms out; cambio directo de objeto sin parpadeo (cruzado 120 ms) | ❌ Bloqueado (ADR-0016 Proposed) |
+| TR-prompt-004 | Relleno del anillo `360·p` grados horario desde las 12 h (p de 7); vaciado 100 ms al soltar; permanece en modo «alternar» | ❌ Bloqueado (ADR-0016 Proposed) |
 | TR-prompt-005 | Pulso de aceptación (80→100 % en 120 ms) y de rechazo (80→40 % en 120 ms) disparados solo por el aviso «interacción ejecutada (id, verbo, resultado)» de 7; inicio ≤ `latencia_feedback_ms`... | ADR-0001 ✅ (+ ADR-0016 Proposed) |
 | TR-prompt-006 | Dominio de `resultado` ampliado a `HECHO`, `SIN_EFECTO`, `GESTO_RECHAZADO`, `TOQUE_CORTO` (aplicado en 7); un gesto = un aviso = un pulso | ADR-0001 ✅ (+ ADR-0016 Proposed) |
-| TR-prompt-007 | Tope de fotosensibilidad: ignorar pulso nuevo si el anterior empezó hace < `pulso_min_intervalo_ms` 340 ms (≤ 2,9/s, nunca bajar de 334); sin cola de pulsos | ❌ No ADR (ADR-0016 Proposed) |
-| TR-prompt-008 | Etiqueta `[glifo] + texto` apagada por defecto (`etiqueta_accion_visible`=falso); glifo siempre acompañado de texto, en línea; clave 18 ausente → no dibujar etiqueta y log de dev, nunca mostrar... | ❌ No ADR (ADR-0016 Proposed) |
-| TR-prompt-009 | Glifo desde `get_binding_label(accion, dispositivo) -> {tipo, texto, glifo_id}` de 1 (asignación vigente, orden determinista); sin teclas hardcodeadas (ni «Retroceso»/«Backspace» en código/da... | ❌ No ADR (ADR-0016 Proposed) |
-| TR-prompt-010 | Re-resolver glifos solo al cambiar dispositivo («dispositivo de entrada cambiado») o al recibir «pausa cerrada»; una consulta por cambio, no por fotograma; sin reiniciar el reloj de pies | ❌ No ADR (ADR-0016 Proposed) |
-| TR-prompt-011 | API `mostrar_pie(clave, duracion_s \\ | ❌ No ADR (ADR-0016 Proposed) |
-| TR-prompt-012 | Un solo hueco de pie, sustitución con fundido cruzado 150 ms (100 con `reducir_movimiento`), sin cola; dos pies en el mismo fotograma: gana el último | ❌ No ADR (ADR-0016 Proposed) |
-| TR-prompt-013 | Duración la calcula el llamador (`duracion_pie(clave)` de 7, F5); `PERSISTENTE` dura hasta cambiar `get_target().id` respecto del del instante de dibujo o hasta otro pie; el reloj es de tiempo de ... | ❌ No ADR (ADR-0016 Proposed) |
-| TR-prompt-014 | Pie solo en `exploración`; fuera se oculta y congela; pies de objeto se descartan al salir por modo de 7/`sin control`; pie `retener=verdadero` queda pendiente sin caducidad hasta otro `retener` o... | ❌ No ADR (ADR-0016 Proposed) |
-| TR-prompt-015 | Pie: abajo-centro, márgenes seguros 5 %, ≤2 líneas a ≤60 % ancho, texto ≥ max(28·s, 24) px, panel 85 % opacidad, contraste ≥ 4,5:1 sobre blanco puro | ❌ No ADR (ADR-0016 Proposed) |
-| TR-prompt-016 | Convivencia con 26: mientras haya bloque de subtítulos visible el pie sube sobre su borde superior + `sub_hueco_px` 12 px, nunca lo tapa (recorta el pie a 2 líneas) | ❌ No ADR (ADR-0016 Proposed) |
-| TR-prompt-017 | Sustitución de token `{accion:atrás}` en `UI_BOLSILLO_AYUDA` por glifo+texto de la asignación vigente; fallback al nombre «Atrás» y warning si falla `get_binding_label` | ❌ No ADR (ADR-0016 Proposed) |
-| TR-prompt-018 | Escala UI F2 `s=clamp(altura_ventana/1080, 0,67, 2,0)` (720p–2160p), redondeo a entero; márgenes 5 % en 16:9, anclados al área 16:9 central en ultraancho | ❌ No ADR (ADR-0007, ADR-0016 Proposed) |
-| TR-prompt-019 | Lee de 6 vía avisos de cambio y aplica al fotograma siguiente `reducir_movimiento` (fundidos fijos 100 ms), `icono_grande`, `etiqueta_accion_visible`; valores iniciales si 6 no está (dependencia ... | ❌ No ADR (ADR-0016 Proposed) |
-| TR-prompt-020 | Sin audio propio (`SFX_CLICK_SUBTLE` lo emite 7); sin color para estados (sin rojo); sin estado persistente; espera «escena lista» antes de dibujar; datos en `assets/data/ui/prompt.json` | ❌ No ADR (ADR-0005, ADR-0016 Proposed) |
+| TR-prompt-007 | Tope de fotosensibilidad: ignorar pulso nuevo si el anterior empezó hace < `pulso_min_intervalo_ms` 340 ms (≤ 2,9/s, nunca bajar de 334); sin cola de pulsos | ❌ Bloqueado (ADR-0016 Proposed) |
+| TR-prompt-008 | Etiqueta `[glifo] + texto` apagada por defecto (`etiqueta_accion_visible`=falso); glifo siempre acompañado de texto, en línea; clave 18 ausente → no dibujar etiqueta y log de dev, nunca mostrar... | ❌ Bloqueado (ADR-0016 Proposed) |
+| TR-prompt-009 | Glifo desde `get_binding_label(accion, dispositivo) -> {tipo, texto, glifo_id}` de 1 (asignación vigente, orden determinista); sin teclas hardcodeadas (ni «Retroceso»/«Backspace» en código/da... | ❌ Bloqueado (ADR-0016 Proposed) |
+| TR-prompt-010 | Re-resolver glifos solo al cambiar dispositivo («dispositivo de entrada cambiado») o al recibir «pausa cerrada»; una consulta por cambio, no por fotograma; sin reiniciar el reloj de pies | ❌ Bloqueado (ADR-0016 Proposed) |
+| TR-prompt-011 | API `mostrar_pie(clave, duracion_s \\ | ❌ Bloqueado (ADR-0016 Proposed) |
+| TR-prompt-012 | Un solo hueco de pie, sustitución con fundido cruzado 150 ms (100 con `reducir_movimiento`), sin cola; dos pies en el mismo fotograma: gana el último | ❌ Bloqueado (ADR-0016 Proposed) |
+| TR-prompt-013 | Duración la calcula el llamador (`duracion_pie(clave)` de 7, F5); `PERSISTENTE` dura hasta cambiar `get_target().id` respecto del del instante de dibujo o hasta otro pie; el reloj es de tiempo de ... | ❌ Bloqueado (ADR-0016 Proposed) |
+| TR-prompt-014 | Pie solo en `exploración`; fuera se oculta y congela; pies de objeto se descartan al salir por modo de 7/`sin control`; pie `retener=verdadero` queda pendiente sin caducidad hasta otro `retener` o... | ❌ Bloqueado (ADR-0016 Proposed) |
+| TR-prompt-015 | Pie: abajo-centro, márgenes seguros 5 %, ≤2 líneas a ≤60 % ancho, texto ≥ max(28·s, 24) px, panel 85 % opacidad, contraste ≥ 4,5:1 sobre blanco puro | ❌ Bloqueado (ADR-0016 Proposed) |
+| TR-prompt-016 | Convivencia con 26: mientras haya bloque de subtítulos visible el pie sube sobre su borde superior + `sub_hueco_px` 12 px, nunca lo tapa (recorta el pie a 2 líneas) | ❌ Bloqueado (ADR-0016 Proposed) |
+| TR-prompt-017 | Sustitución de token `{accion:atrás}` en `UI_BOLSILLO_AYUDA` por glifo+texto de la asignación vigente; fallback al nombre «Atrás» y warning si falla `get_binding_label` | ❌ Bloqueado (ADR-0016 Proposed) |
+| TR-prompt-018 | Escala UI F2 `s=clamp(altura_ventana/1080, 0,67, 2,0)` (720p–2160p), redondeo a entero; márgenes 5 % en 16:9, anclados al área 16:9 central en ultraancho | ❌ Bloqueado (ADR-0007, ADR-0016 Proposed) |
+| TR-prompt-019 | Lee de 6 vía avisos de cambio y aplica al fotograma siguiente `reducir_movimiento` (fundidos fijos 100 ms), `icono_grande`, `etiqueta_accion_visible`; valores iniciales si 6 no está (dependencia ... | ❌ Bloqueado (ADR-0016 Proposed) |
+| TR-prompt-020 | Sin audio propio (`SFX_CLICK_SUBTLE` lo emite 7); sin color para estados (sin rojo); sin estado persistente; espera «escena lista» antes de dibujar; datos en `assets/data/ui/prompt.json` | ADR-0005 ✅ (+ ADR-0016 Proposed) |
+
+## Requisitos bloqueados (al 2026-11-11)
+
+| TR-ID | Bloqueado por | Motivo / salida |
+|-------|---------------|-----------------|
+| TR-prompt-001 | ADR-0016 (Proposed) | texto de UI del prompt |
+| TR-prompt-002 | ADR-0016 (Proposed) | texto de UI del prompt |
+| TR-prompt-003 | ADR-0016 (Proposed) | texto de UI del prompt |
+| TR-prompt-004 | ADR-0016 (Proposed) | texto de UI del prompt |
+| TR-prompt-005 | ADR-0016 (Proposed) | texto de UI del prompt |
+| TR-prompt-006 | ADR-0016 (Proposed) | texto de UI del prompt |
+| TR-prompt-007 | ADR-0016 (Proposed) | texto de UI del prompt |
+| TR-prompt-008 | ADR-0016 (Proposed) | texto de UI del prompt |
+| TR-prompt-009 | ADR-0016 (Proposed) | texto de UI del prompt |
+| TR-prompt-010 | ADR-0016 (Proposed) | texto de UI del prompt |
+| TR-prompt-011 | ADR-0016 (Proposed) | texto de UI del prompt |
+| TR-prompt-012 | ADR-0016 (Proposed) | texto de UI del prompt |
+| TR-prompt-013 | ADR-0016 (Proposed) | texto de UI del prompt |
+| TR-prompt-014 | ADR-0016 (Proposed) | texto de UI del prompt |
+| TR-prompt-015 | ADR-0016 (Proposed) | texto de UI del prompt |
+| TR-prompt-016 | ADR-0016 (Proposed) | texto de UI del prompt |
+| TR-prompt-017 | ADR-0016 (Proposed) | texto de UI del prompt |
+| TR-prompt-018 | ADR-0007, ADR-0016 (Proposed) | escalado de UI; texto de UI del prompt |
+| TR-prompt-019 | ADR-0016 (Proposed) | texto de UI del prompt |
+| TR-prompt-020 | ADR-0016 (Proposed) | texto de UI del prompt |
 
 ## Definition of Done
 
