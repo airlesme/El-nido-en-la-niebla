@@ -1157,7 +1157,23 @@ in prompt (24) and pause rebinding screen (25) once S-0006-B passes.
 
 ## Spike Results
 
-_Empty until S-0006-A … F run on 4.7.2._
+## Spike Results (2026-11-11)
+
+Godot 4.7.2.stable, headless, synthetic events. Tests: `tests/unit/engine_facts/adr0006_input_events_test.gd`
+and `adr0006_loop_order_test.gd`; harness for the rest: `prototypes/input-spike/` (README = exact steps).
+Status stays `Proposed`: S-0006-A…E have unverified parts (NEEDS_MANUAL); none of the observed results contradicts a decision.
+
+| S-n | Claim | Result | Figures observed | Fallback / note |
+|---|---|---|---|---|
+| S-0006-A | Raw joypad events: axis index/value, no engine deadzone, button indices, key repeat | PARTIAL (synthetic PASS; physical NEEDS_MANUAL) | `JOY_AXIS_LEFT_X/Y/RIGHT_X/Y/TRIGGER_L/R` = 0..5; `JOY_BUTTON_A`=0, `B`=1, `START`=6, `DPAD_UP`=11. A synthetic motion of 0,03 arrives in `_input` unmodified (float32: 0,0299999993). `parse_input_event` + `flush_buffered_events` updates `is_joy_button_pressed` even for an unconnected pad 0. `is_echo()` false by default, settable | Resting value of real hardware (<= 0,05?) and OS key repeat: NEEDS_MANUAL. R3 stays open |
+| S-0006-B | Pad family from name/GUID | NEEDS_MANUAL (API verified) | `Input.get_joy_name(0)` = `""`, `get_joy_guid(0)` = `""`, `get_joy_info(0)` = `{}`, `get_connected_joypads()` = `[]` with no pad (no error) | Strings of DualSense/DS4/Xbox unknown: R1 / OI-8 (`GENERIC` fallback) |
+| S-0006-C | Connect/disconnect signal, also paused | NEEDS_MANUAL (API verified) | `Input.joy_connection_changed(device: int, connected: bool)` exists, 2 args; a manual emit reaches subscribers | Delivery under pause and latency <= 0,5 s unmeasured: R2 polling fallback stands |
+| S-0006-D | Mouse, `mouse_mode`, `DEVICE_ID_*`, key constants | PARTIAL, one assumption FALSE | `DEVICE_ID_KEYBOARD`=**16**, `DEVICE_ID_MOUSE`=**32**, `DEVICE_ID_EMULATION`=-1 (positive, not negative); a new `InputEventKey`/`MouseMotion` already has `device` 16/32, a new pad event 0. `relative` passes unscaled through `push_input`. `KEY_ESCAPE`=4194305, `KEY_ENTER`=4194309, `KEY_W`=87, `KEY_SPACE`=32; `as_text()` of W = `W`, `OS.get_keycode_string(KEY_ESCAPE)` = `Escape`. Headless: `Input.mouse_mode` write is ignored (stays 0 = VISIBLE after CAPTURED/HIDDEN) | Code must compare against the `DEVICE_ID_*` constants, never "negative = not a pad" (a real pad id could be confused only if >= 16). Relative px at 1080p/1440p, captured set/restore after focus loss: NEEDS_MANUAL (R5) |
+| S-0006-E | Window focus-out reaches an `ALWAYS` autoload, also paused | NEEDS_MANUAL | Constants exist: `NOTIFICATION_APPLICATION_FOCUS_OUT`=2017, `..._IN`=2016, `NOTIFICATION_WM_WINDOW_FOCUS_OUT`=1005 | Needs a real window; harness prints `FOCUS_OUT` |
+| S-0006-F | `LineEdit`, dual focus, `ui_*` in Input Map | PARTIAL PASS | `_input` → `_unhandled_input`; `set_input_as_handled()` in `_input` stops `_unhandled_input`. `LineEdit.grab_focus()` emits `focus_entered` then `focus_exited` on release. Input Map events: `ui_left/right/up/down/accept` = 3 each, `ui_cancel` = 1 | Mouse click on a `LineEdit` giving keyboard focus (needs a real pointer) and left stick/D-pad navigation: NEEDS_MANUAL; `ui_fixed` vs `project.godot` CI check not run here |
+| C1 / NS-7 | Order of `_input`, `_physics_process`, `_process` between autoload-like nodes; same-frame bus delivery | MEASURED | Three root children A, B, C added in that order. `_input`: **reverse** tree order (C, B, A) in both `push_input` and the `parse_input_event` buffer. `_physics_process` and `_process`: add order (A, B, C). Per iteration: `_input` → all due `_physics_process` ticks → `_process`. With a tick due every iteration (1000 Hz): notice emitted in A's `_input` reached B's `_physics_process` and C's `_process` in the **same** frame (emitted 27, phys 27, proc 27). At 60 Hz with fast frames (headless) a tick is not due every iteration: the physics subscriber got it 1 iteration later (6→7, 15→16); `_process` subscriber same frame | The bus must not rely on a same-frame delivery to a physics subscriber (depends on whether a tick is due) nor on `_input` order between nodes. A queue drained once per tick or per frame is safe in both cases |
+
+Not run: key repeat from the OS, real hot-plug, `Alt-Tab`, windows of two sizes (see the README of the harness).
 
 ## Related
 - Depends on: ADR-0001, ADR-0002, ADR-0003, ADR-0009 (all `Proposed`).
