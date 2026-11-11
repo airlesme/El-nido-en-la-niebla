@@ -86,3 +86,5 @@ GdUnit4 **6.2.3** (`godot-gdunit-labs/gdUnit4`, tag v6.2.3, copied from the sour
 ## CI run (declared)
 
 Last green run reported by the developer on 2026-11-11: https://github.com/airlesme/El-nido-en-la-niebla/actions/runs/42980040179. Not independently verified: the repository is private (the public GitHub API returns 404) and no `gh` is available here.
+
+Second green run reported by the developer on 2026-11-11, after the S0 closure commits (autoloads, presets, CI steps, V-ENG tests, audit): https://github.com/airlesme/El-nido-en-la-niebla/actions/runs/42986319318. Declared, not independently verifiable (private repository).
