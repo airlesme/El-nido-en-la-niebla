@@ -1,7 +1,7 @@
 # Story 003: `TickInterpolator` con la fracción del motor
 
 > **Epic**: Jugador en primera persona (sin manos)
-> **Status**: Ready
+> **Status**: Done
 > **Layer**: Core
 > **Type**: Logic
 > **Estimate**: S — 0,5 días (0,5–1; confianza BAJA)
@@ -79,3 +79,12 @@
 
 - Depends on: None
 - Unlocks: `production/epics/jugador-primera-persona/story-011-player-node-api.md`
+
+---
+
+## Evidencia
+
+- `src/player/tick_interpolator.gd` (`RefCounted`, sin acumulador): `reset(position, phase=0, ratio=0)`, `push(position, phase, ratio)`, `position_at(alpha)`, `phase_at(alpha)`, `ratio_at(alpha)`. alpha acotado a [0,1]; alpha no finito = 1.0; `push` no finito se ignora.
+- `tests/unit/player/tick_interpolator_test.gd`: 9/9 (30/60/144 fps con alpha inyectado, sin extrapolar, reset sin barrido, alpha congelado, d y r con el mismo alpha, invalidos).
+- Suite completa: 301 casos, 0 errores, 0 fallos, 0 orphans, exit 0; sin `ObjectDB instances were leaked` ni `resources still in use`. `--import` sin errores.
+- Pendiente fuera de la historia: anotar las firmas en ADR-0012 (`# TODO(ADR-0012)` en el codigo).
