@@ -1,7 +1,7 @@
 # Story 002: `EngineInputAdapter` → `RawInput` y `feed()`
 
 > **Epic**: Entrada y controles
-> **Status**: Ready
+> **Status**: Done (2026-11-11)
 > **Layer**: Foundation
 > **Type**: Logic
 > **Estimate**: M (≈ 1 día, confianza BAJA)
@@ -76,3 +76,11 @@
 
 - Depends on: `production/epics/entrada-y-controles/story-001-input-types-and-binding-table.md`
 - Unlocks: `production/epics/entrada-y-controles/story-003-context-stack-and-sinks.md`, `production/epics/entrada-y-controles/story-007-device-tracker-hysteresis.md`, `production/epics/entrada-y-controles/story-008-move-and-look-formulas.md`
+
+---
+
+## Evidencia
+
+- `tests/unit/input/engine_input_adapter_test.gd`: 22 tests, 0 fallos, 0 orphans (AC-02, los cinco tipos de evento, una accion como maximo, cache de ejes, `to_binding`, `is_printable_key`, camino real `parse_input_event` + `flush_buffered_events`).
+- `--import` sin errores. Suite bloqueante (`-a res://tests -i res://tests/timing`): 373 casos, 0 errores, 0 fallos, 0 orphans; 0 apariciones de `ObjectDB instances were leaked` y de `resources still in use`.
+- Provisional, con `TODO(ADR-0006)`: `InputRouter.use_table` y la senal `action_fed` (la entrega por contexto llega en 003); la deny-list de `is_printable_key` se inyecta (`set_non_printable_keys`) hasta que el JSON la lleve (012). `pad_connection_changed` y `window_focus_changed` quedan para 014.
