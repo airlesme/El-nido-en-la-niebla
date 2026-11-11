@@ -2,7 +2,7 @@
 
 ## Status
 
-Proposed
+Accepted (2026-11-11) — ADR-0001 and ADR-0002 accepted; skeleton implemented and 16/16 tests green (commit a906aa3). Open items C9 (Reception story) carried to M1
 
 > **Who may move this to `Accepted`: the user, or `technical-director` on the
 > user's explicit confirmation. No other agent, and no skill on its own.**
