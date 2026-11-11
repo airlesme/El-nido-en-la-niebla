@@ -1358,10 +1358,10 @@ API sourcing (replace "NOT SOURCEABLE" by "Observed 4.7.2, 2026-MM-DD: …").
 | A4 | `// comment`, `/* */`, trailing comma in array and object, `NaN`, `Infinity`, single quotes | accepted or error each | R2, G-16 (pre-check needed?) |
 | A5 | UTF-8 file with BOM; text `«Sigo aquí.» — ñ` | parse result; byte-exact round trip of the string; BOM handling | D5.4, `JsonText` BOM check |
 | A6 | `FileAccess.get_file_as_string()` and `open()+get_as_text()` on an existing and a missing `res://` path | returned text; `FileAccess.get_open_error()` value; any engine error printed | `RealFileStore` (ADR-0009) |
-| A7 | `godot --headless --path . --export-debug "<preset>" <out>` with default filters, then run the export with a script reading every fixture under `res://assets/data/` | file present and readable from the `.pck`? Is an explicit include filter needed? | G-14, R3 |
+| A7 | Export keeps `assets/data/*.json` readable | **PASS** (run by the lead, 2026-11-11) | Probe project outside the repo (`C:/Users/airlesme/tools/export-json-probe`), Windows release export with templates 4.7.2: `FileAccess.file_exists("res://data/probe.json")` = true and the text reads back **both with an empty `include_filter` and with `data/*.json`** (`export_filter="all_resources"`). Non-resource JSON files are packed in this configuration | G-14 include filter not needed in `all_resources` mode; keep `data/*.json` in the preset anyway as documentation. Re-check if the preset moves to `selected_resources` |
 | A8 | Project with **no** `Translation` registered: `tr("UI_X")` and a `Label` whose `text` is `"UI_X"` | returned text; label shows `UI_X` unchanged | D7.4–D7.5 |
-| A9 | `OS.is_debug_build()` in editor run, `--export-debug` and `--export-release` builds | value in each | `BuildFlavor` wiring in `Boot` |
-| A10 | `-s script -- --hito=calidad --only=narrative` | `OS.get_cmdline_user_args()` content; `quit(1)` exit code seen by the shell | D8.1–D8.2 |
+| A9 | `OS.is_debug_build()` | **PASS** | Editor/script run = `true`; exported **release** probe prints `debug_build=false` (also seen in ADR-0001 V-ENG-4 and the S0 `[boot] flavor=` line from `demo-windows`) | `BuildFlavor` stays injected (tests use `BuildFlavor.new(false)`) |
+| A10 | `OS.get_cmdline_user_args()`, exit code | **PASS** | Exported release probe run with `-- --x`: `OS.get_cmdline_user_args()` = `["--x"]`; `get_tree().quit(0)` ends the process; also used by `Boot` (`--boot-report`, exit 0) in `playtest-windows`/`demo-windows` | — |
 | A11 | `Dictionary.make_read_only()` / `Array.make_read_only()` then write | error or silent | D5.6 |
 | A12 | Parse a synthetic 200 KB `puzzles.json`-like file ×10 | median ms (record only; developer machine named) | § Performance budget |
 
@@ -1418,6 +1418,27 @@ gdUnit4, `tests/unit/data/` and `tests/unit/content/` (Logic, BLOCKING);
 - Every data error found in the slice is found by CI before a playtest build
   (zero data-caused load failures in playtests).
 - Adding a test language `xx` to one file requires no code change (T-C5).
+
+## Spike Results (2026-11-11)
+
+Godot 4.7.2.stable, headless. Test: `tests/unit/engine_facts/adr0005_json_parser_test.gd` (11 tests, all run).
+A1 (number typing) is **not repeated**: it is V-ENG-3 of ADR-0001 (`adr0001_json_roundtrip_test.gd`; all numbers parse as float,
+integers beyond 2^53 lose precision). Status stays `Proposed` until the developer accepts it. A7, A9 and A10 were run on 2026-11-11 in a Windows release export (templates 4.7.2 are now installed).
+
+| S-n | Claim | Result | Figures observed | Fallback / note |
+|---|---|---|---|---|
+| A1 | Number typing | See ADR-0001 V-ENG-3 | — | D4 handles both outcomes |
+| A2 | Malformed JSON gives line + message | PASS | `JSON.new().parse()` = `ERR_PARSE_ERROR` (43), `get_error_line()` = 7, message `Expected '}' or ','`; `parse_string` returns `null` and prints an engine `ERROR: Parse JSON failed` | Reopen-condition (no line info) not triggered. On single-line text the line is 0 |
+| A3 | Duplicate key `{"id":1,"id":2}` | Silent, **last wins** | `err` = OK, one key, `id` = 2.0 | D5.3 duplicate-ID rule applies to array items only; a duplicate object key cannot be detected after parsing (pre-check of the text, or accept) |
+| A4 | Non-standard syntax | MIXED | Rejected: `//` and `/* */` comments, `NaN`, `Infinity`, single quotes, hex. **Accepted silently:** trailing comma in array and in object, leading zero (`01` → 1.0) | R2/G-16: if trailing commas must be errors, `JsonText` needs a text pre-check; otherwise tolerated. `stringify(NAN)` writes `null`, `stringify(INF)` writes `1e99999` (reparses as `inf`): reader must reject non-finite per D4.1 |
+| A5 | UTF-8 and BOM | PASS with caveat | `«Sigo aquí.» — ñ` round-trips byte-exact. A BOM is **silently stripped** by `get_string_from_utf8` and by `FileAccess.get_file_as_string` (first code point `{`, no error) | The `JsonText` BOM check (D5.4) cannot work on the `String`: it must inspect bytes (`FileAccess.get_file_as_bytes`) before decoding, else the check never fires |
+| A6 | `FileAccess` on `res://` | PASS (editor/script run) | `get_file_as_string("res://project.godot")` = 881 chars, error `OK`; `open()+get_as_text()` identical. Missing path: `get_file_as_string` = `""`, `open()` = `null`, `get_open_error()` = 7 (`ERR_FILE_NOT_FOUND`, "File not found") for both | Note `get_file_as_string("")` of a missing file is indistinguishable from an empty file unless `get_open_error()` is read right after. Export (`.pck`) behaviour: NEEDS_MANUAL (A7) |
+| A7 | Export keeps `assets/data/*.json` readable | NEEDS_MANUAL | Not run (no export templates installed; nothing downloaded) | Steps: install export templates, `godot --headless --path . --export-debug "<preset>" <out>`, run a script that reads every fixture under `res://assets/data/`; if missing, add `*.json` to the preset include filter (G-14) |
+| A8 | No `Translation`: `tr("UI_X")` and `Label` | PASS | `tr("UI_X")` = `UI_X`, `Label.text` = `UI_X`, `TranslationServer.get_loaded_locales()` = `[]` | — |
+| A9 | `OS.is_debug_build()` | PARTIAL | Editor/script run = `true`. `--export-debug` / `--export-release`: NEEDS_MANUAL | `BuildFlavor` stays injected (tests use `BuildFlavor.new(false)`) |
+| A10 | `OS.get_cmdline_user_args()`, exit code | NEEDS_MANUAL | Needs a separate process | — |
+| A11 | `make_read_only()` | PARTIAL | `is_read_only()` = true for `Dictionary` and `Array`; reads unchanged. The write itself raises an engine error (not exercised: gdUnit counts it as a failure) | Re-check with a standalone script when D5.6 is implemented |
+| A12 | Parse of a ~200 KB file | PASS | Synthetic 317 KB (1 200 puzzle-like records), 10 runs: median **12,3 ms**, min 11,0, max 16,5 (developer machine, headless, 4.7.2) | R6 not an issue at the estimated size (< 300 KB total) |
 
 ## Open Items
 
