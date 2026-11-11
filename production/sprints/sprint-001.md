@@ -180,3 +180,23 @@ empezar ninguna historia.
 - **D-S1-3: Los «plazos de GameClock» entran por EC-005.** Ninguna historia de estado-y-bus los implementa, y EC-005 los asume (+0,5 d).
 - **D-S1-4: `production/sprint-status.yaml` no se escribe en esta pasada**, porque el orquestador limitó la salida a este fichero y a una línea del hito. Se genera con `/sprint-plan update` al empezar el sprint; las prioridades salen de las tablas de arriba (Must → `ready-for-dev`; Should y Nice → `backlog`).
 - **D-S1-5: Sin fechas.** El hito no tiene fecha y la capacidad es desconocida. Las fechas reales se anotan al empezar y al cerrar.
+
+## Resultado del Sprint 1 (2026-11-11)
+
+**Hecho: 10 historias** (7 comprometidas + 3 de la cola): EB-001, EB-002, EB-003, EB-004, EB-005, EB-006, EB-007, CD-001, CD-002, CD-003. Todas Logic, todas con tests gdUnit4 en verde. Suite final **290/290, 0 errores, 0 fallos, 0 huérfanos, 0 fugas de ObjectDB**, `forbid_timers` y `check_pins` limpios, arranque en debug sin fatal. Verificada por el lead tras cada historia (no solo por el agente).
+
+| Métrica | Valor | Fiabilidad |
+|---|---|---|
+| Historias cerradas | 10 de 15 del backlog del sprint (los 7 Must Have y 3 de los 8 de la cola) | medida |
+| Estimado de lo cerrado | ≈ 10,5 días-persona nominales (EB-006 añadida a la cola durante el sprint) | estimación de confianza BAJA |
+| Esfuerzo real en turnos de agente | ≈ 10–22 por historia, mediana ≈ 12; ≈ 130 en total incluidas reanudaciones y correcciones | medida aproximada (turnos que declaran los agentes) |
+| Tiempo de calendario | **NOT MEASURED** (el sprint se ejecutó en una sesión de trabajo continua; no hay fechas de inicio/fin) | — |
+| Defectos encontrados y corregidos dentro del sprint | 1 ciclo de referencias en tests (49 instancias filtradas al salir), 1 helper de test que dejaba huérfanos, 1 test frágil por carga | medida |
+
+**Qué se aprende (para rebaselinar M1)**
+- Con este modelo (una persona que dirige agentes, historias Logic ≤ 2 días nominales) el coste real es del orden de **una docena de turnos de agente por historia**, no de 1–2 días-persona. Las 124 historias de M1 serían ≈ 1.500 turnos si todas fueran de este tipo, pero **no lo son**: las Visual/Feel, UI e Integration exigen capturas, sesiones manuales con teclado y mando y juicio del desarrollador, y ahí el cuello de botella pasa a ser el desarrollador, no los agentes.
+- El estimado «130 días-persona» **no es una buena unidad** para este equipo; la unidad útil es «historias cerradas verificadas por sesión». No se puede convertir a calendario sin fechas: la próxima iteración debe registrar fecha de inicio y fin.
+- Calidad: ningún criterio se marcó hecho sin evidencia, pero hubo 3 incidencias de procedimiento (fugas, helper, test frágil) que un agente solo no vio; la verificación independiente del lead por historia es lo que las detectó. Mantenerla.
+- Deuda abierta: test frágil `tests/unit/engine_facts/adr0012_tick_interpolation_test.gd` (QA plan: aislar en `tests/timing/`); smoke formal `production/qa/smoke-*.md` de EB-006; enmiendas al ADR-0001 (el 2.º desbordamiento solo registra) y al ADR-0005 (nombres de hecho con mayúsculas, `float` exacto).
+
+**Pendiente de decisión del usuario** (sin cambios): U-1 replanificar M1 con este dato (orden de recorte del hito); U-3 las 6 decisiones de diseño de `design/gdd/gdd-cross-review-2026-11-10-r2.md`.
