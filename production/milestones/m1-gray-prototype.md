@@ -174,3 +174,4 @@ Del slice § 20: **D-04** (nombre de Vera: megafonía y formulario) toca M1, sin
 | 2026-11-11 | Línea base | PR-PHASE-GATE C12 |
 | 2026-11-11 | ADR 0005, 0006, 0010 y 0017 `Accepted` (spikes de datos y entrada automatizados; mando físico diferido). Desbloquea 7 épicos | Segundo tramo de M1 |
 | 2026-11-11 | ADR 0003, 0011 y 0012 `Accepted` tras sus spikes de física (suite 71/71); partes con ventana diferidas al prototipo jugable. Cola de diseño aplicada (lotes A, B, C; pendientes H3, H8, H9, H10, H12) | Primer tramo de M1 |
+| 2026-11-11 | Sprint 1 planificado (`production/sprints/sprint-001.md`): 10 días nominales, capacidad desconocida; Must 7 historias / 8 d (estado + datos hasta lecturas de hechos), cola de tirada 8 historias / 9,5 d (escritor de hechos, entrada hasta `GameClock`). Riesgo R-S1-1: backlog ≈ 130 d-p frente a ≈ 15 planificados; rebaselinar tras el Sprint 1 | Medir velocidad |
