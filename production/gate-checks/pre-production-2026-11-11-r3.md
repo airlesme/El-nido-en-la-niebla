@@ -195,4 +195,18 @@ Un PASS exige como mínimo los pasos 1, 2 y 9: el panel tiene que salir de CONCE
 
 ## Accepted Risks
 
-Ninguno todavía. El usuario no ha aceptado las CONCERNS de este informe y la fase sigue en `Concept`.
+Aceptadas por el usuario el 2026-11-11 (respuestas explícitas en la sesión) y fase avanzada de `Concept` a `Pre-Production` (decisión C13):
+
+| CONCERN | Decisión del usuario | Seguimiento |
+|---|---|---|
+| C1. 19/19 ADR Proposed | **Aceptada como riesgo**; aceptar 0001, 0002 y 0009 es tarea de Pre-Production | Deuda explícita ante el gate Pre-Production → Production (TD 2) |
+| C2. Auditoría de motor parcial (S4 sin log, 236 NOT SOURCEABLE, 0018/0019 sin revisar, `godot-specialist` sin consultar) | **Aceptada como riesgo** | Spikes y consulta dentro de Pre-Production, antes de aceptar cada ADR |
+| C6. Falta `control-manifest.md` | **Aceptada como riesgo** | `/create-control-manifest` cuando haya ADR Accepted |
+| C7. Sin UX specs de pantalla | **Aceptada como riesgo** | Se escriben en Pre-Production, empezando por las del primer hito |
+| C8. Tier de accesibilidad | **Confirmado: Estándar, sin modos de daltonismo** | Registrado en `design/accessibility-requirements.md` |
+| C9. S0 sin cerrar (export Windows/Linux) | **Aceptada como riesgo** | Primera tarea de Pre-Production; requiere export templates 4.7.2 y quitar `export_presets.cfg` de `.gitignore` |
+| C10. `godot` fuera del PATH | **Tarea del usuario**: añadir Godot 4.7.2 al PATH | Hasta entonces, ruta absoluta; anotar el editor local en `VERSION.md` |
+| C12. Sin baseline de hitos | **Se crean S0, S0b y M1 ahora** | `production/milestones/` |
+| C13. Salto de fase | **Aceptada: se avanza a Pre-Production** | `project.stage` y `production/stage.txt` actualizados |
+| C14. Logs de hooks sin rastrear | **Se ignoran en `.gitignore`** | Ruta `docs/architecture/production/` |
+| C15. CI verde solo declarado | **Aceptada; el usuario aportará el enlace del run después** | Anotarlo en `production/qa/` cuando llegue |
