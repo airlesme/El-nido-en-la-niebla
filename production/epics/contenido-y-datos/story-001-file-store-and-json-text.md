@@ -1,7 +1,7 @@
 # Story 001: `FileStore` y `JsonText` (BOM en bytes, comas finales, claves duplicadas)
 
 > **Epic**: Contenido narrativo y datos validados
-> **Status**: Ready
+> **Status**: Done — criterios con evidencia (suite 168/168); firma `FileStore` registrada como Open Item O5 de ADR-0009; revisión de `lead-programmer` omitida (modo lean)
 > **Layer**: Foundation (piezas de capa 0 Platform)
 > **Type**: Logic
 > **Estimate**: M (≈ 1 día, confianza BAJA)
@@ -78,3 +78,13 @@
 
 - Depends on: `production/epics/estado-y-bus/story-001-platform-seams.md`
 - Unlocks: `production/epics/contenido-y-datos/story-002-schema-and-data-reader.md`
+
+---
+
+## Evidencia
+
+- Código: `src/core/platform/file_store.gd`, `src/core/data/{json_text,data_issue,data_result}.gd`; doble `tests/doubles/memory_file_store.gd`.
+- Test: `tests/unit/content/json_text_test.gd` (16 casos). Suite completa 2026-11-11 (Godot 4.7.2): `Overall Summary: 168 test cases | 0 errors | 0 failures | 0 flaky | 0 skipped | 0 orphans`, 30/30 suites; `--import` sin errores.
+- AC1 (BOM/coma final/clave duplicada/JSON roto → null + issue con fichero, línea y código): cubierto. AC2 (`missing` vs `empty`, más `open_error`): cubierto. AC3 (contador de accesos, 2 lecturas = 2): cubierto.
+- Decisiones: `FileStore.read_bytes(path)` + `last_error()` (firma propuesta, `# TODO(ADR-0009)`); `JsonText.read(store, path, file, issues)` añadido porque el BOM exige bytes y `parse(text, …)` (firma ADR) solo recibe texto. Claves duplicadas comparadas por grafía cruda (sin resolver escapes).
+- Pendiente: registrar Open Item en ADR-0009 y revisión de `lead-programmer` (exigidos por la historia antes de cerrar).
