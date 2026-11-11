@@ -859,6 +859,27 @@ S-0003-A and S-0003-B pass unchanged; T-I2 shows no ownerless frame across
 all rows of the GDD 4 stack table; and the first grey-box playtest shows no
 visible frame of a half-configured scene.
 
+## Spike Results (2026-11-11)
+
+Godot 4.7.2.stable.official.ed1daf0bf, headless, Jolt (`physics/3d/physics_engine = DEFAULT`),
+60 Hz. Tests: `tests/unit/engine_facts/adr0003_instantiate_free_orphans_test.gd` (3/3 pass),
+`adr0003_zone_sensor_jolt_test.gd` (4/4 pass; they pin the observed values). Engine-level only:
+the real `SceneLoader`/`Shell`/grey `planta` do not exist yet, so the loop uses a packed scene
+built in the test (60 `Node3D` + 3 bus-subscribing elements + `Area3D` + `CharacterBody3D`).
+
+| S-n | Claim | Result | Figures | Fallback |
+|---|---|---|---|---|
+| S-0003-A (normal) | 10 × instantiate/`queue_free`: node count equals cycle 1, 0 orphans, subscribers at baseline, old instance invalid at U+1 | PASS | nodes 17 → 17; orphans 0; subscribers 0 → 0 (element that never disconnects is also cleaned by the engine); `is_instance_valid(old)` true in the same frame, false at U+1 in 10/10; `OBJECT_COUNT` Δ(c1→c10) = 0; `MEMORY_STATIC` Δ = +1 076 B | none (R1 not triggered) |
+| S-0003-A (tree paused) | same with `SceneTree.paused = true` during the free | PASS | nodes 17 → 17; orphans 0; invalid at U+1 in 10/10 | none |
+| S-0003-A (gdUnit exit) | the loop as a gdUnit4 test does not exit 101 | PASS | suite exit code 0, 0 orphans | none |
+| S-0003-B.1 | 100 entries, 0 doubles, 0 misses | PASS | 100 entries, 0 doubles, 0 misses (100 lanes, tick phases spread over one step) | none |
+| S-0003-B.1 | every entry with sensor centre X in [8,923; 8,95] | **FAIL** | observed [8,95013; 8,97653] (all 100 outside the ADR range). Zone face X 9,0 − r 0,05 = 8,95 is the touch point: Jolt reports on the first tick after the sphere surface crosses the face (band = touch + one step 0,0267 m), never earlier. Entry is exact and deterministic; only the range written in the ADR is off | R2 fallback as written (Alternative 5, arithmetic box test in `ZoneHub`) and update D8. Note for the ADR owner: the sensor itself behaves correctly; revising the documented range to (8,95; 8,977] is the alternative to Alternative 5 |
+| S-0003-B.2 | two zones with coincident faces entered in the same tick | PASS | both stamped physics frame 150; callback order was T-A, T-B although T-B was added first (hub must sort by ID itself, as designed) | none |
+| S-0003-B.3 | `monitoring = true` with the sensor already inside reports one entry within 1–2 ticks | PASS | 0 entries while disabled; 1 entry, 1 physics tick after enabling | none |
+| S-0003-B.4 | identical at 30, 60, 144 fps with physics at 60 Hz | PASS | sorted entry X lists identical at the three caps; count 100, doubles 0 each (`Engine.max_fps`, headless) | none |
+| S-0003-B.5 | `Engine.get_physics_frames()` stamps at each callback | PASS | used in B.2 and B.3 | none |
+| S-0003-C | grey `planta` synchronous load hitch (record only) | NOT RUN | needs the real `SceneSource`/grey `planta` | — |
+
 ## Open Items
 
 | # | Item | Owner | Before |
@@ -882,9 +903,9 @@ visible frame of a half-configured scene.
 | C5 | GDD 4 rule 17 (warn on «estado restablecido» with a loaded scene) vs TR-save-020 order (reset before request) for «Nueva partida» from the pause | End-of-frame check (§ Preconditions) |
 | C6 | GDD 21 rule 8a / F5 need `control_final` and `t_terminada`, but GDD 4/3 payloads of «iniciada»/«terminada» do not carry them | O1 |
 
-## Spike Results
+## Spike Results (index)
 
-*Empty until S-0003-A/B/C run on 4.7.2.*
+See `## Spike Results (2026-11-11)` above, before Open Items. S-0003-C is still not run.
 
 ## Related
 
