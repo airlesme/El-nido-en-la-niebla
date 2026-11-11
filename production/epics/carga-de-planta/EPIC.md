@@ -3,7 +3,8 @@
 > **Layer**: Core
 > **GDD**: design/gdd/escena-de-planta.md (§ Overview l. 15, § Acceptance Criteria l. 302)
 > **Architecture Module**: Capa 2 — 4 Escena (`SceneLoader`, autoload n.º 8; `WorldSlot` en `Shell`); `architecture.md` § API Boundaries «Escena (4) — ADR-0003»
-> **Status**: Ready — 21/23 TR libres; TR-scene-009 co-cita ADR-0008 y TR-scene-022 co-cita ADR-0005
+> **Status**: **LISTO** — 22/23 TR libres; TR-scene-009 co-cita ADR-0008 (Proposed)
+> **Actualizado 2026-11-11**: desbloqueado por ADR-0005 (TR-scene-022)
 > **Stories**: Not yet created — run `/create-stories carga-de-planta` (antes: índice A1)
 > **Control manifest**: v2026-11-11 — § Core Layer Rules **vacía: no incluye ADR-0003** (índice A1) + reglas transversales de Foundation
 > **Engine Risk**: HIGH (`Area3D` bajo Jolt; sensor de zona en (8,95; 8,977])
@@ -23,7 +24,7 @@ zonas. Entra aquí S-0003-C (tirón de carga síncrona), diferido por ADR-0003 h
 | ADR-0003: Scene loading and sin-control handoff (Accepted) | Carga en `WorldSlot`, cortina, traspaso de `sin control`; S-0003-A/B pasados | HIGH |
 | ADR-0009: Service composition (Accepted) | `SceneLoader` autoload; inyección vía `configurar(ctx)` | LOW |
 | ADR-0001 (Accepted) | Avisos de carga por el bus | MEDIUM |
-| ADR-0005, ADR-0008 (Proposed) | Co-citados en TR-scene-022 y TR-scene-009 | — |
+| ADR-0005 (Accepted) · ADR-0008 (Proposed) | ADR-0005 en TR-scene-022; ADR-0008 en TR-scene-009 | — |
 
 ## Criterios de aceptación del épico (trazables al hito)
 
@@ -59,8 +60,14 @@ Fuente: `docs/architecture/tr-registry.yaml` (v2, 2026-11-10), filas `system:` s
 | TR-scene-019 | Descarga total (volver al título): emite «descarga total solicitada», descarga, repone `menú` y emite «descarga total completada»; duración declarada ≤ 3,0 s (`t_descarga_total_max_s`, 1�... | ADR-0003 ✅ |
 | TR-scene-020 | 4 es el único emisor de «partida terminada» (en el mismo fotograma, tras «carga de escena terminada» de `recepcion`; nunca en fallo); 4 no escribe hechos y solo lee `llamada_completada` (regla... | ADR-0001, ADR-0003 ✅ |
 | TR-scene-021 | Escena obsoleta: «estado restablecido»/«estado restaurado» con escena cargada y sin recarga pedida = advertencia (error visible en dev), sin parchear elementos. | ADR-0001, ADR-0003 ✅ |
-| TR-scene-022 | Validación de `load_transitions.json` al arrancar (`d` ≤5 s, `T_cap` 3–30, `N_gap` 0–10, `Δ_max` 0,05–0,1); inválido/ausente = no se entra en partida, manejador fatal con código `DATOS_... | ADR-0003 ✅ (+ ADR-0005 Proposed) |
+| TR-scene-022 | Validación de `load_transitions.json` al arrancar (`d` ≤5 s, `T_cap` 3–30, `N_gap` 0–10, `Δ_max` 0,05–0,1); inválido/ausente = no se entra en partida, manejador fatal con código `DATOS_... | ADR-0003, ADR-0005 ✅ |
 | TR-scene-023 | Testabilidad con dobles inyectados (cargador de escenas falso, cortina doble, jugador espía, elemento espía con `configurar()`, estado falso, bus falso, reloj de ticks enteros); varios AC marcado... | ADR-0003 ✅ |
+
+## Requisitos bloqueados (al 2026-11-11)
+
+| TR-ID | Bloqueado por | Motivo / salida |
+|-------|---------------|-----------------|
+| TR-scene-009 | ADR-0008 (Proposed) | audio |
 
 ## Definition of Done
 
