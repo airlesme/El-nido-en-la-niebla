@@ -191,3 +191,22 @@ Nota de nombres: los presets escriben `el-nido.exe` / `el-nido.x86_64`. Los nomb
 - **C-S0-10** ADR-0001: V-ENG-1…6 PASS en 4.7.2 (suite 31/31, verificada); **Accepted** con C1 diferida al spike S-0006 de M1 (decisión del usuario).
 - **C-S0-11** ADR-0009: **Accepted** (0001 y 0002 aceptados; C9 anotada para la historia de Recepción).
 - Foundation (0001, 0002, 0009) aceptada: ninguna historia de M1 nace bloqueada por esos tres ADR. Siguen Proposed los otros 16 ADR.
+
+### Cierre de S0 (2026-11-11, verificado)
+
+| Criterio | Estado | Evidencia |
+|---|---|---|
+| C-S0-1 presets + `.gitignore` | **Hecho** | `export_presets.cfg` commiteado, 4 presets exportan |
+| C-S0-2 templates (V-18-3) | **Hecho** | SHA-512 verificado y fijado en `tools/godot/version.txt` |
+| C-S0-3 exports arrancan (V-18-1) | **Hecho en Windows; Linux solo exportado** | `[boot]` en consola + capturas del motor en `production/qa/evidence/s0-export/` (escena vacía gris, esperado). Linux sin ejecutar (NOT VERIFIED) |
+| C-S0-4 `BuildFlavor` (V-18-2) | **Hecho** | editor debug, `playtest-windows` debug, `demo-windows` release |
+| C-S0-5 CI rojo ante fallos (V-18-4) | **Pendiente** | requiere GitHub |
+| C-S0-6 `src/dev/` ausente en `demo-*` (V-18-5/6) | **Hecho** | `audit_artifact.sh` con control positivo (`playtest-*`) y negativo (`demo-*`) + autotest verde |
+| C-S0-7 boot report, clon limpio, caché idéntica (V-18-7/8/9) | **Parcial** | boot report hecho (`--boot-report` sale 0); clon limpio y caché ×5 pendientes (recortables a M1) |
+| C-S0-8 tiempos (V-18-10) | **Hecho (local)** | `## Measured 2026-11-11` en ADR-0018; tiempos de CI NOT MEASURED |
+| C-S0-9 S4 manual | **Hecho** | ADR-0002 Accepted (mando sin confirmar por separado) |
+| C-S0-10 / C-S0-11 ADR 0001 y 0009 | **Hecho** | Accepted, C1 diferida a S-0006 |
+| C-S0-12 versión del editor | **Hecho** | `VERSION.md` |
+| C-S0-13 CI verde con run id | **Parcial** | run `42980040179` declarado por el usuario; falta un run tras los cambios de hoy |
+
+Suite local tras el cierre: 35 tests, 0 errores, 0 fallos, 0 huérfanos. **Estado del hito: casi cerrado.** Pendiente para «Cerrado»: C-S0-5 y C-S0-13 (GitHub), y recortables V-18-8/V-18-9 → M1.

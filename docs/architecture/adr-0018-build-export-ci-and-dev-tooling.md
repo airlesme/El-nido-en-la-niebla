@@ -625,6 +625,21 @@ one (exit 0), a playtest one without the marker (exit 2), an empty one (exit 2);
 `check_pins.sh` fixture with a mismatched version (non-zero). Shell scripts are
 tested by running them in CI on fixtures under `tests/fixtures/ci/`.
 
+## Measured 2026-11-11
+
+Local dev machine (reference machine REF-1: Core Ultra 7 265H, Windows 11), Godot 4.7.2, empty scene + 9 skeleton autoloads. Wall-clock, single run each (no averaging: indicative, not a benchmark). **CI timings on GitHub runners are still NOT MEASURED.**
+
+| Step | Time | Artifact |
+|---|---|---|
+| `--import` | 5.7 s | — |
+| gdUnit4 suite (35 tests) | 4.8 s | — |
+| Export `playtest-windows` (debug) | 7.9 s | 103,035,904 B exe |
+| Export `demo-windows` (release) | 7.9 s | 109,127,680 B exe |
+| Export `demo-linux` (release) | 6.2 s | 73,519,416 B |
+| `playtest-linux` | exported earlier, not timed | 73,703,800 B |
+
+Verified (V-18-2, V-18-5/6): `[boot] flavor=` prints `debug` from the editor and `playtest-windows`, `release` from `demo-windows`. `tools/ci/audit_artifact.sh` finds the `src/dev/` path (positive control, `src/dev/dev_marker.gd`) in both `playtest-*` PCKs and finds nothing forbidden in both `demo-*`; its self-test passes. The marker *text* is not visible in the bytes with `script_export_mode=2` (binary tokens), so the control rests on the path string. Linux binaries were exported and audited but never run.
+
 ## Open Items
 
 | ID | Item | Owner |
