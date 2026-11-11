@@ -68,7 +68,7 @@ R16. **Teclado en pantalla (cierra la Open Question 1 de Entrada).** Si el dispo
 
 R17. **Sin dependencia del color ni del sonido.** Todo estado se codifica con forma o texto: foco del campo (borde grueso + cursor de texto), fila seleccionada (marca ▶ + fondo), coincidencia (texto), botón deshabilitado (texto atenuado + sin relieve + el lector de pantalla lo anuncia como «no disponible»). Contraste mínimo texto/fondo 4,5:1 (7:1 para el cuerpo de correo), según WCAG 2.1 SC 1.4.3 y 1.4.6. El sonido de teclado (`SFX_KEY`) es accesorio.
 
-R18. **Tamaño y escala.** La cámara del modo `ordenador` debe dejar la pantalla ocupando ≥ `pantalla_min_px` (1280 px† lógicos de ancho a 1080p) para que el texto sea legible sin zoom ‡. Tamaño mínimo de texto: 24 px† lógicos a 1080p (cuerpo de correo 28 px†). La UI se dibuja a resolución lógica de 1920 × 1080 y escala con el viewport (slice §21) sin recortar el teclado en pantalla ni el panel de lectura en 16:9 y 16:10. Los píxeles de R16, F5 y los AC son lógicos salvo que se diga «físicos».
+R18. **Tamaño y escala.** La cámara del modo `ordenador` debe dejar la pantalla ocupando ≥ `pantalla_min_px` (1280 px† lógicos de ancho a 1080p) para que el texto sea legible sin zoom ‡. Tamaño mínimo de texto: 24 px† lógicos a 1080p (cuerpo de correo 28 px†). La **pantalla del ordenador es un overlay del lienzo raíz** alojado en `SceneUi` (ADR-0016 OI-10, H21; no una superficie 3D del mundo ni un `SubViewport`). La UI se dibuja a resolución lógica de 1920 × 1080 y escala con el viewport (slice §21) sin recortar el teclado en pantalla ni el panel de lectura en 16:9 y 16:10. Los píxeles de R16, F5 y los AC son lógicos salvo que se diga «físicos».
 
 R19. **Gesto de manos.** Mientras se teclea (caracteres desde teclado o teclas del teclado en pantalla) 19 pide a 2 `reproducir_gesto('HAND_TYPE')` (bucle). Termina con `reposo()` tras `t_tipeo_inactivo` (1,0 s† sin caracteres) o en `on_close`. Un rechazo del Jugador no impide escribir (el gesto es decorativo).
 
@@ -216,7 +216,7 @@ Dependencias recíprocas con regla o AC citado de la otra parte. `‡` = la cont
 | `resultados_incluyen_ruido` (dato) | verdadero† | bool | 6 resultados (con `MAIL_X1`/`MAIL_X2`) o 4 | PA-4; slice C.2 vs Escena 2 |
 | Orden de presentación | 3, X1, 1, 4, X2, 2 | fijo | No revelar la solución | 18 regla 12; no es un knob de juego |
 
-Todos los valores son datos (`assets/data/`), no constantes en código.
+Todos los valores son datos (`assets/data/computer/computer.json`, ruta por G14/ADR-0005 D1), no constantes en código.
 
 ---
 
@@ -285,6 +285,7 @@ Reclasificadas como preguntas abiertas en la ronda de corrección 1 (alcance del
 ---
 | D19-22 | **(Ronda de corrección 9, `gdd-cross-review-2026-11-10.md`)** Las ‡ de la fila de 17 (pistas del P1: `sistema-de-pistas.md` regla 32), 23 (`SFX_PRINTER`, `SFX_KEY`, `SFX_CLICK_SUBTLE`: `director-de-audio.md`) y 25/30 (escala de texto: `menu-de-pausa.md`, `opciones-de-accesibilidad.md`) se sustituyen por el fichero. 17 lee `correos_leidos` (blanda, vía 3) | Dejar las ‡ | Los contratos ya están en esos GDD |
 | D19-23 | **(Ronda de corrección 10, restos R15)** `texto_min_px`: rango [24, 32] en lugar de [20, 32] | Dejar 20–32 | El suelo de texto de 30 (regla 26) es 24 px lógicos; el rango no puede permitir bajar de él. El registro (`texto_min_px`, range [20,32]) debe alinearse (cambio requerido, no editado aquí) |
+| D19-24 | **(2026-11-11, M1 cola B; H21 = ADR-0016 OI-10; G14 = ADR-0005 O1)** (a) R18: la pantalla del ordenador es un overlay del lienzo raíz en `SceneUi`; (b) los valores viven en `assets/data/computer/computer.json`. Tensión anotada, sin resolver aquí: la cláusula de R18 «la cámara del modo `ordenador` debe dejar la pantalla ocupando ≥ `pantalla_min_px`» describe el encuadre del monitor `V01`; con un overlay, `pantalla_min_px` se mide sobre el ancho lógico del overlay y la cámara solo encuadra `V01`. A revisar con 2 y 7 | (a) `SubViewport` sobre una malla 3D del monitor (también contradice H30, que es [U] para los puzles 2/5, no para 19); (b) dejar `assets/data/` genérico | ADR-0016 OI-10 lo confirma para el slice (cierra ADR-0007 OI-5); ADR-0005 D1 fija `assets/data/<dominio>/<snake>.json`. |
 
 ## Preguntas abiertas
 
