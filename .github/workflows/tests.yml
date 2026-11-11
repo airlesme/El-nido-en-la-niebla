@@ -34,17 +34,43 @@ jobs:
             exit 1
           fi
 
+      # ADR-0018 D6 step 3: Godot/gdUnit4 pins agree across version.txt, this file,
+      # VERSION.md, plugin.cfg and project.godot.
+      - name: Check version pins
+        run: bash tools/ci/check_pins.sh
+
+      # D6 steps 4-5. NOT VERIFIED (workflow never run): the pinned Linux editor is
+      # not installed in its own step yet (LINUX_ARCHIVE/LINUX_SHA512 in
+      # tools/godot/version.txt are pending download). Until then the gdUnit4 action
+      # below installs Godot 4.7.2; import and parse run after it, via `godot` on PATH
+      # if the action puts it there. If it does not, move these two steps after
+      # the pinned-install step once that exists.
+      # - name: Install pinned Godot (D6 step 4)  # TODO when LINUX_* are pinned
+
+      # D6 step 9, with a negative control so the gate has been watched fail.
+      - name: Forbidden-API self-test
+        run: bash tools/ci/test_forbid_timers.sh
+      - name: Forbid SceneTreeTimer / Timer for game time (ADR-0002 D6)
+        run: bash tools/ci/forbid_timers.sh
+
+      # D6 step 10 (data check) is trimmable from S0: enable once ADR-0005 is Accepted
+      # and tools/data_check/data_check.gd exists. Absence rule: fail if assets/data/**/*.json
+      # exists and the verifier does not.
+      # - name: Data check
+      #   run: godot --headless --path . -s res://tools/data_check/data_check.gd
+
       # godot-version must be a full release (4.7.2), not VERSION.md's "4.7".
       # version: installed runs the gdUnit4 committed in addons/; without it the
       # action deletes that copy and installs the latest release.
+      # paths: `tests` matches project.yaml commands.test (res://tests), so later
+      # folders (tests/smoke) are not silently outside CI.
       - name: Run GdUnit4 Tests
         uses: godot-gdunit-labs/gdUnit4-action@v1
         with:
           godot-version: '4.7.2'
           version: 'installed'
           paths: |
-            tests/unit
-            tests/integration
+            tests
           report-name: test-results
 
       - name: Upload Test Results
