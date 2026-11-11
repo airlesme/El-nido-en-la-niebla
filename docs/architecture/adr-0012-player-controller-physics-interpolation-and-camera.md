@@ -226,11 +226,17 @@ presentation with a `TickInterpolator` (pure `RefCounted`, ~30 lines):
 - On every physics tick it receives the new physics eye position
   (`global_position + Vector3.UP × altura_ojos`) and the scalar step phase
   `d` and speed ratio `r`, shifting `prev ← curr ← new`.
-- On every `_process` it advances an accumulator that **mirrors the engine's**:
-  `acc += frame_dt − ticks_since_last_frame × dt`, clamped to `[0, dt]` (the
-  clamp re-synchronises after a hitch, a max-steps cut or the engine's jitter
-  fix), and returns `α = acc / dt`. `frame_dt` is `GameClock.delta()` — 0
-  while paused, so the rig holds in both ADR-0002 variants.
+- **[Amended 2026-11-11 by spike S-0012-A, R1]** On every `_process` it takes
+  `α = Engine.get_physics_interpolation_fraction()` (valid with engine
+  interpolation off; measured deviation ≤ 1e-13, 0 non-monotonic frames at
+  30/60/144/uncapped). It **must not** keep its own accumulator: the original
+  design (`acc += frame_dt − ticks_since_last_frame × dt`, clamped to `[0, dt]`)
+  drifted from the engine's and failed at 144 fps (worst deviation 69,9 %).
+  Pause: with the tree paused (ADR-0002 variant A) physics and `_process` of
+  the Player stop, so the rig holds (S-0012-F regression: 30/30 paused frames
+  identical). Variant B (tree not paused) is **not measured** for this fraction:
+  if B is ever adopted, the interpolator must be frozen explicitly while
+  `GameClock` is paused (open item).
 - The rig shows `lerp(prev, curr, α)` (position) and evaluates F3 bob with
   `lerp(d_prev, d_curr, α)`, `lerp(r_prev, r_curr, α)`. That is standard
   one-tick-latency interpolation: it never extrapolates.
@@ -793,7 +799,11 @@ sourcing.
 - **P-2** The body node **must never** be rotated; yaw and pitch live in
   `Player` floats and are applied only to `Look`.
 - **P-3** Engine 3D physics interpolation **must** stay off project-wide
-  (S-0012-F); no code **may** call any NP-3 API. Presentation smoothing of the
+  (S-0012-F); no code **may** call any NP-3 API **except**
+  `Engine.get_physics_interpolation_fraction()` (amendment 2026-11-11, spike
+  S-0012-A R1: it works with engine interpolation off and is the only valid
+  alpha for `TickInterpolator`; `TickInterpolator` **must not** keep its own
+  accumulator, see § Spike Results). Presentation smoothing of the
   Player **must** go through `TickInterpolator`; exponential smoothing of the
   camera position or orientation **must never** be added.
 - **P-4** Look **must** be applied 1:1 in the frame it is consumed, without
