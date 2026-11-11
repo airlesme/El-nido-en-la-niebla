@@ -1,0 +1,8 @@
+; Throwaway spike for ADR-0001 V-ENG-4. Not part of the game.
+config_version=5
+
+[application]
+
+config/name="bus-spike"
+run/main_scene="res://main.tscn"
+config/features=PackedStringArray("4.7")
