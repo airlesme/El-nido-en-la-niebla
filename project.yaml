@@ -54,6 +54,15 @@ naming:
   files: snake_case
   scenes: snake_case
 
+# Budgets provisionales (ADR-0019, 2026-11-10). Equipo de referencia: portátil de
+# desarrollo (Core Ultra 7 265H, iGPU Intel, 15,4 GB). Sin medir: NOT VERIFIED.
+performance:
+  target_framerate: 60
+  frame_budget_ms: 16.67
+  draw_call_limit: 1500
+  memory_ceiling_mb: 3072
+  enforce: warn
+
 commands:
   # `godot` is on PATH in the cloud environment (installed by its setup script).
   # On a local machine without it on PATH, use the editor's full path via /settings.
