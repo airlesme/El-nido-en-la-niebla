@@ -1,7 +1,7 @@
 # Story 001: `InputTypes`, `BindingTable` y `default_bindings.json`
 
 > **Epic**: Entrada y controles
-> **Status**: Ready
+> **Status**: Done
 > **Layer**: Foundation
 > **Type**: Logic
 > **Estimate**: M (≈ 1,5 días, confianza BAJA)
@@ -70,7 +70,7 @@
 
 **Story Type**: Logic
 **Required evidence**: `tests/unit/input/binding_table_test.gd` — must exist and pass.
-**Status**: [ ] Not yet created
+**Status**: [x] Created and passing (see `## Evidencia`)
 
 ---
 
@@ -78,3 +78,17 @@
 
 - Depends on: `production/epics/estado-y-bus/story-001-platform-seams.md`, `production/epics/contenido-y-datos/story-002-schema-and-data-reader.md`, `production/epics/contenido-y-datos/story-003-data-catalog-and-validator.md`
 - Unlocks: `production/epics/entrada-y-controles/story-002-engine-input-adapter.md`, `production/epics/entrada-y-controles/story-013-binding-labels.md`
+
+---
+
+## Evidencia
+
+- Suite propia: `tests/unit/input/binding_table_test.gd`, 38 casos, 0 fallos, 0 huerfanos (Godot 4.7.2, headless).
+- Suite completa (`-a res://tests`): 349 casos, 41 suites, 0 errores, 0 fallos, 0 huerfanos; sin `ObjectDB instances were leaked` ni `resources still in use`. (El `SCRIPT ERROR ... nonexistent_method` del log es de un test de hechos del motor preexistente.)
+- `--import` sin errores.
+- AC-01: 13 acciones fisicas cerradas por enum en el esquema; `leer/agarrar/rotar/mantener/repasar_bolsillo/correr/agacharse/saltar` rechazadas (fatal en `actions[n].name`) y ausentes de la tabla.
+- AC-04 (L): objetos cerrados; `chord_with`, `double_tap`, `reaction_window_s`, `combo`, `timer`, `modifier` son fatales; solo `t_hold_s` y `d_drag_px` en `tuning`.
+- AC-19 (1.a mitad): fixture en `MemoryFileStore` con otro `code`/`t_hold_s` se refleja sin tocar codigo.
+- Fichero ausente / JSON corrupto / version / rango: `ctx.fatal` CATALOGO_INVALIDO con `param` culpable.
+- Decisiones fallback (`TODO(ADR-0006)` en el esquema): orden de las 4 teclas de `mover` (arriba, abajo, izq., der.) y un binding por eje de stick para `mover`/`mirar`; claves de `tuning`/`toggles` propias.
+- Cambio a fichero compartido: solo la fila/esquema de `input/default_bindings.json` en `data_catalog.gd`.

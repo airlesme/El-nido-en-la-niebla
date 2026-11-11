@@ -90,10 +90,11 @@ static func _row(path: String, owner: int, load_point: LoadPoint, policy: Releas
 ## branch is filled when that story lands. Until then the row stays registered but is not swept.
 static func _schema_for(path: String) -> DataSchema:
 	# TODO(CD-004): narrative/* schemas (src/narrative/data/*_schema.gd) from the ContentDB story.
-	# TODO(ADR-0006): input/default_bindings.json schema from the input story.
 	# TODO(ADR-0010): puzzles/puzzles.json schema (PuzzlesSchema) from the puzzles story.
 	match path:
 		"state/flags.json":
 			return FlagsSchema.new() # EB-005 (src/core/state/data/)
+		"input/default_bindings.json":
+			return DefaultBindingsSchema.new() # EC-001 (src/input/data/)
 		_:
 			return null
