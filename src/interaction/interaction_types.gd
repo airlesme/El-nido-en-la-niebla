@@ -20,3 +20,16 @@ const PIE_PERSISTENTE: float = -1.0
 const OCCLUSION_MASK: int = 1 << 0
 ## Interactable pick volumes, bit 3 (ADR-0011 D1).
 const LAYER_INTERACTABLE: int = 1 << 2
+
+
+## F1 contact of one pick volume (ADR-0011 Key Interfaces). Instances live in a pre-sized pool that is
+## refilled every step (G-10), never allocated per step.
+class ContactInfo extends RefCounted:
+	## `PickRegistry` index of the entry.
+	var entry: int = -1
+	## Axis depth of the contact point (m).
+	var d_c: float = 0.0
+	## Distance from the box to the eye ray (m); 0 when `contains_axis`.
+	var delta: float = 0.0
+	var contains_axis: bool = false
+	var contact_point: Vector3 = Vector3.ZERO

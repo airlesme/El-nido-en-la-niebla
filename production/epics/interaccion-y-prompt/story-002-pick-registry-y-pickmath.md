@@ -1,7 +1,7 @@
 # Story 002: `PickRegistry` y `PickMath` — contactos F1 aritméticos
 
 > **Epic**: Interacción y prompt (mitad Interacción)
-> **Status**: Ready
+> **Status**: Done (2026-11-11; evidencia abajo)
 > **Layer**: Feature
 > **Type**: Logic
 > **Estimate**: L — 1,5 días (1–2,5), confianza BAJA
@@ -82,3 +82,12 @@
 
 - Depends on: `production/epics/interaccion-y-prompt/story-001-catalogo-interactuables.md`
 - Unlocks: `production/epics/interaccion-y-prompt/story-003-capas-y-oclusion.md`, `production/epics/interaccion-y-prompt/story-004-focus-selector.md`
+
+---
+
+## Evidencia
+
+- **Suite bloqueante** (`-a res://tests -i res://tests/timing`, Godot 4.7.2): 456 test cases | 0 errors | 0 failures | 0 orphans; 46/46 suites; salida completa sin `ObjectDB instances were leaked` ni `resources still in use`. `--import` sin errores.
+- `tests/unit/interaction/pick_math_test.gd`: 19/19. AC-01 (id desconocido, vacío, duplicado, forma/escala/capa inválidas), AC-02 (1,38 m sí; 1,9 m no; 1,79/1,81 en el límite), AC-07b (origen del puerto `EyeRaySource`, no la cámara), orden por `id` y reutilización del pool, límites de radio y alcance, caja detrás, origen dentro, rayo paralelo, y oráculo de fuerza bruta con semilla 20261111 (400 rayos, 0 discrepancias).
+- Notas: (1) con el rayo paralelo a una cara, `f(t)` es plana y `d_c` es cualquier profundidad dentro de la caja (ADR-0011 D3 tal cual; `delta` es exacto). (2) Ficheros: `pick_math.gd`, `pick_registry.gd`, `interactable_pick.gd`, `ports/eye_ray_source.gd` en `src/interaction/` (el ADR dice `focus/pick_math.gd`; se sigue la historia) y `ContactInfo` en `interaction_types.gd`.
+- Pendiente fuera de alcance: `TODO(ADR-0012 OI-4)` adaptador de `rayo_vision()` (el puerto usa dos getters, sin asignaciones); `TODO(IP-003)` RIDs excluidos; `TODO(IP-004)` índices de `habilitado_si`. No medido FE-G01 (rendimiento real con 40 entradas).
