@@ -178,3 +178,6 @@ $RECYCLE.BIN/
 
 # === Portable Godot (downloaded by tools/godot/setup.ps1) ===
 tools/godot/bin/
+
+# Logs de sesion de hooks generados fuera de production/ por un agente
+docs/architecture/production/
