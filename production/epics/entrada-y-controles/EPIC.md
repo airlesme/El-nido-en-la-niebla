@@ -5,9 +5,31 @@
 > **Architecture Module**: Capa 1 — 1 Entrada (`InputRouter`, autoload n.º 4); `architecture.md` § API Boundaries «Entrada (1) — ADR-0006»
 > **Status**: **LISTO** — 19/19 TR libres; comprobaciones de mando físico (familia, hot-plug, zona muerta real, foco) NEEDS_MANUAL en el prototipo jugable
 > **Actualizado 2026-11-11**: desbloqueado por ADR-0006 (S-0006 automatizado; C1 medido: el bus no debe contar con entrega en el mismo fotograma a un suscriptor de física)
-> **Stories**: Not yet created — run `/create-stories entrada-y-controles` (tras regenerar el manifiesto, índice Q2)
+> **Stories**: 15 historias (15 Ready, 0 Blocked) — índice con estimaciones y diferidos en `stories.md` (2026-11-11, manifiesto 2026-11-11b)
 > **Control manifest**: v2026-11-11 — § Foundation Layer Rules (sin reglas propias de Entrada: ADR-0006 excluido)
 > **Engine Risk**: HIGH (`DEVICE_ID_MOUSE/KEYBOARD` en 4.7, SDL3, foco dual)
+
+## Stories
+
+| # | Story | Type | Status | ADR |
+|---|-------|------|--------|-----|
+| 001 | `InputTypes`, `BindingTable`, `default_bindings.json` | Logic | Ready | ADR-0006, ADR-0005 |
+| 002 | `EngineInputAdapter` → `RawInput` | Logic | Ready | ADR-0006 |
+| 003 | Pila de contextos y sinks | Logic | Ready | ADR-0006, ADR-0003, ADR-0001 |
+| 004 | Operaciones de `sin control` | Logic | Ready | ADR-0006, ADR-0003 |
+| 005 | Tope de seguridad, `carga_en_curso`, reinicio de pila | Logic | Ready | ADR-0006, ADR-0002, ADR-0003 |
+| 006 | Transiciones bloqueantes y `repasar_bolsillo` | Logic | Ready | ADR-0006 |
+| 007 | Dispositivo activo F7 | Logic | Ready | ADR-0006, ADR-0002 |
+| 008 | Movimiento y mirada F1–F3 | Logic | Ready | ADR-0006 |
+| 009 | Cursor virtual F5 | Logic | Ready | ADR-0006, ADR-0011 |
+| 010 | Reconocedor de gestos F6 | Logic | Ready | ADR-0006, ADR-0011 |
+| 011 | `interactuar` corto / largo | Logic | Ready | ADR-0006 |
+| 012 | Precedencia del campo de texto | Logic | Ready | ADR-0006 |
+| 013 | `get_binding_label` | Logic | Ready | ADR-0006 |
+| 014 | Disparadores de pausa | Integration | Ready | ADR-0006, ADR-0002 |
+| 015 | Composición en `Boot` y sesión manual | Integration | Ready | ADR-0009, ADR-0006 |
+
+Diferido por ADR-0007 (TR-input-015, -016 export/import, -019) y ADR-0016 (capa visual del cursor y glifos): ver `stories.md` § Diferido. ADR-0006 `depends_on` ADR-0007 solo por `settings_applied`/`controles`; decisión registrada en `stories.md`.
 
 ## Overview
 
