@@ -2,7 +2,7 @@
 
 ## Status
 
-Proposed
+Accepted (2026-11-11) — SP-1, SP-3 and SP-6 run on 4.7.2 (geometry equals min(W/1920, H/1080) on 7 resolutions, in test and in a real window); SP-2 and SP-5 partial and SP-4 (screen reader, Narrator) deferred as NEEDS_WINDOWED / NEEDS_MANUAL to the playable prototype
 
 > **Who may move this to `Accepted`: the user, or `technical-director` on the
 > user's explicit confirmation. No other agent, and no skill on its own.**
