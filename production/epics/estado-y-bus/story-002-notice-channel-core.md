@@ -1,7 +1,7 @@
 # Story 002: `NoticeChannel` — suscripción, cola FIFO, drenaje síncrono sin reentrada
 
 > **Epic**: Estado y bus de eventos
-> **Status**: Ready
+> **Status**: Done
 > **Layer**: Foundation
 > **Type**: Logic
 > **Estimate**: M (≈ 1 día, confianza BAJA)
@@ -83,3 +83,10 @@
 
 - Depends on: `production/epics/estado-y-bus/story-001-platform-seams.md`
 - Unlocks: `production/epics/estado-y-bus/story-003-notice-channel-cap-and-lifecycle.md`, `production/epics/estado-y-bus/story-004-notice-ids-registry.md`
+
+## Evidencia
+
+- Código: `src/core/notice_channel.gd`; tests: `tests/unit/state/notice_channel_core_test.gd` (13 casos).
+- CA-09, CA-10, CA-12, CA-16 cubiertos (más: avisos con/sin payload, filtrado FACT/NOTICE, FIFO con encolado durante drenaje, baja de handle desconocido/0/negativo/doble, handles distintos > 0).
+- `--import` sin errores. Suite completa (2026-11-11): `Overall Summary: 152 test cases | 0 errors | 0 failures | 0 flaky | 0 skipped | 0 orphans` (139 previos + 13 nuevos).
+- Nota: `_max_chained`, `_log`, `_errors`, `_schema` se guardan pero aún no se usan (003/004).
