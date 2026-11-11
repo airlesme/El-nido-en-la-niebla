@@ -68,7 +68,9 @@ dist/
 # Keep this un-ignore, or run `godot --headless --import` once after cloning.
 !**/.godot/global_script_class_cache.cfg
 *.translation
-export_presets.cfg
+# export_presets.cfg is TRACKED (ADR-0018 D1.1 / O7): it holds no secrets in the slice.
+# Credentials, if ever added, live in this separate file, which stays ignored.
+export_credentials.cfg
 # Uncomment if using Godot:
 # *.import
 
@@ -78,6 +80,8 @@ export_presets.cfg
 [Oo]bj/
 [Bb]uild/
 [Bb]uilds/
+# tools/build/ holds the export scripts (ADR-0018 D1); only the root build/ output is ignored.
+!/tools/build/
 [Ll]ogs/
 [Uu]ser[Ss]ettings/
 *.csproj

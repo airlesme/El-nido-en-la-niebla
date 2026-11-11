@@ -4,3 +4,17 @@
 VERSION=4.7.2-stable
 ARCHIVE=Godot_v4.7.2-stable_win64.exe.zip
 SHA512=83decd58fdf67b9d657958a1ae6bf1929c20785315a81effe245874cdc57acb709bf868e00778a96984338c1b29dafdb453c6847747694621c6ecf5da2259993
+# Full build string of the pinned editor (docs/engine-reference/godot/VERSION.md).
+BUILD=4.7.2.stable.official.ed1daf0bf
+# Addon pin; truth is addons/gdUnit4/plugin.cfg version= (checked by CI).
+GDUNIT4=6.2.3
+# Export templates (ADR-0018 D2). Archive name and install folder are E3: not
+# sourced until the first install (V-18-3). Nothing is downloaded until the user
+# authorises it (~1.28 GB). tools/build/export.* fail while these say NOT VERIFIED.
+TEMPLATES_ARCHIVE=NOT VERIFIED — hash pendiente de descarga
+TEMPLATES_SHA512=NOT VERIFIED — hash pendiente de descarga
+# Folder name expected under <editor_data>/export_templates/ (Godot convention; NOT VERIFIED until install).
+TEMPLATES_DIR=4.7.2.stable
+# Linux editor used by CI (D6 step 4). Fill from the official SHA512-SUMS.txt.
+LINUX_ARCHIVE=NOT VERIFIED — hash pendiente de descarga
+LINUX_SHA512=NOT VERIFIED — hash pendiente de descarga
