@@ -3,7 +3,8 @@
 > **Layer**: Core
 > **GDD**: design/gdd/jugador-en-primera-persona.md (§ Overview l. 15, § Acceptance Criteria l. 505)
 > **Architecture Module**: Capa 2 — 2 Jugador (`Player` en `planta`)
-> **Status**: Ready — 15/21 TR libres; TR-player-005/008/010/015 co-citan ADR-0013 (manos, diferidas con el recorte 1); TR-player-002/021 esperan a ADR-0005
+> **Status**: **LISTO** — 17/21 TR libres; TR-player-005/008/010/015 co-citan ADR-0013 (manos, diferidas con el recorte 1)
+> **Actualizado 2026-11-11**: desbloqueado por ADR-0005 (TR-player-002/021)
 > **Stories**: Not yet created — run `/create-stories jugador-primera-persona` (antes: índice A1 y A5)
 > **Control manifest**: v2026-11-11 — § Core Layer Rules **vacía: no incluye ADR-0012** (índice A1) + reglas transversales de Foundation
 > **Engine Risk**: HIGH (interpolación física 3D; R1: `Engine.get_physics_interpolation_fraction()`)
@@ -21,7 +22,7 @@ La cola de diseño tiene pendientes H10 y H12 (jugador/manos): aplicarlos antes 
 |-----|------------------|-------------|
 | ADR-0012: Player controller, physics interpolation and camera (Accepted) | Controlador, interpolación y cámara; S-0012-A…F pasados con R1 | HIGH |
 | ADR-0002: Pause and game time (Accepted) | Pausa y Δ_juego | HIGH |
-| ADR-0013, ADR-0005 (Proposed) | Co-citados (manos; datos `player/player.json`) | — |
+| ADR-0013 (Proposed) · ADR-0005 (Accepted) | Co-citados (manos; datos `player/player.json`) | — |
 
 ## Criterios de aceptación del épico (trazables al hito)
 
@@ -36,7 +37,7 @@ Fuente: `docs/architecture/tr-registry.yaml` (v2, 2026-11-10), filas `system:` p
 | TR-ID | Requirement | ADR Coverage |
 |-------|-------------|--------------|
 | TR-player-001 | Cuerpo cinemático (Jolt) con cápsula fija `radio_capsula` 0,25 m / `altura_capsula` 1,75 m, sin sprint/salto/agacharse; desliza por tangente sin rebote ni vibración (<1 mm en 60 pasos); no empuj... | ADR-0012 ✅ |
-| TR-player-002 | Invariante `2×radio_capsula + margen_paso (0,10) = player_min_passage_width_m (0,60)`; validación de datos al arrancar (radio 0,30/0,40, `pitch_max` 95, `T_hist` 0,4, `g_reducido` ≥ `g_completo... | ADR-0012 ✅ (+ ADR-0005 Proposed) |
+| TR-player-002 | Invariante `2×radio_capsula + margen_paso (0,10) = player_min_passage_width_m (0,60)`; validación de datos al arrancar (radio 0,30/0,40, `pitch_max` 95, `T_hist` 0,4, `g_reducido` ≥ `g_completo... | ADR-0012, ADR-0005 ✅ |
 | TR-player-003 | Sensor de zona esférico (`radio_sensor_zona` 0,05 m, rango 0,02–0,05) a la cintura, separado de la cápsula, que es lo que detectan los `T-…` (Area3D bajo Jolt, PV): activación con centro en ... | ADR-0003, ADR-0012 ✅ |
 | TR-player-004 | Movimiento en paso de física fijo `f_fisica` = 60 Hz con presentación interpolada entre pasos (misma distancia/s a 30, 60 y 144 fps; pasillo de 24 m ≈ 15,1±0,3 s); interpolación de física 3D... | ADR-0012 ✅ |
 | TR-player-005 | Transformada que lee cada servicio: rayo de visión (origen), sensor de zona y memoria de poses leen estado de física (sin interpolar, sin balanceo); cámara y manos leen la presentación interpol... | ADR-0012 ✅ (+ ADR-0013 Proposed) |
@@ -55,7 +56,16 @@ Fuente: `docs/architecture/tr-registry.yaml` (v2, 2026-11-10), filas `system:` p
 | TR-player-018 | `colocar(posición, yaw, pitch)` síncrona en el mismo tick: velocidad 0, cancela cesión sin `camara_devuelta`, manos en reposo sin objeto, memoria de poses rellena, `giro_acumulado` 0; el Jugador... | ADR-0003, ADR-0012 ✅ |
 | TR-player-019 | Red de seguridad contra atasco/caída: penetración >`eps_atasco_m` 0,02 con desplazamiento menor durante `t_atasco` 0,5 s, o `y` < `y_min` −2,0 m, devuelve a la última pose segura (`t_pose_segu... | ADR-0012 ✅ |
 | TR-player-020 | API pública cerrada y verificada por igualdad (AC): operaciones `colocar`, `ceder_camara`, `devolver_camara`, `rayo_vision`, `fov_actual`, `reproducir_gesto`, `sostener`, `soltar`, `girar_objeto`,... | ADR-0012 ✅ |
-| TR-player-021 | Todos los parámetros de feel/curva en `assets/data/player/player.json` (salvo `balanceo_camara` y `campo_vision` que viven en Ajustes 6); tests L con reloj inyectado en pasos enteros, entrada fals... | ADR-0012 ✅ (+ ADR-0005 Proposed) |
+| TR-player-021 | Todos los parámetros de feel/curva en `assets/data/player/player.json` (salvo `balanceo_camara` y `campo_vision` que viven en Ajustes 6); tests L con reloj inyectado en pasos enteros, entrada fals... | ADR-0012, ADR-0005 ✅ |
+
+## Requisitos bloqueados (al 2026-11-11)
+
+| TR-ID | Bloqueado por | Motivo / salida |
+|-------|---------------|-----------------|
+| TR-player-005 | ADR-0013 (Proposed) | manos, recorte 1 |
+| TR-player-008 | ADR-0013 (Proposed) | manos, recorte 1 |
+| TR-player-010 | ADR-0013 (Proposed) | manos, recorte 1 |
+| TR-player-015 | ADR-0013 (Proposed) | manos, recorte 1 |
 
 ## Definition of Done
 
