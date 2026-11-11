@@ -1,7 +1,7 @@
 # Story 002: `DataSchema`/`FieldSpec`, `DataReader.normalise` y `to_int`
 
 > **Epic**: Contenido narrativo y datos validados
-> **Status**: Ready
+> **Status**: Done
 > **Layer**: Foundation (capa 0 Platform)
 > **Type**: Logic
 > **Estimate**: L (≈ 1,5 días, confianza BAJA)
@@ -71,6 +71,12 @@
 **Status**: [ ] Not yet created
 
 ---
+
+## Evidencia
+
+- `tests/unit/content/data_reader_test.gd` (28 tests, deterministas, con límites e inválidos): AC1 `to_int` (2, 2.0, -3.0, 2^53 aceptados; 2.5, "2", true, null, NAN, ±INF, 2^54, array, dict rechazados), AC2 `normalise` (StringName, int, arrays tipados, rutas `puzzles[2].kind`), AC3 `schema_version` ausente / no entero / mayor / menor, sin lanzar y recogiendo todos los problemas.
+- `--import` sin errores. Suite completa: `Overall Summary: 216 test cases | 0 errors | 0 failures | 0 flaky | 0 skipped | 0 orphans`, exit 0.
+- Decisiones: `DataCatalog.Entry` mínimo en `src/core/data/data_catalog.gd` (TODO(CD-003)); `read_file` usa `JsonText.read` (CD-001) en vez del boceto con `exists`/`read_text`; versión distinta de `version()` (mayor o menor) = issue `version`; ante error de versión `value` queda `null`; añadidos modificadores `open_with_warning`, `clamped`, `isolated` y `bool_`/`string_`/`map_`/`one_of_`. Inmutabilidad (`make_read_only`) queda en los propietarios del catálogo (ADR-0005 D5.6).
 
 ## Dependencies
 
