@@ -2,7 +2,7 @@
 
 ## Status
 
-Proposed
+Accepted (2026-11-11) — S-0011-A/B/C run on 4.7.2; logical viewport under `canvas_items`/`expand` (NEEDS_WINDOWED) deferred to the playable prototype
 
 > **Who may move this to `Accepted`: the user, or `technical-director` on the
 > user's explicit confirmation. No other agent, and no skill on its own.**
