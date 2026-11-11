@@ -1,7 +1,7 @@
 # Story 005: Esquema de `flags.json` y `GameState.load_catalog`
 
 > **Epic**: Estado y bus de eventos
-> **Status**: Ready
+> **Status**: Done
 > **Layer**: Foundation
 > **Type**: Logic
 > **Estimate**: M (≈ 1,5 días, confianza BAJA)
@@ -73,7 +73,7 @@
 
 **Story Type**: Logic
 **Required evidence**: `tests/unit/state/flags_catalog_load_test.gd` — must exist and pass.
-**Status**: [ ] Not yet created
+**Status**: [x] Created and passing
 
 ---
 
@@ -81,3 +81,12 @@
 
 - Depends on: `production/epics/estado-y-bus/story-001-platform-seams.md`, `production/epics/contenido-y-datos/story-002-schema-and-data-reader.md`, `production/epics/contenido-y-datos/story-003-data-catalog-and-validator.md`
 - Unlocks: `production/epics/estado-y-bus/story-006-flags-json-data.md`, `production/epics/estado-y-bus/story-007-fact-reads.md`, `production/epics/estado-y-bus/story-014-boot-wiring-state.md`
+
+---
+
+## Evidencia
+
+- `--import`: sin errores. Suite completa: `277 test cases | 0 errors | 0 failures | 0 flaky | 0 skipped | 0 orphans` (256 previos + 21 nuevos), sin `ObjectDB instances were leaked` ni `resources still in use`.
+- `tests/unit/state/flags_catalog_load_test.gd` (21 tests): CA-01 (20 hechos con inicial, enum sin fijar = `&""`), CA-26 unitaria (ausente, JSON corrupto, 19/21 hechos, `type` desconocido, `owner` 9.5 y "9", `max_chained_notices` 7/257/8.5, nombre duplicado, inicial fuera de rango/enum, `derive` no declarado, `schema_version` 2, ruta no registrada; cada uno con `CATALOGO_INVALIDO`, el `param` culpable y estado `UNLOADED`), límites 8 y 256 aceptados, y el tope de la cadena del `NoticeChannel` = valor leído (12).
+- Desviaciones (ADR-fallback, con `TODO`): (1) nombres de hecho `^[a-z][a-zA-Z0-9_]*$` porque `tarjeta_B`/`pos_L` llevan mayúsculas (TODO(ADR-0005)); (2) forma de `derive` = array de nombres bool (TODO(ADR-0001)); (3) fixtures generados en código, sin `tests/fixtures/state/*.json`; (4) `get_channel()`, `get_fact`, `is_declared`, `fact_count` mínimos expuestos (EB-007/008 los completan).
+- Cambios fuera de la lista de ficheros: `ServiceContext.files` (ADR-0009 D3; necesario para inyectar `MemoryFileStore`), `TestContexts.make` (crea los nodos solo si no hay override, sin huérfanos) y `data_validator_test.gd` (clase interna renombrada `StubFlagsSchema` por colisión con `FlagsSchema`; el test de arranque ahora asume la fila `state/flags.json` registrada, cuyo fichero llega con EB-006: hasta entonces el arranque en debug da fatal por fichero ausente).

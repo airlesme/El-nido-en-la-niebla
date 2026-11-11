@@ -26,7 +26,7 @@ class UiSchema extends DataSchema:
 
 
 ## state/flags.json test schema: facts with an optional enum values list and a fact ref.
-class FlagsSchema extends DataSchema:
+class StubFlagsSchema extends DataSchema:
 	func version() -> int:
 		return 1
 
@@ -66,7 +66,7 @@ func _put(rel: String, text: String) -> void:
 
 func _entries() -> Array[DataCatalog.Entry]:
 	var out: Array[DataCatalog.Entry] = []
-	out.append(DataCatalog.Entry.new("state/flags.json", FlagsSchema.new()))
+	out.append(DataCatalog.Entry.new("state/flags.json", StubFlagsSchema.new()))
 	out.append(DataCatalog.Entry.new("narrative/lines.json", LinesSchema.new()))
 	out.append(DataCatalog.Entry.new("narrative/ui.json", UiSchema.new()))
 	return out
@@ -214,7 +214,7 @@ func test_sweep_fact_ref_resolves_against_flags() -> void:
 
 func test_sweep_kind_without_provider_is_not_flagged() -> void:
 	# No flags entry registered: &"fact" refs cannot be resolved, so they are skipped (not false errors).
-	var only: Array[DataCatalog.Entry] = [DataCatalog.Entry.new("state/flags.json", FlagsSchema.new())]
+	var only: Array[DataCatalog.Entry] = [DataCatalog.Entry.new("state/flags.json", StubFlagsSchema.new())]
 	_put("state/flags.json", '{"schema_version":1,"facts":[]}')
 	assert_array(_validator(only).sweep(only)).is_empty()
 	var no_flags: Array[DataCatalog.Entry] = [DataCatalog.Entry.new("narrative/ui.json", UiSchema.new())]
@@ -324,7 +324,8 @@ func test_boot_validation_step_release_flavor_reads_nothing() -> void:
 
 
 func test_boot_validation_step_debug_flavor_runs_the_sweep() -> void:
-	# Catalog has no schema-backed rows yet, so the sweep is empty and valid: no fatal.
+	# EB-005 registered state/flags.json; its file arrives with EB-006, so until then the real
+	# catalog sweep reads that row and the missing file is the (expected) fatal.
 	Boot.run_data_validation(_ctx, _store)
 
-	assert_bool(_fatal.has_failed()).is_false()
+	assert_int(_store.accesses_of(ROOT + "state/flags.json")).is_equal(1)

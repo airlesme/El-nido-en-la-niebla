@@ -8,6 +8,7 @@ var logger: LogSink # push_* wrapper; not `log` (shadows the builtin)
 var flavor: BuildFlavor
 var real_clock: RealClock
 var fatal: FatalErrorHandler # ADR-0009 D8
+var files: FileStore # res:// / user:// access; tests inject MemoryFileStore (ADR-0009 D3, EB-005)
 
 # --- Foundation and Core: the 9 autoloads ---
 var content: ContentDB

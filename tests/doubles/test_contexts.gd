@@ -5,15 +5,17 @@
 class_name TestContexts extends RefCounted
 
 
-## Builds a frozen ServiceContext of doubles. Keys: &"logger", &"fatal", &"real_clock", &"clock", &"state", &"flavor".
+## Builds a frozen ServiceContext of doubles. Keys: &"files", &"logger", &"fatal", &"real_clock", &"clock", &"state", &"flavor".
 static func make(overrides: Dictionary = {}) -> ServiceContext:
 	var c: ServiceContext = ServiceContext.new()
 	c.logger = overrides.get(&"logger", RecordingLog.new())
 	c.flavor = overrides.get(&"flavor", BuildFlavor.new(true))
 	c.real_clock = overrides.get(&"real_clock", FakeRealClock.new())
 	c.fatal = overrides.get(&"fatal", RecordingFatalHandler.new())
-	c.state = overrides.get(&"state", FakeGameState.new())
-	c.clock = overrides.get(&"clock", FakeClock.new())
+	c.files = overrides.get(&"files", MemoryFileStore.new())
+	# Nodes: built only when not overridden, so an override never leaves an orphan behind.
+	c.state = overrides[&"state"] if overrides.has(&"state") else FakeGameState.new()
+	c.clock = overrides[&"clock"] if overrides.has(&"clock") else FakeClock.new()
 	# One line per field as each replaced class appears (ADR-0009 D9).
 	c.freeze()
 	return c
