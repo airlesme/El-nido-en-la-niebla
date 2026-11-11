@@ -1,7 +1,7 @@
 # Story 001: Catálogo `interactables.json`, esquema y configuración de 7
 
 > **Epic**: Interacción y prompt (mitad Interacción)
-> **Status**: Ready
+> **Status**: Done (2026-11-11; ver `## Evidencia` para lo que queda conectar en otras historias)
 > **Layer**: Feature
 > **Type**: Logic
 > **Estimate**: M — 1 día (0,5–1,5), confianza BAJA
@@ -83,3 +83,19 @@
 
 - Depends on: `production/epics/contenido-y-datos/EPIC.md` (historias de `DataReader`/`DataCatalog`; aún sin crear)
 - Unlocks: `production/epics/interaccion-y-prompt/story-002-pick-registry-y-pickmath.md`
+
+---
+
+## Evidencia
+
+- **Tests**: `tests/unit/interaction/catalogo_interactuables_test.gd` — 40 casos, 0 fallos, 0 orphans. Suite bloqueante (`-a res://tests -i res://tests/timing`): `413 test cases | 0 errors | 0 failures | 0 flaky | 0 skipped | 0 orphans`; `--import` sin errores; 0 apariciones de `ObjectDB instances were leaked` y de `resources still in use` en la salida completa.
+- **AC-37**: el catálogo (35 IDs) coincide con las filas `interactuable: true` de la cobertura; las `false` llevan `motivo` y no están en el catálogo.
+- **AC-38**: los 7 ejemplos validan; se rechazan duración de bloqueo, `requiere_item`, campo desconocido, `sostenible` fuera de `INSPECCION_MANO`, `radio_m` > `r_max_inspeccion_m` (límite 0,20 aceptado, 0,21 rechazado) y `vista` fuera de `DELEGAR`.
+- **AC-15 / AC-26b (parte de datos)**: `t_vista_entrada_s` > 1,2 en `D01a`–`D01c` se rechaza en el esquema. Los comprobadores de `texto` > `texto_max_caracteres` y `BOX_Cn_OPEN` > `BOX_OPEN_MAX` son `InteractionCatalog.check_object_texts` / `check_box_open` (probados con 120 y 90/91 caracteres, 1,6/1,7 s). **Pendiente de conectar**: los textos `OBJ_*` (`narrative/objects.json`, CD-004) y `box.json` (sistema 10) aún no existen; las historias de esos ficheros deben llamarlos.
+- **Máscaras**: `mascara_interactuable` ≠ 4 o `mascara_geometria` ≠ 1 → error `mask`.
+- **Desviaciones / ADR-fallback** (todas con `TODO` en código):
+  - `cobertura_anexo_a.json` está en `tests/fixtures/interaction/` (no en `assets/data/`): lo manda ADR-0005 D1/O1; la lista de ficheros de esta historia estaba desfasada.
+  - `interaction_config.json` no figura en la tabla D1 de ADR-0005: fila de registro añadida como fallback (dueño 7, carga de escena). Se actualizó el orden esperado en `tests/unit/content/data_validator_test.gd` (consecuencia directa de registrar las dos filas).
+  - API de lectura (`InteractionCatalog.load_from/has/entry/ids/alcance_m/config_*`): no fijada por ADR-0011/0005; registrarla como enmienda de ADR-0011.
+  - Valores provisionales (sin fuente en el GDD): `distancia_m` de `V01`, `C05`, `D01b`–`D01d`; anclajes `ANC_*`; `DOC_LIBRO_VISITAS` (R01). `cursor_inicial` solo admite `centro`. La puerta de salida de Recepción no tiene ID en el Anexo A, por eso no tiene fila en la cobertura.
+  - Aún no se valida `pantalla_min_px` de `V01` (necesita F6/`ViewMetrics`, fuera de alcance).

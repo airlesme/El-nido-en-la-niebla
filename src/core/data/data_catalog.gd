@@ -60,6 +60,10 @@ static func registry() -> Array[Entry]:
 				FatalErrorHandler.CONTENIDO_INVALIDO))
 	rows.append(_row("input/default_bindings.json", 1, LoadPoint.BOOT, ReleasePolicy.FATAL,
 			FatalErrorHandler.CATALOGO_INVALIDO))
+	rows.append(_row("interaction/interactables.json", 7, LoadPoint.SCENE, ReleasePolicy.SCENE_LOAD_FAILURE,
+			FatalErrorHandler.DATOS_ESCENA_INVALIDOS))
+	rows.append(_row("interaction/interaction_config.json", 7, LoadPoint.SCENE, ReleasePolicy.SCENE_LOAD_FAILURE,
+			FatalErrorHandler.DATOS_ESCENA_INVALIDOS))
 	rows.append(_row("puzzles/puzzles.json", 9, LoadPoint.SCENE, ReleasePolicy.SCENE_LOAD_FAILURE,
 			FatalErrorHandler.DATOS_ESCENA_INVALIDOS))
 	return rows
@@ -96,5 +100,9 @@ static func _schema_for(path: String) -> DataSchema:
 			return FlagsSchema.new() # EB-005 (src/core/state/data/)
 		"input/default_bindings.json":
 			return DefaultBindingsSchema.new() # EC-001 (src/input/data/)
+		"interaction/interactables.json":
+			return InteractablesSchema.new() # IP-001 (src/interaction/data/)
+		"interaction/interaction_config.json":
+			return InteractionConfigSchema.new() # IP-001 (ADR-fallback row, see schema TODO)
 		_:
 			return null
