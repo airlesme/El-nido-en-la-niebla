@@ -1,0 +1,24 @@
+; PROTOTYPE - NOT FOR PRODUCTION
+; Question: windowed parts of ADR-0011 S-0011-C and ADR-0012 S-0012-A/B (logical viewport, rendered quad px, interpolation at 30/60/144 fps)
+; Date: 2026-11-11
+
+config_version=5
+
+[application]
+
+config/name="physics-spike"
+run/main_scene="res://main.tscn"
+config/features=PackedStringArray("4.7")
+
+[display]
+
+window/size/viewport_width=1920
+window/size/viewport_height=1200
+window/stretch/mode="canvas_items"
+window/stretch/aspect="expand"
+
+[physics]
+
+3d/physics_engine="Jolt Physics"
+common/physics_ticks_per_second=60
+common/physics_interpolation=false
