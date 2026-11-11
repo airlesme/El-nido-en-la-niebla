@@ -2,7 +2,7 @@
 
 ## Status
 
-Proposed
+Accepted (2026-11-11) — SP-16A…D run on 4.7.2 headless (9 tests) with the engine's default font; SP-16E (text-server metrics), the Atkinson Hyperlegible font check and the inline-glyph ±2 px check deferred as NEEDS_WINDOWED to the playable prototype
 
 > **Who may move this to `Accepted`: the user, or `technical-director` on the
 > user's explicit confirmation. No other agent, and no skill on its own.**
