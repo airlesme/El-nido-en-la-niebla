@@ -10,7 +10,7 @@
 - **Tipo**: Prototype (spike de render y tono)
 - **Duración**: 0,5–1,5 semanas (esperado 1). **Confianza: baja.**
 - **Sprints**: 1
-- **Estado**: **No iniciado**
+- **Estado**: **Ejecutado 2026-11-11; cierre pendiente de una repetición de la medida en condiciones limpias (C-S0b-2/3)**
 
 ## Objetivo del hito
 
@@ -140,3 +140,17 @@ Decisiones del usuario de `gdd-cross-review-2026-11-10-r2.md`: **1** de 6 (n.º 
 | ADR-0002 `Accepted` (S0b-7) | Pendiente (S0) | S0b-7 queda sin veredicto |
 | Usuario: aprobación visual | Al final | El hito no cierra |
 | M1 | Puede empezar en paralelo al arte (el gris no depende del veredicto de tono) | — |
+
+## Progreso (2026-11-11)
+
+| Criterio | Estado | Evidencia |
+|---|---|---|
+| C-S0b-1 7 pasos con resultado | **Parcial**: S0b-1 PASS, S0b-2 FAIL (cifra del 28), S0b-3 PASS, S0b-6 parcial; S0b-4, 5 y 7 sin validar | `production/qa/perf/perf-2026-11-11-P1.md` |
+| C-S0b-2 carrera P1 archivada | **Hecho con salvedad**: 3 carreras + diferenciales; condiciones no ideales; NS-P2 disponible; NS-P1…P6 no todos verificados (memoria = 0) | CSV y `.summary.txt` en `production/qa/perf/` |
+| C-S0b-3 veredicto B1/B2/B3/B5/B7/B12 | **Propuesto, sin firmar**: B1 PASS; memoria NOT ASSESSED | informe |
+| C-S0b-4 capturas retenidas | **Hecho** | `production/qa/evidence/perf/s0b-t*.png` (5) |
+| C-S0b-5 aprobación visual | **Hecho**: el usuario aprueba el tono («sí, transmite») el 2026-11-11 | este fichero |
+| C-S0b-6 decisión de inversión en arte | **Registrada**: sigue el plan de M4; aviso: la atmósfera cuesta ≈ 4,2 ms de GPU y el contenido final sumará carga | este fichero |
+| C-S0b-7 ADR-0014 y 0019 actualizados | **Hecho** (secciones de resultados); ambos siguen `Proposed` | ADR |
+
+**Pendiente para cerrar S0b:** repetir P1 con plan «Mejor rendimiento», aplicaciones cerradas y 2 min de calentamiento (el usuario o con su ok); S0b-4/5/7; medir memoria; firma de los veredictos por el usuario.
