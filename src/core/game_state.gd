@@ -18,6 +18,10 @@ var _initials: Dictionary = {} # StringName -> bool | int | StringName
 var _index: Dictionary = {}    # StringName -> int slot (resolved once, ADR-0001 G-3)
 var _slots: Array = []         # current values by slot (bool | int | StringName)
 var _errors: ErrorPolicy
+var _owners: Dictionary = {}      # StringName -> int owner system number
+var _ranges: Dictionary = {}      # StringName -> [min, max] (int facts with a range)
+var _enum_values: Dictionary = {} # StringName -> Array[StringName]
+var _derived: Dictionary = {}     # StringName -> true (written only by the state, EB-010)
 
 
 func _init() -> void:
@@ -100,10 +104,74 @@ func get_fact_at(index: int) -> Variant:
 	return _slots[index]
 
 
+## Composition only (Boot): a writer bound to `owner_id`. Systems never call this themselves.
+func writer_for(owner_id: int) -> FactWriter:
+	return FactWriter.new(self, owner_id)
+
+
+## Validated write (GDD 3 rules 2-4, ADR-0001 § Drain and Write Algorithms). Production code goes
+## through `FactWriter.write`. Returns true when accepted (changed or identical). A valid change is
+## applied at once, even while draining; only the notice is queued. Invalid writes keep the value,
+## log exactly one line and call `ErrorPolicy.fail`. The owner is checked in dev builds only.
+## TODO(ADR-0001): one-way facts (EB-009) and derived recompute (EB-010) hook in at the marked points.
+func set_fact(fact: StringName, value: Variant, owner_id: int) -> bool:
+	if _status != Status.READY:
+		return _write_failed("fact '%s': state is %s, write discarded" % [fact, Status.keys()[_status]])
+	var slot: int = _index.get(fact, -1)
+	if slot < 0:
+		return _write_failed("fact '%s' is not declared" % fact)
+	if _derived.has(fact):
+		return _write_failed("fact '%s' is derived and cannot be written" % fact)
+	var type_error: String = _check_value(fact, value)
+	if type_error != "":
+		return _write_failed(type_error)
+	# EB-009 hook: one-way fact already set and value differs -> invalid.
+	if _errors.is_strict() and int(_owners[fact]) != owner_id:
+		return _write_failed("fact '%s' is owned by %d, written by %d" % [fact, _owners[fact], owner_id])
+	var old: Variant = _slots[slot]
+	if old == value:
+		return true
+	_slots[slot] = value
+	# EB-010 hook: recompute dependents here and push their changes after the input's.
+	_channel.push_change(fact, old, value)
+	return true
+
+
 ## The channel built from the catalog (null while UNLOADED). TODO(ADR-0001): the subscription
 ## wrappers (EB-008) will hide it; exposed meanwhile so tests can observe the chain cap.
 func get_channel() -> NoticeChannel:
 	return _channel
+
+
+## Exact-type check (no implicit conversion) plus range / enum set. "" = valid.
+func _check_value(fact: StringName, value: Variant) -> String:
+	var want: StringName = _types[fact]
+	var got: int = typeof(value)
+	match want:
+		&"bool":
+			if got != TYPE_BOOL:
+				return "fact '%s' expects bool, got type %d" % [fact, got]
+		&"int":
+			if got != TYPE_INT:
+				return "fact '%s' expects int, got type %d" % [fact, got]
+			if _ranges.has(fact):
+				var r: Array = _ranges[fact]
+				if (value as int) < (r[0] as int) or (value as int) > (r[1] as int):
+					return "fact '%s': %d is outside range [%d, %d]" % [fact, value, r[0], r[1]]
+		_:
+			if got != TYPE_STRING_NAME:
+				return "fact '%s' expects StringName enum, got type %d" % [fact, got]
+			if not (_enum_values[fact] as Array).has(value):
+				return "fact '%s': '%s' is not an allowed value" % [fact, value]
+	return ""
+
+
+## Rejected write: one log line, ErrorPolicy.fail (dev halts), value untouched.
+func _write_failed(msg: String) -> bool:
+	var line: String = "state write: %s" % msg
+	_ctx.logger.line(LogSink.LEVEL_ERROR, line)
+	_errors.fail(line)
+	return false
 
 
 func _find_entry(path: String) -> DataCatalog.Entry:
@@ -120,6 +188,10 @@ func _commit(root: Dictionary) -> void:
 	_initials.clear()
 	_index.clear()
 	_slots.clear()
+	_owners.clear()
+	_ranges.clear()
+	_enum_values.clear()
+	_derived.clear()
 	for f: Variant in root["facts"]:
 		var d: Dictionary = f
 		var fact: StringName = d["name"]
@@ -127,6 +199,17 @@ func _commit(root: Dictionary) -> void:
 		var initial: Variant = d["initial"]
 		if type == &"enum":
 			initial = StringName(initial) if initial != null else &""
+		_owners[fact] = int(d["owner"])
+		if d.has("range"):
+			var rg: Array = d["range"]
+			_ranges[fact] = [int(rg[0]), int(rg[1])]
+		if type == &"enum":
+			var allowed: Array[StringName] = []
+			for v: Variant in d["values"]:
+				allowed.append(StringName(v))
+			_enum_values[fact] = allowed
+		if d.has("derive"):
+			_derived[fact] = true
 		_names.append(fact)
 		_types[fact] = type
 		_initials[fact] = initial

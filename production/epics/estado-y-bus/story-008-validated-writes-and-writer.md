@@ -1,7 +1,7 @@
 # Story 008: Escritura validada y `FactWriter` (tipo, rango, dueño en dev)
 
 > **Epic**: Estado y bus de eventos
-> **Status**: Ready
+> **Status**: Done
 > **Layer**: Foundation
 > **Type**: Logic
 > **Estimate**: M (≈ 1,5 días, confianza BAJA)
@@ -77,3 +77,12 @@
 
 - Depends on: `production/epics/estado-y-bus/story-003-notice-channel-cap-and-lifecycle.md`, `production/epics/estado-y-bus/story-007-fact-reads.md`
 - Unlocks: `production/epics/estado-y-bus/story-009-one-way-and-reversible-facts.md`, `production/epics/estado-y-bus/story-010-derived-facts.md`, `production/epics/estado-y-bus/story-011-reset-new-game.md`, `production/epics/estado-y-bus/story-012-silent-write-window.md`, `production/epics/estado-y-bus/story-014-boot-wiring-state.md`
+
+---
+
+## Evidencia
+
+- `src/core/fact_writer.gd` (nuevo), `src/core/game_state.gd` (`writer_for`, `set_fact`, validación tipo/rango/enum/derivado/dueño-en-dev; `_owners`, `_ranges`, `_enum_values`, `_derived`).
+- `tests/unit/state/validated_writes_test.gd`: 10 casos, 0 fallos (CA-02 escritura, CA-06, CA-08, CA-13, valor idéntico sin aviso, límites de rango, UNLOADED).
+- Suite completa (Godot 4.7.2 local): `Overall Summary: 349 test cases | 0 errors | 0 failures | 0 orphans`, exit 0; `--import` sin errores; sin `ObjectDB instances were leaked` ni `resources still in use`.
+- Pendiente de otras historias (ganchos marcados en `set_fact`): sentido único (EB-009), derivados (EB-010), `write_silent` (EB-012). Un hecho derivado se rechaza como no escribible.
