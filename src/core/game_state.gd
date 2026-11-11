@@ -1,6 +1,6 @@
 ## Facts and notice bus (system 3). Registered as autoload `GameStateAutoload` (ADR-0009 D1).
 ## EB-005 scope: catalog loading (`load_catalog`), status and the notice channel built with the
-## `max_chained_notices` read from `flags.json`. Reads/writes/snapshot arrive in later stories.
+## `max_chained_notices` read from `flags.json`. Reads (EB-007); writes/snapshot arrive in later stories.
 ## Example: `state.setup(ctx); if state.load_catalog("state/flags.json") == OK: state.get_fact(&"caja_c1")`.
 class_name GameState extends Node
 
@@ -15,7 +15,9 @@ var _max_chained: int = 0
 var _names: Array[StringName] = []
 var _types: Dictionary = {}    # StringName -> StringName (&"bool" | &"int" | &"enum")
 var _initials: Dictionary = {} # StringName -> bool | int | StringName
-var _values: Dictionary = {}   # StringName -> current value
+var _index: Dictionary = {}    # StringName -> int slot (resolved once, ADR-0001 G-3)
+var _slots: Array = []         # current values by slot (bool | int | StringName)
+var _errors: ErrorPolicy
 
 
 func _init() -> void:
@@ -27,6 +29,13 @@ func _init() -> void:
 ## Keeps the context; performs no I/O (the catalog is loaded by `load_catalog`, story 014 wires it).
 func setup(ctx: ServiceContext) -> void:
 	_ctx = ctx
+	_errors = ErrorPolicyDefault.new(ctx.flavor)
+
+
+## Replaces the ErrorPolicy (ADR-0001: injected seam). Tests pass a recording double so a dev-build
+## failure does not quit the tree. Call after `setup` and before `load_catalog`.
+func set_error_policy(policy: ErrorPolicy) -> void:
+	_errors = policy
 
 
 ## Loads and validates the fact catalog (ADR-0001 Key Interfaces, ADR-0005 D3 tier L). `path` is
@@ -62,15 +71,33 @@ func fact_count() -> int:
 	return _names.size()
 
 
-## True when `fact` is declared in the loaded catalog.
+## True when `fact` is declared in the loaded catalog (case-sensitive: `Tarjeta_B` is not `tarjeta_B`).
 func is_declared(fact: StringName) -> bool:
-	return _values.has(fact)
+	return _index.has(fact)
 
 
-## Current value of `fact` (bool, int, or StringName for enums; `&""` = "sin fijar"); null when
-## undeclared. TODO(ADR-0001): full read API (resolve_fact, get_fact_at) belongs to story EB-007.
+## Current value of `fact` (bool, int, or StringName for enums; `&""` = "sin fijar").
+## Undeclared fact or UNLOADED (CA-27): dev -> `ErrorPolicy.fail`; release (and after a non-halting
+## fail) -> neutral `false` plus one log line. Example: `state.get_fact(&"caja_c1")`.
 func get_fact(fact: StringName) -> Variant:
-	return _values.get(fact)
+	var slot: int = _index.get(fact, -1)
+	if slot < 0:
+		return _read_failed("fact '%s' is not declared" % fact)
+	return _slots[slot]
+
+
+## Slot of `fact`, or -1 when undeclared (also while UNLOADED). Call once at `configurar()` and
+## cache the result; stable until the next `load_catalog`. Example: `_slot = state.resolve_fact(&"memo_leido")`.
+func resolve_fact(fact: StringName) -> int:
+	return _index.get(fact, -1)
+
+
+## Hot-path read by slot from `resolve_fact`: one bounds check and one Array index, no allocation.
+## An out-of-range index is treated as an undeclared fact (CA-27). Example: `state.get_fact_at(_slot)`.
+func get_fact_at(index: int) -> Variant:
+	if index < 0 or index >= _slots.size():
+		return _read_failed("fact index %d is out of range" % index)
+	return _slots[index]
 
 
 ## The channel built from the catalog (null while UNLOADED). TODO(ADR-0001): the subscription
@@ -91,7 +118,8 @@ func _commit(root: Dictionary) -> void:
 	_names.clear()
 	_types.clear()
 	_initials.clear()
-	_values.clear()
+	_index.clear()
+	_slots.clear()
 	for f: Variant in root["facts"]:
 		var d: Dictionary = f
 		var fact: StringName = d["name"]
@@ -102,9 +130,9 @@ func _commit(root: Dictionary) -> void:
 		_names.append(fact)
 		_types[fact] = type
 		_initials[fact] = initial
-		_values[fact] = initial
-	_channel = NoticeChannel.new(_max_chained, _ctx.logger, ErrorPolicyDefault.new(_ctx.flavor),
-			NoticeIds.SCHEMA)
+		_index[fact] = _slots.size()
+		_slots.append(initial)
+	_channel = NoticeChannel.new(_max_chained, _ctx.logger, _errors, NoticeIds.SCHEMA)
 	_status = Status.READY
 
 
@@ -113,3 +141,12 @@ func _fail(file: String, param: String, rule: StringName, message: String) -> Er
 	_ctx.fatal.raise_fatal(FatalErrorHandler.CATALOGO_INVALIDO,
 			{&"file": file, &"param": param, &"rule": rule, &"message": message})
 	return ERR_INVALID_DATA
+
+
+## CA-27 read failure: log one line, ask the ErrorPolicy to stop (dev), return the neutral `false`
+## (an undeclared name has no type).
+func _read_failed(why: String) -> Variant:
+	var msg: String = "state read: %s%s" % [why, " (state UNLOADED)" if _status == Status.UNLOADED else ""]
+	_ctx.logger.line(LogSink.LEVEL_ERROR, msg)
+	_errors.fail(msg)
+	return false

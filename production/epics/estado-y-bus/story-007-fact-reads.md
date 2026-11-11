@@ -1,7 +1,7 @@
 # Story 007: Lecturas O(1) — `get_fact`, `resolve_fact`, `get_fact_at`, valor neutro
 
 > **Epic**: Estado y bus de eventos
-> **Status**: Ready
+> **Status**: Complete (2026-11-11) — suite completa con 3 fallos ajenos (EB-006 en curso), ver Evidencia
 > **Layer**: Foundation
 > **Type**: Logic
 > **Estimate**: S (≈ 0,5 días, confianza BAJA)
@@ -32,9 +32,9 @@
 
 *From GDD `design/gdd/estado-y-bus-de-eventos.md`, scoped to this story:*
 
-- [ ] **CA-02 (lectura)**: un hecho sin tocar devuelve su inicial (bool/int/`StringName`, `&""` = sin fijar).
-- [ ] **CA-27**: en release y «Sin cargar», o con un hecho no declarado en «Listo», la lectura devuelve el neutro (`false`, `0`, `&""`; no declarado → `false`) y añade una línea de log; en dev llama a `ErrorPolicy.fail`.
-- [ ] `resolve_fact(&"no_existe") == -1`; `get_fact_at(resolve_fact(x)) == get_fact(x)` para los 20 hechos; `is_declared` distingue mayúsculas (`Tarjeta_B` no existe).
+- [x] **CA-02 (lectura)**: un hecho sin tocar devuelve su inicial (bool/int/`StringName`, `&""` = sin fijar).
+- [x] **CA-27**: en release y «Sin cargar», o con un hecho no declarado en «Listo», la lectura devuelve el neutro (`false`, `0`, `&""`; no declarado → `false`) y añade una línea de log; en dev llama a `ErrorPolicy.fail`.
+- [x] `resolve_fact(&"no_existe") == -1`; `get_fact_at(resolve_fact(x)) == get_fact(x)` para los 20 hechos; `is_declared` distingue mayúsculas (`Tarjeta_B` no existe).
 
 ---
 
@@ -68,7 +68,7 @@
 
 **Story Type**: Logic
 **Required evidence**: `tests/unit/state/fact_reads_test.gd` — must exist and pass.
-**Status**: [ ] Not yet created
+**Status**: [x] Created and passing
 
 ---
 
@@ -76,3 +76,13 @@
 
 - Depends on: `production/epics/estado-y-bus/story-005-flags-schema-and-catalog-load.md`
 - Unlocks: `production/epics/estado-y-bus/story-008-validated-writes-and-writer.md`
+
+---
+
+## Evidencia
+
+- `tests/unit/state/fact_reads_test.gd`: 10 casos, 0 fallos, 0 orphans (CA-02, CA-27 dev/release/UNLOADED, `resolve_fact` -1, `get_fact_at == get_fact` para los 20 hechos, mayúsculas, índice -1/20 fuera de rango).
+- Coste registrado (sin aserción): 0,00017 ms por `get_fact_at` (10000 iteraciones, headless).
+- `--import` sin errores. Suite completa: `290 test cases | 0 errors | 3 failures | 0 orphans`; sin `ObjectDB instances were leaked` ni `resources still in use`. Los 3 fallos son de `tests/unit/state/flags_owners_test.gd` (EB-006, otro agente: `range` `[1.0, 4.0]` vs `[1, 4]`), no de esta historia.
+- Cambios: `src/core/game_state.gd` (almacén `Array` + `Dictionary` de índices, `resolve_fact`, `get_fact_at`, `set_error_policy`, ErrorPolicy inyectable); `tests/unit/state/flags_catalog_load_test.gd` (aserción `get_fact(&"nope") is_null` sustituida: ahora una lectura no declarada es fallo CA-27).
+- Sin asignaciones en `get_fact_at`: revisión de código (un chequeo de límites + un índice de `Array`).

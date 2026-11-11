@@ -93,7 +93,7 @@ func test_valid_catalog_loads_20_facts_with_their_initials() -> void:
 	assert_str(str(state.get_fact(&"respuesta_llamada"))).is_equal("A")
 	assert_bool(state.is_declared(&"caja_completa")).is_true()
 	assert_bool(state.is_declared(&"nope")).is_false()
-	assert_object(state.get_fact(&"nope")).is_null()
+	assert_int(state.resolve_fact(&"nope")).is_equal(-1)
 
 
 func test_status_is_unloaded_before_load() -> void:
