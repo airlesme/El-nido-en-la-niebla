@@ -2,7 +2,7 @@
 
 ## Status
 
-Proposed
+Accepted (2026-11-11) — S-0006 automated parts run on 4.7.2 (C1 measured: the bus must not rely on same-frame delivery to a physics subscriber). Physical-pad checks (family strings, hot-plug, real deadzone, focus-out, LineEdit pointer focus) deferred as NEEDS_MANUAL to the playable prototype
 
 > **Who may move this to `Accepted`: the user, or `technical-director` on the
 > user's explicit confirmation. No other agent, and no skill on its own.**
