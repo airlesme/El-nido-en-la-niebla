@@ -995,6 +995,23 @@ constants/data; reverting to Alternative 1 changes `UiLayers` and removes
 - SP-16A captures show crisp text at 720p–2160p with no code change.
 - Playtest never reports a footer over a subtitle or an un-readable page.
 
+## Spike Results (2026-11-11)
+
+Godot 4.7.2 stable, Windows, Vulkan Forward+. Headless: `tests/unit/engine_facts/adr0016_ui_text_and_layers_test.gd`
+(9 tests, all PASS, run alone). Windowed: `prototypes/ui-spike/` with `--write-movie` (engine frames only);
+retained frames in `production/qa/evidence/ui-spike/ui-spike_<W>x<H>.png`. The status of this ADR stays `Proposed`.
+
+| Spike | Result | Observed value | Fallback needed |
+|---|---|---|---|
+| SP-16A | PASS (provisional font) | Dynamic font re-rasterised at the final size under `canvas_items` + `expand` + `fractional`. Cap height of `H` measured in real px (font 24/32/44 logical): 720p 12/17/21; 1080p 17/23/31; 1440p 23/30/42; 2160p 35/45/64 (ideal 0.714 × size × s = 34.3/45.7/62.8). Edge transition (intermediate-luminance run on a stem) 0–2 px at every size, ≤ 1 px at 2160p. Text legible at all 7 sizes; the 2 px outline sample is intact. **Caveat:** Atkinson is not in the repo; the engine's built-in default font was used, so crispness of Atkinson itself, the 28 px size, Italic and the ring 28/48 stay NEEDS_REVIEW (lead + art-director on retained captures) | No (MSDF not needed on this evidence) |
+| SP-16B | PASS (headless part) | `CanvasLayer.layer` round-trips; `ALWAYS` layer ran 5 frames under `tree.paused` (2→7) while the `PAUSABLE` layer stayed at 2→2; a `CanvasLayer` with `PROCESS_MODE_INHERIT` under an `ALWAYS` parent can process while paused. 21:9 and 16:10 logical rects (2560×1080, 1920×1200) match. Draw order of the 8 layers as rendered and mapper vs cursor ±1 px: NEEDS_WINDOWED | No |
+| SP-16C | PASS (headless routing) | `is_echo()` true on a key event with `echo=true`; `is_action_pressed(&"ui_right")` is **false** for an echo and true with `allow_echo=true`. Via `Viewport.push_input` a `Button` overriding `_gui_input` with `accept_event()` kept focus (native, no handler: focus moved to `focus_neighbor_right`). Hold of 3 s on keyboard/D-pad/stick across real devices: NEEDS_MANUAL (hardware) | No |
+| SP-16D | PASS (API); alignment NEEDS_WINDOWED review | `RichTextLabel.add_image` args: `image, width, height, color, inline_align, region, key, pad, tooltip, width_unit, height_unit, alt_text`; `RichTextLabel.ImageUnit` = `IMAGE_UNIT_PIXEL`, `IMAGE_UNIT_PERCENT`, `IMAGE_UNIT_EM` (the NOT SOURCEABLE names are now sourced). Frame shows a 32×32 inline glyph followed by text on one line, vertically near the text centre; ±2 px baseline check not measured (flat placeholder square) | Framed text run only if the real key/pad glyph misaligns |
+| SP-16E | NEEDS_WINDOWED | `Label.get_line_count()` works headless (3 lines for a 96-char sentence at 300 px) but the headless text server does not use real glyph metrics; the ≥ 98 % pages ≤ 2 lines check over the slice lines needs the real font in a window | Lower `sub_car_linea` if it fails |
+
+Other observed facts: `Window.get_final_transform().get_scale()` = `s` exactly (see ADR-0007 SP-1);
+`--write-movie` records at the project's viewport size, not the `--resolution` size.
+
 ## Open Items
 
 | ID | Item | Owner | Close when |
