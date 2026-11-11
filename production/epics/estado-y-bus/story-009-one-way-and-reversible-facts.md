@@ -1,7 +1,7 @@
 # Story 009: Hechos de un solo sentido y reversibles
 
 > **Epic**: Estado y bus de eventos
-> **Status**: Ready
+> **Status**: Done
 > **Layer**: Foundation
 > **Type**: Logic
 > **Estimate**: S (≈ 0,5 días, confianza BAJA)
@@ -76,3 +76,11 @@
 
 - Depends on: `production/epics/estado-y-bus/story-008-validated-writes-and-writer.md`
 - Unlocks: `production/epics/estado-y-bus/story-015-m1-state-test.md`
+
+---
+
+## Evidencia
+
+- `tests/unit/state/one_way_facts_test.gd` (5 tests): CA-03, CA-04 (carta_variante, respuesta_llamada, t4_decision; «sin fijar» rechazado), CA-05, avance enum sin fijar -> fijado.
+- Suite bloqueante (`-a res://tests -i res://tests/timing`): 373 test cases, 0 errors, 0 failures, 0 orphans; 0 apariciones de `ObjectDB instances were leaked` / `resources still in use`. `--import` sin errores.
+- ADR-fallback aplicado: el esquema (flags.json) no tiene campo `reversible`; se deriva (int = reversible; bool/enum = un solo sentido; excepción `GameState.REVERSIBLE_BOOL = pendiente_revelacion`). `# TODO(ADR-0005 D2)` en `game_state.gd`; pendiente anotarlo en ADR-0001 Open Items (no tocado por esta historia).

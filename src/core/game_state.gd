@@ -8,6 +8,9 @@ class_name GameState extends Node
 ## (restore is deferred by ADR-0004).
 enum Status { UNLOADED, READY, RESTORING }
 
+## The only bool that may go back to false (GDD 3 rule 6); `pos_L/C/R` are reversible as `int`.
+const REVERSIBLE_BOOL: StringName = &"pendiente_revelacion"
+
 var _ctx: ServiceContext
 var _status: Status = Status.UNLOADED
 var _channel: NoticeChannel
@@ -125,12 +128,13 @@ func set_fact(fact: StringName, value: Variant, owner_id: int) -> bool:
 	var type_error: String = _check_value(fact, value)
 	if type_error != "":
 		return _write_failed(type_error)
-	# EB-009 hook: one-way fact already set and value differs -> invalid.
 	if _errors.is_strict() and int(_owners[fact]) != owner_id:
 		return _write_failed("fact '%s' is owned by %d, written by %d" % [fact, _owners[fact], owner_id])
 	var old: Variant = _slots[slot]
 	if old == value:
 		return true
+	if _is_one_way(fact) and _is_set(fact, old):
+		return _write_failed("fact '%s' is one-way: %s cannot go back to %s" % [fact, old, value])
 	_slots[slot] = value
 	# EB-010 hook: recompute dependents here and push their changes after the input's.
 	_channel.push_change(fact, old, value)
@@ -164,6 +168,19 @@ func _check_value(fact: StringName, value: Variant) -> String:
 			if not (_enum_values[fact] as Array).has(value):
 				return "fact '%s': '%s' is not an allowed value" % [fact, value]
 	return ""
+
+
+## One-way rule (GDD 3 rule 6). TODO(ADR-0005 D2): the schema has no `reversible` field, so it is
+## derived (ADR-fallback): `int` facts and `REVERSIBLE_BOOL` are reversible; other bool/enum are one-way.
+func _is_one_way(fact: StringName) -> bool:
+	return _types[fact] != &"int" and fact != REVERSIBLE_BOOL
+
+
+## True once a one-way fact left its initial state: bool `true`, enum any fixed value (not `&""`).
+func _is_set(fact: StringName, value: Variant) -> bool:
+	if _types[fact] == &"bool":
+		return value == true
+	return value != &""
 
 
 ## Rejected write: one log line, ErrorPolicy.fail (dev halts), value untouched.
