@@ -2,7 +2,7 @@
 
 ## Status
 
-Proposed
+Accepted (2026-11-11) — V-ENG-1…6 PASS on 4.7.2; C1 (NS-7, same-frame delivery bus↔input) deferred to spike S-0006 in M1 by the developer's decision
 
 > **Who may move this to `Accepted`: the user, or `technical-director` on the
 > user's explicit confirmation. No other agent, and no skill on its own.**
@@ -875,6 +875,8 @@ Suite: 31 test cases, 0 errors, 0 failures, 0 orphans.
 | V-ENG-6 (lambda) | `func(...args)` receives 3 args | PASS: on signal `emit(1, "x", 2.5)` and on `Callable.call(1, 2, 3)` | `args.size() == 3` | None |
 
 Condition on C1 (NS-7, same-frame delivery): none of these results conditions it.
+
+**Acceptance (2026-11-11):** accepted by the developer with C1 explicitly deferred to the input spike S-0006 (ADR-0006) in M1. Until that spike runs, no code may rely on same-frame bus delivery relative to input callbacks (see § Signal policy and NS-7: same-frame guarantees come from synchronous drain, never from callback order).
 
 ## Open Items
 
