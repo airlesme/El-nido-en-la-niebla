@@ -674,7 +674,7 @@ Rules (must / must never):
 
 | Variant | Created by `Boot` when | Behaviour |
 |---|---|---|
-| `DebugFatalHandler` | `OS.is_debug_build()` | `push_error` with code + detail, sets `has_failed`, then `assert(false, …)` so the editor stops at the call site (TR-settings-019 "en debug detiene") |
+| `DebugFatalHandler` | `OS.is_debug_build()` | `push_error` with code + detail, sets `has_failed`, then `assert(false, …)` so the editor stops at the call site **[Amendment 2026-11-11, ADR-0001 V-ENG-4: `assert(false)` only aborts the current function in debug and is stripped in release; it is not a reliable stop. `DebugFatalHandler` must `push_error` and then call an explicit `get_tree().quit(1)` behind `OS.is_debug_build()` (the ErrorPolicy fallback of ADR-0001). Editor stop-at-call-site is a nicety, not a guarantee.]** (TR-settings-019 "en debug detiene") |
 | `ReleaseFatalHandler` | release export | `push_error` (log), sets `has_failed`, and asks `ctx.ui.error_panel` to show the panel of 4/27 with a **hard-coded, 18-independent** message per code and the "Volver al título" / quit row; never calls `quit()` (`architecture.md` § Data Flow 4) |
 | `RecordingFatalHandler` | tests | Appends `(code, detail)` to `calls`; never stops |
 
