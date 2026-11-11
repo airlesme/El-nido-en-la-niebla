@@ -1,7 +1,7 @@
 # Story 003: Pila de contextos, sinks y `input_context_changed`
 
 > **Epic**: Entrada y controles
-> **Status**: Ready
+> **Status**: Done (2026-11-11)
 > **Layer**: Foundation
 > **Type**: Logic
 > **Estimate**: M (≈ 1 día, confianza BAJA)
@@ -77,3 +77,13 @@
 
 - Depends on: `production/epics/entrada-y-controles/story-002-engine-input-adapter.md`, `production/epics/estado-y-bus/story-004-notice-ids-registry.md`
 - Unlocks: `production/epics/entrada-y-controles/story-004-no-control-operations.md`, `production/epics/entrada-y-controles/story-008-move-and-look-formulas.md`, `production/epics/entrada-y-controles/story-011-interact-short-long-verb.md`, `production/epics/entrada-y-controles/story-012-text-field-precedence.md`
+
+---
+
+## Evidencia
+
+- Código: `src/input/context_stack.gd` (pila pura, sinks, `deliver`), `src/input/input_router.gd` (`enter/exit/top/bind_sink/unbind_sink/use_state/use_log`, entrega por pila en `feed`; `use_table` y `action_fed` se conservan).
+- Tests: `tests/unit/input/context_stack_test.gd` (22 casos): AC-05, AC-06, AC-E1, AC-E9, sink único/reemplazo, desenlace, sink liberado, inválidos.
+- `tests/unit/input`: 79 casos, 0 fallos, 0 huérfanos.
+- Suite bloqueante: 456 casos, 1 fallo ajeno (`tests/unit/interaction/pick_math_test.gd::test_oracle_400_seeded_rays_match_brute_force`, IP-002, no tocado); 0 coincidencias de `ObjectDB instances were leaked` / `resources still in use`.
+- Pendiente anotado: tabla de acciones por contexto embebida (`# TODO(input-owner)`), y grafía de los nombres de contexto en el aviso (`&"exploracion"`…) a confirmar con ADR-0001/GDD 1.
