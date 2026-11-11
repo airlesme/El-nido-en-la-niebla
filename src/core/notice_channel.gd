@@ -1,7 +1,7 @@
 ## Ordered, FIFO, non-reentrant dispatcher shared by GameState (3) and Settings (6).
 ## ADR-0001 D1/D2/D5/D6. Core only (EB-002): subscription, FIFO queue, synchronous drain.
-## The chained-notice cap, clear_pending, run_after_drain and the enqueue tap are EB-003;
-## schema validation is EB-004.
+## EB-003 adds the per-drain chained-notice cap, invalid-callable pruning, clear_pending,
+## run_after_drain and the enqueue tap. Schema validation is EB-004.
 ## Example:
 ## [codeblock]
 ## var ch := NoticeChannel.new(64, log_sink, errors)
@@ -14,7 +14,12 @@ class_name NoticeChannel extends RefCounted
 ## What a subscription listens to.
 enum Kind { FACT, ALL_FACTS, NOTICE }
 
+# TODO(ADR-0001): replace with NoticeIds.NOTICES_DROPPED when EB-004 creates notice_ids.gd (G-2).
+const NOTICES_DROPPED: StringName = &"notices_dropped"
+
 var _max_chained: int
+var _after_drain: Array[Callable] = []
+var _tap: Callable = Callable()
 var _log: LogSink
 var _errors: ErrorPolicy
 var _schema: Dictionary
@@ -73,7 +78,31 @@ func is_draining() -> bool:
 	return _draining
 
 
+## Discards every pending entry without notifying anyone (reset/restore). Safe inside a drain:
+## the drain then ends after the entry being delivered.
+func clear_pending() -> void:
+	_queue.clear()
+
+
+## Runs `job` (no arguments) once the current drain ends, or right now when idle.
+## Jobs run in the order they were registered. An invalid callable is ignored.
+func run_after_drain(job: Callable) -> void:
+	if _draining:
+		_after_drain.append(job)
+	elif job.is_valid():
+		job.call()
+
+
+## Sets an observer called as `tap(notice: StringName, payload: Dictionary)` when a notice is
+## enqueued, before any delivery. It is not a subscriber. Fact changes are not tapped.
+## Pass an empty `Callable()` to remove it.
+func set_enqueue_tap(tap: Callable) -> void:
+	_tap = tap
+
+
 func _enqueue(entry: Dictionary) -> void:
+	if entry[&"kind"] == Kind.NOTICE and _tap.is_valid():
+		_tap.call(entry[&"topic"], entry[&"a"])
 	_queue.push_back(entry)
 	if not _draining:
 		_drain()
@@ -81,8 +110,22 @@ func _enqueue(entry: Dictionary) -> void:
 
 func _drain() -> void:
 	_draining = true
+	var delivered: int = 0
+	var dropped_once: bool = false
 	while not _queue.is_empty():
+		if delivered >= _max_chained:
+			var lost: int = _queue.size()
+			_queue.clear()
+			_log.line(LogSink.LEVEL_ERROR, "notices dropped: %d pending (max_chained_notices=%d)" % [lost, _max_chained])
+			if dropped_once:
+				break  # second overflow in this drain: log only
+			_errors.fail("max_chained_notices reached")
+			dropped_once = true
+			delivered = 0  # entries enqueued while delivering notices_dropped get a fresh budget
+			_queue.push_back({&"kind": Kind.NOTICE, &"topic": NOTICES_DROPPED, &"a": {}, &"b": null})
+			continue
 		var e: Dictionary = _queue.pop_front()
+		delivered += 1
 		var n: int = _subs.size()  # bound fixed first: late subscribers skip this entry
 		for i in n:
 			var s: Dictionary = _subs[i]  # removals are deferred, indices stay stable
@@ -94,7 +137,22 @@ func _drain() -> void:
 		if not _pending_removal.is_empty():
 			_remove_handles(_pending_removal)
 			_pending_removal.clear()
+	_prune_invalid()
 	_draining = false
+	_run_after_drain_jobs()
+
+
+func _prune_invalid() -> void:
+	for i in range(_subs.size() - 1, -1, -1):
+		if not (_subs[i][&"cb"] as Callable).is_valid():
+			_subs.remove_at(i)
+
+
+func _run_after_drain_jobs() -> void:
+	while not _after_drain.is_empty():
+		var job: Callable = _after_drain.pop_front()
+		if job.is_valid():
+			job.call()  # may start a new drain; jobs added meanwhile run in this loop or its own
 
 
 func _matches(s: Dictionary, e: Dictionary) -> bool:

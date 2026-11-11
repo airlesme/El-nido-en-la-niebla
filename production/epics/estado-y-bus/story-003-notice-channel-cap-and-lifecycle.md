@@ -1,7 +1,7 @@
 # Story 003: `NoticeChannel` — tope de avisos encadenados, callables inválidos, `run_after_drain`, tap
 
 > **Epic**: Estado y bus de eventos
-> **Status**: Ready
+> **Status**: Done
 > **Layer**: Foundation
 > **Type**: Logic
 > **Estimate**: M (≈ 1 día, confianza BAJA)
@@ -81,3 +81,11 @@
 
 - Depends on: `production/epics/estado-y-bus/story-002-notice-channel-core.md`
 - Unlocks: `production/epics/estado-y-bus/story-008-validated-writes-and-writer.md`, `production/epics/estado-y-bus/story-011-reset-new-game.md`
+
+---
+
+## Evidencia
+
+- `tests/unit/state/notice_channel_cap_test.gd` (17 tests): CA-15 (tope 8: 8 entregadas, 1 log, 1 `fail`, 1 `notices_dropped`; segundo desbordamiento solo log; límites cap y cap+1), CA-17 unitario (nodo liberado y callable nulo: sin error, podados), `run_after_drain`, `clear_pending`, tap.
+- Suite completa en Godot 4.7.2: 186 casos, 0 errores, 0 fallos, 0 huérfanos (31/31 suites); `--import` sin errores.
+- Nota: `notices_dropped` usa `NoticeChannel.NOTICES_DROPPED` con `# TODO(ADR-0001)` hasta que EB-004 cree `NoticeIds`. Segundo desbordamiento: solo log, sin `fail` (ADR D5 y historia; el pseudocódigo del ADR llama a `fail` en ambos).
