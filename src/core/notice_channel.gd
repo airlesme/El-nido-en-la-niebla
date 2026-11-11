@@ -1,7 +1,7 @@
 ## Ordered, FIFO, non-reentrant dispatcher shared by GameState (3) and Settings (6).
 ## ADR-0001 D1/D2/D5/D6. Core only (EB-002): subscription, FIFO queue, synchronous drain.
 ## EB-003 adds the per-drain chained-notice cap, invalid-callable pruning, clear_pending,
-## run_after_drain and the enqueue tap. Schema validation is EB-004.
+## run_after_drain and the enqueue tap. EB-004 adds schema validation in notify().
 ## Example:
 ## [codeblock]
 ## var ch := NoticeChannel.new(64, log_sink, errors)
@@ -13,9 +13,6 @@ class_name NoticeChannel extends RefCounted
 
 ## What a subscription listens to.
 enum Kind { FACT, ALL_FACTS, NOTICE }
-
-# TODO(ADR-0001): replace with NoticeIds.NOTICES_DROPPED when EB-004 creates notice_ids.gd (G-2).
-const NOTICES_DROPPED: StringName = &"notices_dropped"
 
 var _max_chained: int
 var _after_drain: Array[Callable] = []
@@ -63,8 +60,13 @@ func push_change(fact: StringName, old: Variant, new: Variant) -> void:
 	_enqueue({&"kind": Kind.FACT, &"topic": fact, &"a": old, &"b": new})
 
 
-## Enqueues a named notice; drains now unless already draining.
+## Enqueues a named notice; drains now unless already draining. With a non-empty schema
+## (`NoticeIds.SCHEMA`) an unregistered name is rejected in every build (log line; dev also
+## `ErrorPolicy.fail`) and the notice is dropped. Payload keys/types are validated only when
+## `ErrorPolicy.is_strict()`; an invalid payload is dropped after `fail`. Empty schema: no checks.
 func notify(notice: StringName, payload: Dictionary = {}) -> void:
+	if not _validate(notice, payload):
+		return
 	_enqueue({&"kind": Kind.NOTICE, &"topic": notice, &"a": payload, &"b": null})
 
 
@@ -100,6 +102,38 @@ func set_enqueue_tap(tap: Callable) -> void:
 	_tap = tap
 
 
+func _validate(notice: StringName, payload: Dictionary) -> bool:
+	if _schema.is_empty():
+		return true
+	if not _schema.has(notice):
+		_log.line(LogSink.LEVEL_ERROR, "notice '%s' is not in the registry: dropped" % notice)
+		_errors.fail("unregistered notice '%s'" % notice)
+		return false
+	if not _errors.is_strict():
+		return true  # release: no schema validation
+	var spec: Dictionary = _schema[notice]
+	for key: Variant in payload:
+		if typeof(key) != TYPE_STRING_NAME:
+			return _reject(notice, "key %s is not a StringName" % str(key))
+		if not spec.has(key):
+			return _reject(notice, "unknown key '%s'" % key)
+		var want: int = (spec[key] as Array)[0]
+		var got: int = typeof(payload[key])
+		if got != want:
+			return _reject(notice, "key '%s' has type %d, expected %d" % [key, got, want])
+	for key: Variant in spec:
+		if not payload.has(key) and not (spec[key] as Array)[1]:
+			return _reject(notice, "missing required key '%s'" % key)
+	return true
+
+
+func _reject(notice: StringName, why: String) -> bool:
+	var msg: String = "invalid payload for '%s': %s" % [notice, why]
+	_log.line(LogSink.LEVEL_ERROR, msg)
+	_errors.fail(msg)
+	return false
+
+
 func _enqueue(entry: Dictionary) -> void:
 	if entry[&"kind"] == Kind.NOTICE and _tap.is_valid():
 		_tap.call(entry[&"topic"], entry[&"a"])
@@ -122,7 +156,7 @@ func _drain() -> void:
 			_errors.fail("max_chained_notices reached")
 			dropped_once = true
 			delivered = 0  # entries enqueued while delivering notices_dropped get a fresh budget
-			_queue.push_back({&"kind": Kind.NOTICE, &"topic": NOTICES_DROPPED, &"a": {}, &"b": null})
+			_queue.push_back({&"kind": Kind.NOTICE, &"topic": NoticeIds.NOTICES_DROPPED, &"a": {}, &"b": null})
 			continue
 		var e: Dictionary = _queue.pop_front()
 		delivered += 1

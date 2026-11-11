@@ -37,7 +37,7 @@ func _feed_loop(topic: StringName) -> void:
 
 func test_chain_over_cap_delivers_exactly_cap_then_drops_logs_fails_and_notifies_once() -> void:
 	var loop_count: Array[int] = _counter(&"loop")
-	var dropped: Array[int] = _counter(NoticeChannel.NOTICES_DROPPED)
+	var dropped: Array[int] = _counter(NoticeIds.NOTICES_DROPPED)
 	_feed_loop(&"loop")
 	_ch.notify(&"loop")
 	assert_int(loop_count[0]).is_equal(CAP)
@@ -50,7 +50,7 @@ func test_chain_over_cap_delivers_exactly_cap_then_drops_logs_fails_and_notifies
 
 func test_chain_of_exactly_cap_entries_does_not_overflow() -> void:
 	var count: Array[int] = [0]
-	var dropped: Array[int] = _counter(NoticeChannel.NOTICES_DROPPED)
+	var dropped: Array[int] = _counter(NoticeIds.NOTICES_DROPPED)
 	_ch.subscribe(NoticeChannel.Kind.NOTICE, &"loop", func(_p: Dictionary) -> void:
 		count[0] += 1
 		if count[0] < CAP:
@@ -64,7 +64,7 @@ func test_chain_of_exactly_cap_entries_does_not_overflow() -> void:
 
 func test_chain_of_cap_plus_one_overflows_dropping_one_entry() -> void:
 	var count: Array[int] = [0]
-	var dropped: Array[int] = _counter(NoticeChannel.NOTICES_DROPPED)
+	var dropped: Array[int] = _counter(NoticeIds.NOTICES_DROPPED)
 	_ch.subscribe(NoticeChannel.Kind.NOTICE, &"loop", func(_p: Dictionary) -> void:
 		count[0] += 1
 		if count[0] <= CAP:
@@ -77,10 +77,10 @@ func test_chain_of_cap_plus_one_overflows_dropping_one_entry() -> void:
 
 func test_second_overflow_in_same_drain_only_logs() -> void:
 	var loop_count: Array[int] = _counter(&"loop")
-	var dropped: Array[int] = _counter(NoticeChannel.NOTICES_DROPPED)
+	var dropped: Array[int] = _counter(NoticeIds.NOTICES_DROPPED)
 	_feed_loop(&"loop")
 	# Restarting the loop while notices_dropped is delivered gets a fresh budget, then overflows again.
-	_ch.subscribe(NoticeChannel.Kind.NOTICE, NoticeChannel.NOTICES_DROPPED, func(_p: Dictionary) -> void:
+	_ch.subscribe(NoticeChannel.Kind.NOTICE, NoticeIds.NOTICES_DROPPED, func(_p: Dictionary) -> void:
 		_ch.notify(&"loop"))
 	_ch.notify(&"loop")
 	assert_int(dropped[0]).is_equal(1)

@@ -1,7 +1,7 @@
 # Story 004: Registro `NoticeIds` y validación de payload en debug
 
 > **Epic**: Estado y bus de eventos
-> **Status**: Ready
+> **Status**: Done
 > **Layer**: Foundation
 > **Type**: Logic
 > **Estimate**: M (≈ 1 día, confianza BAJA)
@@ -82,3 +82,12 @@
 
 - Depends on: `production/epics/estado-y-bus/story-002-notice-channel-core.md`
 - Unlocks: `production/epics/estado-y-bus/story-012-silent-write-window.md`, `production/epics/entrada-y-controles/story-003-context-stack-and-sinks.md`
+
+---
+
+## Evidencia
+
+- `src/core/notice_ids.gd` (constantes + `SCHEMA`, 54 avisos del § Notice Name Registry), `src/core/interaction_notice.gd`, validación en `NoticeChannel.notify()`; `NoticeChannel.NOTICES_DROPPED` provisional sustituido por `NoticeIds.NOTICES_DROPPED`.
+- `tests/unit/state/notice_ids_registry_test.gd` (19 casos): CA-11, CA-36, validación debug (nombre ausente, clave obligatoria ausente, clave desconocida, tipo erróneo incl. int por float, clave String), release (nombre ausente descartado con log, sin validar esquema) y `is_done` (D11).
+- `godot --headless --path . --import`: sin errores. Suite completa: `Overall Summary: 235 test cases | 0 errors | 0 failures | 0 flaky | 0 skipped | 0 orphans`, exit 0; sin `ObjectDB instances were leaked` ni `resources still in use`.
+- Decisiones: esquema vacío en el canal = sin validación (los tests previos usan nombres libres); en debug un aviso inválido se descarta tras `ErrorPolicy.fail`; `float` exige float (no acepta int). Ningún aviso omitido por ADR `Proposed`: el registro de ADR-0001 los fija todos.
