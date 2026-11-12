@@ -88,3 +88,7 @@ GdUnit4 **6.2.3** (`godot-gdunit-labs/gdUnit4`, tag v6.2.3, copied from the sour
 Last green run reported by the developer on 2026-11-11: https://github.com/airlesme/El-nido-en-la-niebla/actions/runs/42980040179. Not independently verified: the repository is private (the public GitHub API returns 404) and no `gh` is available here.
 
 Second green run reported by the developer on 2026-11-11, after the S0 closure commits (autoloads, presets, CI steps, V-ENG tests, audit): https://github.com/airlesme/El-nido-en-la-niebla/actions/runs/42986319318. Declared, not independently verifiable (private repository).
+
+## CI verified 2026-11-12 (public repository)
+
+With the repository public, the runs are readable through the unauthenticated GitHub API. Run 43178987347 (commit `a2c20f4`): job `Run GdUnit4 Tests` success, check `test-results` **488 passed, 0 failed**, advisory check `test-results-timing` **491 passed, 0 failed**. The earlier red runs (since `c762905`, last one 43029985795) were caused by two spike tests asserting `DisplayServer.get_name() == "headless"`, which does not hold on the Linux runner (fixed in `a2c20f4`). Lesson: pinned engine observations must not assert facts about the environment.
