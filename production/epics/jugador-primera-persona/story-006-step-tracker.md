@@ -1,7 +1,7 @@
 # Story 006: `StepTracker` y señal `paso`
 
 > **Epic**: Jugador en primera persona (sin manos)
-> **Status**: Ready
+> **Status**: Done
 > **Layer**: Core
 > **Type**: Logic
 > **Estimate**: S — 0,5 días (0,5–1; confianza BAJA)
@@ -75,3 +75,12 @@
 
 - Depends on: `production/epics/jugador-primera-persona/story-001-player-config.md`
 - Unlocks: `production/epics/jugador-primera-persona/story-011-player-node-api.md`
+
+---
+
+## Evidencia
+
+- `tests/unit/player/step_tracker_test.gd`: 10 casos, 0 fallos (AC-38: 3,0 m a 1,6 m/s en ticks de 1/60 -> 4 cruces en 0,375/1,125/1,875/2,625; intensidad 1,0 / 0,7 / 0,4; sin avance (muro) -> 0; limites e invalidos; `SurfaceProbe` por defecto `&"default"`).
+- La clase solo informa de cruces; la intensidad no depende del nivel de balanceo (el Player 011 emite la senal). El puerto de produccion (lectura de `get_meta("surface")`) queda para el Player 011.
+- Suite bloqueante: `Overall Summary: 705 test cases | 0 errors | 0 failures | 0 flaky | 0 skipped | 0 orphans`; 0 coincidencias de `leaked` / `still in use`.
+- TODO(ADR-0012) (lead-programmer): `crossings(d_from, d_to, l_paso) -> Array[float]` e `intensity(r, i_paso_min)` por ADR-fallback.
