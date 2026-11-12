@@ -1,7 +1,7 @@
 # Story 009: Descarga total
 
 > **Epic**: Carga de planta (despacho, pasillo, Archivo)
-> **Status**: Ready
+> **Status**: Complete — 4/4 criterios cumplidos (AC-16b, AC-16d parte de 4, rechazos/Lista/Error/t_unload, T-I5); el título es un marcador; la voz de 23 y el bloque de 26 quedan para esos sistemas
 > **Layer**: Core
 > **Type**: Logic
 > **Estimate**: M — 1 día (0,5–1,5; confianza BAJA)
@@ -75,3 +75,10 @@
 
 - Depends on: `production/epics/carga-de-planta/story-008-load-failure-error-state.md`
 - Unlocks: `production/epics/carga-de-planta/story-014-error-panel-ui.md`
+
+## Evidencia
+
+- `src/scene/scene_loader.gd`: `request_full_unload()` y fases `UNLOAD_FADING/UNLOAD_FREEING/TITLE_PENDING`; `src/scene/scene_source.gd` (`TITLE`); `src/shell/title.tscn` (marcador).
+- `tests/unit/scene/full_unload_test.gd` (12 tests, T-U8) y `tests/integration/scene/pause_full_unload_test.gd` (1 test, T-I5, árbol pausado, nodos reales): pasan.
+- Suite bloqueante: 934/934, 0 fallos, 0 orphans; sin `ObjectDB instances were leaked` ni `resources still in use`. `--import` y `--boot-report` sin errores.
+- Pendiente fuera de esta historia: `unbind_scene()` (ADR-0009 D6, `# TODO(adr-0009-d6)`); la vista del panel y su acción «Volver al título» (014 llama a `request_full_unload()`); transición del telón sobre el título (O4, abierta).

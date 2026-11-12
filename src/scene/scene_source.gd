@@ -10,7 +10,10 @@ class_name SceneSource extends RefCounted
 const DEFAULT_PATHS: Dictionary = {
 	&"planta": "res://src/scene/planta.tscn",
 	&"recepcion": "res://src/scene/recepcion.tscn",
+	&"title": "res://src/shell/title.tscn",
 }
+## Key of the title marker (a slot occupant, not a game scene: ADR-0003 D2).
+const TITLE: StringName = &"title"
 
 ## Failure kinds the loader maps to its causes (CP-008).
 const FAILURE_MISSING_RESOURCE: StringName = &"missing_resource"
@@ -24,7 +27,7 @@ var last_failure: StringName = &""
 var paths: Dictionary = DEFAULT_PATHS
 
 
-## Returns the instantiated scene for `destination` (&"planta" | &"recepcion") or null on failure.
+## Returns the instantiated scene for `destination` (&"planta" | &"recepcion" | &"title") or null on failure.
 ## Never throws: unknown destination, missing path, non-PackedScene resource and
 ## non-instantiable scene all yield null.
 func instantiate(destination: StringName) -> Node:

@@ -3,7 +3,7 @@
 ## sequence as a per-frame machine (ADR-0003 § Load sequence): «iniciada» -> curtain to alpha 1 -> unload
 ## in frame U -> instantiate in U+1 -> `colocar` -> `configure_all` -> «escena lista» -> N_gap frames ->
 ## curtain in -> «terminada». Time comes ONLY from the injected RealClock (no Timer/Tween, ADR-0002 D6).
-## Holds/T_cap are 007, failures/ErrorPanel 008, full unload 009: they hang off the TODO markers below.
+## Holds/T_cap are 007, failures/ErrorPanel 008, the full unload (`request_full_unload`) is 009.
 ## The machine is dormant (state LOADING, nothing runs) until `wire_sequence` supplies its collaborators.
 ## Example: `if scenes.request_load(SceneLoader.Destination.PLANTA, SceneLoader.Reason.PARTIDA_NUEVA, SceneLoader.FinalControl.EXPLORACION): ...`.
 ## TODO(ADR-0003): amend § Key Interfaces: `setup(ctx)` (ADR-0009 D2) replaces the 6-parameter form, and
@@ -15,8 +15,9 @@ enum State { NO_SCENE, LOADING, READY, ERROR }
 enum Destination { PLANTA, RECEPCION }
 enum Reason { PARTIDA_NUEVA, REANUDAR, RECEPCION }
 enum FinalControl { EXPLORACION, NINGUNO }
-## Phases of the load machine (ADR-0003 Key Interfaces; the full-unload phases belong to story 009).
-enum Phase { IDLE, FADING_OUT, UNLOADING, INSTANTIATING, WAITING_HOLDS, GAP, FADING_IN }
+## Phases of the machine (ADR-0003 Key Interfaces). The last three belong to the full unload (CP-009).
+enum Phase { IDLE, FADING_OUT, UNLOADING, INSTANTIATING, WAITING_HOLDS, GAP, FADING_IN,
+		UNLOAD_FADING, UNLOAD_FREEING, TITLE_PENDING }
 
 ## Fatal code for a rejected request in dev builds.
 ## TODO(ADR-0009): register this code in FatalErrorHandler's list (owner: ADR-0009 / core).
@@ -78,6 +79,8 @@ var _failure_cause: StringName = &""
 ## Callable(cause: StringName) -> void; asks the UI for the ErrorPanel with the single action
 ## «Volver al título». Its view is story 014; accepting it must call `request_full_unload()` (story 009).
 var _error_panel_request: Callable = Callable()
+## Real time (ms) at which the accepted full unload started (`t_unload` of ADR-0003).
+var _t_unload_start_ms: int = 0
 
 
 func _init() -> void:
@@ -116,7 +119,7 @@ func wire_sequence(slot: Node3D, transitions: LoadTransitions, clock: RealClock,
 
 ## Port to the error message: `request(cause: StringName)` is called once per failure, after the curtain
 ## is held at alpha 1 and Entrada has `restore_menu`. The visible panel is story 014.
-## TODO(carga-014): the panel's accept action calls `request_full_unload()` (owner: carga-014/carga-009).
+## TODO(carga-014): the panel's accept action calls `request_full_unload()` (owner: carga-014).
 ## Example: `loader.set_error_panel_port(func(cause: StringName) -> void: panel.show_error(cause))`.
 func set_error_panel_port(request: Callable) -> void:
 	_error_panel_request = request
@@ -169,6 +172,12 @@ func tick() -> void:
 				_begin_fade_in()
 		Phase.FADING_IN:
 			_step_fade_in()
+		Phase.UNLOAD_FADING:
+			_step_unload_fade(now)
+		Phase.UNLOAD_FREEING:
+			_step_unload_freed(now)
+		Phase.TITLE_PENDING:
+			_step_title_pending()
 		_:
 			pass
 
@@ -177,6 +186,9 @@ func tick() -> void:
 ## fatal handler, release logs one line. A rejection changes nothing and never touches the source.
 ## On acceptance the state becomes LOADING and, when wired, the 9-step sequence starts (frame F).
 func request_load(destination: Destination, reason: Reason, final_control: FinalControl) -> bool:
+	if _is_unloading():
+		_ctx.logger.line(LogSink.LEVEL_ERROR, "request_load rejected: a full unload is running")
+		return false
 	var state_ready: bool = _ctx.state != null and _ctx.state.get_status() == GameState.Status.READY
 	var call_completed: bool = false
 	if destination == Destination.RECEPCION and state_ready:
@@ -414,7 +426,7 @@ func _finish() -> void:
 # Failure contract (ADR-0003 Failure): dev fatal handler first, curtain held at alpha 1, log with the cause,
 # «carga de escena fallida», `restore_menu`, state Error, ErrorPanel request. Never «escena lista»,
 # «terminada», «partida terminada» nor «descarga total completada» from here.
-# TODO(carga-009): `request_full_unload()` (accepted from ERROR) is the only exit; story 009.
+# `request_full_unload()` (accepted from ERROR) is the only exit (story 009).
 func _fail(cause: StringName, pending_ids: Array[StringName] = []) -> void:
 	_holds_open = false
 	_phase = Phase.IDLE
@@ -436,6 +448,84 @@ func _fail(cause: StringName, pending_ids: Array[StringName] = []) -> void:
 		_input.restore_menu()
 	if _error_panel_request.is_valid():
 		_error_panel_request.call(cause)
+
+
+# --- Full unload (CP-009, ADR-0003 § Full unload) ---
+
+## «descarga total»: Lista/Error -> Sin escena -> curtain to alpha 1 (`reducir_movimiento_s` if alpha < 1) ->
+## `queue_free` of the slot child at U (NO input stack reset) -> at U+1 `restore_menu`, «descarga total completada»
+## (and a log warning when `t_unload > t_descarga_total_max_s`) -> `title.tscn` once the notice queue is empty.
+## Returns false (one error line, nothing changes) from Cargando, from Sin escena, while another unload runs, or
+## when the sequence is not wired. It is the only path to «descarga total completada» (C-R02).
+## Runs with the tree paused: the loader is PROCESS_MODE_ALWAYS (ADR-0002).
+## Example: `if scenes.request_full_unload(): pass  # «Volver al título»`.
+## TODO(carga-014): the ErrorPanel accept action and the pause menu (25) call this (owner: carga-014).
+func request_full_unload() -> bool:
+	var wired: bool = _transitions != null and _clock != null and _slot != null
+	if (_state != State.READY and _state != State.ERROR) or _phase != Phase.IDLE or not wired:
+		_ctx.logger.line(LogSink.LEVEL_ERROR, "request_full_unload rejected: state=%s phase=%s wired=%s" % [
+				State.keys()[_state], Phase.keys()[_phase], wired])
+		return false
+	_notify(NoticeIds.FULL_UNLOAD_REQUESTED, {})
+	_state = State.NO_SCENE
+	_failure_cause = &""
+	_holds_open = false
+	_t_unload_start_ms = _clock.now_ms()
+	_last_ms = _t_unload_start_ms
+	_curtain.begin_out() # from the current opacity: alpha 1 (Error / after `cierre`) finishes in the same frame
+	_phase = Phase.UNLOAD_FADING
+	set_process(true)
+	return true
+
+
+# Steps 2-3: darken (0,1 s) and, at alpha = 1, free the slot child without touching the input stack.
+func _step_unload_fade(_now: int) -> void:
+	var dark: bool = _curtain.step_out(_frame_dt, _transitions.delta_max_s, _transitions.reduced_motion_s)
+	_apply_alpha()
+	if not dark:
+		return
+	# TODO(adr-0009-d6): SYNC `unbind_scene()` on 21, 23 and Shell adapters (owner: ADR-0009 / carga-012).
+	_old = null
+	for child: Node in _slot.get_children():
+		_slot.remove_child(child)
+		child.queue_free()
+		_old = child
+	_current_root = null
+	_loaded = LoadPreconditions.NONE_LOADED
+	_phase = Phase.UNLOAD_FREEING
+
+
+# Step 4 (U+1): the old scene must be gone; then `menu` is restored and «completada» goes out.
+func _step_unload_freed(now: int) -> void:
+	if _old != null and is_instance_valid(_old):
+		_ctx.logger.line(LogSink.LEVEL_ERROR, "full unload: the previous scene was not freed in U+1")
+	_old = null
+	if _input != null:
+		_input.restore_menu()
+	var t_unload_s: float = float(now - _t_unload_start_ms) / 1000.0
+	_phase = Phase.TITLE_PENDING
+	_notify(NoticeIds.FULL_UNLOAD_COMPLETED, {})
+	if t_unload_s > _transitions.t_descarga_total_max_s:
+		_ctx.logger.line(LogSink.LEVEL_WARN, "full unload took %.3f s (> %.3f s)" % [
+				t_unload_s, _transitions.t_descarga_total_max_s])
+
+
+# Step 5: the title goes in behind the black curtain once nobody has pending notices. Its lift is O4 (open).
+func _step_title_pending() -> void:
+	var channel: NoticeChannel = _ctx.state.get_channel() if _ctx.state != null else null
+	if channel != null and not channel.is_queue_empty():
+		return
+	_phase = Phase.IDLE
+	set_process(false)
+	var title: Node = _source.instantiate(SceneSource.TITLE) if _source != null else null
+	if title == null:
+		_ctx.logger.line(LogSink.LEVEL_ERROR, "full unload: the title could not be instantiated")
+		return
+	_slot.add_child(title)
+
+
+func _is_unloading() -> bool:
+	return _phase == Phase.UNLOAD_FADING or _phase == Phase.UNLOAD_FREEING or _phase == Phase.TITLE_PENDING
 
 
 func _apply_alpha() -> void:
