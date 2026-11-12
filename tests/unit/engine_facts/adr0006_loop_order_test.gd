@@ -78,6 +78,12 @@ func test_push_input_runs_input_on_all_nodes_in_tree_order_and_notice_reaches_ph
 	get_tree().root.push_input(_key())
 	for i: int in FRAMES:
 		await get_tree().process_frame
+	# Environment-independent: a physics tick is only due after enough wall time, so on a fast runner the
+	# physics subscriber may need more frames than FRAMES. Wait (bounded) until it has seen the notice.
+	var guard: int = 0
+	while (bus.is_empty() or bus[0]["phys"] == -1) and guard < 1200:
+		await get_tree().process_frame
+		guard += 1
 	_free_all(nodes)
 
 	# Assert
