@@ -1,0 +1,15 @@
+{
+	"schema_version": 1,
+	"t_cap_s": 10.0,
+	"n_gap": 2,
+	"delta_max_s": 0.1,
+	"delta_ref_s": 0.0333333333,
+	"t_descarga_total_max_s": 3.0,
+	"reducir_movimiento_s": 0.1,
+	"motivos": {
+		"partida_nueva": { "d_out": 0.8, "d_in": 2.0 },
+		"reanudar": { "d_out": 0.8, "d_in": 0.8 },
+		"recepcion": { "d_out": 0.8, "d_in": 0.8 },
+		"cierre": { "d_out": 0.8 }
+	}
+}

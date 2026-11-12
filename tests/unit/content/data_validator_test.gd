@@ -103,7 +103,7 @@ func test_registry_lists_m1_rows_in_fixed_order() -> void:
 		"narrative/lines.json", "narrative/nonverbal.json", "narrative/documents.json",
 		"narrative/mails.json", "narrative/tasks.json", "narrative/hints.json",
 		"narrative/ui.json", "narrative/objects.json", "narrative/names.json", "narrative/groups.json",
-		"input/default_bindings.json", "player/player.json",
+		"input/default_bindings.json", "player/player.json", "scene/load_transitions.json",
 		"interaction/interactables.json", "interaction/interaction_config.json",
 		"puzzles/puzzles.json"])
 

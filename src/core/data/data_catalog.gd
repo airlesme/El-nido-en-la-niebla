@@ -62,6 +62,8 @@ static func registry() -> Array[Entry]:
 			FatalErrorHandler.CATALOGO_INVALIDO))
 	rows.append(_row("player/player.json", 2, LoadPoint.BOOT, ReleasePolicy.FATAL,
 			FatalErrorHandler.CATALOGO_INVALIDO))
+	rows.append(_row("scene/load_transitions.json", 4, LoadPoint.BOOT, ReleasePolicy.FATAL,
+			FatalErrorHandler.DATOS_ESCENA_INVALIDOS))
 	rows.append(_row("interaction/interactables.json", 7,LoadPoint.SCENE, ReleasePolicy.SCENE_LOAD_FAILURE,
 			FatalErrorHandler.DATOS_ESCENA_INVALIDOS))
 	rows.append(_row("interaction/interaction_config.json", 7, LoadPoint.SCENE, ReleasePolicy.SCENE_LOAD_FAILURE,
@@ -104,6 +106,8 @@ static func _schema_for(path: String) -> DataSchema:
 			return DefaultBindingsSchema.new() # EC-001 (src/input/data/)
 		"player/player.json":
 			return PlayerSchema.new() # PJ-001 (src/player/data/)
+		"scene/load_transitions.json":
+			return LoadTransitionsSchema.new() # CP-002 (src/scene/data/)
 		"interaction/interactables.json":
 			return InteractablesSchema.new() # IP-001 (src/interaction/data/)
 		"interaction/interaction_config.json":

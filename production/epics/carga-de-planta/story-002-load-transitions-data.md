@@ -1,7 +1,7 @@
 # Story 002: `load_transitions.json` y su validación
 
 > **Epic**: Carga de planta (despacho, pasillo, Archivo)
-> **Status**: Ready
+> **Status**: Done (criterios AC-D1, AC-D2, AC-F1 con evidencia; pendiente ajeno: fuga de `tests/unit/state`, ver Evidencia)
 > **Layer**: Core
 > **Type**: Logic
 > **Estimate**: S — 0,5 días (0,5–1; confianza BAJA)
@@ -75,3 +75,14 @@
 
 - Depends on: cargador de datos de ADR-0005; None dentro de este épico
 - Unlocks: `production/epics/carga-de-planta/story-003-curtain-and-dcarga-formulas.md`
+
+---
+
+## Evidencia
+
+- `assets/data/scene/load_transitions.json`, `src/scene/data/load_transitions_schema.gd` (rangos del GDD), `src/scene/load_transitions.gd` (`load_from(reader, fatal)` / `from_dict`; firma ADR-fallback anotada como TODO(ADR-0003) en el código, pendiente de enmienda en el ADR), fila `scene/load_transitions.json` (owner 4, BOOT, FATAL, `DATOS_ESCENA_INVALIDOS`) en `data_catalog.gd`; `data_validator_test.gd` actualizado con la fila.
+- AC-D1: `tests/unit/scene/load_transitions_validation_test.gd` (d_out 6, T_cap 2, N_gap 11, Δ_max 0,2 + bordes, tipo, clave ausente/extra, fichero ausente/corrupto/vacío) — pasa.
+- AC-D2 y AC-F1: `tests/integration/scene/load_transitions_file_test.gd` (fichero real, tabla del GDD; ausente/corrupto en memoria) — pasa.
+- Suites sueltas scene (unit+integration): 28/28. Suite bloqueante completa: `Overall Summary: 593 test cases | 0 errors | 0 failures | 0 flaky | 0 skipped | 0 orphans`.
+- Nota: la salida completa imprime `12 ObjectDB instances were leaked` y `6 resources still in use`; bisecado: viene de `tests/unit/state` (EB-011), no de scene/player/content/input/interaction. No es de esta historia.
+- Valores `d_out` de `reanudar`/`cierre`, `T_cap`, `N_gap`, `Δ_max`: marcados † en el GDD (a validar en playtest).
