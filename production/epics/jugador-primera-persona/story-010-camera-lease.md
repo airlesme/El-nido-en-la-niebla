@@ -1,7 +1,7 @@
 # Story 010: `CameraLease` — cesión y devolución de cámara
 
 > **Epic**: Jugador en primera persona (sin manos)
-> **Status**: Ready
+> **Status**: Done
 > **Layer**: Core
 > **Type**: Logic
 > **Estimate**: L — 1,5 días (1–2; confianza BAJA)
@@ -71,6 +71,13 @@
 **Status**: [ ] Not yet created
 
 ---
+
+## Evidencia
+
+- `tests/unit/player/camera_lease_test.gd` (T-U6, 28 tests): AC-20, AC-21, AC-25, AC-44 (alcance M1), re-cesión del mismo propietario, `duracion` 0 sin señal reentrante, `cancel_silently` como callable de `place`.
+- Suite bloqueante: 826 casos, 0 fallos, 0 huérfanos, exit 0; sin `ObjectDB instances were leaked` ni `resources still in use`.
+- Ficheros: `src/player/camera_lease.gd`, `src/player/camera_pose.gd` (nuevo, `CameraPose` del ADR).
+- Firmas fijadas por la historia (`TODO(ADR-0012)`, dueño lead-programmer): `CameraLease.new(cfg, logger, now_source)`, `evaluate(eyes, yaw, pitch, fov_free)`, `fov()`, `take_events()`; peticiones devuelven bool. F5 es identidad detrás de `_fov_for_target` (`TODO(TR-player-008)`).
 
 ## Dependencies
 
