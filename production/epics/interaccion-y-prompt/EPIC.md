@@ -3,11 +3,10 @@
 > **Layer**: Feature (7) + Presentation (24)
 > **GDD**: design/gdd/interaccion-e-inspeccion.md (§ Overview l. 15, § Acceptance Criteria l. 518); design/gdd/prompt-de-interaccion.md (§ Overview l. 14, § Acceptance Criteria l. 161)
 > **Architecture Module**: Capa 3 — 7 Interacción (`InteractionSystem` en `planta`); Capa 4 — 24 Prompt (`InteractionPrompt` en `HUD`); `architecture.md` § API Boundaries «Interacción (7) — ADR-0011»
-> **Status**: **PARCIAL** — Interacción (7) **LISTO** (22/22 TR libres); Prompt (24) **BLOQUEADO por ADR-0016 (Proposed)** (20/20 TR; TR-prompt-018 también ADR-0007)
-> **Actualizado 2026-11-11**: desbloqueado por ADR-0005 (TR-prompt-020; sigue bloqueado por ADR-0016)
-> **Desbloqueo del prompt**: spike corto de ADR-0016 con ADR-0007; R30 → aceptación de ADR-0016 (no se difiere con los subtítulos: índice A2)
-> **Stories**: Not yet created — run `/create-stories interaccion-y-prompt` (hoy, solo historias de 7)
-> **Control manifest**: v2026-11-11 — § Feature y § Presentation Layer Rules **vacías: no incluyen ADR-0011** (índice A1)
+> **Status**: **LISTO con 1 bloqueo de diseño** — Interacción (7) **LISTO** (22/22 TR libres); Prompt (24) **LISTO** salvo la parte de escala/suelo de texto de TR-prompt-015 y TR-prompt-018 (historia 025 Blocked: el GDD 24 contradice ADR-0007 D7 / ADR-0016; QQ-10 sin confirmar)
+> **Actualizado 2026-11-12**: ADR-0016 **Accepted** (2026-11-11) y ADR-0007 Accepted → el prompt deja de estar bloqueado por ADR; historias 014–025 escritas
+> **Stories**: 25 stories (001–013 Interacción · 014–025 Prompt) — ver `stories.md`; 24 Ready, 1 Blocked (025)
+> **Control manifest**: v2026-11-11b — anterior a la aceptación de ADR-0016 (§ Presentation lo da por `Proposed`; aplica ADR-0016 G-1…G-11 hasta regenerarlo). § Feature sin ADR-0011 corregida en 2026-11-11b
 > **Engine Risk**: HIGH (consulta de forma esférica / `ShapeCast3D` con Jolt; escala de UI del prompt)
 
 ## Overview
@@ -26,13 +25,13 @@ ADR-0011. Decisión de usuario n.º 4 de `gdd-cross-review-2026-11-10-r2.md` (fi
 |-----|------------------|-------------|
 | ADR-0011: Interaction focus query and view picking (Accepted) | Consulta de foco y picking de vistas; S-0011-A/B/C pasados | HIGH |
 | ADR-0001 (Accepted) | Avisos por el bus (co-cubre TR-prompt-005/006) | MEDIUM |
-| ADR-0016 (**Proposed**) | Texto de UI del prompt | HIGH |
-| ADR-0007 (Proposed) · ADR-0005 (Accepted) | Escalado de UI (TR-prompt-018); datos (TR-prompt-020) | — |
+| ADR-0016 (**Accepted**, 2026-11-11) | Texto de UI, capas, área segura y prompt (D1–D6) | HIGH |
+| ADR-0007 (**Accepted**) · ADR-0005 (Accepted) | Escalado de UI (TR-prompt-018); datos (TR-prompt-020) | — |
 
 ## Criterios de aceptación del épico (trazables al hito)
 
 - **C-M1-6**: foco, lectura e interacción con mando y teclado.
-- **C-M1-7**: captura retenida del prompt de interacción (requiere ADR-0016 aceptado).
+- **C-M1-7**: captura retenida del prompt de interacción (ADR-0016 aceptado; historia 024).
 - **C-M1-3**: cancelar o salir de una vista nunca deja el modo bloqueado.
 
 ## GDD Requirements
@@ -84,30 +83,16 @@ Fuente: `docs/architecture/tr-registry.yaml` (v2, 2026-11-10), filas `system:` i
 | TR-prompt-019 | Lee de 6 vía avisos de cambio y aplica al fotograma siguiente `reducir_movimiento` (fundidos fijos 100 ms), `icono_grande`, `etiqueta_accion_visible`; valores iniciales si 6 no está (dependencia ... | ❌ Bloqueado (ADR-0016 Proposed) |
 | TR-prompt-020 | Sin audio propio (`SFX_CLICK_SUBTLE` lo emite 7); sin color para estados (sin rojo); sin estado persistente; espera «escena lista» antes de dibujar; datos en `assets/data/ui/prompt.json` | ADR-0005 ✅ (+ ADR-0016 Proposed) |
 
-## Requisitos bloqueados (al 2026-11-11)
+## Requisitos bloqueados (al 2026-11-12)
+
+Ya no hay bloqueo por ADR: ADR-0016 y ADR-0007 están Accepted y los 20 TR del prompt tienen historia. Queda un bloqueo de **diseño** que afecta a dos TR en parte:
 
 | TR-ID | Bloqueado por | Motivo / salida |
 |-------|---------------|-----------------|
-| TR-prompt-001 | ADR-0016 (Proposed) | texto de UI del prompt |
-| TR-prompt-002 | ADR-0016 (Proposed) | texto de UI del prompt |
-| TR-prompt-003 | ADR-0016 (Proposed) | texto de UI del prompt |
-| TR-prompt-004 | ADR-0016 (Proposed) | texto de UI del prompt |
-| TR-prompt-005 | ADR-0016 (Proposed) | texto de UI del prompt |
-| TR-prompt-006 | ADR-0016 (Proposed) | texto de UI del prompt |
-| TR-prompt-007 | ADR-0016 (Proposed) | texto de UI del prompt |
-| TR-prompt-008 | ADR-0016 (Proposed) | texto de UI del prompt |
-| TR-prompt-009 | ADR-0016 (Proposed) | texto de UI del prompt |
-| TR-prompt-010 | ADR-0016 (Proposed) | texto de UI del prompt |
-| TR-prompt-011 | ADR-0016 (Proposed) | texto de UI del prompt |
-| TR-prompt-012 | ADR-0016 (Proposed) | texto de UI del prompt |
-| TR-prompt-013 | ADR-0016 (Proposed) | texto de UI del prompt |
-| TR-prompt-014 | ADR-0016 (Proposed) | texto de UI del prompt |
-| TR-prompt-015 | ADR-0016 (Proposed) | texto de UI del prompt |
-| TR-prompt-016 | ADR-0016 (Proposed) | texto de UI del prompt |
-| TR-prompt-017 | ADR-0016 (Proposed) | texto de UI del prompt |
-| TR-prompt-018 | ADR-0007, ADR-0016 (Proposed) | escalado de UI; texto de UI del prompt |
-| TR-prompt-019 | ADR-0016 (Proposed) | texto de UI del prompt |
-| TR-prompt-020 | ADR-0016 (Proposed) | texto de UI del prompt |
+| TR-prompt-015 (cláusula «texto ≥ max(28·s, 24) px») | Decisión de diseño | GDD 24 (F2, R24, AC-24-14: 24 px **físicos**) frente a ADR-0007 D7.3 / ADR-0016 G-4 (24 px **lógicos**, sin factor de ventana); ADR-0016 C1/OI-5; QQ-10 sin confirmar. Historia 025. `TODO(ui-owner)` |
+| TR-prompt-018 (F2 `s`, redondeo, rango 720p–2160p) | Decisión de diseño | idem. La parte de márgenes 5 % y ultraancho **no** está bloqueada (historia 015) |
+
+Los demás 18 TR-prompt y la parte restante de 015 y 018 están en historias Ready (014–024).
 
 ## Definition of Done
 
@@ -117,4 +102,4 @@ Fuente: `docs/architecture/tr-registry.yaml` (v2, 2026-11-10), filas `system:` i
 - Logic and Integration stories have passing tests in the test root (`tests/unit/`, `tests/integration/`)
 - Visual/Feel and UI stories have retained screenshots in `production/qa/evidence/`
   (a lead sign-off too for Visual/Feel)
-- No story is written on a TR whose row cites a `Proposed` ADR (hito M1 § ADR y spikes, Regla)
+- No story is written on a TR whose row cites a `Proposed` ADR (hito M1 § ADR y spikes, Regla). ADR-0008 (`Proposed`) es `depends_on` de ADR-0016 pero ninguna historia del prompt usa su superficie (ver `stories.md` § Decisiones tomadas)

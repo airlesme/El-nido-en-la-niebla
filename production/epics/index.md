@@ -26,7 +26,7 @@ trabajo de M1 del épico no puede empezar.
 | [contenido-y-datos](contenido-y-datos/EPIC.md) | Foundation | 18 Contenido + esquema | 12 stories | **LISTO** | 17 / 17 | — | ADR-0005 |
 | [jugador-primera-persona](jugador-primera-persona/EPIC.md) | Core | 2 Jugador | Not yet created | **LISTO** | 17 / 21 | ADR-0013 solo en 4 TR de manos (recorte 1) | ADR-0005 (TR-player-002/021) |
 | [carga-de-planta](carga-de-planta/EPIC.md) | Core | 4 Escena de planta | Not yet created | **LISTO** | 22 / 23 | ADR-0008 co-citado en TR-scene-009 | ADR-0005 (TR-scene-022) |
-| [interaccion-y-prompt](interaccion-y-prompt/EPIC.md) | Feature + Presentation | 7 Interacción, 24 Prompt | Not yet created | **PARCIAL**: 7 LISTO · 24 BLOQUEADO | 22 / 42 | **ADR-0016** (20 TR del prompt; TR-prompt-018 también ADR-0007) | ADR-0005 (TR-prompt-020, sigue con 0016) |
+| [interaccion-y-prompt](interaccion-y-prompt/EPIC.md) | Feature + Presentation | 7 Interacción, 24 Prompt | 25 stories (24 Ready, 1 Blocked) | **LISTO** (7 y 24); 1 historia Blocked de diseño | 42 / 42 (2 TR en parte) | Decisión de diseño en TR-prompt-015/018 (F2 y suelo de texto: GDD 24 vs ADR-0007; historia 025) | ADR-0016 y ADR-0007 (Accepted), ADR-0005 |
 | [documentos-y-bolsillo](documentos-y-bolsillo/EPIC.md) | Feature | 20 Bolsillo | Not yet created | **LISTO** | 18 / 18 | — | ADR-0005 |
 | [ordenador-e-impresora](ordenador-e-impresora/EPIC.md) | Feature | 19 Ordenador/impresora | Not yet created | **PARCIAL** | 20 / 22 | **ADR-0007** (TR-computer-013/014, escalado de UI y tamaño de texto) | ADR-0006, ADR-0005 |
 | [puzles-marco-y-p1](puzles-marco-y-p1/EPIC.md) | Feature | 9 Marco, 11 Puzle 1 | Not yet created | **LISTO** | 39 / 40 | ADR-0008 co-citado en TR-puzzles-013; TR-puzzle1-018 **sin ADR** (Q3) | ADR-0010, ADR-0005, ADR-0017 |
@@ -43,7 +43,7 @@ ordenador) y 0008 (audio provisional + 2 TR del director).
 
 | Épico | Parte bloqueada | ADR | ¿Imprescindible en M1? |
 |---|---|---|---|
-| interaccion-y-prompt | Todo el prompt (GDD 24, 20 TR) | ADR-0016 (+ ADR-0007 en TR-prompt-018) | Sí — C-M1-7 pide su captura; A2: recortar subtítulos no exime de 0016 |
+| interaccion-y-prompt | Escala F2 y suelo de texto del prompt (parte de TR-prompt-015/018; historia 025) — ya no por ADR: ADR-0016 y ADR-0007 Accepted; bloquea una decisión de diseño | — (decisión ui-owner) | No para C-M1-7 (024 se puede cerrar a px lógicos); sí para cerrar AC-24-14 |
 | ordenador-e-impresora | TR-computer-013 (UI lógica 1920×1080, 16:9/16:10, modo teclado ≤ 520 px) y TR-computer-014 (texto ≥ 24 px, contraste, lector de pantalla) | ADR-0007 | Sí en parte — el hito marca 0007 «Parcial: escalado de UI del prompt/ordenador» |
 | director-escenas-1-3 | TR-director-009 (dos canales `VO_V_*`/`MEGA_*`) y TR-director-026 (líneas fallidas/sin audio) | ADR-0008 | Sí — C.1 lanza `VO_V_01` y `MEGA_01` |
 | audio-provisional | Todo el épico | ADR-0008 | Sí — slice/hito: C.1 «Audio provisional»; hito § ADR: 0008 «Parcial (audio provisional)» |
