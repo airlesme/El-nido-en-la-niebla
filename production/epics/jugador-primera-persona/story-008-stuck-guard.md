@@ -1,7 +1,7 @@
 # Story 008: `StuckGuard` — red de seguridad contra atasco y caída
 
 > **Epic**: Jugador en primera persona (sin manos)
-> **Status**: Ready
+> **Status**: Done
 > **Layer**: Core
 > **Type**: Logic
 > **Estimate**: S — 0,5 días (0,5–1; confianza BAJA)
@@ -73,3 +73,13 @@
 
 - Depends on: `production/epics/jugador-primera-persona/story-001-player-config.md`
 - Unlocks: `production/epics/jugador-primera-persona/story-011-player-node-api.md`
+
+---
+
+## Evidencia
+
+- `src/player/stuck_guard.gd` (`StuckGuard.new(cfg, probe)`, `reset(anchor)`, `tick(position, step_len, on_floor, now) -> bool`, `safe_pose() -> Vector3`) y `src/player/ports/penetration_probe.gd`. Firma tomada del pseudocódigo del ADR-0012; no se tocó `player_config.gd` ni `player.json` (los campos ya existían).
+- Ventana de desplazamiento: distancia horizontal al origen de la ventana < `eps_atasco_m` (más reinicio si `step_len >= eps`); una sonda por tick; centro = pies + `altura_capsula/2`.
+- `tests/unit/player/stuck_guard_test.gd`: 17/17 (AC-40: atasco a 0,5 s, muro sin penetración, y < y_min, ancla sin pose segura, cadencia 0,25 s, sin tocar memoria de poses ni yaw: la clase no los referencia).
+- `--import` sin errores; suite `tests/unit/player`: 158 casos, 1 fallo ajeno (`player_state_machine_test`, PJ-009, en curso); 0 `ObjectDB instances were leaked` / `resources still in use`. Suite completa no ejecutable en ese momento: error de parseo en `tests/unit/scene/scene_loader_preconditions_test.gd` (CP-004, en curso).
+- Fuera de alcance (011): sonda real con `intersect_shape` (`max_results` explícito), `TickInterpolator.reset`, log.
