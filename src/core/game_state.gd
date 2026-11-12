@@ -35,7 +35,7 @@ func _init() -> void:
 
 
 ## Composition point, called once by Boot (ADR-0009 D2/D3). Never called by systems.
-## Keeps the context; performs no I/O (the catalog is loaded by `load_catalog`, story 014 wires it).
+## Keeps the context; performs no I/O (F-R26): `Boot.wire_state` calls `load_catalog` right after (EB-014).
 func setup(ctx: ServiceContext) -> void:
 	_ctx = ctx
 	_errors = ErrorPolicyDefault.new(ctx.flavor)

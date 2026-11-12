@@ -1,7 +1,7 @@
 # Story 014: Composición en `Boot` — catálogo al arrancar y entrega de `FactWriter`
 
 > **Epic**: Estado y bus de eventos
-> **Status**: Ready
+> **Status**: In Progress — CA-26 (dev), CA-06b y `--boot-report` verificados; falta NOT ASSESSED de la parte release de CA-26 (ErrorPanel, UiPorts) y anotar C9 en ADR-0009 Open Items
 > **Layer**: Foundation
 > **Type**: Integration
 > **Estimate**: M (≈ 1 día, confianza BAJA)
@@ -76,3 +76,13 @@
 
 - Depends on: `production/epics/estado-y-bus/story-001-platform-seams.md`, `production/epics/estado-y-bus/story-005-flags-schema-and-catalog-load.md`, `production/epics/estado-y-bus/story-008-validated-writes-and-writer.md`
 - Unlocks: `production/epics/estado-y-bus/story-015-m1-state-test.md`
+
+---
+
+## Evidencia
+
+- `Boot.wire_state(ctx)` (setup + `load_catalog("state/flags.json")`, paso 2 de D2); `compose()` fija `ctx.files`, corta tras el paso 2 si `ctx.fatal.has_failed()`; `Boot.writer_for_owner` con tabla privada (`# TODO(boot-owner)`). `setup` sigue sin I/O (F-R26).
+- `tests/integration/state/boot_state_wiring_test.gd`: 6/6 PASSED (catálogo real: READY y 20 hechos en debug; release READY; ausente/corrupto -> CATALOGO_INVALIDO y UNLOADED; escritura inválida en dev -> `fail`; writer único por dueño).
+- `--import` sin errores; `--headless --quit-after 5 -- --boot-report` -> `[boot] flavor=debug dev_tools=absent version=dev commit=dev`, sin errores ni fatal.
+- Suite bloqueante: 756 casos, 1 fallo ajeno (`tests/unit/player/player_state_machine_test.gd`, PJ en curso), 0 orphans, sin `leaked`/`resources still in use`.
+- Pendiente: parte release de CA-26 NOT ASSESSED; nota C9 en ADR-0009 Open Items (no tocado). El release no valida el esquema a fondo: cubierto por `DataReader` con `BuildFlavor`.

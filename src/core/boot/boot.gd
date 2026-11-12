@@ -8,6 +8,11 @@ class_name Boot extends Node
 ## User argument (after `--`) that makes Boot print the report and exit 0 (ADR-0018 D4 layer 3).
 const BOOT_REPORT_ARG: String = "--boot-report"
 
+## Fact catalog, relative to `assets/data/` (a registered DataCatalog row).
+const STATE_CATALOG: String = "state/flags.json"
+
+var _writers: Dictionary = {} # int owner id -> FactWriter (private table, EB-014 ADR-fallback)
+
 
 func _ready() -> void:
 	var ctx: ServiceContext = compose()
@@ -51,11 +56,31 @@ static func run_data_validation(ctx: ServiceContext, files: FileStore) -> void:
 	DataValidator.new(reader, ctx.logger).run(ctx)
 
 
+## Boot step 2 (ADR-0009 D2): `state.setup(ctx)` then the fact catalog load (EB-014). A load error goes
+## through `ctx.fatal` as CATALOGO_INVALIDO (dev stops via ErrorPolicy). Returns true when READY.
+## `setup` stays I/O-free (F-R26): the read happens here, in the synchronous boot sequence (F-R27).
+## Example: `Boot.wire_state(ctx)` with `ctx.state`, `ctx.files`, `ctx.fatal` already set.
+static func wire_state(ctx: ServiceContext) -> bool:
+	ctx.state.setup(ctx)
+	return ctx.state.load_catalog(STATE_CATALOG) == OK
+
+
+## The `FactWriter` bound to `owner_id`, created once and kept in a private table (ADR-0001 D7: only
+## Boot obtains writers; it hands them to systems 9, 19, 20 and 22). `ctx.state` must be set.
+## TODO(boot-owner): ADR-0009 does not fix where the table lives (Open Items C9); it stays here.
+## Example: `var w: FactWriter = boot.writer_for_owner(20)`.
+func writer_for_owner(owner_id: int, ctx: ServiceContext) -> FactWriter:
+	if not _writers.has(owner_id):
+		_writers[owner_id] = ctx.state.writer_for(owner_id)
+	return _writers[owner_id]
+
+
 ## Builds the global context from the autoloads, runs setup() and freezes it.
 func compose() -> ServiceContext:
 	var ctx: ServiceContext = ServiceContext.new()
 	ctx.flavor = BuildFlavor.from_engine()
 	ctx.logger = LogSink.new()
+	ctx.files = FileStore.new()
 	ctx.real_clock = RealClock.new()
 	ctx.fatal = make_fatal_handler(ctx.flavor, ctx.logger)
 	ctx.content = ContentDBAutoload
@@ -69,10 +94,12 @@ func compose() -> ServiceContext:
 	ctx.director = SceneDirectorAutoload
 	# ADR-0009 D2 boot order (differs from registration order).
 	ctx.content.setup(ctx)
-	ctx.state.setup(ctx)
+	wire_state(ctx)
+	if ctx.fatal.has_failed(): # invalid or missing flags.json: do not enter the game (CA-26)
+		return ctx
 	ctx.clock.setup(ctx)
-	# Step 4. TODO(ADR-0009): the FileStore moves to ctx.files when ServiceContext gains it.
-	run_data_validation(ctx, FileStore.new())
+	# Step 4.
+	run_data_validation(ctx, ctx.files)
 	if ctx.fatal.has_failed(): # a fatal call stops the sequence (ADR-0009 D2)
 		return ctx
 	ctx.input.setup(ctx)
