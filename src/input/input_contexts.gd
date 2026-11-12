@@ -43,5 +43,12 @@ func restore_menu() -> void:
 		r.restore_menu()
 
 
+## See `InputRouter.reset_stack_on_unload`.
+func reset_stack_on_unload() -> void:
+	var r: InputRouter = _router()
+	if r != null:
+		r.reset_stack_on_unload()
+
+
 func _router() -> InputRouter:
 	return _router_ref.get_ref() as InputRouter

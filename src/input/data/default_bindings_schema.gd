@@ -26,6 +26,7 @@ const TUNING_KEYS: Array[StringName] = [
 	&"k_mouse_deg_per_px", &"dz_in", &"dz_out", &"omega_max_deg_s", &"omega_r_max_deg_s",
 	&"v_max_px_s", &"attract_r_base_px", &"attract_r_max_elem_px", &"attract_lambda",
 	&"t_hold_s", &"d_drag_px", &"n_m_px", &"t_m_s", &"transition_cap_s", &"sin_control_margin_s",
+	&"no_duration_cap_s", # duration given to a `sin control` opened with none declared (ADR-0006 D4)
 ]
 ## Boolean settings of GDD 1 rule 18 and their initial values.
 const TOGGLE_KEYS: Array[StringName] = [

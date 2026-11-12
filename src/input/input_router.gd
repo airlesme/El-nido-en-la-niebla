@@ -13,6 +13,8 @@ var _adapter: EngineInputAdapter
 var _table: BindingTable
 var _stack: ContextStack
 var _state: GameState
+var _clock: GameClock
+var _load_subs: Array[int] = [] # handles on the state's channel
 
 
 func _init() -> void:
@@ -34,12 +36,54 @@ func _ready() -> void:
 func setup(ctx: ServiceContext) -> void:
 	# TODO(ADR-0006): load the binding table and subscribe (ADR-0009 D2 boot order).
 	_stack.set_log(ctx.logger)
-	_state = ctx.state
+	use_clock(ctx.clock)
+	use_state(ctx.state)
 
 
-## Injects the state whose channel carries `input_context_changed` (tests; `setup` does it from the context).
+## Injects the state whose channel carries `input_context_changed` and the load notices
+## (tests; `setup` does it from the context). Subscribes to `scene_load_started/finished/failed`.
 func use_state(state: GameState) -> void:
+	_unsubscribe_loading()
 	_state = state
+	_subscribe_loading()
+
+
+## Injects the game clock of the `sin control` cap (tests; `setup` does it from the context).
+func use_clock(clock: GameClock) -> void:
+	_clock = clock
+	_stack.set_clock(clock)
+
+
+## Frame poll of the `sin control` cap with `GameClock.is_due` (no timer of its own; ADR-0002 D6).
+func _process(_delta: float) -> void:
+	_subscribe_loading()
+	_stack.tick()
+
+
+## True while a load is in progress (`carga_en_curso`); blocks the pause. Without load notices it never is.
+func is_loading() -> bool:
+	return _stack.is_loading()
+
+
+## Margin (s) added to the declared duration of a `sin control` to get its cap; read by 21 (ADR-0017 A3).
+func no_control_margin_s() -> float:
+	return _stack.margin_s()
+
+
+## Unload of a game scene: the stack becomes [the current `sin control`] keeping owner, duration and cap.
+## Never for the title or a full unload (ADR-0003 D2).
+func reset_stack_on_unload() -> void:
+	_stack.reset_on_unload()
+
+
+## Decides a pause request (see `ContextStack.gate_pause`). TODO(story-014): `pause_requested` consumes it.
+func gate_pause(cause: InputTypes.PauseCause) -> bool:
+	return _stack.gate_pause(cause)
+
+
+## Pause cause deferred during a load (-1 none); story 014 fires it after `scene_load_finished`.
+func take_pending_pause() -> int:
+	return _stack.take_pending_pause()
 
 
 ## Injects the log seam of the stack (tests; `setup` does it from the context).
@@ -127,6 +171,8 @@ func adapter() -> EngineInputAdapter:
 ## Injects the binding table used by `feed`. TODO(ADR-0006): `setup` will own this in story 003.
 func use_table(table: BindingTable) -> void:
 	_table = table
+	if table != null and table.is_loaded():
+		_stack.set_caps(table.tuning_value(&"no_duration_cap_s"), table.tuning_value(&"sin_control_margin_s"))
 
 
 ## Single entry of raw input; called only by the adapter and by tests. Resolves the FIRST action bound
@@ -145,6 +191,35 @@ func feed(raw: InputTypes.RawInput) -> void:
 	ev.phase = InputTypes.Phase.PRESSED if raw.pressed else InputTypes.Phase.RELEASED
 	ev.position = raw.position
 	_stack.deliver(ev)
+
+
+## The state's channel exists only after its catalog loads: `_process` retries until it can subscribe.
+func _subscribe_loading() -> void:
+	if _state == null or _state.get_channel() == null or not _load_subs.is_empty():
+		return
+	var ch: NoticeChannel = _state.get_channel()
+	_load_subs.append(ch.subscribe(NoticeChannel.Kind.NOTICE, NoticeIds.SCENE_LOAD_STARTED, _on_load_started))
+	_load_subs.append(ch.subscribe(NoticeChannel.Kind.NOTICE, NoticeIds.SCENE_LOAD_FINISHED, _on_load_finished))
+	_load_subs.append(ch.subscribe(NoticeChannel.Kind.NOTICE, NoticeIds.SCENE_LOAD_FAILED, _on_load_failed))
+
+
+func _unsubscribe_loading() -> void:
+	if _state != null and _state.get_channel() != null:
+		for h: int in _load_subs:
+			_state.get_channel().unsubscribe(h)
+	_load_subs.clear()
+
+
+func _on_load_started(_payload: Dictionary) -> void:
+	_stack.set_loading(true)
+
+
+func _on_load_finished(_payload: Dictionary) -> void:
+	_stack.set_loading(false)
+
+
+func _on_load_failed(_payload: Dictionary) -> void:
+	_stack.set_loading(false, true)
 
 
 func _notify(notice: StringName, payload: Dictionary) -> void:

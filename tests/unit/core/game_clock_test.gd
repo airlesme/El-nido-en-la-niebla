@@ -72,3 +72,38 @@ func test_real_clock_is_monotonic() -> void:
 
 	# Assert
 	assert_int(second).is_greater_equal(first)
+
+
+func test_deadline_is_due_exactly_at_and_after_but_not_before() -> void:
+	# Arrange
+	var clock: GameClock = _make_clock()
+	var d: float = clock.deadline(0.5)
+
+	# Act / Assert
+	assert_bool(clock.is_due(d)).is_false()
+	clock.advance(0.25)
+	assert_bool(clock.is_due(d)).is_false()
+	clock.advance(0.25)
+	assert_bool(clock.is_due(d)).is_true()
+	clock.advance(0.25)
+	assert_bool(clock.is_due(d)).is_true()
+
+
+func test_deadline_zero_is_due_immediately_and_negative_is_already_past() -> void:
+	var clock: GameClock = _make_clock()
+
+	assert_bool(clock.is_due(clock.deadline(0.0))).is_true()
+	assert_bool(clock.is_due(clock.deadline(-1.0))).is_true()
+
+
+func test_deadline_does_not_become_due_while_paused() -> void:
+	var clock: GameClock = _make_clock()
+	var d: float = clock.deadline(0.25)
+	clock.pause(&"menu")
+
+	clock.advance(0.25)
+
+	assert_bool(clock.is_due(d)).is_false()
+	clock.resume(&"menu")
+	clock.advance(0.25)
+	assert_bool(clock.is_due(d)).is_true()

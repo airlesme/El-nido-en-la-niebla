@@ -1,7 +1,7 @@
 # Story 005: Tope de seguridad con `GameClock`, `carga_en_curso` y reinicio de pila
 
 > **Epic**: Entrada y controles
-> **Status**: Ready
+> **Status**: Done (2026-11-12)
 > **Layer**: Foundation
 > **Type**: Logic
 > **Estimate**: M (≈ 1 día, confianza BAJA)
@@ -70,6 +70,15 @@
 **Story Type**: Logic
 **Required evidence**: `tests/unit/input/safety_cap_and_loading_test.gd` — must exist and pass.
 **Status**: [ ] Not yet created
+
+---
+
+## Evidencia
+
+- Suite bloqueante (`-a res://tests -i res://tests/timing`): `Overall Summary: 651 test cases | 0 errors | 0 failures | 0 flaky | 0 skipped | 0 orphans`; sin `ObjectDB instances were leaked` ni `resources still in use`; `--import` sin errores; `tools/ci/forbid_timers.sh`: clean.
+- `tests/unit/input/safety_cap_and_loading_test.gd` (AC-F8, AC-E14, AC-E13c/d, AC-E2 L) y 3 tests nuevos de `deadline`/`is_due` en `tests/unit/core/game_clock_test.gd`.
+- Cambios: `GameClock.deadline/is_due` (src/core), `ContextStack` (tope, carga, `reset_on_unload`, `gate_pause`), `InputRouter` (`_process` con `is_due`, suscripción a avisos de carga, `is_loading`, `no_control_margin_s`, `reset_stack_on_unload`), `InputContexts.reset_stack_on_unload`, dato `no_duration_cap_s` en `default_bindings.json` + esquema.
+- Notas: AC-E13c: el descarte lo dispara un `sin control` ajeno + `absorbs_foreign` (ADR-0006 D4, EC-004); sin él se apila. Disparar la pausa pendiente tras «terminada» queda en la historia 014 (`take_pending_pause`). Una pila reducida a [`sin control`] cuyo tope caduca repone `exploración`. El `SCRIPT ERROR ... nonexistent_method` de la salida es preexistente (no es de esta historia).
 
 ---
 

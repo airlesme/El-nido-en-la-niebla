@@ -52,7 +52,7 @@ func test_open_without_duration_uses_default_and_logs() -> void:
 
 	assert_bool(s.open_no_control(LOADER, 0.0)).is_true()
 
-	assert_float(s.no_control_declared_s()).is_equal(ContextStack.NO_DURATION_S)
+	assert_float(s.no_control_declared_s()).is_equal(s.no_duration_s())
 	assert_int(log.lines.size()).is_equal(1)
 
 
@@ -61,7 +61,7 @@ func test_open_with_negative_duration_uses_default() -> void:
 
 	s.open_no_control(DIRECTOR, -5.0)
 
-	assert_float(s.no_control_declared_s()).is_equal(ContextStack.NO_DURATION_S)
+	assert_float(s.no_control_declared_s()).is_equal(s.no_duration_s())
 
 
 func test_open_with_empty_owner_is_rejected() -> void:
@@ -114,7 +114,7 @@ func test_transfer_without_duration_uses_default() -> void:
 
 	s.transfer_no_control(DIRECTOR, 0.0)
 
-	assert_float(s.no_control_declared_s()).is_equal(ContextStack.NO_DURATION_S)
+	assert_float(s.no_control_declared_s()).is_equal(s.no_duration_s())
 
 
 func test_transfer_without_sin_control_on_top_is_rejected() -> void:

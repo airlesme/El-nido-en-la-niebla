@@ -1,6 +1,6 @@
 ## Sole owner of "pause active" and game time (ADR-0002 D1). Autoload `GameClockAutoload`.
 ## Skeleton (S0): time and pause holders only.
-## TODO(ADR-0002): PauseBackend wiring, configure(), schedule()/cancel()/deadline()/is_due().
+## Deadlines (`deadline`/`is_due`) exist; TODO(ADR-0002): PauseBackend wiring, configure(), schedule()/cancel().
 class_name GameClock extends Node
 
 ## Emitted when the first holder pauses or the last one resumes.
@@ -60,6 +60,17 @@ func resume(requester: StringName) -> void:
 	_holders.erase(requester)
 	if not is_paused():
 		paused_changed.emit(false)
+
+
+## Absolute game time at which something `after_s` from now is due (ADR-0002 § Key Interfaces).
+## Frozen with the pause, like `now()`. Example: `var d: float = clock.deadline(2.0)`.
+func deadline(after_s: float) -> float:
+	return _game_time_s + after_s
+
+
+## True once game time has reached `deadline_s` (inclusive: due exactly at the deadline).
+func is_due(deadline_s: float) -> bool:
+	return _game_time_s >= deadline_s
 
 
 ## Public for tests: drives the clock without the engine loop.
