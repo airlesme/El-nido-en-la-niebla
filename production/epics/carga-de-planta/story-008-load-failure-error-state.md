@@ -1,7 +1,7 @@
 # Story 008: Fallo de carga y estado Error
 
 > **Epic**: Carga de planta (despacho, pasillo, Archivo)
-> **Status**: Partial — fallo/estado Error hechos (AC-15a sin la salida a Sin escena, AC-15b, AC-15c); AC-22 y la salida de AC-15a dependen de 009 (`request_full_unload`) y 014 (panel)
+> **Status**: Partial — estado Error, AC-15a (salida a Sin escena vía `request_full_unload`, CP-009), AC-15b y AC-15c hechos; AC-22 pendiente: Entrada con `pausa`/`atrás` sobre el panel
 > **Layer**: Core
 > **Type**: Logic
 > **Estimate**: M — 1 día (1–1,5; confianza BAJA)

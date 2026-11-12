@@ -12,11 +12,11 @@
 | Campo | Valor |
 |---|---|
 | Inicio | **2026-11-12** |
-| Fin | `____-__-__` (rellenar al cerrar) |
-| Sesiones de trabajo usadas | `__` |
-| Turnos de agente totales | `__` (incluir reanudaciones y correcciones) |
-| Fin de cada ola | O1 `__` · O2 `__` · O3 `__` · O4 `__` · O5 `__` · O6 `__` · O7 `__` · O8 `__` |
-| Sesión del usuario | `____-__-__`, `__` min |
+| Fin | **2026-11-12** (cierre técnico; la sesión manual con mando sigue abierta) |
+| Sesiones de trabajo usadas | 1 (continua, con 8 olas) |
+| Turnos de agente totales | no contabilizados al detalle; ≈10–20 por historia, con 5 reanudaciones por límite de turnos |
+| Fin de cada ola | todas el 2026-11-12 (O1–O8) |
+| Sesión del usuario | 2026-11-12, parcial: teclado+ratón sí (encontró el bug del avance en diagonal); mando pendiente |
 
 ## Sprint Goal
 
@@ -239,3 +239,26 @@ No hay QA plan para el Sprint 3 (`production/qa/qa-plan-*.md` solo tiene el del 
 ## Decisión del lead antes de la ola 1 (2026-11-12): R-S3-6, Shell frente a Boot
 
 CP-001 pide `run/main_scene = res://src/shell/shell.tscn` y dice que «Boot sigue siendo el primer autoload (ADR-0009)». En el código `Boot` NO es un autoload: es un `Node` hijo de `src/core/boot/main.tscn` que ejecuta `compose()` en `_ready` (los 9 autoloads de ADR-0009 D1 no incluyen `Boot`). **Decisión:** `shell.tscn` se convierte en la escena principal e instancia `Boot` como su PRIMER hijo (antes que `WorldSlot`, `Curtain` y el resto), de modo que `Boot.compose()` corre antes que cualquier sistema de la escena; `src/core/boot/main.tscn` se retira o queda como escena de pruebas. *Alternativa descartada:* registrar `Boot` como autoload número 10 (cambia la lista de ADR-0009 D1 sin necesidad y mezcla raíz de composición con servicios persistentes). Se anota como enmienda a ADR-0009 (texto «primer autoload» → «primer hijo de `Shell`») al cerrar CP-001.
+
+## Cierre (2026-11-12)
+
+**Resultado:** el juego arranca, carga la planta gris con el telón y se camina en primera persona con
+teclado y ratón (confirmado por el usuario tras el arreglo del avance en diagonal). Suite 957/957, 0 fugas,
+CI verde en los últimos commits, arranque limpio.
+
+**No cerradas (siguen `Partial`/`In Progress`):** CP-007 (AC-19 «hecho que cambia en Cargando»), CP-008 (AC-22:
+falta Entrada con `pausa`/`atrás` sobre el panel), CP-014 (fallo real en el export), CP-015 (C-M1-1 en builds
+exportadas; recorrido humano completo), EC-015 (sesión con mando; entrega a 21), EB-014 (parte release de CA-26).
+
+**Qué enseñó el sprint**
+- El usuario encontró en 1 minuto un bug que 954 tests no veían: `planta.tscn` instanciaba el `Player` con el
+  giro del ancla (cámara = 2× yaw). Las pruebas usaban el jugador suelto. Se añadió un test de arranque real con
+  tecla W real (visto fallar antes de arreglar). Regla: **toda historia visible lleva un test por el camino real
+  de arranque**, no solo del componente.
+- Godot regraba `project.godot` al capturar con `--write-movie`: comprobar `git diff project.godot` tras cada captura.
+- Los agentes agotan turnos (~20) en historias con cableado: dar briefs con orden de prioridad y reanudar.
+
+**Pendiente para planificar el Sprint 4:** las 6 decisiones de diseño del usuario (U-3; la n.º 4 la necesita
+IP-007 y el prompt), escribir las historias del prompt (U-5, ADR-0016 Accepted), sesión con mando, y replanificar
+M1 con la velocidad medida (U-1).
+
