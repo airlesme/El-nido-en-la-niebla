@@ -1,7 +1,7 @@
 # Story 011: Partida nueva — `reset_new_game` y `state_reset`
 
 > **Epic**: Estado y bus de eventos
-> **Status**: Ready
+> **Status**: Done
 > **Layer**: Foundation
 > **Type**: Logic
 > **Estimate**: S (≈ 0,5 días, confianza BAJA)
@@ -74,3 +74,10 @@
 
 - Depends on: `production/epics/estado-y-bus/story-003-notice-channel-cap-and-lifecycle.md`, `production/epics/estado-y-bus/story-008-validated-writes-and-writer.md`
 - Unlocks: None (lo consume carga-de-planta: `partida_nueva`)
+
+## Evidencia
+
+- `tests/unit/state/reset_new_game_test.gd`: 5/5 pasan (CA-18: 20 hechos a inicial, cola vacia, un unico `state_reset`, 0 avisos de cambio; CA-13b: reset pedido desde un suscriptor se aplica al final del drenaje, cola vacia, un unico `state_reset`; no-op en UNLOADED; un hecho de sentido unico se puede volver a fijar tras el reset).
+- Suite bloqueante (2026-11-12): 493 test cases, 0 errors, 0 failures, 0 orphans; sin `ObjectDB instances were leaked` ni `resources still in use`.
+- Nota: la salida contenia SCRIPT ERROR de parseo de scripts en curso de otros agentes (input/scene), ajenos a esta historia.
+- Implementacion: `GameState.reset_new_game()` en `src/core/game_state.gd` (usa `run_after_drain`, `clear_pending`, `NoticeIds.STATE_RESET`).

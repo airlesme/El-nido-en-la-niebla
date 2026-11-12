@@ -143,6 +143,23 @@ func set_fact(fact: StringName, value: Variant, owner_id: int) -> bool:
 	return true
 
 
+## New game (GDD 3 rule 12, ADR-0001 G-4): every fact returns to its catalog initial, the pending
+## queue is emptied and ONE `state_reset` is emitted, with no per-fact change notices. Inside a drain
+## it is deferred to the end of that drain (rule 11). Consumers re-read the facts on `state_reset`.
+## No-op while UNLOADED. Example: `state.reset_new_game()`.
+func reset_new_game() -> void:
+	if _status != Status.READY:
+		return
+	_channel.run_after_drain(_apply_reset)
+
+
+func _apply_reset() -> void:
+	for i: int in _names.size():
+		_slots[i] = _initials[_names[i]]
+	_channel.clear_pending()
+	_channel.notify(NoticeIds.STATE_RESET)
+
+
 ## Re-evaluates every derived fact that lists `input` (reverse index built at load). A derived value
 ## that changes is stored and its notice queued after the input's (FIFO, CA-14); derived facts that
 ## feed other derived facts cascade. Generic: the rule comes from the catalog `derive` (conjunction).
