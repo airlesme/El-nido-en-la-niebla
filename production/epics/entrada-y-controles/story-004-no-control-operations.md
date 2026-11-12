@@ -1,7 +1,7 @@
 # Story 004: Operaciones de `sin control` y puerto `InputContexts`
 
 > **Epic**: Entrada y controles
-> **Status**: Ready
+> **Status**: Done
 > **Layer**: Foundation
 > **Type**: Logic
 > **Estimate**: M (≈ 1 día, confianza BAJA)
@@ -68,7 +68,7 @@
 
 **Story Type**: Logic
 **Required evidence**: `tests/unit/input/no_control_operations_test.gd` — must exist and pass.
-**Status**: [ ] Not yet created
+**Status**: [x] Created and passing
 
 ---
 
@@ -76,3 +76,12 @@
 
 - Depends on: `production/epics/entrada-y-controles/story-003-context-stack-and-sinks.md`
 - Unlocks: `production/epics/entrada-y-controles/story-005-safety-cap-and-loading-state.md`
+
+---
+
+## Evidencia
+
+- `tests/unit/input/no_control_operations_test.gd` (28 casos: AC-E13, AC-E13b, AC-08 parte de pila, descarte con `no_control_absorbed`, límites e inválidos, puerto). `-a res://tests/unit/input`: 106 casos, 0 fallos, 0 orphans, sin `ObjectDB instances were leaked` ni `resources still in use`.
+- Suite bloqueante completa (2026-11-12): 528 casos, 1 fallo ajeno (`data_validator_test::test_registry_lists_m1_rows_in_fixed_order`, trabajo concurrente de CP-002; falla también suelto). La salida completa imprimió el aviso de fugas, ausente en las suites de input sueltas: atribuible a suites ajenas en curso.
+- Implementación en `ContextStack` (puro) con delegación en `InputRouter`; puerto `src/input/input_contexts.gd`.
+- Pendiente a 005 (marcado con `TODO(input-owner)`): renovar `cap_deadline`, `carga_en_curso`, pausa pendiente en `restore_menu`, `NO_DURATION_S` a datos.

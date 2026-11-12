@@ -18,6 +18,13 @@ class StackEntry extends RefCounted:
 ## Requester of the base entry.
 const BASE_REQUESTER: StringName = &"input_router"
 
+## Requester of the `MENU` entry that `restore_menu` installs (ADR-0006 D4).
+const MENU_REQUESTER: StringName = &"title"
+
+## Duration used when an owner declares none (ADR-0006 D4: 3 s, logged).
+## TODO(input-owner): move to the input tuning file with the rest of the caps (story 005).
+const NO_DURATION_S: float = 3.0
+
 ## Actions each context accepts (GDD 1 § States and Transitions). TODO(input-owner): move to data
 ## once the per-context precedence list (ADR-0006 D6) has a file; `ui_*` focus navigation is native GUI.
 const _ALLOWED: Dictionary = {
@@ -33,6 +40,7 @@ const _ALLOWED: Dictionary = {
 
 var _stack: Array[StackEntry] = []
 var _sinks: Dictionary = {} # String "ctx/action" -> Callable
+var _in_game: bool = false
 var _log: LogSink
 var _notifier: Callable
 
@@ -94,6 +102,91 @@ func exit(ctx: InputTypes.Context, requester: StringName) -> bool:
 	return true
 
 
+## Opens `SIN_CONTROL` for `owner` (ADR-0006 D4). Rejected (false, logged, no notice) when the top is
+## already `SIN_CONTROL` (transfer instead) or a foreign `SIN_CONTROL` lies under the top. When
+## `absorbs_foreign` and `owner` is `scene_loader`, the whole stack is discarded instead: one
+## `input_context_changed` (even if the old top was `SIN_CONTROL`), then one `no_control_absorbed` per
+## discarded foreign owner. `declared_s <= 0` becomes `NO_DURATION_S` and is logged.
+## Example: `s.open_no_control(InputTypes.OWNER_SCENE_LOADER, 2.0)`.
+func open_no_control(owner: StringName, declared_s: float, absorbs_foreign: bool = false) -> bool:
+	if owner == &"":
+		return _reject(&"open_without_owner", "")
+	var foreign: int = _foreign_index(owner)
+	if foreign >= 0 and absorbs_foreign and owner == InputTypes.OWNER_SCENE_LOADER:
+		return _discard_and_open(owner, _duration(owner, declared_s))
+	if _stack.back().context == InputTypes.Context.SIN_CONTROL:
+		return _reject(&"open_on_no_control", owner)
+	if foreign >= 0:
+		return _reject(&"foreign_no_control_below", owner)
+	var prev: InputTypes.Context = top()
+	_stack.append(_make_no_control(owner, _duration(owner, declared_s)))
+	_emit_change(prev, InputTypes.Context.SIN_CONTROL)
+	return true
+
+
+## Closes the top `SIN_CONTROL`; only its owner may. Restores what is below (a `MENU` below is logged as
+## misuse of the owner). Anything else: rejected, logged, no notice.
+func close_no_control(owner: StringName) -> bool:
+	if not _top_is_owned_by(owner):
+		return _reject(&"close_not_owner", owner)
+	_stack.pop_back()
+	if top() == InputTypes.Context.MENU:
+		_log_line(&"warn", "close_restored_menu: %s" % owner)
+	_emit_change(InputTypes.Context.SIN_CONTROL, top())
+	return true
+
+
+## Hands the top `SIN_CONTROL` to `new_owner` with a new duration: no pop, no push, NO notice, stack
+## unchanged. Rejected (logged) when the top is not `SIN_CONTROL`. `declared_s <= 0` becomes `NO_DURATION_S`.
+func transfer_no_control(new_owner: StringName, declared_s: float) -> bool:
+	if new_owner == &"" or _stack.back().context != InputTypes.Context.SIN_CONTROL:
+		return _reject(&"transfer_without_no_control", new_owner)
+	var e: StackEntry = _stack.back()
+	e.owner = new_owner
+	e.requester = new_owner
+	e.declared_s = _duration(new_owner, declared_s)
+	# TODO(input-owner): renew `cap_deadline` from the clock in story 005.
+	return true
+
+
+## Owner of the `SIN_CONTROL` on top asks for `EXPLORACION`: the stack becomes `[EXPLORACION]` (any
+## `MENU` below is discarded), one notice, `in_game` true. Not the owner: rejected, logged.
+func request_exploration(owner: StringName) -> bool:
+	if not _top_is_owned_by(owner):
+		return _reject(&"exploration_not_owner", owner)
+	_stack = [_make(InputTypes.Context.EXPLORACION, owner)]
+	_in_game = true
+	_emit_change(InputTypes.Context.SIN_CONTROL, InputTypes.Context.EXPLORACION)
+	return true
+
+
+## Stack becomes `[MENU(title)]`; notice only if the top changed; `in_game` false.
+## TODO(input-owner): story 005 also clears `carga_en_curso` and drops the pending pause here.
+func restore_menu() -> void:
+	var prev: InputTypes.Context = top()
+	_stack = [_make(InputTypes.Context.MENU, MENU_REQUESTER)]
+	_in_game = false
+	if prev != InputTypes.Context.MENU:
+		_emit_change(prev, InputTypes.Context.MENU)
+
+
+## True after `request_exploration`, false after `restore_menu` (ADR-0006 D4).
+func in_game() -> bool:
+	return _in_game
+
+
+## Owner of the top `SIN_CONTROL`, `&""` when the top is another context.
+func no_control_owner() -> StringName:
+	var e: StackEntry = _stack.back()
+	return e.owner if e.context == InputTypes.Context.SIN_CONTROL else &""
+
+
+## Declared duration (s) of the top `SIN_CONTROL`, 0 when the top is another context.
+func no_control_declared_s() -> float:
+	var e: StackEntry = _stack.back()
+	return e.declared_s if e.context == InputTypes.Context.SIN_CONTROL else 0.0
+
+
 ## Remembers the cursor (logical px) in the top entry; restored when the entries above it exit.
 func set_cursor_pos(pos: Vector2) -> void:
 	_stack.back().cursor_pos = pos
@@ -145,6 +238,47 @@ func deliver(ev: InputTypes.ActionEvent) -> bool:
 		_sinks.erase(key)
 		return false
 	sink.call(ev)
+	return true
+
+
+func _foreign_index(owner: StringName) -> int:
+	for i: int in _stack.size():
+		var e: StackEntry = _stack[i]
+		if e.context == InputTypes.Context.SIN_CONTROL and e.owner != owner:
+			return i
+	return -1
+
+
+func _top_is_owned_by(owner: StringName) -> bool:
+	var e: StackEntry = _stack.back()
+	return e.context == InputTypes.Context.SIN_CONTROL and e.owner == owner and owner != &""
+
+
+func _duration(owner: StringName, declared_s: float) -> float:
+	if declared_s > 0.0:
+		return declared_s
+	_log_line(&"warn", "no_control_without_duration: %s" % owner)
+	return NO_DURATION_S
+
+
+func _make_no_control(owner: StringName, declared_s: float) -> StackEntry:
+	var e: StackEntry = _make(InputTypes.Context.SIN_CONTROL, owner)
+	e.owner = owner
+	e.declared_s = declared_s
+	return e
+
+
+func _discard_and_open(owner: StringName, declared_s: float) -> bool:
+	var prev: InputTypes.Context = top()
+	var dropped: Array[StringName] = []
+	for old: StackEntry in _stack:
+		if old.context == InputTypes.Context.SIN_CONTROL and old.owner != owner and not dropped.has(old.owner):
+			dropped.append(old.owner)
+	_stack = [_make_no_control(owner, declared_s)]
+	_emit_change(prev, InputTypes.Context.SIN_CONTROL)
+	if _notifier.is_valid():
+		for d: StringName in dropped:
+			_notifier.call(NoticeIds.NO_CONTROL_ABSORBED, {&"dueno": d})
 	return true
 
 

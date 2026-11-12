@@ -63,6 +63,42 @@ func exit(ctx: InputTypes.Context, requester: StringName) -> bool:
 	return _stack.exit(ctx, requester)
 
 
+## `sin control` operations (ADR-0006 D4). Only 4 (`scene_loader`) and 21 (`scene_director`) call them,
+## through `contexts_port()` (F-R45). Rejected requests are logged and emit nothing.
+func open_no_control(owner: StringName, declared_s: float, absorbs_foreign: bool = false) -> bool:
+	return _stack.open_no_control(owner, declared_s, absorbs_foreign)
+
+
+## Closes the top `sin control`; only its owner may.
+func close_no_control(owner: StringName) -> bool:
+	return _stack.close_no_control(owner)
+
+
+## Hands the top `sin control` to `new_owner` without leaving it and without notice.
+func transfer_no_control(new_owner: StringName, declared_s: float) -> bool:
+	return _stack.transfer_no_control(new_owner, declared_s)
+
+
+## The owner of the top `sin control` asks for `exploracion` (any `menu` below is discarded).
+func request_exploration(owner: StringName) -> bool:
+	return _stack.request_exploration(owner)
+
+
+## Stack becomes `[menu]` (return to title).
+func restore_menu() -> void:
+	_stack.restore_menu()
+
+
+## True after `request_exploration`, false after `restore_menu`.
+func in_game() -> bool:
+	return _stack.in_game()
+
+
+## The port handed by Boot to 4 and 21 (ADR-0003); each call creates a thin wrapper over this router.
+func contexts_port() -> InputContexts:
+	return InputContexts.new(self)
+
+
 ## Registers the single sink of (ctx, action); a second bind replaces and logs (ADR-0006 D6).
 func bind_sink(ctx: InputTypes.Context, action: StringName, sink: Callable) -> void:
 	_stack.bind_sink(ctx, action, sink)
