@@ -42,6 +42,19 @@ Los 6 bloqueantes de la ronda 9 están cerrados y verificados por un revisor dis
 5. **Suelo de subtítulos a 720p** (D26-22).
 6. Las de siempre: D13-4, silueta de `slot_6`, `VO_G_07`, `CARTA_A`/«La verdad», asimetría «Devolver»/«Asignar», criterio de duración (suelo real ≈ 10,7 min), D-15 del slice, textos de `VO_G_14_ASG` y de la respiración de la llamada.
 
+### Decisiones del usuario (2026-11-12, respondidas en test; recomendación propia aceptada en las seis)
+
+| # | Decisión | Efecto |
+|---|---|---|
+| 1 | **Pistas:** se mantienen las esperas de 20/40 s sin penalización; **fuera del slice** los pips, el cuaderno de pistas y «Repetir» de 17 (se reintroducen tras el playtest) | Recorta 17 y 30; alcance del slice |
+| 2 | **`reducir_sobresaltos`:** con la opción activa, luz fija (sin parpadeo de 1,15 s) y el apagón de 0,8 s pasa a un oscurecimiento gradual (≥ 2 s) | Enmendar `design/slice/slice-v0.3.md` C.4 y C.7 |
+| 3 | **`reducir_movimiento`:** apaga el balanceo de cámara y los movimientos decorativos; **`escala_texto_ui` se da por cerrada** («restablecer todos» se queda en 18 claves) | 30 R19, 28 R9 |
+| 4 | **Aviso «interacción ejecutada»:** un solo aviso, los sistemas filtran por `HECHO` (opción ya aplicada) | 7 OQ 6 cerrada |
+| 5 | **Subtítulos a 720p:** escalan con la ventana con un suelo legible definido en 26 | D26-22 cerrada |
+| 6 | **«Las de siempre»** (D13-4, silueta de `slot_6`, `VO_G_07`, `CARTA_A`/«La verdad», «Devolver»/«Asignar», duración, D-15, `VO_G_14_ASG`, respiración de la llamada): se aplican los defaults de cada GDD, se registran en «Decisiones tomadas» y el usuario las revisa en el playtest | No bloquea código |
+
+**Pendiente de propagar:** las enmiendas a los GDD 17, 30, 28, 26 y al slice (C.4, C.7) aún no están escritas; se hacen como lote de diseño antes de las historias que las usan (prompt, accesibilidad).
+
 ### Decisiones de ingeniería que el diseño ya no puede resolver
 - **ADR de pausa** (`SceneTree.paused` / `process_mode`, audio y animación en pausa): sin documentación del motor; afecta a 23, 25, 26, 28 y 29.
 - ~20 afirmaciones sobre Godot 4.7 siguen marcadas NOT SOURCEABLE y varios ACs son PV: se resuelven con un prototipo, no con más revisión de documentos.

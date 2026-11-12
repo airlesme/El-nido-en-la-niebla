@@ -262,3 +262,4 @@ exportadas; recorrido humano completo), EC-015 (sesión con mando; entrega a 21)
 IP-007 y el prompt), escribir las historias del prompt (U-5, ADR-0016 Accepted), sesión con mando, y replanificar
 M1 con la velocidad medida (U-1).
 
+**U-3 resuelta (2026-11-12):** las 6 decisiones de diseño están contestadas y registradas en `design/gdd/gdd-cross-review-2026-11-10-r2.md` § Decisiones del usuario; faltan por propagar a los GDD 17, 30, 28, 26 y al slice (C.4, C.7).
