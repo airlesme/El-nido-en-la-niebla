@@ -1,7 +1,7 @@
 # Story 012: `GameSceneRoot` y `SceneSource` real
 
 > **Epic**: Carga de planta (despacho, pasillo, Archivo)
-> **Status**: Ready
+> **Status**: Done (2026-11-12)
 > **Layer**: Core
 > **Type**: Integration
 > **Estimate**: M — 1 día (1–1,5; confianza BAJA)
@@ -75,3 +75,12 @@
 
 - Depends on: `production/epics/carga-de-planta/story-005-load-sequence.md`
 - Unlocks: `production/epics/carga-de-planta/story-013-gray-planta-geometry.md`
+
+---
+
+## Evidencia
+
+- `tests/integration/scene/game_scene_root_test.gd`: 12/12 PASSED, 0 orphans (AC-23 con la raíz real: 7 → validación 9 → 9 → resto, sin doble configuración, `INVALID_PUZZLE_DATA` sin configurar el resto; `validate_required_nodes` vacío y por cada faltante `spawn_office`/`office`/`corridor`/`archive`; `SceneSource` con ruta ausente, recurso no-escena y destino desconocido → `null`; instancia correcta con fixture `tests/integration/scene/fixtures/minimal_world.tscn`).
+- Suite bloqueante completa: 859 casos, 0 errores, 0 fallos, 0 huérfanos; 0 apariciones de `ObjectDB instances were leaked` / `resources still in use`. `--import` y `--boot-report` sin errores.
+- Decisiones/TODO: lista de nodos obligatorios M1 como datos (`required_nodes`), pendiente anotarla en ADR-0003 O-items (`TODO(adr-0003-o-item)`); rutas de `planta.tscn`/`recepcion.tscn` en `SceneSource.DEFAULT_PATHS` (`TODO(carga-013)`); `configuration_failed()` por duck-typing hasta que exista `PuzzleFramework`; `get_player()` devuelve `Node` hasta que exista `Player` (`TODO(pj-011)`).
+- Pendiente fuera de alcance: `tests/unit/scene/doubles/scene_root_double.gd` sigue siendo un doble (no se ha sustituido). SceneSource real con `planta.tscn` real depende de 013.
