@@ -53,7 +53,7 @@ Los 6 bloqueantes de la ronda 9 están cerrados y verificados por un revisor dis
 | 5 | **Subtítulos a 720p:** escalan con la ventana con un suelo legible definido en 26 | D26-22 cerrada |
 | 6 | **«Las de siempre»** (D13-4, silueta de `slot_6`, `VO_G_07`, `CARTA_A`/«La verdad», «Devolver»/«Asignar», duración, D-15, `VO_G_14_ASG`, respiración de la llamada): se aplican los defaults de cada GDD, se registran en «Decisiones tomadas» y el usuario las revisa en el playtest | No bloquea código |
 
-**Pendiente de propagar:** las enmiendas a los GDD 17, 30, 28, 26 y al slice (C.4, C.7) aún no están escritas; se hacen como lote de diseño antes de las historias que las usan (prompt, accesibilidad).
+Propagado el 2026-11-12: `design/gdd/sistema-de-pistas.md` (1), `design/gdd/opciones-de-accesibilidad.md` (1, 2, 3), `design/gdd/atmosfera-reactiva.md` (2, 3), `design/slice/slice-v0.3.md` (v0.4.4: C.4, C.7, §14; 1–6), `design/gdd/interaccion-e-inspeccion.md` (4), `design/gdd/subtitulos.md` (5), `design/gdd/ajustes-persistentes.md` (2, 3), `design/gdd/systems-index.md` (1–4). La decisión 6 no tiene fichero propio: cada GDD ya proponía su valor por defecto y queda «pendiente de revisión en playtest» (fila 0.4.4 del slice).
 
 ### Decisiones de ingeniería que el diseño ya no puede resolver
 - **ADR de pausa** (`SceneTree.paused` / `process_mode`, audio y animación en pausa): sin documentación del motor; afecta a 23, 25, 26, 28 y 29.

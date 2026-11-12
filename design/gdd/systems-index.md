@@ -331,11 +331,12 @@ Propaga lo que piden los seis GDDs de puzle (sus secciones «Cambios requeridos 
 Aplica `gdd-cross-review-2026-11-10.md` (FAIL, 6 bloqueantes) y `reviews/cross-review-r10-*.md`. **Filas 17 y 23 a 30:** dependencias reconstruidas con la regla común (la dureza la declara el dependiente y el proveedor la repite): 27 → 30 **Dura** y 30 → 27 **Blanda** (no hay ciclo duro); 24 → 1 y 24 → 7 Duras; 17 → 25 Blanda (la declara 17); 25 ↔ 27 solo 27 → 25 Dura; 23 ↔ 26 Blanda; 28 sin dependencia directa de 21 (bus); 29 → 15 Dura; 9 emite «puzles configurados» y 17 depende de 9 (Dura). **Estados:** 1, 3, 6, 7, 9, 17, 22 y 23 a 30 = «Revisado (ronda de corrección 9) — pendiente de re-review».
 
 **Decisiones del usuario pendientes tras la ronda 9:**
-- **Espera de pistas de 20/40 s** (17 OQ 3, 30 OQ 1) frente al pilar 4 (*Tensión sin castigo*), y recorte de pips, cuaderno y «Repetir».
-- **Parpadeo de 1,15 s y apagón de 0,8 s con `reducir_sobresaltos`:** cambian slice C.4 y C.7.
-- **`reducir_movimiento`:** si se extiende más allá de slice §14 y si `escala_texto_ui` se da por cerrada.
+*(Resueltas por el usuario el 2026-11-12 y propagadas: ver `gdd-cross-review-2026-11-10-r2.md` y slice v0.4.4.)*
+- ~~**Espera de pistas de 20/40 s** y recorte de pips, cuaderno y «Repetir».~~ **Resuelta:** se mantienen 20/40 s sin penalización; pips, cuaderno y «Repetir» fuera del slice (17 D17-27).
+- ~~**Parpadeo de 1,15 s y apagón de 0,8 s con `reducir_sobresaltos`.**~~ **Resuelta:** luz fija y oscurecimiento ≥ 2,0 s; slice C.4 y C.7 enmendados (28 DT-23).
+- ~~**`reducir_movimiento` y `escala_texto_ui`.**~~ **Resuelta:** apaga balanceo de cámara y movimientos decorativos; `escala_texto_ui` cerrada, 18 claves (30 D30-20).
 - **ADR de pausa:** `SceneTree.paused` / `process_mode` (no hay documentación del motor en `docs/engine-reference/`).
-- **Aviso «interacción ejecutada»:** filtrarlo por `HECHO` o crear un aviso aparte para 24 (7 OQ 6).
+- ~~**Aviso «interacción ejecutada»**~~ **Resuelta (2026-11-12):** un solo aviso; 21, 23 y 28 filtran por `HECHO` (7 OQ 6 cerrada).
 - **Anteriores aún abiertas:** D13-4 (bandeja), silueta de `slot_6`, `VO_G_07`, `CARTA_A` y «La verdad», asimetría Devolver/Asignar, criterio de duración con suelo ≈ 10,7 min (el slice v0.4.1 acepta ~15–30 min a medir en playtest), D-15 del slice, textos de `VO_G_14_ASG` y de la respiración de la llamada.
 
 ## Notas de la ronda de corrección 10 (2026-11-10): restos de la re-verificación de la ronda 9
