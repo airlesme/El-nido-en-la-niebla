@@ -1,7 +1,7 @@
 # Story 007: `PoseHistory` y `YawWindow` (servicios)
 
 > **Epic**: Jugador en primera persona (sin manos)
-> **Status**: Ready
+> **Status**: Done
 > **Layer**: Core
 > **Type**: Logic
 > **Estimate**: M — 1 día (0,5–1,5; confianza BAJA)
@@ -69,6 +69,13 @@
 **Status**: [ ] Not yet created
 
 ---
+
+## Evidencia
+
+- AC-35 y AC-37 cubiertos por `tests/unit/player/pose_history_test.gd` (11) y `yaw_window_test.gd` (8): 19/19, 0 huérfanos.
+- Suite bloqueante completa (Godot 4.7.2 local, `-i res://tests/timing`): 713 test cases, 0 errors, 0 failures, 0 orphans; sin `ObjectDB instances were leaked` ni `resources still in use`. `--import` sin errores.
+- Código: `src/player/pose_history.gd`, `yaw_window.gd`, `player_types.gd` (solo `PlayerPose`; `CameraPose`/`InspectionPose`/`VisionRay` quedan para sus historias: una `class_name` por fichero).
+- Firmas internas no fijadas por ADR (`record_tick`, `fill`, `reset`, constructores) solo las usa el Player (C-R21); `capacity()` añadido para tests.
 
 ## Dependencies
 
