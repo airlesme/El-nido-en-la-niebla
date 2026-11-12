@@ -1,7 +1,7 @@
 # Story 002: Locomoción F1/F2 en el marco del cuerpo
 
 > **Epic**: Jugador en primera persona (sin manos)
-> **Status**: Ready
+> **Status**: Done
 > **Layer**: Core
 > **Type**: Logic
 > **Estimate**: M — 1 día (0,5–1,5; confianza BAJA)
@@ -78,3 +78,12 @@
 
 - Depends on: `production/epics/jugador-primera-persona/story-001-player-config.md`
 - Unlocks: `production/epics/jugador-primera-persona/story-009-state-machine-colocar.md`, `story-011-player-node-api.md`
+
+---
+
+## Evidencia
+
+- `src/player/locomotion.gd` (`Locomotion`, `RefCounted` estático, sin motor): `target` (F1), `accelerate` + `brake_applies` (F2), `to_world`/`to_body` (giro por yaw y adopción del deslizamiento), `sanitize_move` (NaN/∞ → cero + `push_warning`). Firmas fijadas aquí con `# TODO(ADR-0012)` (dueño lead-programmer): el ADR solo esboza nombres.
+- `tests/unit/player/locomotion_test.gd`: 28 casos. AC-01, AC-02 (12 pasos/0,173 m; 9 pasos/0,107 m), AC-03, AC-45 (tabla de inversión, 9 y 19 pasos, lateral→avance 17, parada 9), AC-04 b. Límites (sin sobrepasar, dt inválido, tolerancia del freno, k_lat/v_paseo desde datos).
+- Ejecución local (Godot 4.7.2): `--import` sin errores; `-a res://tests/unit/player`: 69 casos, 0 fallos, 0 huérfanos, sin avisos de fuga.
+- Suite bloqueante completa: 528 casos, 1 fallo ajeno (`tests/unit/content/data_validator_test.gd::test_registry_lists_m1_rows_in_fixed_order`: el registro ya incluye `scene/load_transitions.json`, trabajo en curso de CP-002) y fugas `ObjectDB`/`resources still in use` al salir que no aparecen en las suites de `player` por separado. No es de esta historia.
