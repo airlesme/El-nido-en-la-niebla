@@ -261,6 +261,7 @@ func _apply_geometry() -> void:
 func _apply_place(pose: PlayerPose) -> void:
 	if not _sm.place(pose, _look, _poses, _yaw_window, _interp, _cfg.altura_ojos, _lease.cancel_silently):
 		return
+	global_basis = Basis.IDENTITY # C-X13: the body is never rotated; a rotated parent scene transform must not leak in
 	_set_feet(pose.position)
 	velocity = Vector3.ZERO
 	_d = 0.0
