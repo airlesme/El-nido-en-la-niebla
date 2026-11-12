@@ -1,7 +1,7 @@
 # Story 009: Máquina de estados del Jugador y `colocar`
 
 > **Epic**: Jugador en primera persona (sin manos)
-> **Status**: Ready
+> **Status**: Done (2026-11-12; salvedad: suite completa no verificada, ver Evidencia)
 > **Layer**: Core
 > **Type**: Logic
 > **Estimate**: M — 1 día (1–2; confianza BAJA)
@@ -76,3 +76,14 @@
 
 - Depends on: `production/epics/jugador-primera-persona/story-002-locomotion.md`, `story-004-look.md`, `story-007-pose-history-yaw-window.md`
 - Unlocks: `production/epics/jugador-primera-persona/story-010-camera-lease.md`, `story-011-player-node-api.md`
+
+---
+
+## Evidencia
+
+- `src/player/player_state_machine.gd` y `tests/unit/player/player_state_machine_test.gd` (T-U7, 20 tests). `--import` sin errores.
+- `-a res://tests/unit/player` con Godot 4.7.2 local: `Overall Summary: 169 test cases | 0 errors | 0 failures | 0 flaky | 0 skipped | 0 orphans`; sin `ObjectDB instances were leaked` ni `resources still in use`.
+- Suite bloqueante completa NO verificable en esta sesión: otro agente (EC-008, `src/input/`) dejó `InputFormulas` sin declarar y la suite aborta con Parse Error (no es de esta historia).
+- AC-23: posición/velocidad/orientación (yaw envuelto, pitch limitado)/`giro_acumulado` 0/historial/interpolador y estado Congelado cubiertos. La cancelación de la cesión se prueba con un callable inyectado (`cancel_lease`); la cesión real (`CameraLease.cancel_silently`) la conecta 010/011.
+- AC-24 (9 pasos, 0,107 m, orientación intacta), AC-26 parte lógica (mismo tick) y `colocar` antes de `configurar()` (`defer_place`/`on_configured`) cubiertos.
+- Firmas fijadas por la historia (TODO(ADR-0012), dueño lead-programmer): `place`, `step_velocity`, `defer_place`, `on_configured`.
