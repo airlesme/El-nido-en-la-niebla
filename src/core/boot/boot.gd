@@ -8,6 +8,9 @@ class_name Boot extends Node
 ## User argument (after `--`) that makes Boot print the report and exit 0 (ADR-0018 D4 layer 3).
 const BOOT_REPORT_ARG: String = "--boot-report"
 
+## User argument (after `--`) that disables the automatic new game of M1 (no title yet).
+const NO_AUTOSTART_ARG: String = "--no-autostart"
+
 ## Fact catalog, relative to `assets/data/` (a registered DataCatalog row).
 const STATE_CATALOG: String = "state/flags.json"
 
@@ -18,8 +21,56 @@ func _ready() -> void:
 	var ctx: ServiceContext = compose()
 	# TODO(ADR-0018 O3/D5): dev_tools and commit come from DevTools.attach and build-info.json.
 	print(format_report_line(ctx.flavor, _project_version(), "dev", "absent"))
-	if wants_boot_report(OS.get_cmdline_user_args()):
+	var user_args: PackedStringArray = OS.get_cmdline_user_args()
+	if wants_boot_report(user_args):
 		get_tree().quit(0)
+		return
+	if ctx.fatal.has_failed():
+		return
+	# Step 10 (ADR-0009 D2): the Shell pieces are siblings of Boot; unique names resolve before their _ready.
+	var shell: Node = get_parent()
+	var slot: Node3D = shell.get_node_or_null("%" + String(Shell.WORLD_SLOT_NAME)) as Node3D
+	var curtain: Curtain = shell.get_node_or_null("%" + String(Shell.CURTAIN_NAME)) as Curtain
+	var panel: ErrorPanel = shell.get_node_or_null("%" + String(Shell.ERROR_PANEL_NAME)) as ErrorPanel
+	if slot == null or curtain == null:
+		ctx.logger.line(LogSink.LEVEL_ERROR, "boot: Shell without WorldSlot/Curtain, the loader stays dormant")
+		return
+	if wire_scene_loading(ctx, slot, curtain.set_alpha, panel) and wants_auto_start(user_args):
+		start_new_game(ctx)
+
+
+## True unless the user args (after `--`) contain `--no-autostart` (tests, tools and the future title).
+static func wants_auto_start(user_args: PackedStringArray) -> bool:
+	return not user_args.has(NO_AUTOSTART_ARG)
+
+
+## Wires the load sequence of the SceneLoader (ADR-0003 D4/D5, ADR-0009 D2): the real `SceneSource`, the Shell's
+## WorldSlot, the `LoadTransitions` data, the real clock, `contexts_port()` of the input and the curtain sink
+## (`Callable(alpha: float)`). With a panel, also its error port and its unload port (story CP-014).
+## Returns false (fatal already raised by the data read) when the transitions data is invalid.
+## TODO(carga-005): `contexts_port()` is not yet handed to SceneDirector (21): its `setup` does not accept it.
+## Example: `Boot.wire_scene_loading(ctx, world_slot, curtain.set_alpha, error_panel)`.
+static func wire_scene_loading(ctx: ServiceContext, slot: Node3D, alpha_sink: Callable, panel: ErrorPanel) -> bool:
+	var transitions: LoadTransitions = LoadTransitions.load_from(DataReader.new(ctx.files, ctx.flavor), ctx.fatal)
+	if transitions == null:
+		return false
+	ctx.scenes.set_source(SceneSource.new())
+	ctx.scenes.wire_sequence(slot, transitions, ctx.real_clock, ctx.input.contexts_port(), alpha_sink)
+	if panel != null:
+		ctx.scenes.set_error_panel_port(panel.show_error)
+		panel.set_unload_port(ctx.scenes.request_full_unload)
+	return true
+
+
+## M1 has no title: the boot asks for the new game itself. The curtain starts black (no fade-out from nothing).
+## `control_final` is `exploracion` because the Director (21) does not exist yet; with `ninguno` 21 would do the hand-off.
+## TODO(director-21): switch to `FinalControl.NINGUNO` when SceneDirector owns the hand-off.
+## Returns false when the loader rejected the request.
+## Example: `Boot.start_new_game(ctx)`.
+static func start_new_game(ctx: ServiceContext) -> bool:
+	ctx.scenes.prime_curtain_dark()
+	return ctx.scenes.request_load(SceneLoader.Destination.PLANTA, SceneLoader.Reason.PARTIDA_NUEVA,
+			SceneLoader.FinalControl.EXPLORACION)
 
 
 ## Builds the `[boot]` line ADR-0018 D4 layer 3 greps for.
@@ -105,8 +156,7 @@ func compose() -> ServiceContext:
 	ctx.input.setup(ctx) # step 5: loads default_bindings.json (EC-015)
 	if ctx.fatal.has_failed(): # invalid bindings: do not enter the game
 		return ctx
-	# TODO(carga-005): hand `ctx.input.contexts_port()` to SceneLoader (4) and SceneDirector (21) when
-	# their setup accepts it (src/scene is outside EC-015).
+	# `contexts_port()` reaches SceneLoader (4) in `wire_scene_loading`; SceneDirector (21) still has no port (TODO(carga-005)).
 	ctx.settings.setup(ctx)
 	ctx.audio.setup(ctx)
 	ctx.scenes.setup(ctx)

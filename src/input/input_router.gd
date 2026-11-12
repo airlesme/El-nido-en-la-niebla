@@ -29,6 +29,11 @@ var _invert_pad: bool = false
 ## Safe ranges of the player sensitivities (GDD 1 F2: 0.25-3, F3: 0.5-2).
 const SENS_MOUSE_RANGE: Vector2 = Vector2(0.25, 3.0)
 const SENS_STICK_RANGE: Vector2 = Vector2(0.5, 2.0)
+const MOUSE_CAPTURED: StringName = &"captured"
+const MOUSE_VISIBLE: StringName = &"visible"
+
+## Last mouse mode this router wrote (`&""` = none yet).
+var _mouse_mode: StringName = &""
 
 
 func _init() -> void:
@@ -77,6 +82,26 @@ func use_clock(clock: GameClock) -> void:
 func _process(_delta: float) -> void:
 	_subscribe_loading()
 	_stack.tick()
+	_sync_mouse_mode()
+
+
+func _exit_tree() -> void:
+	# Never leave the pointer captured behind a freed router (tests, quit).
+	if _mouse_mode == MOUSE_CAPTURED and _adapter != null:
+		_adapter.set_mouse_mode(MOUSE_VISIBLE)
+	_mouse_mode = &""
+
+
+## TODO(input-owner): minimal mouse capture (QA plan R-S3-8), not fixed by the ADR/stories yet. The pointer is captured
+## while the game is in `exploracion` after `request_exploration` (the end of the first lift), and visible otherwise
+## (title, load error, pause or any other context on top). Written only on change.
+func _sync_mouse_mode() -> void:
+	if _adapter == null:
+		return
+	var want: StringName = MOUSE_CAPTURED if (_stack.in_game() and _stack.top() == InputTypes.Context.EXPLORACION) else MOUSE_VISIBLE
+	if want != _mouse_mode:
+		_mouse_mode = want
+		_adapter.set_mouse_mode(want)
 
 
 ## True while a load is in progress (`carga_en_curso`); blocks the pause. Without load notices it never is.

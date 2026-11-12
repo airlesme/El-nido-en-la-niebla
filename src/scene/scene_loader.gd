@@ -117,6 +117,16 @@ func wire_sequence(slot: Node3D, transitions: LoadTransitions, clock: RealClock,
 	_reduced_motion = reduced_motion
 
 
+## Puts the curtain at alpha 1 before the first load (boot with no title: there is nothing to fade out from),
+## so the first request skips the fade-out and the only visible change is the lift. No-op while a load runs.
+## Example: `loader.prime_curtain_dark(); loader.request_load(...)`.
+func prime_curtain_dark() -> void:
+	if _phase != Phase.IDLE:
+		return
+	_curtain.alpha = 1.0
+	_apply_alpha()
+
+
 ## Port to the error message: `request(cause: StringName)` is called once per failure, after the curtain
 ## is held at alpha 1 and Entrada has `restore_menu`. The visible panel is story 014.
 ## TODO(carga-014): the panel's accept action calls `request_full_unload()` (owner: carga-014).
