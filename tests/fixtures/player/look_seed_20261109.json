@@ -1,0 +1,8 @@
+{
+	"schema_version": 1,
+	"description": "PJ-004 AC-13 (M1 scope): deterministic look fixture. Deltas are generated in the test from `seed` with RandomNumberGenerator (uniform in +-max_delta_deg per axis, degrees, input convention +right/+up). `zone_notice_steps` are physics steps where a zone-activated notice arrives; it must not change the orientation. Door, blackout, call, reflection and P1-hint events are added when those systems exist.",
+	"seed": 20261109,
+	"steps": 600,
+	"max_delta_deg": 3.0,
+	"zone_notice_steps": [30, 31, 150, 299, 300, 451, 599]
+}

@@ -1,7 +1,7 @@
 # Story 004: Mirada 1:1 — yaw/pitch, límites y roll 0
 
 > **Epic**: Jugador en primera persona (sin manos)
-> **Status**: Ready
+> **Status**: In Progress — AC-11..14 verificados en `tests/unit/player/look_test.gd` (18/18); pendiente solo repetir la suite completa, bloqueada por errores de parseo ajenos (EC-005 en curso: `ContextStack.NO_DURATION_S`, `_cap_for()`)
 > **Layer**: Core
 > **Type**: Logic
 > **Estimate**: M — 1 día (0,5–1,5; confianza BAJA)
@@ -79,3 +79,15 @@
 
 - Depends on: `production/epics/jugador-primera-persona/story-001-player-config.md`
 - Unlocks: `production/epics/jugador-primera-persona/story-009-state-machine-colocar.md`, `story-010-camera-lease.md`
+
+---
+
+## Evidencia
+
+- Código: `src/player/look.gd` (`Look`: `apply`, `apply_input_deg`, `set_orientation`, `to_basis`), `src/player/ports/player_input_port.gd` (puerto `@abstract`).
+- Tests: `tests/unit/player/look_test.gd` (18 casos, 0 fallos, 0 huérfanos) + `tests/fixtures/player/look_seed_20261109.json` (semilla 20261109, 600 pasos, deltas generados en el test; AC-13 alcance M1: puerta/apagón/llamada/reflejo/pista P1 se añaden cuando existan).
+- Suite `tests/unit/player` suelta: 87 casos, 0 errores, 0 fallos, 0 huérfanos; sin `ObjectDB instances were leaked` ni `resources still in use`.
+- Suite completa bloqueante: NO verificable en esta sesión (exit 105, errores de parseo en `src/input/context_stack.gd`/`tests/unit/input/*` por trabajo concurrente de EC-005). Repetirla al cerrar EC-005.
+- OI-3 cerrado aquí: entrada x = +derecha, y = +arriba (grados); `INPUT_SIGN = (-1, 1)` porque el yaw de Godot crece hacia la izquierda; `apply()` toma ya la convención de Godot (AC-11). `# TODO(ADR-0006)`: confirmar con su dueño; anotar en ADR-0012 § Open Items (no editado en esta historia).
+- Sensibilidad e inversión de eje las aplica Entrada (GDD 2 F4); `CameraFov.to_engine()` no lo pide esta historia (queda para la de cámara/FOV).
+- No hay captura: sin escena que observar aún (lógica pura).
