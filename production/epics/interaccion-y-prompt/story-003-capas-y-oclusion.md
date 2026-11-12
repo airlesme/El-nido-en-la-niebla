@@ -1,7 +1,7 @@
 # Story 003: Capas físicas y `OcclusionProbe` (`intersect_ray`)
 
 > **Epic**: Interacción y prompt (mitad Interacción)
-> **Status**: Ready
+> **Status**: Done
 > **Layer**: Feature
 > **Type**: Logic
 > **Estimate**: M — 1 día (0,5–1,5), confianza BAJA
@@ -82,3 +82,11 @@
 
 - Depends on: `production/epics/interaccion-y-prompt/story-002-pick-registry-y-pickmath.md`
 - Unlocks: `production/epics/interaccion-y-prompt/story-004-focus-selector.md`
+
+---
+
+## Evidencia
+
+- `tests/unit/interaction/oclusion_test.gd` (analítica, 11 casos: AC-03, AC-04c, borde de tolerancia, ojo dentro de sólido, RID excluido, máx. contactos, nombres de capa y `OCCLUSION_MASK`) y `oclusion_fisica_test.gd` (Jolt real, 6 casos, sin asertar plataforma): todos pasan en la suite completa (la ejecución aislada de `tests/unit/interaction` previa a corregir un fixture mío no mostró fugas).
+- Suite bloqueante completa: 573 casos, 1 fallo ajeno (`tests/unit/content/data_validator_test.gd::test_registry_lists_m1_rows_in_fixed_order`: CP-002 añadió `scene/load_transitions.json` al registro). Los avisos `ObjectDB instances were leaked` / `resources still in use` aparecen en la suite completa pero no en la ejecución aislada de `tests/unit/interaction`; no son de esta historia.
+- Capas 3D nombradas en `project.godot` (`[layer_names]`, 1–5 de D1). `ContactInfo.excluded_rids` añadido; `PickRegistry` resuelve `self_occluders` a RIDs (cierra `TODO(IP-003)`).

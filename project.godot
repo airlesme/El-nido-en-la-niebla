@@ -22,6 +22,14 @@ SaveServiceAutoload="*res://src/save/save_service.gd"
 SceneLoaderAutoload="*res://src/scene/scene_loader.gd"
 SceneDirectorAutoload="*res://src/director/scene_director.gd"
 
+[layer_names]
+
+3d_physics/layer_1="world_geometry"
+3d_physics/layer_2="player_body"
+3d_physics/layer_3="interactable"
+3d_physics/layer_4="zone_sensor"
+3d_physics/layer_5="zone_trigger"
+
 [rendering]
 
 renderer/rendering_method="forward_plus"

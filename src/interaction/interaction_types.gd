@@ -33,3 +33,6 @@ class ContactInfo extends RefCounted:
 	var delta: float = 0.0
 	var contains_axis: bool = false
 	var contact_point: Vector3 = Vector3.ZERO
+	## Solid bodies of the pick's own subtree that must not occlude it (D4). Shared with the registry
+	## entry (a reference, not a copy); read-only for the probe.
+	var excluded_rids: Array[RID] = []

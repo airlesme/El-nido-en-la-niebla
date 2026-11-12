@@ -2,7 +2,7 @@
 ## (D3 steps 1-5). Rebuilt only on scene load. Unknown ids, duplicate ids and picks that break the box rules
 ## (FE-R04: one unscaled `BoxShape3D`, layer = bit 3 only) are data errors reported in `issues`; an erroneous
 ## pick is not registered.
-## TODO(IP-003): excluded RIDs (`self_occluders`) are resolved by the occlusion story.
+## `self_occluders` are resolved to RIDs at build (IP-003); a path that is not a `CollisionObject3D` is a data error.
 ## TODO(IP-004): cached `habilitado_si` fact indices (`GameState.resolve_fact`) arrive with the selector.
 ## Example: `var reg := PickRegistry.build(picks, catalog); var n := reg.collect(eye, 0.06, reg.make_pool())`.
 class_name PickRegistry extends RefCounted
@@ -19,6 +19,8 @@ class Entry extends RefCounted:
 	## `|half_extents|`, radius of the prefilter sphere.
 	var bound: float = 0.0
 	var shape: CollisionShape3D = null
+	## RIDs of the pick's `self_occluders` (D2), excluded from its occlusion ray (D4).
+	var excluded_rids: Array[RID] = []
 
 ## Data errors found building the registry.
 var issues: Array[DataIssue] = []
@@ -52,7 +54,19 @@ static func build(picks: Array[InteractablePick], catalog: InteractionCatalog) -
 		if absf(s.x - 1.0) > SCALE_EPSILON or absf(s.y - 1.0) > SCALE_EPSILON or absf(s.z - 1.0) > SCALE_EPSILON:
 			reg._error(where, &"pick_scale", "'%s' box must not be scaled (scale %s)" % [id, s])
 			continue
+		var rids: Array[RID] = []
+		var rids_ok: bool = true
+		for path: NodePath in pick.self_occluders:
+			var body: CollisionObject3D = pick.get_node_or_null(path) as CollisionObject3D
+			if body == null:
+				reg._error(where, &"self_occluder", "'%s' self_occluder '%s' is not a CollisionObject3D" % [id, path])
+				rids_ok = false
+				break
+			rids.append(body.get_rid())
+		if not rids_ok:
+			continue
 		var e: Entry = Entry.new()
+		e.excluded_rids = rids
 		e.id = id
 		e.prioridad = int(catalog.entry(id).get("prioridad", 0))
 		e.alcance_c = catalog.alcance_m(id)
@@ -114,6 +128,7 @@ func collect(eye: EyeRaySource, radius: float, pool: Array[InteractionTypes.Cont
 		var out: InteractionTypes.ContactInfo = pool[n]
 		if PickMath.measure(o, u, xf, e.half_extents, radius, e.alcance_c, out):
 			out.entry = i
+			out.excluded_rids = e.excluded_rids
 			n += 1
 	return n
 
