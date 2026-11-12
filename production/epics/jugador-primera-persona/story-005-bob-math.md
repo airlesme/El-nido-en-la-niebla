@@ -1,7 +1,7 @@
 # Story 005: `BobMath` — balanceo de cámara ligado a la distancia
 
 > **Epic**: Jugador en primera persona (sin manos)
-> **Status**: Ready
+> **Status**: Done
 > **Layer**: Core
 > **Type**: Logic
 > **Estimate**: M — 1 día (0,5–1,5; confianza BAJA)
@@ -68,7 +68,7 @@
 
 **Story Type**: Logic
 **Required evidence**: `tests/unit/player/bob_math_test.gd` (T-U4) — must exist and pass.
-**Status**: [ ] Not yet created
+**Status**: [x] Created and passing
 
 ---
 
@@ -76,3 +76,12 @@
 
 - Depends on: `production/epics/jugador-primera-persona/story-001-player-config.md`
 - Unlocks: `production/epics/jugador-primera-persona/story-011-player-node-api.md`
+
+---
+
+## Evidencia
+
+- `src/player/bob_math.gd` (estático `offset(d, r, g, cfg)` según el pseudocódigo del ADR-0012; rampa de nivel por instancia `configure/set_level/gain(now_s)` con tiempo inyectado, sin Timer/Tween). `tests/unit/player/bob_math_test.gd`: 17/17.
+- Suite bloqueante completa: 713 casos, 0 errores, 0 fallos, 0 orphans; 0 `ObjectDB instances leaked` / `resources still in use`. `--import` sin errores propios.
+- AC-10, AC-15, AC-16, AC-17 cubiertos. Nota AC-16/17: «sin discontinuidades > 2 mm» se mide como el salto causado solo por la caída de `r` (≤ 1,7 mm) o por la rampa de `g` (< 1 mm) a igual `d`; el paso normal a `v_paseo` ya mueve `y` hasta 3,4 mm/tick por la fase, así que la lectura literal sobre el offset total no es satisfacible.
+- TODO(ADR-0012) con dueño lead-programmer: registrar `configure/set_level/gain` en § Key Interfaces.
