@@ -26,6 +26,7 @@ const TUNING_KEYS: Array[StringName] = [
 	&"k_mouse_deg_per_px", &"dz_in", &"dz_out", &"omega_max_deg_s", &"omega_r_max_deg_s",
 	&"v_max_px_s", &"attract_r_base_px", &"attract_r_max_elem_px", &"attract_lambda",
 	&"t_hold_s", &"d_drag_px", &"n_m_px", &"t_m_s", &"transition_cap_s", &"sin_control_margin_s",
+	&"look_curve_exp", # p of F3 (EC-008)
 	&"no_duration_cap_s", # duration given to a `sin control` opened with none declared (ADR-0006 D4)
 ]
 ## Boolean settings of GDD 1 rule 18 and their initial values.
@@ -34,6 +35,8 @@ const TOGGLE_KEYS: Array[StringName] = [
 ]
 ## Generous outer bound of every tuning number (the real safe range is the file's own min/max).
 const NUMBER_LIMIT: float = 100000.0
+## Hard floor of `dz_in` (GDD 1 F1).
+const DZ_IN_FLOOR: float = 0.05
 const CODE_LIMIT: int = 1 << 24
 
 
@@ -96,6 +99,13 @@ class BindingsRules extends FileRules:
 				issues.append(_err(file, p + ".value", &"range", "value %s outside [%s, %s]" % [v, lo, hi]))
 		var dz_in: Dictionary = tuning["dz_in"]
 		var dz_out: Dictionary = tuning["dz_out"]
+		# F1: below 0.05 the stick drift would count as use (GDD 1 F1); the floor is not tunable by data.
+		if float(dz_in["min"]) < DZ_IN_FLOOR:
+			issues.append(_err(file, "tuning.dz_in.min", &"range", "dz_in min must be at least %s" % DZ_IN_FLOOR))
+		elif float(dz_in["value"]) < DZ_IN_FLOOR:
+			issues.append(_err(file, "tuning.dz_in.value", &"range", "dz_in must be at least %s" % DZ_IN_FLOOR))
+		if float(dz_in["value"]) + float(dz_out["value"]) >= 1.0:
+			issues.append(_err(file, "tuning.dz_out.value", &"range", "dz_in + dz_out must be below 1"))
 		if float(dz_out["value"]) > float(dz_in["value"]):
 			issues.append(_err(file, "tuning.dz_out.value", &"range", "dz_out must not exceed dz_in"))
 

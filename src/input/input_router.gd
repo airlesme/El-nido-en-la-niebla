@@ -15,6 +15,20 @@ var _stack: ContextStack
 var _state: GameState
 var _clock: GameClock
 var _load_subs: Array[int] = [] # handles on the state's channel
+## Raw polled state of EC-008 (updated by `feed`, read by `get_move_vector` / `consume_look_delta`).
+var _left_stick: Vector2 = Vector2.ZERO
+var _right_stick: Vector2 = Vector2.ZERO
+var _mouse_px: Vector2 = Vector2.ZERO # relative px since the last consume
+var _keys: Array[bool] = [false, false, false, false] # up, down, left, right of `mover`
+## Player look settings (GDD 1 F2/F3 "ajuste"). TODO(ADR-0007): persisted settings replace these defaults.
+var _sens_mouse: float = 1.0
+var _sens_stick: float = 1.0
+var _invert_mouse: bool = false
+var _invert_pad: bool = false
+
+## Safe ranges of the player sensitivities (GDD 1 F2: 0.25-3, F3: 0.5-2).
+const SENS_MOUSE_RANGE: Vector2 = Vector2(0.25, 3.0)
+const SENS_STICK_RANGE: Vector2 = Vector2(0.5, 2.0)
 
 
 func _init() -> void:
@@ -173,6 +187,53 @@ func use_table(table: BindingTable) -> void:
 	_table = table
 	if table != null and table.is_loaded():
 		_stack.set_caps(table.tuning_value(&"no_duration_cap_s"), table.tuning_value(&"sin_control_margin_s"))
+		_invert_mouse = table.toggle_default(&"invert_y_keyboard_mouse")
+		_invert_pad = table.toggle_default(&"invert_y_gamepad")
+
+
+## Sets the player's look settings, clamped to their safe ranges (non-finite sensitivities are ignored).
+## Example: `router.set_look_settings(1.5, 1.0, true, false)`.
+func set_look_settings(mouse_sens: float, stick_sens: float, invert_mouse: bool, invert_pad: bool) -> void:
+	if is_finite(mouse_sens):
+		_sens_mouse = clampf(mouse_sens, SENS_MOUSE_RANGE.x, SENS_MOUSE_RANGE.y)
+	if is_finite(stick_sens):
+		_sens_stick = clampf(stick_sens, SENS_STICK_RANGE.x, SENS_STICK_RANGE.y)
+	_invert_mouse = invert_mouse
+	_invert_pad = invert_pad
+
+
+## Movement poll (ADR-0006 D6): x = right, y = forward, length <= 1; zero outside `EXPLORACION`.
+## Keyboard (normalised) plus the left stick through F1 (dead zone of ours, never the engine's).
+func get_move_vector() -> Vector2:
+	if _table == null or not _table.is_loaded() or _stack.top() != InputTypes.Context.EXPLORACION:
+		return Vector2.ZERO
+	var kb: Vector2 = Vector2(float(_keys[3]) - float(_keys[2]), float(_keys[0]) - float(_keys[1]))
+	if kb != Vector2.ZERO:
+		kb = kb.normalized()
+	var pad: Vector2 = InputFormulas.stick_move(_left_stick,
+			_table.tuning_value(&"dz_in"), _table.tuning_value(&"dz_out"))
+	pad.y = -pad.y # stick up is axis -1; forward is +y
+	return (kb + pad).limit_length(1.0)
+
+
+## Look poll (ADR-0006 D6/D8): degrees to turn this frame, x = yaw (+right), y = pitch (+up), the convention
+## `Look.apply_input_deg` expects. Mouse (F2) plus right stick (F3); consumes the accumulated mouse pixels
+## even outside `EXPLORACION`, where it returns zero. `delta` is the frame time (s); a negative value
+## (default) uses `get_process_delta_time()`. The router applies no pitch/yaw limits (AC-09).
+## TODO(ADR-0006): the optional `delta` parameter is an ADR-fallback (F3 needs the frame time); owner: lead-programmer.
+func consume_look_delta(delta: float = -1.0) -> Vector2:
+	var px: Vector2 = _mouse_px
+	_mouse_px = Vector2.ZERO
+	if _table == null or not _table.is_loaded() or _stack.top() != InputTypes.Context.EXPLORACION:
+		return Vector2.ZERO
+	var dt: float = delta if delta >= 0.0 else get_process_delta_time()
+	var m: Vector2 = InputFormulas.mouse_look(px, _table.tuning_value(&"k_mouse_deg_per_px"),
+			_sens_mouse, -1 if _invert_mouse else 1)
+	var s: Vector2 = InputFormulas.stick_look(_right_stick, _table.tuning_value(&"dz_in"),
+			_table.tuning_value(&"dz_out"), _table.tuning_value(&"omega_max_deg_s"),
+			_table.tuning_value(&"look_curve_exp"), _sens_stick, -1 if _invert_pad else 1, dt)
+	var d: Vector2 = m + s
+	return Vector2(d.x, -d.y) # F2/F3 use screen axes (y down); Look wants +up
 
 
 ## Single entry of raw input; called only by the adapter and by tests. Resolves the FIRST action bound
@@ -181,6 +242,7 @@ func use_table(table: BindingTable) -> void:
 func feed(raw: InputTypes.RawInput) -> void:
 	if raw == null or _table == null:
 		return
+	_track(raw)
 	var actions: Array[StringName] = _table.actions_for(raw)
 	if actions.is_empty():
 		return
@@ -191,6 +253,26 @@ func feed(raw: InputTypes.RawInput) -> void:
 	ev.phase = InputTypes.Phase.PRESSED if raw.pressed else InputTypes.Phase.RELEASED
 	ev.position = raw.position
 	_stack.deliver(ev)
+
+
+## Records the raw state polled by `get_move_vector` / `consume_look_delta`.
+func _track(raw: InputTypes.RawInput) -> void:
+	match raw.kind:
+		InputTypes.RawKind.MOUSE_MOTION:
+			if InputFormulas.is_finite_vec(raw.motion):
+				_mouse_px += raw.motion
+		InputTypes.RawKind.PAD_AXIS:
+			var v: float = raw.value if is_finite(raw.value) else 0.0
+			match raw.code:
+				JOY_AXIS_LEFT_X: _left_stick.x = v
+				JOY_AXIS_LEFT_Y: _left_stick.y = v
+				JOY_AXIS_RIGHT_X: _right_stick.x = v
+				JOY_AXIS_RIGHT_Y: _right_stick.y = v
+		InputTypes.RawKind.KEY:
+			var keys: Array[InputTypes.InputBinding] = _table.get_bindings(&"mover", InputTypes.Device.KEYBOARD_MOUSE)
+			for i: int in mini(keys.size(), 4):
+				if keys[i].kind == InputTypes.RawKind.KEY and keys[i].code == raw.code:
+					_keys[i] = raw.pressed
 
 
 ## The state's channel exists only after its catalog loads: `_process` retries until it can subscribe.

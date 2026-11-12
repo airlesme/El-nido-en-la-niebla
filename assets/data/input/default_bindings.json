@@ -46,6 +46,7 @@
     "dz_in": {"value": 0.15, "min": 0.05, "max": 0.5},
     "dz_out": {"value": 0.05, "min": 0.0, "max": 0.2},
     "omega_max_deg_s": {"value": 120.0, "min": 60.0, "max": 180.0},
+    "look_curve_exp": {"value": 1.5, "min": 1.0, "max": 2.0},
     "omega_r_max_deg_s": {"value": 60.0, "min": 20.0, "max": 90.0},
     "v_max_px_s": {"value": 900.0, "min": 400.0, "max": 1600.0},
     "attract_r_base_px": {"value": 64.0, "min": 32.0, "max": 128.0},

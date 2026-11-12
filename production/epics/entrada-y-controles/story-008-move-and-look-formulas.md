@@ -1,7 +1,7 @@
 # Story 008: Movimiento y mirada — F1, F2, F3
 
 > **Epic**: Entrada y controles
-> **Status**: Ready
+> **Status**: Done
 > **Layer**: Foundation
 > **Type**: Logic
 > **Estimate**: M (≈ 1 día, confianza BAJA)
@@ -72,6 +72,13 @@
 **Status**: [ ] Not yet created
 
 ---
+
+## Evidencia
+
+- `tests/unit/input/move_and_look_formulas_test.gd` (31 tests): AC-F1, AC-F2, AC-F3, AC-09 pasan. Suite bloqueante: 798 casos, 0 errores, 0 fallos, 0 orphans; sin `ObjectDB instances were leaked` ni `resources still in use`.
+- Código: `src/input/input_formulas.gd` (F1/F2/F3 estáticas), `InputRouter.get_move_vector/consume_look_delta/set_look_settings`. Datos: nueva clave `look_curve_exp` (p, 1,5, rango 1–2) en `default_bindings.json` + esquema; el esquema rechaza `dz_in` < 0,05 y `dz_in + dz_out >= 1`.
+- Decisiones/ADR-fallback: `consume_look_delta(delta := -1.0)` (F3 necesita el tiempo del fotograma; `TODO(ADR-0006)`); F2/F3 usan ejes de pantalla (y abajo +, como el GDD) y el router entrega +derecha/+arriba (invierte y) que es lo que espera `Look`; sensibilidades s_m/s_s del jugador por `set_look_settings` (`TODO(ADR-0007)`).
+- La zona muerta real del mando sigue NEEDS_MANUAL (S-0006), fuera de este criterio.
 
 ## Dependencies
 
