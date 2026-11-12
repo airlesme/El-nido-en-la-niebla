@@ -706,7 +706,7 @@ Revisados por `qa-lead`. **Evidencia:** **L** = test unitario automático (gdUni
 | 3 | ¿`D04` (marco de foto, «usada en el puzle 5») es solo `INSPECCION_TEXTO` o abre una vista del puzle 5? | GDD del puzle 5 | GDD del puzle 5 |
 | 4 | Registro de «últimos textos» de pie (releer) | Producción / UX | Fuera del slice; tras playtest (H-19) |
 | 5 | Tamaño del tablero y `view_distance_m` de `D01b` compatibles con el layout de 4 columnas del P4 (Open Question 1 de 14); y verificar con 13 el desplazamiento de `ANC_D01A` (D13-16) | 7 / 10 / arte | Antes de maquetar `D01b` |
-| 6 | **Consumidores del aviso ampliado (D7-74):** 21 (AC-21-15, `ESC1_MENSAJE` sobre `V02`), 23 y 28 reaccionan hoy a «interacción ejecutada» sin filtrar `resultado`; sus GDD deben decir «solo `HECHO`». *Alternativa:* aviso aparte «interacción rechazada» solo para 24 | 21 / 23 / 28 | Re-review de la ronda 9 |
+| 6 | **CERRADA (usuario, 2026-11-12).** Un **solo** aviso «interacción ejecutada» con `resultado` ampliado (D7-74): 24 lo consume completo; 21 (AC-21-15, `ESC1_MENSAJE` sobre `V02`), 23 y 28 **filtran por `resultado = HECHO`** y ignoran el resto (21 y 28 ya lo dicen; 23 lo recoge en su regla de suscripción). *Alternativa descartada:* aviso aparte «interacción rechazada» solo para 24 | 21 / 23 / 28 | Cerrada; sin cambio de contrato |
 
 **Puerta de verificación del motor (I-08, B-03):** AC-V6, AC-32 (V2), AC-05 (cláusula de distancia) y la historia de «detección» no pasan de *pendiente / en pruebas* mientras no exista el ADR de interacción que cierre V1 a V4.
 
