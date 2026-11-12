@@ -102,7 +102,11 @@ func compose() -> ServiceContext:
 	run_data_validation(ctx, ctx.files)
 	if ctx.fatal.has_failed(): # a fatal call stops the sequence (ADR-0009 D2)
 		return ctx
-	ctx.input.setup(ctx)
+	ctx.input.setup(ctx) # step 5: loads default_bindings.json (EC-015)
+	if ctx.fatal.has_failed(): # invalid bindings: do not enter the game
+		return ctx
+	# TODO(carga-005): hand `ctx.input.contexts_port()` to SceneLoader (4) and SceneDirector (21) when
+	# their setup accepts it (src/scene is outside EC-015).
 	ctx.settings.setup(ctx)
 	ctx.audio.setup(ctx)
 	ctx.scenes.setup(ctx)

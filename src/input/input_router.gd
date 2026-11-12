@@ -48,10 +48,15 @@ func _ready() -> void:
 
 ## Composition point, called once by Boot (ADR-0009 D2/D3). Never called by systems.
 func setup(ctx: ServiceContext) -> void:
-	# TODO(ADR-0006): load the binding table and subscribe (ADR-0009 D2 boot order).
 	_stack.set_log(ctx.logger)
 	use_clock(ctx.clock)
 	use_state(ctx.state)
+	# ADR-0009 D2 step 5: `input/default_bindings.json`. A bad file raises `ctx.fatal` (Boot then stops);
+	# the table stays unloaded and `feed` / the polls are inert.
+	var table: BindingTable = BindingTable.new()
+	table.load_defaults(ctx)
+	use_table(table)
+	# TODO(settings-owner): subscribe to Settings "applied" when Settings exists (ADR-0007; step 6 is a skeleton).
 
 
 ## Injects the state whose channel carries `input_context_changed` and the load notices

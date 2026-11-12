@@ -1,7 +1,7 @@
 # Story 015: Composición en `Boot` y sesión manual teclado + mando
 
 > **Epic**: Entrada y controles
-> **Status**: Ready
+> **Status**: In Progress — cableado e integración automática hechos (Sprint 3); pendientes: sesión manual teclado+mando, recorrido escenas 1–3 (AC-04 I / C-M1-6), NEEDS_MANUAL de S-0006 y la entrega de `contexts_port()` a 4 y 21
 > **Layer**: Foundation
 > **Type**: Integration
 > **Estimate**: M (≈ 1 día, confianza BAJA; la sesión manual depende de que existan escenas 1–3)
@@ -75,3 +75,21 @@
 
 - Depends on: `production/epics/entrada-y-controles/story-010-gesture-recognizer.md`, `production/epics/entrada-y-controles/story-011-interact-short-long-verb.md`, `production/epics/entrada-y-controles/story-014-pause-triggers.md` (y transitivamente 001–013)
 - Unlocks: None
+
+---
+
+## Evidencia
+
+Paso 1 de 2 (integración automática), Sprint 3, 2026-11-12.
+
+- `InputRouter.setup(ctx)` (ADR-0009 D2 paso 5) carga `input/default_bindings.json` con `BindingTable`, aplica `use_table`/`use_state`/`use_clock` y el log; `Boot.compose()` detiene la secuencia si `ctx.fatal` falla tras el paso 5.
+- `tests/integration/input/boot_input_wiring_test.gd` (3 tests, sin ventana): tabla real cargada y acción resuelta por `feed`; pila con `EXPLORACION` y `contexts_port()` operativo; archivo ausente -> fatal `CATALOGO_INVALIDO` y entrada inerte.
+- Verificación local: `--import` sin errores; `--headless --quit-after 5 -- --boot-report` imprime `[boot] ...` sin errores; suite bloqueante 801/801, 0 orphans, sin `ObjectDB instances were leaked` ni `resources still in use`.
+
+Criterios NO cumplidos (la historia sigue In Progress):
+- [ ] AC «pila [`menú`] o [`exploración`] según el arranque de M1»: hoy queda `EXPLORACION` (base); `[menú]` llega con `request_title()` (paso 13 de Boot, aún TODO).
+- [ ] Entrega de `contexts_port()` a 4 y 21: `SceneLoader`/`SceneDirector.setup` no la aceptan aún (TODO(carga-005), fuera de `src/input` y `Boot`); se anotó `TODO(carga-005)` en `boot.gd`.
+- [ ] AC-04 (parte I) / C-M1-6: sesión manual con teclado y mando, escenas 1–3 -> `production/qa/evidence/input-m1-session.md` (del usuario; escenas aún inexistentes).
+- [ ] NEEDS_MANUAL de S-0006 con PASS/FAIL.
+
+Huecos anotados: captura del ratón (`Input.mouse_mode`) para el recorrido no está pedida por la historia ni implementada (QA plan R-S3-8). Suscripción a Settings «applied» pendiente (`TODO(settings-owner)`, Settings es esqueleto).
