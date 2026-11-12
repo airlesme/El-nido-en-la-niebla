@@ -3,6 +3,7 @@
 [ext_resource type="Script" path="res://src/shell/shell.gd" id="1_shell"]
 [ext_resource type="Script" path="res://src/core/boot/boot.gd" id="2_boot"]
 [ext_resource type="Script" path="res://src/shell/curtain.gd" id="3_curtain"]
+[ext_resource type="PackedScene" path="res://src/shell/error_panel.tscn" id="4_error_panel"]
 
 [node name="Shell" type="Node"]
 script = ExtResource("1_shell")
@@ -37,7 +38,5 @@ grow_horizontal = 2
 grow_vertical = 2
 color = Color(0, 0, 0, 0)
 
-[node name="ErrorPanel" type="CanvasLayer" parent="."]
+[node name="ErrorPanel" parent="." instance=ExtResource("4_error_panel")]
 unique_name_in_owner = true
-process_mode = 3
-layer = 110

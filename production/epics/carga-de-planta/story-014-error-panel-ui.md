@@ -1,7 +1,7 @@
 # Story 014: `ErrorPanel` sobre el telón
 
 > **Epic**: Carga de planta (despacho, pasillo, Archivo)
-> **Status**: Ready
+> **Status**: In Progress (panel, captura y tests hechos; falta cablear puertos en boot.gd y provocar fallo en export de playtest)
 > **Layer**: Core
 > **Type**: UI
 > **Estimate**: S — 0,5 días (0,5–1; confianza BAJA)
@@ -74,3 +74,9 @@
 
 - Depends on: `production/epics/carga-de-planta/story-001-shell-worldslot.md`, `story-008-load-failure-error-state.md`, `story-009-full-unload.md`
 - Unlocks: `production/epics/carga-de-planta/story-015-new-game-gray-walk-evidence.md`
+
+## Evidencia
+
+- Captura del motor (`--write-movie`, 1152x648, árbol pausado): `production/qa/evidence/carga-014-error-panel.png` (mensaje legible + «Volver al título» sobre negro). Escena de prueba: `production/qa/evidence/carga-014/panel_demo.tscn`.
+- Tests: `tests/unit/shell/error_panel_test.gd` (5 casos: oculto/ALWAYS/capa 110, botón con árbol pausado llama al puerto de descarga, descarga rechazada mantiene el panel, `ui_aceptar` acepta y otra acción no, oculto ignora aceptar). Suite: 951 casos, 0 fallos, 0 fugas.
+- Pendiente: AC-12b con la build final (AC-15a) y C-M1-3 (cada causa en export de playtest) requieren el cableado en `boot.gd` (`set_error_panel_port(error_panel.show_error)`, `error_panel.set_unload_port(request_full_unload)`; TODO(carga-014) en `shell.gd`). Texto en constantes `TODO(localization)`.

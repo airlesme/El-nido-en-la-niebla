@@ -13,4 +13,7 @@ const ERROR_PANEL_NAME: StringName = &"ErrorPanel"
 
 @onready var world_slot: Node3D = %WorldSlot
 @onready var curtain: Curtain = %Curtain
-@onready var error_panel: CanvasLayer = %ErrorPanel
+@onready var error_panel: ErrorPanel = %ErrorPanel
+
+## TODO(carga-014): boot.gd must wire `scene_loader.set_error_panel_port(error_panel.show_error)` and
+## `error_panel.set_unload_port(scene_loader.request_full_unload)` (owner: CP-006/boot).
