@@ -882,7 +882,7 @@ built in the test (60 `Node3D` + 3 bus-subscribing elements + `Area3D` + `Charac
 | S-0003-B.3 | `monitoring = true` with the sensor already inside reports one entry within 1–2 ticks | PASS | 0 entries while disabled; 1 entry, 1 physics tick after enabling | none |
 | S-0003-B.4 | identical at 30, 60, 144 fps with physics at 60 Hz | PASS | sorted entry X lists identical at the three caps; count 100, doubles 0 each (`Engine.max_fps`, headless) | none |
 | S-0003-B.5 | `Engine.get_physics_frames()` stamps at each callback | PASS | used in B.2 and B.3 | none |
-| S-0003-C | grey `planta` synchronous load hitch (record only) | NOT RUN | needs the real `SceneSource`/grey `planta` | — |
+| S-0003-C | grey `planta` synchronous load hitch (record only, 2026-11-12) | RECORDED (informative) | Godot 4.7.2 local editor build, windowed, `RealClock`, 5 fresh processes (`tools/evidence/s0003c_measure.tscn`). `SceneSource.instantiate` (load + instantiate of `planta.tscn`): median 293.5 ms, worst 307.7 ms. Longest frame gap from the request to READY (the hitch, render included): median 349.7 ms, worst 386.0 ms (336.3 / 341.4 / 349.7 / 363.5 / 386.0). Worst case < 1 s: no new ADR on D4 is triggered. **Caveat**: this is the developer's machine with the editor build, not a reference hardware nor an export (`playtest-windows`/`playtest-linux` pending, C-M1-10); the hitch happens behind the black curtain (alpha 1). | none (re-measure in the export) |
 
 ## Open Items
 
@@ -910,7 +910,7 @@ built in the test (60 `Node3D` + 3 bus-subscribing elements + `Area3D` + `Charac
 
 ## Spike Results (index)
 
-See `## Spike Results (2026-11-11)` above, before Open Items. S-0003-C is still not run.
+See `## Spike Results (2026-11-11)` above, before Open Items. S-0003-C was recorded on 2026-11-12 (local editor only; export pending).
 
 ## Related
 

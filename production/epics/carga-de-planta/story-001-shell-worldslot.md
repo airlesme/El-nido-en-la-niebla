@@ -1,7 +1,7 @@
 # Story 001: `Shell`, `WorldSlot`, telón y capas
 
 > **Epic**: Carga de planta (despacho, pasillo, Archivo)
-> **Status**: In Progress — falta la parte de AC-01 «cargar `planta` dos veces» con el `SceneLoader` real (stories 004/005); el resto cumplido
+> **Status**: Complete (2026-11-12) — AC-01 con `SceneLoader` real cubierto por `tests/integration/scene/new_game_boot_walk_test.gd` (salvedad en Evidencia)
 > **Layer**: Core
 > **Type**: Integration
 > **Estimate**: M — 1 día (0,5–1,5; confianza BAJA)
@@ -89,3 +89,7 @@
 - Suite bloqueante: `Overall Summary: 713 test cases | 0 errors | 0 failures | 0 flaky | 0 skipped | 0 orphans`; 0 coincidencias de `ObjectDB instances were leaked` / `resources still in use`.
 - Grep C-X01: `forbid_scene_change.sh` limpio sobre el repo; con un `.gd` falso con `change_scene_to_file` imprime el hallazgo y sale con rc=1 (visto fallar).
 - **Pendiente:** AC-01 con `planta` cargada por el `SceneLoader` real: el test hace el intercambio a mano bajo `WorldSlot` (ids de autoloads estables, un solo hijo por muestra). Cerrar cuando existan 004/005. El grep no está aún enganchado a un workflow de CI.
+
+### Actualización 2026-11-12 (CP-015)
+
+AC-01 con el `SceneLoader` real: `test_planta_loaded_twice_keeps_services_and_one_scene_per_sampled_frame` carga `planta` dos veces (partida nueva + reanudar) y muestrea que nunca haya más de un hijo bajo `WorldSlot` y que las instancias de servicios (estado, entrada, reloj) no cambien. Salvedad: usa instancias propias del test, no los autoloads del proyecto en ejecución (`Boot.compose()` los re-inicializaría); la identidad de los autoloads reales sigue cubierta por `persistent_nodes_test.gd`.

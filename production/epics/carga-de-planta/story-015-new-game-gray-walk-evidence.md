@@ -1,7 +1,7 @@
 # Story 015: Partida nueva hasta la planta gris — capturas y S-0003-C
 
 > **Epic**: Carga de planta (despacho, pasillo, Archivo)
-> **Status**: Ready
+> **Status**: In Progress — AC-11a, AC-12a (captura del motor) y S-0003-C cumplidos (2026-11-12); pendientes: C-M1-1 en builds exportadas `playtest-windows`/`playtest-linux` y el recorrido humano de AC-X2 (ver Evidencia)
 > **Layer**: Core
 > **Type**: Visual/Feel
 > **Estimate**: L — 1,5 días (1–2; confianza BAJA)
@@ -76,3 +76,15 @@
 
 - Depends on: `production/epics/carga-de-planta/story-006-no-control-input-contract.md`, `story-013-gray-planta-geometry.md`, `story-014-error-panel-ui.md`
 - Unlocks: `production/epics/jugador-primera-persona/story-013-gray-walk-evidence.md`
+
+---
+
+## Evidencia
+
+2026-11-12 (Sprint 3, última ola). Detalle y tabla en `production/qa/evidence/story-015-new-game-gray-walk-evidence-evidence.md`.
+
+- AC-11a: `tests/integration/scene/new_game_boot_walk_test.gd` (sin ventana, espera acotada): jugador en `spawn_office` ±0,01 m, velocidad 0, yaw del ancla ±0,5°.
+- AC-12a: capturas del motor `--write-movie` con reloj forzado: `carga-015-curtain-a050.png` (ratio de luminancia 0,4975 vs 0,5 esperado) y `carga-015-curtain-a100.png` (RGB 0,0,0 en centro y 4 esquinas).
+- C-M1-7 (editor): `carga-015-archivo.png`, `carga-015-despacho.png`. En export: pendiente.
+- S-0003-C: medido y anotado en ADR-0003 § Spike Results (mediana 349,7 ms, peor 386 ms, editor local).
+- NO cumplido: C-M1-1 en exports; AC-X2 (recorrido humano).

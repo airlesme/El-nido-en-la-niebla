@@ -1,7 +1,7 @@
 # Story 015: Composición en `Boot` y sesión manual teclado + mando
 
 > **Epic**: Entrada y controles
-> **Status**: In Progress — cableado e integración automática hechos (Sprint 3); pendientes: sesión manual teclado+mando, recorrido escenas 1–3 (AC-04 I / C-M1-6), NEEDS_MANUAL de S-0006 y la entrega de `contexts_port()` a 4 y 21
+> **Status**: In Progress — cableado e integración automática hechos (Sprint 3); `contexts_port()` entregado a 4 en `Boot.wire_scene_loading` (2026-11-12); pendientes: sesión manual teclado+mando (AC-04 I / C-M1-6), NEEDS_MANUAL de S-0006 y la entrega a 21 (no existe)
 > **Layer**: Foundation
 > **Type**: Integration
 > **Estimate**: M (≈ 1 día, confianza BAJA; la sesión manual depende de que existan escenas 1–3)
@@ -93,3 +93,9 @@ Criterios NO cumplidos (la historia sigue In Progress):
 - [ ] NEEDS_MANUAL de S-0006 con PASS/FAIL.
 
 Huecos anotados: captura del ratón (`Input.mouse_mode`) para el recorrido no está pedida por la historia ni implementada (QA plan R-S3-8). Suscripción a Settings «applied» pendiente (`TODO(settings-owner)`, Settings es esqueleto).
+
+### Actualización 2026-11-12 (CP-015)
+
+- `contexts_port()` se entrega a SceneLoader (4) en `Boot.wire_scene_loading`; a SceneDirector (21) sigue pendiente (no existe su épico).
+- Hueco R-S3-8 cerrado de forma mínima: `InputRouter` captura el ratón en `exploracion` tras `request_exploration` (fin del primer aclarado) y lo libera con panel de error, pausa, título o fuera del árbol (`# TODO(input-owner)`). Sin test automático (headless ignora el modo); comprobar en la sesión manual.
+- Siguen pendientes la sesión manual teclado+mando y los NEEDS_MANUAL de S-0006.
