@@ -1,7 +1,7 @@
 # Story 003: Fórmulas del telón (F1) y `D_carga` (F3)
 
 > **Epic**: Carga de planta (despacho, pasillo, Archivo)
-> **Status**: Ready
+> **Status**: Done (2026-11-12; suite completa no verificable: ver Evidencia)
 > **Layer**: Core
 > **Type**: Logic
 > **Estimate**: S — 0,5 días (0,5–1; confianza BAJA)
@@ -73,3 +73,13 @@
 
 - Depends on: `production/epics/carga-de-planta/story-002-load-transitions-data.md`
 - Unlocks: `production/epics/carga-de-planta/story-005-load-sequence.md`
+
+---
+
+## Evidencia
+
+- `src/scene/curtain_math.gd` (F1 estática + máquina `CurtainMath` sin nodos; `dt_real` lo aporta quien llama desde el `RealClock`; sin Tween/Timer) y `src/scene/load_budget.gd` (`d_out`, `d_in`, `d_carga` nominal).
+- `tests/unit/scene/curtain_formula_test.gd` (T-U4, 10 tests) y `d_carga_test.gd` (T-U5, 4 tests): AC-F1 y AC-F3 parte 1 cubiertos (0,5 / 0,8 / 0,84375, d = 0, α_0 = 1, recorte Δ_max, reducir_movimiento 0,1 s, D_carga = 11,6667).
+- `-a res://tests/unit/scene`: Overall 38 test cases, 0 errors, 0 failures, 0 orphans; sin «leaked»/«still in use».
+- La suite completa no pudo ejecutarse: parse error en `src/input/context_stack.gd` (`NO_DURATION_S`, trabajo en curso de EC-005, ajeno).
+- Decisión: `cierre` con `reducir_movimiento` mantiene d_in = 0 (nunca aclara). Firmas `CurtainMath` registradas como `TODO(lead-programmer)` (enmienda a ADR-0003 § Key Interfaces).
