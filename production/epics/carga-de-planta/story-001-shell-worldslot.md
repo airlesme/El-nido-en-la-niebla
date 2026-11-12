@@ -1,7 +1,7 @@
 # Story 001: `Shell`, `WorldSlot`, telón y capas
 
 > **Epic**: Carga de planta (despacho, pasillo, Archivo)
-> **Status**: Ready
+> **Status**: In Progress — falta la parte de AC-01 «cargar `planta` dos veces» con el `SceneLoader` real (stories 004/005); el resto cumplido
 > **Layer**: Core
 > **Type**: Integration
 > **Estimate**: M — 1 día (0,5–1,5; confianza BAJA)
@@ -77,3 +77,15 @@
 
 - Depends on: None
 - Unlocks: `production/epics/carga-de-planta/story-004-loader-preconditions-states.md`, `story-014-error-panel-ui.md`
+
+---
+
+## Evidencia
+
+- **Discrepancia con la historia (decisión del lead, sprint-003 R-S3-6):** `Boot` NO es un autoload; es el PRIMER hijo de `Shell` (`shell.tscn` es `run/main_scene`). `# TODO(lead-programmer)` en `src/shell/shell.gd` para la enmienda de ADR-0009 («primer autoload» -> «primer hijo de `Shell`»). `src/core/boot/main.tscn` eliminado (ningún test lo usa; `autoload_registration_test.gd` ahora espera `shell.tscn`).
+- Ficheros: `src/shell/shell.tscn|shell.gd|curtain.gd`, `tools/ci/forbid_scene_change.sh`, `tests/integration/scene/persistent_nodes_test.gd` (5 tests, sin ventana, sin `Boot` en la instancia para no repetir `compose()`).
+- Capas relativas: HUD 10 < Subtitles 20 < PauseMenu 30 < Curtain 100 < ErrorPanel 110 (solo orden relativo; no es la tabla de ADR-0016). `Curtain` y `ErrorPanel` en `PROCESS_MODE_ALWAYS`; `WorldSlot` hereda.
+- `--import`: sin errores. Arranque `--quit-after 5 -- --boot-report`: `[boot] flavor=debug dev_tools=absent version=dev commit=dev`, rc=0, sin errores.
+- Suite bloqueante: `Overall Summary: 713 test cases | 0 errors | 0 failures | 0 flaky | 0 skipped | 0 orphans`; 0 coincidencias de `ObjectDB instances were leaked` / `resources still in use`.
+- Grep C-X01: `forbid_scene_change.sh` limpio sobre el repo; con un `.gd` falso con `change_scene_to_file` imprime el hallazgo y sale con rc=1 (visto fallar).
+- **Pendiente:** AC-01 con `planta` cargada por el `SceneLoader` real: el test hace el intercambio a mano bajo `WorldSlot` (ids de autoloads estables, un solo hijo por muestra). Cerrar cuando existan 004/005. El grep no está aún enganchado a un workflow de CI.

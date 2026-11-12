@@ -73,5 +73,5 @@ func test_main_scene_is_registered_and_exists() -> void:
 	var path: String = ProjectSettings.get_setting("application/run/main_scene")
 
 	# Act / Assert
-	assert_str(path).is_equal("res://src/core/boot/main.tscn")
+	assert_str(path).is_equal("res://src/shell/shell.tscn")
 	assert_bool(ResourceLoader.exists(path)).is_true()

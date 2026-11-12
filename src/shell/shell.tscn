@@ -1,0 +1,43 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://src/shell/shell.gd" id="1_shell"]
+[ext_resource type="Script" path="res://src/core/boot/boot.gd" id="2_boot"]
+[ext_resource type="Script" path="res://src/shell/curtain.gd" id="3_curtain"]
+
+[node name="Shell" type="Node"]
+script = ExtResource("1_shell")
+
+[node name="Boot" type="Node" parent="."]
+script = ExtResource("2_boot")
+
+[node name="WorldSlot" type="Node3D" parent="."]
+unique_name_in_owner = true
+
+[node name="HUD" type="CanvasLayer" parent="."]
+layer = 10
+
+[node name="Subtitles" type="CanvasLayer" parent="."]
+layer = 20
+
+[node name="PauseMenu" type="CanvasLayer" parent="."]
+layer = 30
+
+[node name="Curtain" type="CanvasLayer" parent="."]
+unique_name_in_owner = true
+process_mode = 3
+layer = 100
+script = ExtResource("3_curtain")
+
+[node name="Rect" type="ColorRect" parent="Curtain"]
+mouse_filter = 2
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0, 0, 0, 0)
+
+[node name="ErrorPanel" type="CanvasLayer" parent="."]
+unique_name_in_owner = true
+process_mode = 3
+layer = 110
