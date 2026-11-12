@@ -370,7 +370,7 @@ Cada línea tiene un ID para que audio, localización y QA puedan referenciarla.
 - **Sonidos de puzle:** clics mecánicos para el panel de cronología, zumbido para lámparas, vibración para fichas, sonido de madera para la caja, sonido de metal para el encaje.
 - **Silencios:** los puzles tienen silencio parcial para que el jugador escuche pistas.
 - **Efectos:** pasos de Vera, sillas rodando, tecleo lejano, puerta que se cierra (dentro de la grabación de `VO_G_07`).
-- **Accesibilidad:** regulación independiente de voces, efectos y música. Opción de reducir sobresaltos. Opción «reducir movimiento» (clave `reducir_movimiento`: fundido fijo de 100 ms y cambio estático en lugar de temblor en el feedback de error y en la cortina de carga).
+- **Accesibilidad:** regulación independiente de voces, efectos y música. Opción de reducir sobresaltos (v0.4.4: luz fija sin el parpadeo del pasillo, C.4, y apagón en oscurecimiento gradual de ≥ 2,0 s, C.7). Opción «reducir movimiento» (clave `reducir_movimiento`: fundido fijo de 100 ms y cambio estático en lugar de temblor en el feedback de error y en la cortina de carga; v0.4.4: también apaga el balanceo de cámara y los movimientos decorativos).
 
 ## 15. Arte y assets
 
@@ -983,7 +983,7 @@ S6 queda vacío.
 | Evento | Disparador | Acción |
 |---|---|---|
 | Megafonía | T-PAS-1 | `MEGA_02` desde C01 |
-| Parpadeo | T-PAS-1, t + 2,0 | C03 parpadea 3 veces (0,15 s cada vez) |
+| Parpadeo | T-PAS-1, t + 2,0 | C03 parpadea 3 veces (0,15 s cada vez). **Con `reducir_sobresaltos` activa (v0.4.4): luz fija, sin parpadeo.** Con solo `reducir_movimiento`: una única atenuación suave de 0,6 s |
 | Reflejo retardado | T-PAS-2 | C02 muestra el reflejo del jugador con retardo de 0,6 s durante 3 s |
 
 ### C.5 Escena 5 · Sala de Reuniones
@@ -1004,7 +1004,7 @@ S6 queda vacío.
 
 | t (s) | Evento |
 |---|---|
-| 0,0 | Al cruzar el umbral de D con `caja_completa`: fundido de C03 en el pasillo y en D (0,4 s). La lámpara V06 del despacho de Vera sigue encendida. |
+| 0,0 | Al cruzar el umbral de D con `caja_completa`: fundido de C03 en el pasillo y en D (0,4 s). **Con `reducir_sobresaltos` activa (v0.4.4): oscurecimiento gradual de ≥ 2,0 s en lugar de 0,4 s; el resto de la tabla no cambia.** La lámpara V06 del despacho de Vera sigue encendida. |
 | 1,0 a 4,0 | Sillas rodando desde el Archivo hacia el pasillo (sonido 3D, sin imagen). |
 | 4,5 | Tecleo lejano (3 s). |
 | Al entrar en el despacho de Vera | V02 suena (`SFX_PHONE_BUZZ`). Si el jugador no entra en 60 s, el teléfono se oye desde el pasillo. El juego espera en el despacho. |
@@ -1100,6 +1100,7 @@ Son 20 hechos en total (los de la tabla, contando `pos_L`, `pos_C` y `pos_R` por
 
 | Versión | Fecha | Cambio |
 |---|---|---|
+| 0.4.4 | 2026-11-12 | Decisiones del usuario (`gdd-cross-review-2026-11-10-r2.md`): (1) pistas: se mantienen las esperas de 20/40 s sin penalización; fuera del slice los pips, el cuaderno de pistas y «Repetir» (se reintroducen tras el playtest); (2) `reducir_sobresaltos`: luz fija en C.4 y apagón de C.7 en oscurecimiento gradual ≥ 2,0 s; (3) `reducir_movimiento` apaga también el balanceo de cámara y los movimientos decorativos (§14); `escala_texto_ui` cerrada (18 claves); (4) un solo aviso «interacción ejecutada», filtrado por `HECHO`; (5) subtítulos a 720p escalan con la ventana con el suelo definido en 26; (6) «las de siempre» (D13-4, `slot_6`, `VO_G_07`, `CARTA_A`, «Devolver»/«Asignar», duración, D-15, `VO_G_14_ASG`, respiración): se aplican los defaults de cada GDD, a revisar en playtest. Sin cambios de pilares ni de alcance. |
 | 0.4.1 | 2026-11-09 | Decisión del usuario (opción (c) de la Open Question 10 de `marco-de-puzles.md`, R6-9): el criterio de duración «25–30 min» (cabecera, §19.1) pasa a «entre ~15 y ~30 min según el jugador (mínimo 15,0 min con fuentes firmes, techo ≈ 33 min), a confirmar en playtest con AC-X5». §22: se retira «ningún puzle requiere más de dos minutos» (choca con F7) por «cada puzle entre ~1 y ~6 min». §23: playtest de ≥ 5 testers nuevos (unificado con AC-X5). Sin cambios de pilares ni de alcance. |
 | 0.4.3 | 2026-11-10 | Decisión del usuario D-16 (orden de la caja): cadena c1→c3→c4 con c2 libre (c3 requiere c1; c4 requiere c1, c2 y c3). Alternativa descartada: orden libre; motivo: guía sin callejón. §8 (paso 4) y §13.3 se reescriben para reflejar la cadena; D-16 pasa a «Tomada». Sin cambios de pilares ni de alcance. |
 | 0.4.2 | 2026-11-09 | Decisión del usuario sobre la fila «+4,0» de C.7: se interpreta como la línea de variante a **4,8 s** del pulso en `V02` (animación 0,8 s + silencio 2,0 s + respiración 2,0 s), no a 4,0 s ni a 8,8 s; las opciones aparecen a ≈ 10,8 s (con la línea de ≈ 5 s y +1,0 s) y la llamada dura 16,4–44,8 s (`llamada-telefonica.md`, F1–F5). Consecuencia: el mínimo del criterio de duración (cabecera, §19.1) pasa de 15,0 a ≈ 14,8 min (`marco-de-puzles.md`, F9, D9-66). D.2: `llamada_iniciada` se escribe al pulsar «Descolgar» (aclaración, D22-3). Sin cambios de pilares ni de alcance; D-15 sigue pendiente de confirmar. |
