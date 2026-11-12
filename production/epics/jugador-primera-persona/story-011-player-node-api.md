@@ -1,7 +1,7 @@
 # Story 011: `Player.tscn`, rig y API pública cerrada
 
 > **Epic**: Jugador en primera persona (sin manos)
-> **Status**: Ready
+> **Status**: Complete (2026-11-12) — ver `## Evidencia`
 > **Layer**: Core
 > **Type**: Logic
 > **Estimate**: L — 1,5 días (1–2; confianza BAJA)
@@ -79,3 +79,14 @@
 
 - Depends on: `production/epics/jugador-primera-persona/story-002-locomotion.md` … `story-010-camera-lease.md` (todas); `InputRouter` con `top()`/`get_move_vector()`/`consume_look_delta()` (épico de Entrada, ADR-0006)
 - Unlocks: `production/epics/jugador-primera-persona/story-012-physics-walk-integration.md`; `production/epics/carga-de-planta/story-013-gray-planta-geometry.md` (Player en `planta.tscn`)
+
+## Evidencia
+
+- Test: `tests/unit/player/player_api_surface_test.gd` (T-U14), 14/14 verdes. Suite bloqueante completa: 887/887, 0 orphans, sin `ObjectDB instances were leaked` ni `resources still in use`; `--import` sin errores; `--boot-report` sin errores; `forbid_timers.sh` limpio.
+- AC-04 (a): métodos públicos del script == regla 33 (lista fija; `configurar` excluido); señales == las 6.
+- AC-36/39: ninguna operación pública escribe memoria de poses ni estado (3); el fuente no referencia `GameState`; sin hook de guardado.
+- AC-22: con balanceo `completo` caminando 45 ticks, `rayo_vision().origen` = cuerpo + (0, 1,62, 0) cada fotograma, mientras `Bob` y `Rig` sí se mueven.
+- Cámara M1: fov 70, `KEEP_HEIGHT`, near 0,05; `fov_actual()` intermedio durante una cesión; `physics/common/physics_interpolation=false` explícito en `project.godot`.
+- Archivos: `src/player/player.gd`, `player.tscn`, `vision_ray.gd`, `inspection_pose.gd`, `ports/{input_router_player_port,slide_surface_probe,shrunk_capsule_probe,aspect_source,viewport_aspect_source}.gd`.
+- Decisiones/TODO: manos fuera de M1 (devuelven false + log); `ctx.require` no existe aún (comprobación inline, `DEPENDENCIA_AUSENTE`); F5 diferida (TR-player-008); nivel de balanceo desde `PlayerConfig` hasta ADR-0007.
+- Pendiente fuera de la historia: observación visual con captura (la escena aún no está en `planta.tscn`; llega con carga-de-planta 013 / historia 012); sonda de penetración y de superficie sin test contra geometría (historia 012).

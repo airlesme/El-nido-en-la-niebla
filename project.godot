@@ -30,6 +30,10 @@ SceneDirectorAutoload="*res://src/director/scene_director.gd"
 3d_physics/layer_4="zone_sensor"
 3d_physics/layer_5="zone_trigger"
 
+[physics]
+
+common/physics_interpolation=false
+
 [rendering]
 
 renderer/rendering_method="forward_plus"

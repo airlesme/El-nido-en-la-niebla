@@ -1,0 +1,47 @@
+[gd_scene load_steps=4 format=3]
+
+[ext_resource type="Script" path="res://src/player/player.gd" id="1_player"]
+
+[sub_resource type="CapsuleShape3D" id="CapsuleShape3D_body"]
+radius = 0.25
+height = 1.75
+
+[sub_resource type="SphereShape3D" id="SphereShape3D_zone"]
+radius = 0.05
+
+[node name="Player" type="CharacterBody3D"]
+collision_layer = 2
+collision_mask = 1
+script = ExtResource("1_player")
+
+[node name="BodyShape" type="CollisionShape3D" parent="."]
+unique_name_in_owner = true
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.875, 0)
+shape = SubResource("CapsuleShape3D_body")
+
+[node name="ZoneSensor" type="Area3D" parent="."]
+collision_layer = 8
+collision_mask = 0
+monitoring = false
+monitorable = true
+
+[node name="ZoneShape" type="CollisionShape3D" parent="ZoneSensor"]
+unique_name_in_owner = true
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.9, 0)
+shape = SubResource("SphereShape3D_zone")
+
+[node name="Rig" type="Node3D" parent="."]
+unique_name_in_owner = true
+
+[node name="Look" type="Node3D" parent="Rig"]
+unique_name_in_owner = true
+
+[node name="Bob" type="Node3D" parent="Rig/Look"]
+unique_name_in_owner = true
+
+[node name="MainCamera" type="Camera3D" parent="Rig/Look/Bob"]
+unique_name_in_owner = true
+keep_aspect = 1
+current = true
+fov = 70.0
+near = 0.05
