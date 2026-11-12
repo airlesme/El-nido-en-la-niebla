@@ -131,7 +131,9 @@ func test_reset_requested_from_subscriber_is_deferred_to_end_of_drain() -> void:
 	var seen_reset_inside_drain: Array[bool] = []
 	ch.subscribe(NoticeChannel.Kind.NOTICE, NoticeIds.STATE_RESET, func(_p: Dictionary) -> void:
 		resets[0] += 1
-		queue_empty_at_reset.append(ch.is_queue_empty()))
+		# Capture the Node `s`, never the RefCounted channel `ch`: a lambda stored inside the channel that
+		# captures the channel is a reference cycle (leaked at exit).
+		queue_empty_at_reset.append(s.get_channel().is_queue_empty()))
 	ch.subscribe(NoticeChannel.Kind.FACT, &"caja_c1",
 			func(_f: StringName, _o: Variant, _n: Variant) -> void:
 				s.reset_new_game()
