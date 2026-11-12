@@ -1,7 +1,7 @@
 # Story 003: Fórmulas del telón (F1) y `D_carga` (F3)
 
 > **Epic**: Carga de planta (despacho, pasillo, Archivo)
-> **Status**: Done (2026-11-12; suite completa no verificable: ver Evidencia)
+> **Status**: Done (2026-11-12) — 14 tests propios; suite completa 651/651 verificada por el lead
 > **Layer**: Core
 > **Type**: Logic
 > **Estimate**: S — 0,5 días (0,5–1; confianza BAJA)

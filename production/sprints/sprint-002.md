@@ -214,3 +214,36 @@ hacerse en paralelo con la ola 0 porque no comparte ficheros.
 - **D-S2-4: interacción hasta IP-003, no IP-004.** IP-004 sería la 19.ª y necesita IP-002 e IP-003 (sexta ola de 1). Primera de la cola del Sprint 3.
 - **D-S2-5: CP-001 e IP-005 fuera** pese a desbloquear lógica: son Integration y el usuario las reservó al Sprint 3 (U-4).
 - **D-S2-6: `production/sprint-status.yaml` no se escribe en esta pasada** (el encargo limita la salida a este fichero y a una línea del hito). Se genera con `/sprint-plan update` al empezar: Must → `ready-for-dev`, Should → `backlog`.
+
+## Resultado del Sprint 2 (cierre 2026-11-12)
+
+**Fechas:** inicio 2026-11-11, fin 2026-11-12 (≈ 2 días de calendario, una persona dirigiendo agentes). Primera medida de calendario del proyecto.
+
+**Hecho: 18 de 18 historias Logic** (13 Must + 5 Should) y la ola 0 de deuda:
+- Ola 0: test frágil aislado en `tests/timing/` (D-1) y smoke formal (D-2, `production/qa/smoke-2026-11-11.md`).
+- Ola 1: EB-008, EC-001, PJ-003. Ola 2: EB-009, EC-002, IP-001. Ola 3: EB-010, EC-003, PJ-001, IP-002. Ola 4: EB-011, EC-004, CP-002, IP-003, PJ-002. Ola 5: EC-005, PJ-004, CP-003.
+
+**Verificación final (lead):** suite bloqueante **651/651, 0 fallos, 0 huérfanos, 0 fugas ObjectDB**; `forbid_timers` y `check_pins` limpios; arranque en debug sin fatal; CI de GitHub verde en los commits completos (un run falló por un `HttpError: Not Found` de la acción, infraestructura).
+
+| Métrica | Sprint 1 | Sprint 2 |
+|---|---|---|
+| Historias cerradas | 10 | 18 |
+| Turnos de agente por historia (mediana, declarados) | ≈ 12 | ≈ 12 (6 a 27) |
+| Tests nuevos | 290 total | +361 (651 total) |
+| Reanudaciones por límite de turnos | 6 | ≈ 9 |
+
+**Velocidad:** ≈ 9 historias de lógica por día de calendario con olas paralelas de 3 a 5 agentes (Sprint 2), frente a ≈ 10 en una sesión sin paralelismo (Sprint 1). Fiabilidad: BAJA (dos muestras, mismo tipo de historia).
+
+**Incidentes y lecciones del sprint**
+1. **CI rojo oculto durante ≈ 1 h** (desde c762905 hasta a2c20f4): dos tests de spike asertaban `DisplayServer.get_name() == "headless"`. *Lección:* el CI se mira tras cada ola (ahora posible con el repo público); los tests no asertan hechos del entorno.
+2. **Nombre de input de la acción** (`extra-args` frente a `arguments`) escrito de memoria por un agente: se verificó contra el `action.yml` real.
+3. **Ciclo RefCounted→lambda→RefCounted** en un test (12 instancias filtradas): atribuido por carpeta y por fichero.
+4. **Ficheros compartidos:** una vez un `git add` mío capturó una fila a medias de otra historia (sin daño).
+5. Las olas de 4 a 5 agentes funcionaron con ficheros disjuntos declarados; los agentes sin turnos suficientes son lo que alarga las olas, no las colisiones.
+
+**Deuda y pendiente de decisión**
+- Enmiendas a ADR acumuladas con `TODO(...)`: ADR-0001 (2.º desbordamiento solo registra; `derive` como conjunción), ADR-0005 (nombres de hecho con mayúsculas; reversibilidad por tipo), ADR-0006 (firmas de `InputContexts`, `INPUT_SIGN`), ADR-0011 (API del catálogo), ADR-0012 (firmas de jugador), ADR-0003 (firmas de carga y cortina).
+- Valores † de los GDD a validar en playtest.
+- Smoke automático `/smoke-check sprint` no ejecutado (se hizo el manual).
+
+**Sprint 3 (propuesta):** Integration y Visual/UI que necesitan sesión manual (CP-001, IP-005, cortina visual CP-014, prompt de interacción con ADR-0016, jugador con cámara) más la cola de lógica (IP-004, EB-012/013, EC-006..013, PJ-005..011, CD-004+, AC-001..003, DB-001..002).

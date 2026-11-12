@@ -1,7 +1,7 @@
 # Story 004: Mirada 1:1 — yaw/pitch, límites y roll 0
 
 > **Epic**: Jugador en primera persona (sin manos)
-> **Status**: In Progress — AC-11..14 verificados en `tests/unit/player/look_test.gd` (18/18); pendiente solo repetir la suite completa, bloqueada por errores de parseo ajenos (EC-005 en curso: `ContextStack.NO_DURATION_S`, `_cap_for()`)
+> **Status**: Done (2026-11-12) — AC-11..14 con evidencia (look_test 18/18); suite completa 651/651 verificada por el lead
 > **Layer**: Core
 > **Type**: Logic
 > **Estimate**: M — 1 día (0,5–1,5; confianza BAJA)
