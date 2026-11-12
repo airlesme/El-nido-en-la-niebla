@@ -1,4 +1,4 @@
-# 04 · Propuesta de puzles
+# 04 · Puzles
 
 Tres objetos-puzle construidos con el kit del piloto (`03`). Los seis puzles del slice siguen respondiendo a las mismas seis preguntas; lo que cambia es cómo se juegan.
 
@@ -58,7 +58,7 @@ La placa no dice qué es cada hora. La impresión de los correos (I-01) sí: cad
 
 ### 2.4 La llave y la cerradura
 
-1. Al resolverse los tambores: `SFX_KIT_CHIME`, `SFX_KIT_CLUNK`, `SFX_KIT_SLIDE`, y el cajón sale (1,4 s). Dentro, una **llave pequeña de latón** con una etiqueta de cartón: «ARCHIVO» (ítem I-08 **[PROPUESTA]**), que gira y brilla (M3).
+1. Al resolverse los tambores: `SFX_KIT_CHIME`, `SFX_KIT_CLUNK`, `SFX_KIT_SLIDE`, y el cajón sale (1,4 s). Dentro, una **llave pequeña de latón** con una etiqueta de cartón: «ARCHIVO» (ítem I-08 **[NUEVO]**), que gira y brilla (M3).
 2. Tocarla: vuela a la cámara y pasa al inventario, seleccionada.
 3. En la cara derecha, el anillo de la cerradura late mientras la llave está seleccionada.
 4. Tocar la cerradura: la llave entra (0,8 s, `SFX_KIT_CLUNK`).
@@ -181,7 +181,7 @@ En el aparador (B05), fuera del modo examen, una nota manuscrita del Guardián, 
 
 ### 4.1 El objeto
 
-Caja de madera oscura (nogal) con cantoneras y aros de latón gastado, de unos 35 × 35 × 25 cm, sobre la mesa del despacho del Guardián. En la base, en latón, una inscripción pequeña: «¿Jugamos?» **[PROPUESTA]**. La foto de la pared (D04) cuelga en la pared que **mira hacia la cara derecha** de la caja: es la que refleja el medallón (§4.5). Requisito de nivel.
+Caja de madera oscura (nogal) con cantoneras y aros de latón gastado, de unos 35 × 35 × 25 cm, sobre la mesa del despacho del Guardián. En la base, en latón, una inscripción pequeña: «¿Jugamos?» **[NUEVO]**. La foto de la pared (D04) cuelga en la pared que **mira hacia la cara derecha** de la caja: es la que refleja el medallón (§4.5). Requisito de nivel.
 
 | Cara | Puzle | Contenido | Piloto equivalente |
 |---|---|---|---|
@@ -198,7 +198,7 @@ Tapa izq. (pie de foto) ─► Tambores (P3) ─► Cajón: NOTA_01 + engranaje 
      ─► Medallón espejo a 40° (P5: VO_G_07) ─► Tres luces verdes ─► Pestillo ─► Tapas ─► Carta + tres tiras (P6: elección) ─► caja_completa
 ```
 
-**[PROPUESTA] Orden lineal.** El slice dejaba el compartimento 2 libre (D-16). Aquí la cadena es lineal (c1 → c2 → c3 → c4) porque el engranaje del cajón es lo que hace funcionar la trasera. Ver la decisión D-B1 en §7.
+**[NUEVO] Orden lineal.** El slice dejaba el compartimento 2 libre (D-16). Aquí la cadena es lineal (c1 → c2 → c3 → c4) porque el engranaje del cajón es lo que hace funcionar la trasera. Ver la decisión D-B1 en §7.
 
 ### 4.2 Las tres luces del pestillo
 
@@ -238,7 +238,7 @@ El tercer símbolo está rayado con algo punzante. En una esquina del rayado aso
 2. `caja_c1` = verdadero. Luz 1 verde. `EV_PUZZLE_SOLVED_P3`. Guardado.
 3. Dentro del cajón: un papel enrollado y atado alrededor del cubo de un engranaje de latón. Gira y brilla (M3).
 4. Tocarlo: se abre la lectura de `NOTA_01` («La transición es tuya»), documento I-06a.
-5. Al cerrar la lectura, el engranaje (ítem I-09 **[PROPUESTA]**) vuela a la cámara y pasa al inventario, seleccionado. La nota queda en el bolsillo de documentos.
+5. Al cerrar la lectura, el engranaje (ítem I-09 **[NUEVO]**) vuela a la cámara y pasa al inventario, seleccionado. La nota queda en el bolsillo de documentos.
 
 | ID | Cuándo | Texto |
 |---|---|---|
@@ -423,9 +423,9 @@ Con `caja_completa`, al cruzar la puerta de D la luz del despacho se apaga detr�
 - AC-8 · Todos los textos en pantalla salen de `05-textos.md` por su ID.
 - AC-9 · Se puede jugar entero con mando y entero con ratón.
 
-## 7. Decisiones tomadas en esta propuesta
+## 7. Decisiones tomadas
 
-Pendientes de confirmación del autor. Cada una cambia algo del slice v0.4.4.
+**Aprobadas por el autor el 2026-11-12.** Cada una cambia algo del slice v0.4.4 y prevalece sobre él.
 
 | ID | Decisión | Alternativa descartada | Motivo |
 |---|---|---|---|

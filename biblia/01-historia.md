@@ -57,7 +57,7 @@ El slice termina con dos preguntas abiertas: quién firmó la solicitud, y qué 
 - Ni villano ni héroe. Sus frases nunca explican por qué pasó algo.
 - Su contacto en el móvil de Vera se llama «Guardián». Su número «ya no está disponible».
 
-**[PROPUESTA] El Guardián hacía juegos.** Construía cajas-puzle de madera y latón para el equipo; era su manera de cuidar y también de controlar. «¿Jugamos esta noche?», el mensaje de la escena 1, era la frase con la que proponía uno. La caja de su despacho es el último. Esto explica por qué hay un mecanismo en lugar de un sobre y une el mensaje del inicio con la caja sin añadir escenas. No dice si el juego es un regalo o una trampa: las dos lecturas valen.
+**[NUEVO] El Guardián hacía juegos.** Construía cajas-puzle de madera y latón para el equipo; era su manera de cuidar y también de controlar. «¿Jugamos esta noche?», el mensaje de la escena 1, era la frase con la que proponía uno. La caja de su despacho es el último. Esto explica por qué hay un mecanismo en lugar de un sobre y une el mensaje del inicio con la caja sin añadir escenas. No dice si el juego es un regalo o una trampa: las dos lecturas valen.
 
 ### Megafonía [CANON]
 
@@ -67,7 +67,7 @@ Voz automática del edificio. Frases breves, tono neutro. Tres líneas en todo e
 
 Sillas que ruedan, tecleo, pasos. Sin voz, sin cuerpo. Nunca se acercan tanto como para que el jugador tenga que reaccionar.
 
-### El equipo anterior [PROPUESTA]
+### El equipo anterior [NUEVO]
 
 Cinco personas en la foto de la caja, más un hueco. Sin nombres en el slice (no se necesitan y añadirían canon). Cada una se identifica por **el objeto que sostiene en la foto**, que es también su símbolo grabado en la caja:
 
@@ -130,7 +130,7 @@ Estas preguntas no tienen respuesta en el slice. El equipo no debe resolverlas n
 | ¿Quién escribió en el libro de visitas hace nueve días? | Misma letra que la entrada de hoy | Vera no estaba. «La V no me convence» (`VO_V_12E`) |
 | ¿Está el Guardián en el edificio? | Abrigo mojado, taza, presencias, la llamada | El número no está disponible. La llamada sale de la extensión de Vera |
 | ¿Por qué quitaron a Vera de la foto? | Para protegerla (el traslado como salida) | Para borrarla del equipo |
-| ¿Quién limó su símbolo de la caja? [PROPUESTA] | El Guardián, al hacer la caja después del traslado | No se sabe. Nadie lo menciona |
+| ¿Quién limó su símbolo de la caja? [NUEVO] | El Guardián, al hacer la caja después del traslado | No se sabe. Nadie lo menciona |
 
 **Lo que sí es un hecho fijo** (no ambiguo, y tiene que ser coherente en todas partes): las horas de los correos, los textos del memorando, la fecha del formulario, las entradas del libro de visitas, quién aparece en cada foto. La ambigüedad está en las **intenciones**, nunca en los datos.
 
@@ -141,7 +141,7 @@ Cada objeto importante, qué es y qué no debe sugerir.
 | Objeto | Qué es | Qué cuenta | Qué NO debe hacer |
 |---|---|---|---|
 | Impresión de correos (I-01) | Los 6 correos de la búsqueda «transición», con hora de envío en cada uno | La secuencia del lunes y el martes | Ordenarlos ya: se imprimen desordenados (3, 1, 4, 2 con los sin número entre medias) |
-| Cajetín del Archivo [PROPUESTA] | Caja de latón atornillada junto a la puerta A, hecha por el Guardián | Él controlaba el acceso al archivo de transición | Parecer un sistema de seguridad moderno. Es artesanal |
+| Cajetín del Archivo [NUEVO] | Caja de latón atornillada junto a la puerta A, hecha por el Guardián | Él controlaba el acceso al archivo de transición | Parecer un sistema de seguridad moderno. Es artesanal |
 | Formulario de traslado (I-04) | Solicitud de traslado firmada «Vera», fechada hace nueve días | La firma existe | Mostrar una firma claramente falsa o claramente auténtica |
 | Tarjeta de la Sala B (I-02) | Tarjeta normal | — | — |
 | Tarjeta sin foto (I-03) | Tarjeta de acceso a D, sin foto ni nombre | Era del Guardián, o de nadie | Llevar nombre |

@@ -124,7 +124,7 @@ Prismas hexagonales que giran sobre un eje horizontal común, cada uno con un s�
 | Límites | Ninguno: gira libremente |
 | Función en el piloto | **Ninguna.** Es un objeto de distracción |
 
-**En la propuesta se le da función** (puzle 5). Es la pieza del piloto que no se aprovechaba.
+**En este juego se le da función** (puzle 5). Es la pieza del piloto que no se aprovechaba.
 
 ## M8 · Avisos de contexto
 
@@ -153,7 +153,7 @@ Textos breves en cursiva, centrados abajo, con sombra. Duran 4,2 s por defecto (
 | `reveal` | Barrido grave y acorde que sube | `SFX_KIT_REVEAL` | Revelación final |
 | `drone` | Zumbido grave continuo | — | Ya existe: drone del edificio |
 
-**Ajuste temático:** en el piloto, `chime` es un arpegio luminoso. En este juego no hay celebraciones: proponemos que `SFX_KIT_CHIME` sea un acorde menor y más corto (unos 0,6 s) **[PROPUESTA]**. La lluvia baja un 30 % durante 1,5 s después de cada `chime`: el espacio contiene la respiración.
+**Ajuste temático:** en el piloto, `chime` es un arpegio luminoso. En este juego no hay celebraciones: `SFX_KIT_CHIME` es un acorde menor y más corto (unos 0,6 s) **[NUEVO]**. La lluvia baja un 30 % durante 1,5 s después de cada `chime`: el espacio contiene la respiración.
 
 ## Lo que el piloto hace y el juego tiene que añadir
 

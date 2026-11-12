@@ -23,7 +23,7 @@ Cada hilo aparece al menos tres veces. Si se corta uno, se nota.
 | **El equipo** | Foto de la pared → foto de la caja sin Vera → símbolos de la caja y cara limada → `VO_G_07` «somos un equipo» (toma descartada) → `CARTA_CUERPO` «no quiero que me digas que somos un equipo» |
 | **La transición** | `VO_V_01` «el archivo de transición… me toca a mí» → búsqueda «transición» → cajetín «de transición» → `NOTA_01` «La transición es tuya» |
 | **La carga** | `NOTA_02` «No te quites la carga. Yo tampoco» → manivela del tablero de tareas → T4 asumida o devuelta → eco en la llamada |
-| **Jugar** [PROPUESTA] | `SMS_01` «¿Jugamos esta noche?» → «Ahora no» → cajetín hecho a mano → «¿Jugamos?» en la base de la caja → `TST_P3_ENGRANAJE` «Él siempre lo hacía así» |
+| **Jugar** [NUEVO] | `SMS_01` «¿Jugamos esta noche?» → «Ahora no» → cajetín hecho a mano → «¿Jugamos?» en la base de la caja → `TST_P3_ENGRANAJE` «Él siempre lo hacía así» |
 | **Nueve días** | Libro de visitas (22:12) → formulario fechado → `VO_V_04` avión a Lisboa |
 | **Resfriada** | Las tres variantes de `VO_G_12` terminan en «¿Estás resfriada?»: la voz oye que Vera ha llorado, o lo supone. Nunca se explica |
 | **La extensión** | Cambio de extensiones (correo de ruido, cara del auricular en el cajetín) → la llamada sale desde la extensión de Vera |
@@ -46,12 +46,12 @@ Cada hilo aparece al menos tres veces. Si se corta uno, se nota.
 | Ítem | Origen | Uso | ¿Se relee? |
 |---|---|---|---|
 | I-01 Impresión de correos | Impresora del despacho | Pista de P1 | En el ordenador o el papel |
-| I-08 Llave del Archivo [PROPUESTA] | Cajón del cajetín (P1) | Cerradura de la puerta A | No |
+| I-08 Llave del Archivo [NUEVO] | Cajón del cajetín (P1) | Cerradura de la puerta A | No |
 | I-02 Tarjeta de la Sala B | Cajón A05 del Archivo | Lector de B | No |
 | I-03 Tarjeta sin foto | Cajón A05 del Archivo | Lector de D | No |
 | I-04 Formulario de traslado | Caja A03 del Archivo | Lectura | Sí |
 | I-06a `NOTA_01` | Cajón de la caja (P3) | Lectura | Sí |
-| I-09 Engranaje [PROPUESTA] | Cajón de la caja (P3) | Eje de la trasera (P4) | No |
+| I-09 Engranaje [NUEVO] | Cajón de la caja (P3) | Eje de la trasera (P4) | No |
 | I-05 Lista de tareas | Detrás del tablero (P4) | Lectura | Sí |
 | I-07 Carta de Vera | Bandeja de la caja (P6) | Lectura | Sí |
 

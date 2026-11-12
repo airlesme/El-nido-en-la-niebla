@@ -7,6 +7,8 @@
 
 > Este documento es la fuente de verdad para el slice. Prevalece sobre el GDD general (v0.1, 26 de octubre de 2026) y sobre las versiones 0.1, 0.2 y 0.3 (con sus ajustes 0.3.1 y 0.3.2) de este documento. Donde el GDD general diga tercera persona, el slice usa **primera persona** (decisión D-01). Los anexos A a D contienen el detalle de implementación de espacios, puzles, eventos e inventario.
 
+> **Puzles (2026-11-12):** las mecánicas de los seis puzles (§10 y Anexo B) quedan **sustituidas por `biblia/04-puzles.md`** (decisiones D-B1 a D-B10, aprobadas por el usuario el 2026-11-12). La historia, las preguntas de cada puzle, las banderas, las elecciones y los textos de §12 siguen vigentes aquí. Donde este documento y la biblia no coincidan en un puzle, vale la biblia.
+
 ---
 
 ## 1. Resumen
@@ -465,12 +467,13 @@ El slice se considera aceptable cuando:
 - **D-09 · Efecto de las elecciones:** la carta cambia la primera línea de la llamada, y la respuesta de la llamada cambia la última línea de Vera. *(Resuelta en v0.2.)*
 - **D-11 · Despacho de Dirección eliminado como sala:** el memorando pasa a escribirse en el cristal de la Sala de Reuniones. Motivo: la sala solo contenía exposición. Si el equipo quiere más espacios, Dirección puede volver como sala de exploración sin puzle.
 - **D-12 · Puzle de la Sala de Juegos eliminado:** la Sala de Juegos (E) sale del slice. Su función de «amistad compartida» se traslada, si se desea, a la versión completa.
+- **D-17 · Puzles con las mecánicas del piloto «La Caja»:** los seis puzles se rehacen como tres objetos-puzle (cajetín del Archivo, lámparas de la Sala B, caja del Guardián) con el kit de mecánicas del piloto. Detalle y decisiones D-B1 a D-B10 en `biblia/04-puzles.md` §7. *(Usuario, 2026-11-12.)*
 
 **Pendientes:**
 
 - **D-14 · Permanencia de la carta:** la elección del compartimento 4 es definitiva. Motivo: coherencia con el pilar de autonomía. Confirmar.
 - **D-15 · Silencio en la llamada:** es un botón («No responder»). Tras veinte segundos no se elige nada por el jugador. Confirmar.
-- **D-16 · Orden de la caja:** el compartimento 3 requiere el 1, y el 4 requiere el 1, el 2 y el 3. El 2 es libre. **Tomada (usuario, 2026-11-10):** cadena c1→c3→c4 con c2 libre. Alternativa descartada: orden libre. Motivo: guía sin callejón.
+- **D-16 · Orden de la caja:** el compartimento 3 requiere el 1, y el 4 requiere el 1, el 2 y el 3. El 2 es libre. **Tomada (usuario, 2026-11-10):** cadena c1→c3→c4 con c2 libre. Alternativa descartada: orden libre. Motivo: guía sin callejón. **Sustituida por D-B1 (2026-11-12): cadena lineal c1→c2→c3→c4.**
 - **D-04 · Nombre de Vera:** provisional. Afecta a la carta, la megafonía y el formulario.
 - **D-05 · Motor:** Godot o Unity. Ambos sirven. La decisión depende de la experiencia del equipo.
 - **D-06 · Clasificación por edad:** pendiente de revisión.

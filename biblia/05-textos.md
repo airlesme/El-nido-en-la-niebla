@@ -55,7 +55,7 @@ Todos los textos que el jugador oye o lee, con su ID. **Este archivo manda:** si
 
 **Orden de impresión de I-01:** ref. 3, aviso de extensiones, ref. 1, ref. 4, aviso de aire acondicionado, ref. 2. Cada bloque lleva «Enviado: hh:mm».
 
-## 3. Grabados y rótulos de los objetos [PROPUESTA]
+## 3. Grabados y rótulos de los objetos [NUEVO]
 
 | ID | Dónde | Texto |
 |---|---|---|
@@ -75,7 +75,7 @@ Todos los textos que el jugador oye o lee, con su ID. **Este archivo manda:** si
 
 **Lista de tareas del Guardián (I-05) [CANON en el concepto, texto PROPUESTO]:** cuatro entradas a mano, mismas tareas que el tablero; en la última, «Carta a Dirección — Vera», con «Vera» tachado.
 
-## 4. Avisos de contexto (pensamientos de Vera) [PROPUESTA]
+## 4. Avisos de contexto (pensamientos de Vera) [NUEVO]
 
 Generados desde `04-puzles.md`. Texto, sin voz. Duración por defecto 4,2 s; los de «primera vez» 5,2 s.
 
@@ -143,7 +143,7 @@ Generados desde `04-puzles.md`. Texto, sin voz. Duración por defecto 4,2 s; los
 | `TST_P6_SELECCION` | Primera selección de una tira | «¿Esta? Luego no podré cambiarla.» |
 | `TST_P6_DESPUES` | Tras leer la carta | «Es mi letra. Esta noche eso ya no me sorprende.» |
 
-## 5. Pistas del menú de pausa [PROPUESTA, P2/P5/P6 adaptadas del CANON]
+## 5. Pistas del menú de pausa [NUEVO, P2/P5/P6 adaptadas del CANON]
 
 | ID | Texto |
 |---|---|

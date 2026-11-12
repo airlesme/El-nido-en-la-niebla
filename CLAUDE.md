@@ -9,6 +9,7 @@ Aventura/puzles en **primera persona 3D** (Godot). Alcance actual: vertical slic
 «Turno de noche» (~15–30 min según el jugador, a medir en playtest) para enseñar y conseguir financiación.
 
 - **Fuente de verdad del slice:** `design/slice/slice-v0.3.md` (prevalece sobre cualquier GDD general).
+- **Puzles y referencia para el equipo externo:** `biblia/` (raíz). En mecánicas de puzle, `biblia/04-puzles.md` prevalece sobre el slice y sobre los GDD `puzle-*.md` y `caja-y-compartimentos.md` (usuario, 2026-11-12).
 - **Plan técnico:** `docs/PLAN-TECNICO.md` · **Mapa de carpetas:** `README.md`.
 - **Idioma:** documentación y diseño en español; código, identificadores y ADRs en inglés
   (los IDs del documento —`VO_G_12A`, `caja_c1`, `EV_PUZZLE_SOLVED_*`— se conservan tal cual).

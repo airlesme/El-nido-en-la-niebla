@@ -2,14 +2,14 @@
 
 La noche entera, en el orden en que la juega alguien que no se salta nada. Cada escena dice: dónde, qué pasa, qué aprende el jugador, qué tiene que hacer y qué queda guardado. Los puzles se detallan en `04-puzles.md`; aquí solo se sitúan.
 
-**Cómo se juega [PROPUESTA]:** el jugador camina en primera persona entre salas. Al interactuar con un objeto-puzle (cajetín, lámparas, caja) entra en **modo examen**: la cámara deja de ser la de Vera y pasa a orbitar el objeto como en el piloto (ver `03` M0). Sale con «Volver». Fuera del modo examen no se resuelve ningún puzle.
+**Cómo se juega [NUEVO]:** el jugador camina en primera persona entre salas. Al interactuar con un objeto-puzle (cajetín, lámparas, caja) entra en **modo examen**: la cámara deja de ser la de Vera y pasa a orbitar el objeto como en el piloto (ver `03` M0). Sale con «Volver». Fuera del modo examen no se resuelve ningún puzle.
 
 ---
 
 ## Escena 1 · Llegada (23:40) · Despacho de Vera
 
 - **Qué pasa:** fundido desde negro. Lluvia contra el cristal, un ventilador que vibra. Megafonía `MEGA_01`. Voz interior `VO_V_01`. Llega un mensaje del contacto «Guardián»: «¿Jugamos esta noche?». Vera contesta «Ahora no». Respuesta automática: «Este número ya no está disponible».
-- **Qué aprende el jugador:** Vera es nueva, está sola, busca el «archivo de transición», y el Guardián ya no está localizable. Con la propuesta de `01` §4, «jugar» significa algo concreto que entenderá en el despacho D.
+- **Qué aprende el jugador:** Vera es nueva, está sola, busca el «archivo de transición», y el Guardián ya no está localizable. Con lo de `01` §4, «jugar» significa algo concreto que entenderá en el despacho D.
 - **Qué hace:** nada obligatorio. Puede mirar la caja de cartón y el peluche cúbico (el peluche es el símbolo de Vera en la caja: conviene que lo vea).
 - **Banderas:** ninguna.
 
@@ -88,7 +88,7 @@ correos_leidos ──► Puzle 1 (cajetín) ──► archivo_abierto ──► 
                                                                        Apagón y llamada ──► llamada_completada ──► Recepción
 ```
 
-La Sala B no bloquea nada: es la única pieza opcional de la historia. Pero el memorando da sentido a la ficha T4 y a la frase «ratificación pendiente», así que el recorrido está pensado para que el jugador llegue a B antes que a D (el lector de B está más cerca del Archivo que el de D). **[PROPUESTA]**
+La Sala B no bloquea nada: es la única pieza opcional de la historia. Pero el memorando da sentido a la ficha T4 y a la frase «ratificación pendiente», así que el recorrido está pensado para que el jugador llegue a B antes que a D (el lector de B está más cerca del Archivo que el de D). **[NUEVO]**
 
 ## Duración orientativa
 
