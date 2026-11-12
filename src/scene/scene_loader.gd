@@ -32,6 +32,14 @@ const CAUSE_PREVIOUS_NOT_FREED: StringName = &"previous_scene_not_freed"
 const CAUSE_MISSING_ANCHOR: StringName = &"missing_anchor"
 const CAUSE_INVALID_PUZZLE_DATA: StringName = &"invalid_puzzle_data"
 const CAUSE_T_CAP: StringName = &"t_cap"
+const CAUSE_MISSING_RESOURCE: StringName = &"missing_resource"
+const CAUSE_MISSING_CONTAINER: StringName = &"missing_container"
+## Fatal codes of dev builds: every failure goes to the injected handler first (ADR-0003 Failure).
+## TODO(ADR-0009): register these codes in FatalErrorHandler's list (owner: ADR-0009 / core).
+const FATAL_LOAD_FAILED: StringName = &"CARGA_DE_ESCENA_FALLIDA"
+const FATAL_DUPLICATE_ANCHOR: StringName = &"ANCLA_DUPLICADA"
+## Required nodes that are containers (the other required names are anchors/slots). M1 list of GameSceneRoot.
+const CONTAINER_NAMES: PackedStringArray = ["office", "corridor", "archive"]
 
 var _ctx: ServiceContext
 var _source: SceneSource
@@ -65,6 +73,11 @@ var _holds: Dictionary[StringName, bool] = {}
 var _holds_open: bool = false
 var _old: Node = null
 var _current_root: Node = null
+## Cause of the last failure (`&""` while no failure is active). Valid in State.ERROR.
+var _failure_cause: StringName = &""
+## Callable(cause: StringName) -> void; asks the UI for the ErrorPanel with the single action
+## «Volver al título». Its view is story 014; accepting it must call `request_full_unload()` (story 009).
+var _error_panel_request: Callable = Callable()
 
 
 func _init() -> void:
@@ -99,6 +112,19 @@ func wire_sequence(slot: Node3D, transitions: LoadTransitions, clock: RealClock,
 	_input = input
 	_alpha_sink = alpha_sink
 	_reduced_motion = reduced_motion
+
+
+## Port to the error message: `request(cause: StringName)` is called once per failure, after the curtain
+## is held at alpha 1 and Entrada has `restore_menu`. The visible panel is story 014.
+## TODO(carga-014): the panel's accept action calls `request_full_unload()` (owner: carga-014/carga-009).
+## Example: `loader.set_error_panel_port(func(cause: StringName) -> void: panel.show_error(cause))`.
+func set_error_panel_port(request: Callable) -> void:
+	_error_panel_request = request
+
+
+## Cause of the current failure (`&""` unless the state is ERROR).
+func get_failure_cause() -> StringName:
+	return _failure_cause
 
 
 ## Current public state.
@@ -240,14 +266,15 @@ func _instantiate_and_configure() -> void:
 		_ctx.clock.reset_session() # OI-3: immediately before instantiating
 	var root: Node = _source.instantiate(_dest_key()) if _source != null else null
 	if root == null:
-		_fail(CAUSE_INSTANTIATE_FAILED)
+		var why: StringName = _source.last_failure if _source != null else &""
+		_fail(CAUSE_MISSING_RESOURCE if why == CAUSE_MISSING_RESOURCE else CAUSE_INSTANTIATE_FAILED)
 		return
 	_slot.add_child(root)
 	_current_root = root
 	if root.has_method(&"validate_required_nodes"):
 		var missing: PackedStringArray = root.call(&"validate_required_nodes")
 		if not missing.is_empty():
-			_fail(CAUSE_MISSING_ANCHOR)
+			_fail(_missing_cause(missing))
 			return
 	if not _place_player(root):
 		_fail(CAUSE_MISSING_ANCHOR)
@@ -307,10 +334,33 @@ func _place_player(root: Node) -> bool:
 	var player: Object = root.call(&"get_player") as Object
 	if anchor == null or player == null or not player.has_method(&"colocar"):
 		return false
+	anchor = _resolve_duplicate_anchors(root, anchor)
 	var pos: Vector3 = anchor.global_position if anchor.is_inside_tree() else anchor.position
 	var yaw: float = anchor.global_rotation.y if anchor.is_inside_tree() else anchor.rotation.y
 	player.call(&"colocar", pos, yaw, 0.0)
 	return true
+
+
+# Anchors with the same name (R4, AC-15c): dev raises a visible error through the fatal handler;
+# the final build uses the first in tree order and logs one line.
+func _resolve_duplicate_anchors(root: Node, anchor: Node3D) -> Node3D:
+	var same: Array[Node] = root.find_children(String(anchor.name), "Node3D", true, false)
+	if same.size() <= 1:
+		return anchor
+	var detail: Dictionary = {&"param": &"spawn_anchor", &"name": anchor.name, &"count": same.size()}
+	if _ctx.flavor != null and _ctx.flavor.is_debug():
+		_ctx.fatal.raise_fatal(FATAL_DUPLICATE_ANCHOR, detail)
+	else:
+		_ctx.logger.line(LogSink.LEVEL_ERROR, "duplicate spawn anchor, using the first in tree order: %s" % str(detail))
+	return same[0] as Node3D
+
+
+# Containers missing take precedence over anchors/slots in the reported cause.
+func _missing_cause(missing: PackedStringArray) -> StringName:
+	for node_name: String in missing:
+		if CONTAINER_NAMES.has(node_name):
+			return CAUSE_MISSING_CONTAINER
+	return CAUSE_MISSING_ANCHOR
 
 
 # Step 7.
@@ -361,21 +411,31 @@ func _finish() -> void:
 		_notify(NoticeIds.GAME_FINISHED, {})
 
 
-# Minimal failure path so the machine never hangs.
-# TODO(carga-008): ErrorPanel, fatal handler in dev, `Volver al titulo` and the full failure contract (owner: carga-008).
+# Failure contract (ADR-0003 Failure): dev fatal handler first, curtain held at alpha 1, log with the cause,
+# «carga de escena fallida», `restore_menu`, state Error, ErrorPanel request. Never «escena lista»,
+# «terminada», «partida terminada» nor «descarga total completada» from here.
+# TODO(carga-009): `request_full_unload()` (accepted from ERROR) is the only exit; story 009.
 func _fail(cause: StringName, pending_ids: Array[StringName] = []) -> void:
 	_holds_open = false
 	_phase = Phase.IDLE
 	_state = State.ERROR
+	_failure_cause = cause
 	set_process(false)
 	_curtain.alpha = 1.0 # never reveal a half scene
 	_apply_alpha()
 	_ctx.logger.line(LogSink.LEVEL_ERROR, "scene load failed: %s pending=%s" % [cause, pending_ids])
+	if _ctx.flavor != null and _ctx.flavor.is_debug():
+		_ctx.fatal.raise_fatal(FATAL_LOAD_FAILED, {
+			&"param": &"load", &"destino": _dest_key(), &"motivo": _reason_key(_pending_reason),
+			&"causa": cause, &"pending": pending_ids,
+		})
 	_notify(NoticeIds.SCENE_LOAD_FAILED, {
 		&"destino": _dest_key(), &"motivo": _reason_key(_pending_reason), &"causa": cause,
 	})
 	if _input != null:
 		_input.restore_menu()
+	if _error_panel_request.is_valid():
+		_error_panel_request.call(cause)
 
 
 func _apply_alpha() -> void:

@@ -1,7 +1,7 @@
 # Story 008: Fallo de carga y estado Error
 
 > **Epic**: Carga de planta (despacho, pasillo, Archivo)
-> **Status**: Ready
+> **Status**: Partial — fallo/estado Error hechos (AC-15a sin la salida a Sin escena, AC-15b, AC-15c); AC-22 y la salida de AC-15a dependen de 009 (`request_full_unload`) y 014 (panel)
 > **Layer**: Core
 > **Type**: Logic
 > **Estimate**: M — 1 día (1–1,5; confianza BAJA)
@@ -75,3 +75,15 @@
 
 - Depends on: `production/epics/carga-de-planta/story-005-load-sequence.md`, `story-007-holds-and-tcap.md`
 - Unlocks: `production/epics/carga-de-planta/story-009-full-unload.md`, `story-014-error-panel-ui.md`
+
+---
+
+## Evidencia
+
+- `tests/unit/scene/scene_loader_failure_test.gd` (19 casos, T-U7), dobles `failing_scene_source.gd` / `failing_scene_root.gd`. Suite bloqueante: 906 casos, 0 errores, 0 fallos, 0 huérfanos; sin `ObjectDB instances were leaked` ni `resources still in use`. `--import` y `--boot-report` sin errores.
+- **AC-15a (parcial)**: las 7 causas (`missing_resource`, `instantiate_failed`, `missing_container`, `missing_anchor`, `t_cap`, `invalid_puzzle_data`) cubiertas: α = 1 y sin aclarar, log con la causa, «fallida» una vez, `restore_menu` una vez, petición de panel por el puerto `set_error_panel_port`, sin «lista/terminada/partida terminada/descarga total completada». **Falta**: aceptar «Volver al título» → Sin escena y «descarga total completada» tras la descarga (`request_full_unload`, story 009; `# TODO(carga-009)`).
+- **AC-15b (hecho)**: en debug el manejador fatal recibe `CARGA_DE_ESCENA_FALLIDA` {causa, pending}; en release no se llama.
+- **AC-15c (hecho)**: dev → fatal `ANCLA_DUPLICADA`; release → primera en orden de árbol + una línea de log.
+- **AC-22 (no cumplido)**: requiere 009/014; pausa/atrás en Error dependen de Entrada (`restore_menu`).
+- Pendientes con dueño: códigos fatales en ADR-0009; las claves del aviso (ADR-0001) y la vista del panel son de 014.
+- Cambio colateral: `SceneSource.last_failure` distingue `missing_resource` de `instantiate_failed`.
