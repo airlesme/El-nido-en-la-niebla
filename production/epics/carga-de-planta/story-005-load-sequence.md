@@ -1,7 +1,7 @@
 # Story 005: Secuencia de carga de 9 pasos y orden de configuración
 
 > **Epic**: Carga de planta (despacho, pasillo, Archivo)
-> **Status**: Ready
+> **Status**: Done (2026-11-12; AC-09, AC-10, AC-06 + AC-23, AC-F3 parte 2 con evidencia; el orden 7 → 9 → resto se verifica contra el doble, la implementación real es 012)
 > **Layer**: Core
 > **Type**: Logic
 > **Estimate**: L — 2 días (1,5–2,5; confianza BAJA)
@@ -77,3 +77,14 @@
 
 - Depends on: `production/epics/carga-de-planta/story-003-curtain-and-dcarga-formulas.md`, `story-004-loader-preconditions-states.md`
 - Unlocks: `production/epics/carga-de-planta/story-006-no-control-input-contract.md`, `story-007-holds-and-tcap.md`, `story-008-load-failure-error-state.md`, `story-012-game-scene-root-and-source.md`
+
+---
+
+## Evidencia
+
+- `src/scene/scene_loader.gd`: máquina por fotogramas (`Phase`, `tick()`, `wire_sequence(...)`), reloj `RealClock` inyectado, sin Timer/Tween ni `change_scene_to_*` (`forbid_timers.sh` y `forbid_scene_change.sh`: clean). Sin cablear (`wire_sequence`) queda inerte (comportamiento de CP-004 intacto).
+- `tests/unit/scene/scene_loader_sequence_test.gd` (20 tests, 20/20): AC-09 (orden conjunto y no descarga hasta α = 1), AC-10, AC-06 + AC-23 (una lectura, 0 escrituras, fallo `invalid_puzzle_data` en el mismo fotograma sin esperar `T_cap`), AC-F3 parte 2 (aclarado a `N_gap` = 2 fotogramas de «lista»; `t_sin_control` = 1,6333 ± 0,001), U / U+1, `reset_session` antes de instanciar, título sin reset de pila, duraciones 0, `reducir_movimiento`, recepción.
+- `tests/integration/scene/load_sequence_nodes_test.gd` (1/1): nodos reales, `PackedScene`, `_process` propio, recarga planta → planta con la instancia vieja liberada; sin ventana, espera acotada a la condición.
+- Dobles nuevos: `tests/unit/scene/doubles/{scene_root_double,player_spy,channeled_game_state,spy_input_contexts,scripted_scene_source}.gd`.
+- Suite bloqueante completa: `847 test cases | 0 errors | 0 failures | 0 flaky | 0 skipped | 0 orphans`, exit 0; grep de `ObjectDB instances were leaked` / `resources still in use`: 0. `--import` sin errores; arranque `--headless --quit-after 5 -- --boot-report`: sin errores ni fatal.
+- Pendiente fuera de alcance (marcadores `TODO` en el código): holds/`T_cap` (007), fallos y panel (008), `bind/unbind_scene` (ADR-0009 D6), `GameSceneRoot` real y su orden 7 → 9 (012), lectura de `reducir_movimiento` en Settings (`TODO(settings-owner)`), cableado de `wire_sequence` en Boot (no tocado: `boot.gd` es de otro agente).

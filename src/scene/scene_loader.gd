@@ -1,8 +1,13 @@
 ## World scene loader and curtain (system 4). Registered as autoload `SceneLoaderAutoload` (ADR-0009 D1).
-## CP-004 scope: public states and the `request_load` preconditions (ADR-0003). What happens after
-## a request is accepted (the 9-step sequence) is story 005; Error is 008; full unload is 009.
+## CP-004: public states and the `request_load` preconditions. CP-005 (this file): the 9-step load
+## sequence as a per-frame machine (ADR-0003 § Load sequence): «iniciada» -> curtain to alpha 1 -> unload
+## in frame U -> instantiate in U+1 -> `colocar` -> `configure_all` -> «escena lista» -> N_gap frames ->
+## curtain in -> «terminada». Time comes ONLY from the injected RealClock (no Timer/Tween, ADR-0002 D6).
+## Holds/T_cap are 007, failures/ErrorPanel 008, full unload 009: they hang off the TODO markers below.
+## The machine is dormant (state LOADING, nothing runs) until `wire_sequence` supplies its collaborators.
 ## Example: `if scenes.request_load(SceneLoader.Destination.PLANTA, SceneLoader.Reason.PARTIDA_NUEVA, SceneLoader.FinalControl.EXPLORACION): ...`.
-## TODO(ADR-0003): amend § Key Interfaces: `setup(ctx)` (ADR-0009 D2) replaces the 6-parameter form.
+## TODO(ADR-0003): amend § Key Interfaces: `setup(ctx)` (ADR-0009 D2) replaces the 6-parameter form, and
+## `wire_sequence(...)` supplies slot/transitions/clock/input/curtain sink (owner: lead-programmer).
 class_name SceneLoader extends Node
 
 ## The 4 public states of GDD 4.
@@ -10,11 +15,22 @@ enum State { NO_SCENE, LOADING, READY, ERROR }
 enum Destination { PLANTA, RECEPCION }
 enum Reason { PARTIDA_NUEVA, REANUDAR, RECEPCION }
 enum FinalControl { EXPLORACION, NINGUNO }
+## Phases of the load machine (ADR-0003 Key Interfaces; the full-unload phases belong to story 009).
+enum Phase { IDLE, FADING_OUT, UNLOADING, INSTANTIATING, WAITING_HOLDS, GAP, FADING_IN }
 
 ## Fatal code for a rejected request in dev builds.
 ## TODO(ADR-0009): register this code in FatalErrorHandler's list (owner: ADR-0009 / core).
 const FATAL_LOAD_REJECTED: StringName = &"PETICION_DE_CARGA_RECHAZADA"
 const FACT_CALL_COMPLETED: StringName = &"llamada_completada"
+## Mirror of `GameSceneRoot.ConfigureResult` (ADR-0003 Key Interfaces).
+## TODO(carga-012): replace by `GameSceneRoot.ConfigureResult` when the real root exists (owner: carga-012).
+const CONFIGURE_OK: int = 0
+const CONFIGURE_INVALID_PUZZLE_DATA: int = 1
+## Failure causes of the machine (ADR-0003 Failure). Story 008 owns the error state UI.
+const CAUSE_INSTANTIATE_FAILED: StringName = &"instantiate_failed"
+const CAUSE_PREVIOUS_NOT_FREED: StringName = &"previous_scene_not_freed"
+const CAUSE_MISSING_ANCHOR: StringName = &"missing_anchor"
+const CAUSE_INVALID_PUZZLE_DATA: StringName = &"invalid_puzzle_data"
 
 var _ctx: ServiceContext
 var _source: SceneSource
@@ -24,10 +40,36 @@ var _pending_destination: Destination = Destination.PLANTA
 var _pending_reason: Reason = Reason.PARTIDA_NUEVA
 var _pending_final_control: FinalControl = FinalControl.EXPLORACION
 
+var _slot: Node3D
+var _transitions: LoadTransitions
+var _clock: RealClock
+var _input: InputContexts
+## Callable(alpha: float) -> void; applies the curtain opacity to the visual Curtain.
+var _alpha_sink: Callable = Callable()
+## Callable() -> bool; reads `reducir_movimiento` once per load.
+## TODO(settings-owner): Settings (ADR-0007) does not expose it yet; false until it does.
+var _reduced_motion: Callable = Callable()
+var _curtain: CurtainMath = CurtainMath.new()
+var _phase: Phase = Phase.IDLE
+var _d_out: float = 0.0
+var _d_in: float = 0.0
+var _d_load: float = 0.0
+var _t_started_ms: int = 0
+var _last_ms: int = 0
+var _frame_dt: float = 0.0
+var _gap_left: int = 0
+var _old: Node = null
+var _current_root: Node = null
+
 
 func _init() -> void:
 	# ADR-0009 D2: explicit, never inherited. No I/O, no autoload reads here.
 	process_mode = Node.PROCESS_MODE_ALWAYS
+	set_process(false) # enabled only while a load runs
+
+
+func _process(_delta: float) -> void:
+	tick()
 
 
 ## Composition point, called once by Boot (ADR-0009 D2/D3). Never called by systems.
@@ -36,9 +78,22 @@ func setup(ctx: ServiceContext) -> void:
 	_ctx = ctx
 
 
-## Injects the scene source (ADR-0003 D4). Tests pass a fake; Boot wires the real one (story 005).
+## Injects the scene source (ADR-0003 D4). Tests pass a fake; Boot wires the real one.
 func set_source(source: SceneSource) -> void:
 	_source = source
+
+
+## Supplies the collaborators of the load sequence (ADR-0003 D4/D5). `slot` is the Shell's WorldSlot;
+## `alpha_sink` is `Callable(alpha: float)` applying the curtain opacity; `input` may be null (no `sin control`).
+## Example: `loader.wire_sequence(shell.world_slot, transitions, ctx.real_clock, input_port, curtain_rect_setter)`.
+func wire_sequence(slot: Node3D, transitions: LoadTransitions, clock: RealClock, input: InputContexts,
+		alpha_sink: Callable, reduced_motion: Callable = Callable()) -> void:
+	_slot = slot
+	_transitions = transitions
+	_clock = clock
+	_input = input
+	_alpha_sink = alpha_sink
+	_reduced_motion = reduced_motion
 
 
 ## Current public state.
@@ -46,9 +101,50 @@ func get_state() -> State:
 	return _state
 
 
+## Current phase of the load machine.
+func get_phase() -> Phase:
+	return _phase
+
+
+## Current curtain opacity in [0, 1].
+func get_curtain_alpha() -> float:
+	return _curtain.alpha
+
+
+## One frame of the machine, driven by `_process` (the engine delta is ignored on purpose: real time only).
+## Public so tests can drive it frame by frame against an injected clock.
+func tick() -> void:
+	if _phase == Phase.IDLE or _clock == null:
+		return
+	var now: int = _clock.now_ms()
+	_frame_dt = float(now - _last_ms) / 1000.0
+	_last_ms = now
+	match _phase:
+		Phase.FADING_OUT:
+			var dark: bool = _curtain.step_out(_frame_dt, _transitions.delta_max_s, _d_out)
+			_apply_alpha()
+			if dark:
+				_phase = Phase.UNLOADING
+				_unload_current()
+				_phase = Phase.INSTANTIATING
+		Phase.INSTANTIATING:
+			_instantiate_and_configure()
+		Phase.WAITING_HOLDS:
+			# TODO(carga-007): holds and T_cap; without holds «escena lista» is emitted in the configure frame.
+			_scene_ready()
+		Phase.GAP:
+			_gap_left -= 1
+			if _gap_left <= 0:
+				_begin_fade_in()
+		Phase.FADING_IN:
+			_step_fade_in()
+		_:
+			pass
+
+
 ## «petición de carga». Returns false when rejected by a precondition (ADR-0003): dev raises the
 ## fatal handler, release logs one line. A rejection changes nothing and never touches the source.
-## On acceptance the state becomes LOADING and the request is kept for story 005.
+## On acceptance the state becomes LOADING and, when wired, the 9-step sequence starts (frame F).
 func request_load(destination: Destination, reason: Reason, final_control: FinalControl) -> bool:
 	var state_ready: bool = _ctx.state != null and _ctx.state.get_status() == GameState.Status.READY
 	var call_completed: bool = false
@@ -63,12 +159,14 @@ func request_load(destination: Destination, reason: Reason, final_control: Final
 	_pending_reason = reason
 	_pending_final_control = final_control
 	_state = State.LOADING
+	if _transitions != null and _clock != null and _slot != null:
+		_start_sequence()
 	return true
 
 
-## Runtime seam for stories 005/008/009 and tests: sets the state and which game scene is loaded
+## Runtime seam for stories 008/009 and tests: sets the state and which game scene is loaded
 ## (`loaded` is a Destination value or LoadPreconditions.NONE_LOADED).
-## TODO(carga-005): replace by the real transitions of the load sequence.
+## The load sequence drives these fields itself; the seam stays for 008/009 and tests.
 func set_runtime_state(state: State, loaded: int = LoadPreconditions.NONE_LOADED) -> void:
 	_state = state
 	_loaded = loaded
@@ -85,3 +183,185 @@ func _reject(verdict: LoadPreconditions.Verdict, destination: Destination, reaso
 		_ctx.fatal.raise_fatal(FATAL_LOAD_REJECTED, detail)
 	else:
 		_ctx.logger.line(LogSink.LEVEL_ERROR, "request_load rejected: %s" % str(detail))
+
+
+# --- Load sequence (CP-005) ---
+
+# Steps 0-1 (frame F): resolve durations, «iniciada», then `sin control`; the curtain is untouched yet.
+func _start_sequence() -> void:
+	var reduced: bool = _reduced_motion.is_valid() and bool(_reduced_motion.call())
+	var motivo: StringName = _reason_key(_pending_reason)
+	_d_out = LoadBudget.d_out(_transitions, motivo, reduced)
+	_d_in = LoadBudget.d_in(_transitions, motivo, reduced)
+	_d_load = LoadBudget.d_carga(_transitions, motivo)
+	_t_started_ms = _clock.now_ms()
+	_last_ms = _t_started_ms
+	_notify(NoticeIds.SCENE_LOAD_STARTED, {
+		&"destino": _dest_key(), &"motivo": motivo,
+		&"control_final": _final_key(), &"D_carga": _d_load,
+	})
+	if _input != null:
+		_input.open_no_control(InputTypes.OWNER_SCENE_LOADER, _d_load,
+				_pending_reason != Reason.RECEPCION)
+	_curtain.begin_out()
+	_phase = Phase.FADING_OUT
+	set_process(true)
+
+
+# Step 3. Unbinding the scene adapters (ADR-0009 D6) hangs here.
+# TODO(adr-0009-d6): SYNC `unbind_scene()` on 21, 23 and Shell adapters (owner: ADR-0009 / carga-012).
+func _unload_current() -> void:
+	if _slot.get_child_count() == 0:
+		return
+	var child: Node = _slot.get_child(0)
+	if _loaded != LoadPreconditions.NONE_LOADED and _input != null:
+		_input.reset_stack_on_unload() # never for the title (D2); `_loaded` is NONE then
+	_slot.remove_child(child)
+	child.queue_free()
+	_old = child
+	_current_root = null
+	_loaded = LoadPreconditions.NONE_LOADED
+
+
+# Steps 4-6, frame U+1.
+func _instantiate_and_configure() -> void:
+	if _old != null and is_instance_valid(_old):
+		_fail(CAUSE_PREVIOUS_NOT_FREED)
+		return
+	_old = null
+	if is_inside_tree() and get_tree().paused:
+		_ctx.logger.line(LogSink.LEVEL_ERROR, "load: instantiating with the tree paused (ADR-0002 G-11)")
+	if _ctx.clock != null:
+		_ctx.clock.reset_session() # OI-3: immediately before instantiating
+	var root: Node = _source.instantiate(_dest_key()) if _source != null else null
+	if root == null:
+		_fail(CAUSE_INSTANTIATE_FAILED)
+		return
+	_slot.add_child(root)
+	_current_root = root
+	if root.has_method(&"validate_required_nodes"):
+		var missing: PackedStringArray = root.call(&"validate_required_nodes")
+		if not missing.is_empty():
+			_fail(CAUSE_MISSING_ANCHOR)
+			return
+	if not _place_player(root):
+		_fail(CAUSE_MISSING_ANCHOR)
+		return
+	var result: int = CONFIGURE_OK
+	if root.has_method(&"configure_all"):
+		result = int(root.call(&"configure_all", _ctx))
+	if result == CONFIGURE_INVALID_PUZZLE_DATA:
+		_fail(CAUSE_INVALID_PUZZLE_DATA) # immediate: no T_cap wait
+		return
+	_phase = Phase.WAITING_HOLDS
+	_scene_ready() # TODO(carga-007): stay in WAITING_HOLDS while holds exist
+
+
+# Step 5: `colocar(anchor position, yaw, pitch 0)` from the spawn anchor (C-R08).
+# TODO(carga-012): typed against GameSceneRoot/Player once they exist; duck-typed meanwhile (owner: carga-012).
+func _place_player(root: Node) -> bool:
+	var anchor_path: Variant = root.get(&"spawn_anchor")
+	if not root.has_method(&"get_player") or not anchor_path is NodePath:
+		return false
+	var anchor: Node3D = root.get_node_or_null(anchor_path as NodePath) as Node3D
+	var player: Object = root.call(&"get_player") as Object
+	if anchor == null or player == null or not player.has_method(&"colocar"):
+		return false
+	var pos: Vector3 = anchor.global_position if anchor.is_inside_tree() else anchor.position
+	var yaw: float = anchor.global_rotation.y if anchor.is_inside_tree() else anchor.rotation.y
+	player.call(&"colocar", pos, yaw, 0.0)
+	return true
+
+
+# Step 7.
+func _scene_ready() -> void:
+	# TODO(adr-0009-d6): SYNC `bind_scene(scene_ctx)` on 21, 23 and Shell adapters.
+	_notify(NoticeIds.SCENE_READY, {&"destino": _dest_key()})
+	_gap_left = _transitions.n_gap
+	if _gap_left > 0:
+		_phase = Phase.GAP
+	else:
+		_begin_fade_in()
+
+
+# Step 8: the first step of the curtain in happens in the frame L + N_gap.
+func _begin_fade_in() -> void:
+	_curtain.begin_in()
+	_phase = Phase.FADING_IN
+	_step_fade_in()
+
+
+func _step_fade_in() -> void:
+	var clear: bool = _curtain.step_in(_frame_dt, _transitions.delta_max_s, _d_in)
+	_apply_alpha()
+	if clear:
+		_finish()
+
+
+# Step 9.
+func _finish() -> void:
+	_phase = Phase.IDLE
+	_state = State.READY
+	_loaded = _pending_destination
+	set_process(false)
+	var hub: Object = null
+	if _current_root != null and _current_root.has_method(&"get_zone_hub"):
+		hub = _current_root.call(&"get_zone_hub") as Object
+	if hub != null and hub.has_method(&"set_enabled"):
+		hub.call(&"set_enabled", true) # TODO(carga-011): real ZoneHub wiring
+	_notify(NoticeIds.SCENE_LOAD_FINISHED, {
+		&"destino": _dest_key(), &"motivo": _reason_key(_pending_reason),
+		&"control_final": _final_key(),
+		&"t_since_started_s": float(_clock.now_ms() - _t_started_ms) / 1000.0,
+	})
+	if _pending_final_control == FinalControl.EXPLORACION and _input != null:
+		_input.request_exploration(InputTypes.OWNER_SCENE_LOADER)
+	if _pending_destination == Destination.RECEPCION:
+		_notify(NoticeIds.GAME_FINISHED, {})
+
+
+# Minimal failure path so the machine never hangs.
+# TODO(carga-008): ErrorPanel, fatal handler in dev, `Volver al titulo` and the full failure contract (owner: carga-008).
+func _fail(cause: StringName) -> void:
+	_phase = Phase.IDLE
+	_state = State.ERROR
+	set_process(false)
+	_curtain.alpha = 1.0 # never reveal a half scene
+	_apply_alpha()
+	_ctx.logger.line(LogSink.LEVEL_ERROR, "scene load failed: %s" % cause)
+	_notify(NoticeIds.SCENE_LOAD_FAILED, {
+		&"destino": _dest_key(), &"motivo": _reason_key(_pending_reason), &"causa": cause,
+	})
+	if _input != null:
+		_input.restore_menu()
+
+
+func _apply_alpha() -> void:
+	if _alpha_sink.is_valid():
+		_alpha_sink.call(_curtain.alpha)
+
+
+func _notify(notice: StringName, payload: Dictionary) -> void:
+	if _ctx.state == null:
+		return
+	var channel: NoticeChannel = _ctx.state.get_channel()
+	if channel != null:
+		channel.notify(notice, payload)
+
+
+func _dest_key() -> StringName:
+	return &"planta" if _pending_destination == Destination.PLANTA else &"recepcion"
+
+
+func _final_key() -> StringName:
+	return &"exploracion" if _pending_final_control == FinalControl.EXPLORACION else &"ninguno"
+
+
+func _reason_key(reason: Reason) -> StringName:
+	match reason:
+		Reason.PARTIDA_NUEVA:
+			return LoadTransitions.MOTIVO_PARTIDA_NUEVA
+		Reason.REANUDAR:
+			return LoadTransitions.MOTIVO_REANUDAR
+		_:
+			return LoadTransitions.MOTIVO_RECEPCION
