@@ -31,6 +31,7 @@ const CAUSE_INSTANTIATE_FAILED: StringName = &"instantiate_failed"
 const CAUSE_PREVIOUS_NOT_FREED: StringName = &"previous_scene_not_freed"
 const CAUSE_MISSING_ANCHOR: StringName = &"missing_anchor"
 const CAUSE_INVALID_PUZZLE_DATA: StringName = &"invalid_puzzle_data"
+const CAUSE_T_CAP: StringName = &"t_cap"
 
 var _ctx: ServiceContext
 var _source: SceneSource
@@ -58,6 +59,10 @@ var _t_started_ms: int = 0
 var _last_ms: int = 0
 var _frame_dt: float = 0.0
 var _gap_left: int = 0
+var _t_dark_ms: int = 0
+## Holder IDs of the holds (set semantics; values unused). Valid only while `_holds_open`.
+var _holds: Dictionary[StringName, bool] = {}
+var _holds_open: bool = false
 var _old: Node = null
 var _current_root: Node = null
 
@@ -124,14 +129,14 @@ func tick() -> void:
 			var dark: bool = _curtain.step_out(_frame_dt, _transitions.delta_max_s, _d_out)
 			_apply_alpha()
 			if dark:
+				_t_dark_ms = now # alpha = 1: `t_espera` starts here (TR-scene-013)
 				_phase = Phase.UNLOADING
 				_unload_current()
 				_phase = Phase.INSTANTIATING
 		Phase.INSTANTIATING:
 			_instantiate_and_configure()
 		Phase.WAITING_HOLDS:
-			# TODO(carga-007): holds and T_cap; without holds «escena lista» is emitted in the configure frame.
-			_scene_ready()
+			_wait_step()
 		Phase.GAP:
 			_gap_left -= 1
 			if _gap_left <= 0:
@@ -247,6 +252,8 @@ func _instantiate_and_configure() -> void:
 	if not _place_player(root):
 		_fail(CAUSE_MISSING_ANCHOR)
 		return
+	_holds.clear()
+	_holds_open = true # step 6 starts: the holds window opens
 	var result: int = CONFIGURE_OK
 	if root.has_method(&"configure_all"):
 		result = int(root.call(&"configure_all", _ctx))
@@ -254,7 +261,40 @@ func _instantiate_and_configure() -> void:
 		_fail(CAUSE_INVALID_PUZZLE_DATA) # immediate: no T_cap wait
 		return
 	_phase = Phase.WAITING_HOLDS
-	_scene_ready() # TODO(carga-007): stay in WAITING_HOLDS while holds exist
+	_wait_step()
+
+
+## Takes a hold on «escena lista» (ADR-0003 D5). Idempotent per `holder_id` (`&"<system>:<element_id>"`, C-R06).
+## Outside the window (before step 6 or after «escena lista») it is ignored and logged.
+## TODO(carga-007): dev builds should also surface a visible error in-game (owner: carga-008, error UI).
+func take_hold(holder_id: StringName) -> void:
+	if not _holds_open:
+		_ctx.logger.line(LogSink.LEVEL_ERROR, "take_hold ignored outside the holds window: %s" % holder_id)
+		return
+	_holds[holder_id] = true
+
+
+## Releases the hold of `holder_id`; a missing or repeated release is a no-op (never below 0).
+func release_hold(holder_id: StringName) -> void:
+	_holds.erase(holder_id)
+
+
+## Number of holds currently taken (`n_ret`).
+func get_hold_count() -> int:
+	return _holds.size()
+
+
+# Each frame of the wait (ADR-0003): holds still pending at `t_espera >= T_cap` fail with their IDs;
+# an empty set emits «escena lista» (same frame as configure when no holds were taken).
+func _wait_step() -> void:
+	var t_espera_ms: int = _clock.now_ms() - _t_dark_ms
+	if float(t_espera_ms) / 1000.0 >= _transitions.t_cap_s and not _holds.is_empty():
+		var ids: Array[StringName] = _holds.keys()
+		ids.sort_custom(func(a: StringName, b: StringName) -> bool: return String(a) < String(b))
+		_fail(CAUSE_T_CAP, ids)
+		return
+	if _holds.is_empty():
+		_scene_ready()
 
 
 # Step 5: `colocar(anchor position, yaw, pitch 0)` from the spawn anchor (C-R08).
@@ -275,6 +315,7 @@ func _place_player(root: Node) -> bool:
 
 # Step 7.
 func _scene_ready() -> void:
+	_holds_open = false
 	# TODO(adr-0009-d6): SYNC `bind_scene(scene_ctx)` on 21, 23 and Shell adapters.
 	_notify(NoticeIds.SCENE_READY, {&"destino": _dest_key()})
 	_gap_left = _transitions.n_gap
@@ -322,13 +363,14 @@ func _finish() -> void:
 
 # Minimal failure path so the machine never hangs.
 # TODO(carga-008): ErrorPanel, fatal handler in dev, `Volver al titulo` and the full failure contract (owner: carga-008).
-func _fail(cause: StringName) -> void:
+func _fail(cause: StringName, pending_ids: Array[StringName] = []) -> void:
+	_holds_open = false
 	_phase = Phase.IDLE
 	_state = State.ERROR
 	set_process(false)
 	_curtain.alpha = 1.0 # never reveal a half scene
 	_apply_alpha()
-	_ctx.logger.line(LogSink.LEVEL_ERROR, "scene load failed: %s" % cause)
+	_ctx.logger.line(LogSink.LEVEL_ERROR, "scene load failed: %s pending=%s" % [cause, pending_ids])
 	_notify(NoticeIds.SCENE_LOAD_FAILED, {
 		&"destino": _dest_key(), &"motivo": _reason_key(_pending_reason), &"causa": cause,
 	})

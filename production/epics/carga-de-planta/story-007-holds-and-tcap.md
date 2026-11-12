@@ -1,7 +1,7 @@
 # Story 007: Retenciones y `T_cap` en tiempo real
 
 > **Epic**: Carga de planta (despacho, pasillo, Archivo)
-> **Status**: Ready
+> **Status**: Partial — AC-13, AC-F2, AC-F3 (parte 3) y AC-19 (holds) cumplidos en lógica; pendiente AC-19 «hecho que cambia en Cargando» (no probado en el cargador) y el error visible en dev
 > **Layer**: Core
 > **Type**: Logic
 > **Estimate**: M — 1 día (0,5–1,5; confianza BAJA)
@@ -75,3 +75,14 @@
 
 - Depends on: `production/epics/carga-de-planta/story-005-load-sequence.md`
 - Unlocks: `production/epics/carga-de-planta/story-008-load-failure-error-state.md`
+
+---
+
+## Evidencia
+
+- Código: `src/scene/scene_loader.gd` (`take_hold`, `release_hold`, `get_hold_count`, `_wait_step`, `CAUSE_T_CAP`; `t_espera` desde α = 1 con `RealClock`, sin recortar; `_fail` acepta IDs pendientes ordenados y los registra).
+- Tests: `tests/unit/scene/scene_loader_holds_test.gd` (14 casos; dobles `holding_scene_source.gd`, `holding_scene_root.gd`). Reloj en ms relativos a «α = 1», sin depender de nº de fotogramas.
+- Suite bloqueante: 873 casos, 0 errores, 0 fallos, 0 huérfanos; sin `ObjectDB instances were leaked` ni `resources still in use`. `--import` sin errores; `--boot-report` rc 0 sin errores.
+- AC-13: α = 1 sin escrituras de cortina durante la espera (los nodos de UI no los crea el cargador). AC-F2: 0,2/1,5/4,0 s → lista a 4,0 s; fallo a exactamente 10,0 s (no a 9,999) con el ID; 100 a 1 s sin fallo; doble liberación ≥ 0; 20 s sin foco falla. AC-F3 p.3: fallo en d_out + T_cap < D_carga (margen de Entrada no fijado aquí).
+- AC-19: hold tardío/previo ignorado + línea de log, «lista» no se repite. NO cubierto: entrega del aviso y lectura del valor nuevo de un hecho durante Cargando (es de GameState/elementos). Error visible en dev: solo línea de log; `TODO(carga-007)` → carga-008.
+- Ruta de fallo: `_fail` mínimo de 005; el panel/contrato completo es 008.
