@@ -1,7 +1,7 @@
 # Story 013: `planta.tscn` gris — despacho, pasillo y Archivo
 
 > **Epic**: Carga de planta (despacho, pasillo, Archivo)
-> **Status**: Ready
+> **Status**: Complete (parcial: AC-04 verificado a nivel de escena; el recorrido real con el cargador es 015)
 > **Layer**: Core
 > **Type**: Integration
 > **Estimate**: L — 2 días (1,5–3; confianza BAJA)
@@ -77,3 +77,14 @@
 
 - Depends on: `production/epics/carga-de-planta/story-011-zone-hub.md`, `story-012-game-scene-root-and-source.md`, `production/epics/jugador-primera-persona/story-011-player-node-api.md`
 - Unlocks: `production/epics/carga-de-planta/story-015-new-game-gray-walk-evidence.md`, `production/epics/jugador-primera-persona/story-013-gray-walk-evidence.md`
+
+---
+
+## Evidencia
+
+- `src/scene/planta.tscn`: raíz `GameSceneRoot`, `Player`, `ZoneHub`, contenedores `office`/`corridor`/`archive` (CSGBox3D con colisión en capa 1), anclas, 4 `ZoneTrigger` (`monitoring = false`), hoja de puerta A conmutable (`archive/door_slot_a/DoorLeaf`). `SceneSource.DEFAULT_PATHS` apunta a `res://src/scene/planta.tscn`; `GameSceneRoot._ready` registra los `ZoneTrigger` en el `ZoneHub`.
+- Tests: `tests/integration/scene/floor_layout_test.gd` (11) y `element_ids_test.gd` (4) con `tests/fixtures/scene/{floor_layout,element_ids}.json`: 15/15.
+- Suite bloqueante completa: 921 casos, 0 errores, 0 fallos, 0 huérfanos; sin `ObjectDB instances were leaked` ni `resources still in use`. `--import` sin errores; `--boot-report` sin errores.
+- Captura del motor (`--write-movie`): `production/qa/evidence/s3-planta/planta-gris-vista-cenital.png` (vista cenital, techos ocultos).
+- AC-02, AC-03, TR-scene-007 (hueco de puerta ≥ 0,60 y hoja conmutable): cumplidos. AC-04: solo a nivel de escena (alfa 0 e 0 «scene_load_started» con un jugador de prueba movido por script, sin cargador cableado); el recorrido real con el cargador queda para 015.
+- TODO(level-design) en el `.tscn`: A05 rotado (1,20 cruzaba el muro este), V05 movido a X −3,3 (estaba fuera del escritorio), bolsillo de 0,475 m entre el armario V-MOB-3 y el muro norte (sin paso: callejón), Y/X de la persiana V-MOB-4, coordenadas propuestas de T-D-OUT y T-OFI-IN.

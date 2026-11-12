@@ -1,0 +1,6 @@
+{
+  "_source": "design/slice/slice-v0.3.md A.2, A.3, A.4 and D.4 (prefix -> container: V office, A archive, C and T corridor)",
+  "office": ["V-MOB-1", "V-MOB-2", "V-MOB-3", "V-MOB-4", "V01", "V02", "V03", "V04", "V05", "V06", "V07", "V08"],
+  "corridor": ["C01", "C02", "C03", "C04", "C05", "C06", "C07", "C08", "T-PAS-1", "T-PAS-2", "T-D-OUT", "T-OFI-IN"],
+  "archive": ["A02", "A03", "A04", "A05", "A06"]
+}

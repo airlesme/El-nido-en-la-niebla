@@ -26,6 +26,15 @@ enum ConfigureResult { OK, INVALID_PUZZLE_DATA }
 @export var zone_hub_path: NodePath = ^"ZoneHub"
 
 
+## Registers every `ZoneTrigger` below the root with the zone hub (their `monitoring` stays false until the hub is enabled).
+func _ready() -> void:
+	var hub: ZoneHub = get_zone_hub()
+	if hub == null:
+		return
+	for node: Node in find_children("*", "ZoneTrigger", true, false):
+		hub.register(node as ZoneTrigger)
+
+
 ## The Player child (typed as Node: the Player class belongs to system 2).
 ## TODO(pj-011): return type `Player` once it exists (owner: pj-011).
 func get_player() -> Node:
