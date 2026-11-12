@@ -1,7 +1,7 @@
 # Story 011: `ZoneHub` y `ZoneTrigger`
 
 > **Epic**: Carga de planta (despacho, pasillo, Archivo)
-> **Status**: Ready
+> **Status**: Done (2026-11-12)
 > **Layer**: Core
 > **Type**: Integration
 > **Estimate**: M — 1 día (0,5–1,5; confianza BAJA)
@@ -75,3 +75,12 @@
 
 - Depends on: None (el jugador de prueba es un `Area3D` de sensor; el `Player` real se prueba en `production/epics/jugador-primera-persona/story-012-physics-walk-integration.md`)
 - Unlocks: `production/epics/carga-de-planta/story-013-gray-planta-geometry.md`, `production/epics/jugador-primera-persona/story-012-physics-walk-integration.md`
+
+---
+
+## Evidencia
+
+- `src/scene/zone_entry_queue.gd` (orden puro por (tick, ID)), `zone_trigger.gd`, `zone_hub.gd`.
+- `tests/unit/scene/zone_hub_order_test.gd` (T-U9, 6 tests) y `tests/integration/scene/zone_jolt_test.gd` (T-I4, 5 tests, Jolt real, sin ventana): AC-05a, AC-05b (orden por ID, spawn dentro emite en tick posterior a `set_enabled(true)` y ninguno antes), desactivar, registro tardío.
+- Suite bloqueante: `Overall Summary: 713 test cases | 0 errors | 0 failures | 0 flaky | 0 skipped | 0 orphans`, 65/65 suites; sin `ObjectDB instances were leaked` ni `resources still in use`. `--import` sin errores.
+- Pendiente anotado: `# TODO(scene-owner)` en `ZoneHub`: ADR-0003 no fija cómo recibe el bus; fallback `configure(notify: Callable)` (payload `{&"zona": id}`, `NoticeIds.ZONE_ENTERED`). SceneLoader debe llamar `set_enabled(true)` en «terminada» (CP-001/013).
