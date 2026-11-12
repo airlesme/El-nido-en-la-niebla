@@ -1,7 +1,7 @@
 # Story 004: `SceneLoader` — precondiciones y estados
 
 > **Epic**: Carga de planta (despacho, pasillo, Archivo)
-> **Status**: Ready
+> **Status**: Done
 > **Layer**: Core
 > **Type**: Logic
 > **Estimate**: M — 1 día (0,5–1,5; confianza BAJA)
@@ -30,10 +30,10 @@
 
 ## Acceptance Criteria
 
-- [ ] **AC-07a**: GIVEN el estado (3) en Listo y este sistema en Sin escena, WHEN se pide `planta` con `partida_nueva` (y con `reanudar`), THEN se acepta y entra en Cargando; GIVEN el estado (3) sin cargar o en restauración, THEN se rechaza en los dos modos y no cambia de estado ni llama al cargador.
-- [ ] **AC-07b**: GIVEN Lista, WHEN llegan dos peticiones válidas en el mismo fotograma, THEN se acepta la primera y se rechaza la segunda (dos modos); WHEN llega una durante Cargando, THEN se rechaza igual.
-- [ ] **AC-14**: GIVEN `llamada_completada` falso, WHEN se pide `recepcion`, THEN se rechaza como en AC-07 (escrituras en el estado = 0, mismo estado, misma escena, 0 llamadas al cargador); GIVEN verdadero, THEN se acepta con `control_final` = `ninguno`.
-- [ ] **AC-16a (parte de rechazo)**: WHEN se pide `planta` con `recepcion` cargada sin descarga total, THEN se rechaza como en AC-07.
+- [x] **AC-07a**: GIVEN el estado (3) en Listo y este sistema en Sin escena, WHEN se pide `planta` con `partida_nueva` (y con `reanudar`), THEN se acepta y entra en Cargando; GIVEN el estado (3) sin cargar o en restauración, THEN se rechaza en los dos modos y no cambia de estado ni llama al cargador.
+- [x] **AC-07b**: GIVEN Lista, WHEN llegan dos peticiones válidas en el mismo fotograma, THEN se acepta la primera y se rechaza la segunda (dos modos); WHEN llega una durante Cargando, THEN se rechaza igual.
+- [x] **AC-14**: GIVEN `llamada_completada` falso, WHEN se pide `recepcion`, THEN se rechaza como en AC-07 (escrituras en el estado = 0, mismo estado, misma escena, 0 llamadas al cargador); GIVEN verdadero, THEN se acepta con `control_final` = `ninguno`.
+- [x] **AC-16a (parte de rechazo)**: WHEN se pide `planta` con `recepcion` cargada sin descarga total, THEN se rechaza como en AC-07.
 
 ---
 
@@ -69,7 +69,7 @@
 
 **Story Type**: Logic
 **Required evidence**: `tests/unit/scene/scene_loader_preconditions_test.gd` (T-U1) — must exist and pass.
-**Status**: [ ] Not yet created
+**Status**: [x] Created and passing
 
 ---
 
@@ -77,3 +77,13 @@
 
 - Depends on: `production/epics/carga-de-planta/story-001-shell-worldslot.md`; `GameState` con estado Listo/restaurando legible (épico Estado/bus, ADR-0001)
 - Unlocks: `production/epics/carga-de-planta/story-005-load-sequence.md`, `story-010-stale-scene-warning.md`
+
+---
+
+## Evidencia
+
+- `tests/unit/scene/scene_loader_preconditions_test.gd`: 12/12 (AC-07a, AC-07b, AC-14, AC-16a rechazo; dev y release; 0 escrituras en el estado, 0 llamadas al cargador).
+- `<godot> ... -a res://tests/unit/scene`: 56 casos, 0 fallos, 0 huérfanos. `--import` y `--boot-report` sin errores.
+- Suite bloqueante: 756 casos, 1 fallo ajeno (`tests/unit/player/player_state_machine_test.gd`, PJ-008/009 en curso); sin `ObjectDB instances were leaked` ni `resources still in use`.
+- Código: `src/scene/scene_loader.gd`, `load_preconditions.gd` (lógica pura), `scene_source.gd` (puerto, ADR-0003).
+- Pendiente de proceso: enmienda a ADR-0003 (`setup(ctx)` en vez de 6 parámetros); código fatal `PETICION_DE_CARGA_RECHAZADA` por registrar en ADR-0009 (`TODO(ADR-0009)`). Tras aceptar, el estado queda en LOADING (secuencia = 005); `set_runtime_state` es un seam para 005/008/009.
